@@ -118,4 +118,26 @@ describe('copyRoleFiles', () => {
 
     expect(existsSync(join(dest, 'run.md'))).toBe(true);
   });
+
+  it('handles subdirectories in disabled roles without throwing', () => {
+    createRole('planner', 'commands', ['plan.md']);
+    // Add a nested subdirectory inside the role's commands dir
+    mkdirSync(join(testDir, 'roles', 'planner', 'commands', 'nested'), {
+      recursive: true,
+    });
+
+    const dest = join(testDir, 'dest');
+    mkdirSync(dest, { recursive: true });
+    writeFileSync(join(dest, 'plan.md'), '# old planner file');
+
+    copyRoleFiles({
+      rolesDir: join(testDir, 'roles'),
+      subdir: 'commands',
+      dest,
+      enabledRoles: new Set<string>(),
+    });
+
+    // File removed, subdirectory entry skipped (not unlinkable)
+    expect(existsSync(join(dest, 'plan.md'))).toBe(false);
+  });
 });

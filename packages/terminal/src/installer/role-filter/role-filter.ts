@@ -53,9 +53,11 @@ function safeUnlink(filePath: string): void {
 
 /** Remove previously-installed files for a disabled role. */
 function cleanDisabledFiles(srcDir: string, dest: string): void {
-  readdirSync(srcDir).forEach((file) => {
-    safeUnlink(join(dest, file));
-  });
+  readdirSync(srcDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile())
+    .forEach((entry) => {
+      safeUnlink(join(dest, entry.name));
+    });
 }
 
 /** Try to read a directory, returning null if it doesn't exist. */
@@ -78,6 +80,10 @@ function safeReaddir(dir: string): readonly string[] | null {
  * or if `enabledRoles` is `null` (first install — install all).
  *
  * Files for disabled optional roles are removed from the destination.
+ *
+ * Filenames must be unique across all roles — if two roles define the same
+ * filename, the last one copied wins silently. This is enforced by convention
+ * in the role directory structure, not at runtime.
  *
  * @param options - The role filter options.
  */
