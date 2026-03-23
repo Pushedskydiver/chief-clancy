@@ -10,7 +10,7 @@ How the Clancy monorepo is developed. Covers the phase-based delivery lifecycle,
 
 1. **Read** — brief + PROGRESS.md
 2. **Validate** — phase validation protocol (if starting a new phase)
-3. **Build** — TDD: write tests → implement → lint passes
+3. **Build** — tracer bullet TDD: one test → implement → next test → repeat → refactor → lint
 4. **Review gate** — DA review → self-review → fix all findings
 5. **Ship** — create PR, request Copilot review, fix findings, squash merge
 
@@ -32,11 +32,24 @@ All code changes go through: branch → review gate → PR → Copilot review �
 
 The monorepo is built in 14 phases, each containing small, focused PRs. See the [monorepo brief](decisions/monorepo/brief.md) for the full phase breakdown.
 
-Each PR follows TDD:
-1. Write tests first against the desired interface
-2. Implement to make tests pass
-3. Lint + typecheck must pass
-4. Review gate before merge
+Each PR follows **tracer bullet TDD** — vertical slices, not horizontal:
+
+```
+WRONG (horizontal):
+  Write ALL tests → write ALL implementation
+
+RIGHT (vertical / tracer bullet):
+  One test → implement to pass → next test → implement to pass → refactor
+```
+
+1. **Plan** — identify the behaviours to test (not implementation steps). Confirm the public interface.
+2. **Tracer bullet** — write ONE test for the first behaviour. Implement minimal code to make it pass. This proves the path works end-to-end.
+3. **Incremental loop** — for each remaining behaviour: write one test → minimal code to pass → repeat. Don't anticipate future tests.
+4. **Refactor** — once all tests pass, look for duplication, module deepening, SOLID improvements. Never refactor while red.
+5. **Verify** — lint + typecheck must pass.
+6. **Review gate** before merge.
+
+**Why vertical slices?** Tests written in bulk test *imagined* behaviour, not *actual* behaviour. Writing one test at a time means each test responds to what you learned from the previous cycle. The tests end up testing real behaviour through public interfaces, not implementation details.
 
 ---
 
@@ -76,7 +89,7 @@ Every session follows this pattern:
 2. Read PROGRESS.md to see current state
 3. Run phase validation (if starting a new phase)
 4. Pick up the next PR
-5. TDD: write tests → implement → lint → review gate
+5. Tracer bullet TDD: one test → implement → next test → repeat → refactor → lint
 6. Create PR with Copilot review (Phase 2+)
 7. Fix all review findings
 8. Squash merge, mark PR complete in PROGRESS.md

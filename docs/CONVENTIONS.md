@@ -88,7 +88,7 @@ Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 - **Property-based tests** (fast-check) for parsers, serialisers, URL builders, string transformers.
 - **Integration tests** for cross-module workflows (MSW-backed, in `packages/terminal/test/integration/`).
 - **Coverage threshold: 80%** per package (statements, branches, functions, lines).
-- **TDD for new logic.** When rewriting a module, write tests first against the desired interface, then implement.
+- **Tracer bullet TDD for new logic.** Vertical slices, not horizontal. One test → implement to pass → next test → repeat → refactor. Never write all tests first then all implementation — tests written in bulk test imagined behaviour, not actual behaviour.
 - **Tests exempt from functional rules** — `immutable-data` off, `max-lines-per-function` off, `no-duplicate-string` off in test files.
 
 ---

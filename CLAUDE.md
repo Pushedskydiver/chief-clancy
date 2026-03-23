@@ -101,12 +101,14 @@ See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the full process. Summary:
 1. Read the brief + PROGRESS.md
 2. Run phase validation (if starting a new phase)
 3. Pick up the next PR
-4. TDD: write tests → implement → lint passes
+4. Tracer bullet TDD: one test → implement → next test → repeat → refactor → lint
 5. Review gate: DA review → self-review ([checklist](docs/SELF-REVIEW.md)) → fix all findings
 6. Create PR, request Copilot review, fix findings, squash merge
 7. Mark PR complete in PROGRESS.md
 
-**Review gate order is strict:** DA always runs before self-review. See [DEVELOPMENT.md step-by-step](docs/DEVELOPMENT.md#review-gate--da--self-review--copilot).
+**TDD is vertical slices, not horizontal.** Don't write all tests then all code. One test → implement to pass → next test. See [DEVELOPMENT.md](docs/DEVELOPMENT.md#phase-based-delivery).
+
+**Review gate order is strict:** DA always runs before self-review. See [DEVELOPMENT.md](docs/DEVELOPMENT.md#review-gate--da--self-review--copilot).
 
 ## Code standards
 
