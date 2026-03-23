@@ -16,12 +16,16 @@
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "knip": "knip",
+    "publint": "publint packages/core && publint packages/terminal",
+    "attw": "attw --pack packages/core --ignore-rules cjs-resolves-to-esm no-resolution && attw --pack packages/terminal --ignore-rules cjs-resolves-to-esm no-resolution"
   },
   "volta": {
     "node": "24.14.0"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.2",
     "@eslint/js": "^10.0.1",
     "@ianvs/prettier-plugin-sort-imports": "^4.7.1",
     "@types/node": "^25.5.0",
@@ -31,7 +35,9 @@
     "eslint-plugin-functional": "^9.0.4",
     "eslint-plugin-sonarjs": "^4.0.2",
     "jiti": "^2.6.1",
+    "knip": "^6.0.3",
     "prettier": "^3.8.1",
+    "publint": "^0.3.18",
     "turbo": "^2.8.20",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.57.1",
