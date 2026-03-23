@@ -84,7 +84,7 @@ export const copyDir = (src: string, dest: string): void => {
 };
 
 /** Matches `@.claude/clancy/workflows/<filename>.md` on its own line (global). Disallows path separators. */
-const WORKFLOW_REF = /^@\.claude\/clancy\/workflows\/([^/\\]+\.md)$/gm;
+const WORKFLOW_REF = /^@\.claude\/clancy\/workflows\/([^/\\]+\.md)\r?$/gm;
 
 /** Resolve a workflow @-file reference to its content, or return the original if missing. */
 const resolveWorkflowRef = (
@@ -127,7 +127,8 @@ const inlineFileWorkflows =
  *
  * For global installs, @-file references resolve relative to the project root
  * (not ~/.claude), so the workflow files won't be found at runtime. This
- * replaces all @-file references with the actual workflow content.
+ * replaces matching `@.claude/clancy/workflows/<name>.md` references with the
+ * actual workflow content. References to missing files are left unchanged.
  * Handles multiple references per file.
  *
  * @param commandsDir - The installed commands directory.
