@@ -122,10 +122,12 @@ function printGroup(group: CommandGroup): void {
 /**
  * Print the post-install success message with available commands.
  *
- * Groups flagged as optional are hidden when the corresponding role
- * is absent from `enabledRoles`. Pass `null` to show all groups.
+ * Command groups with a non-null `roleKey` are role-gated: they are shown only
+ * when their role key is present in `enabledRoles`. Groups with `roleKey === null`
+ * are always shown. Pass `null` for `enabledRoles` to disable role gating and show
+ * all groups.
  *
- * @param enabledRoles - Role keys matching `CommandGroup.roleKey` (e.g. `"strategist"`), or `null` to show all.
+ * @param enabledRoles - Role keys matching `CommandGroup.roleKey` (e.g. `"strategist"`), or `null` to show all groups.
  */
 export function printSuccess(enabledRoles: ReadonlySet<string> | null): void {
   console.log('');

@@ -79,8 +79,8 @@ describe('printSuccess', () => {
     expect(output).toContain('Setup & Maintenance');
   });
 
-  it('shows all command groups when all roles are enabled', () => {
-    printSuccess(new Set(['strategist', 'planner', 'implementer', 'reviewer']));
+  it('shows all command groups when strategist and planner roles are enabled', () => {
+    printSuccess(new Set(['strategist', 'planner']));
 
     const output = captureOutput(logSpy);
     expect(output).toContain('Strategist');
