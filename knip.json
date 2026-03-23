@@ -6,8 +6,7 @@
       "project": ["src/**/*.ts"]
     },
     "packages/terminal": {
-      "project": ["src/**/*.ts"],
-      "ignore": ["src/installer/file-ops/index.ts"]
+      "project": ["src/**/*.ts"]
     }
   }
 }
