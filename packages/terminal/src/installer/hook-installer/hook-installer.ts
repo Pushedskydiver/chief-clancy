@@ -6,7 +6,13 @@
  * All internal logic is immutable — settings are built as new objects,
  * never mutated in place.
  */
-import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  copyFileSync,
+  lstatSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
 
 /** A command hook entry in Claude's settings.json. */
@@ -44,6 +50,29 @@ const HOOK_FILES = [
   'clancy-drift-detector.js',
 ] as const;
 
+/** Check whether an error has a specific Node.js error code. */
+function hasErrorCode(err: unknown, code: string): boolean {
+  return (
+    err instanceof Error && (err as { readonly code?: string }).code === code
+  );
+}
+
+/** Throw if the given path is a symlink. Only swallows ENOENT. */
+function rejectSymlink(path: string): void {
+  try {
+    if (lstatSync(path).isSymbolicLink()) {
+      throw new Error(`${path} is a symlink. Remove it before installing.`);
+    }
+  } catch (err: unknown) {
+    if (!hasErrorCode(err, 'ENOENT')) throw err;
+  }
+}
+
+/** Check whether a value is a plain object (not array, not null). */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 /** Build a `node "path"` command string for a hook file. */
 function buildNodeCommand(hooksDir: string, fileName: string): string {
   return `node ${JSON.stringify(join(hooksDir, fileName))}`;
@@ -72,7 +101,10 @@ function isAgentMatch(
   hook: CommandHook | AgentHook,
   fingerprint: string,
 ): boolean {
-  return hook.type === 'agent' && hook.prompt.slice(0, 100) === fingerprint;
+  const hasStringPrompt =
+    hook.type === 'agent' && typeof hook.prompt === 'string';
+
+  return hasStringPrompt && hook.prompt.slice(0, 100) === fingerprint;
 }
 
 /** Flatten all hooks from a list of entries into a single array. */
@@ -184,6 +216,18 @@ function mergeHookRegistrations(
   return Object.fromEntries(entries);
 }
 
+/** Safely extract a HookRegistrations record from raw settings.hooks. */
+function normalizeHooks(raw: unknown): HookRegistrations {
+  if (!isPlainObject(raw)) return {};
+
+  // Keep only values that are arrays — non-array event values are discarded
+  const safeEntries = Object.entries(raw).filter(
+    (entry): entry is [string, readonly HookEntry[]] => Array.isArray(entry[1]),
+  );
+
+  return Object.fromEntries(safeEntries);
+}
+
 /**
  * Merge hook registrations and statusLine into existing settings immutably.
  *
@@ -197,8 +241,7 @@ function mergeSettings(
   desired: HookRegistrations,
   statusLineCommand: string,
 ): Record<string, unknown> {
-  // Safe: best-effort — malformed hooks degrade gracefully in mergeEventEntries
-  const existingHooks = (settings.hooks ?? {}) as HookRegistrations;
+  const existingHooks = normalizeHooks(settings.hooks);
   const mergedHooks = mergeHookRegistrations(existingHooks, desired);
   const statusLine = settings.statusLine ?? {
     type: 'command',
@@ -210,10 +253,13 @@ function mergeSettings(
 
 /** Copy all hook files from source to the install directory. */
 function copyHookFiles(sourceDir: string, installDir: string): void {
+  rejectSymlink(installDir);
   mkdirSync(installDir, { recursive: true });
 
   HOOK_FILES.forEach((f) => {
-    copyFileSync(join(sourceDir, f), join(installDir, f));
+    const dest = join(installDir, f);
+    rejectSymlink(dest);
+    copyFileSync(join(sourceDir, f), dest);
   });
 }
 
@@ -222,13 +268,6 @@ function writeCommonJsMarker(installDir: string): void {
   writeFileSync(
     join(installDir, 'package.json'),
     JSON.stringify({ type: 'commonjs' }, null, 2) + '\n',
-  );
-}
-
-/** Check whether an error has a specific Node.js error code. */
-function hasErrorCode(err: unknown, code: string): boolean {
-  return (
-    err instanceof Error && (err as { readonly code?: string }).code === code
   );
 }
 
@@ -266,6 +305,7 @@ export function installHooks(options: HookInstallerOptions): boolean {
     copyHookFiles(hooksSourceDir, hooksInstallDir);
     writeCommonJsMarker(hooksInstallDir);
 
+    rejectSymlink(settingsFile);
     const existing = readSettingsFile(settingsFile);
     const desired = buildDesiredHooks(
       hooksInstallDir,
