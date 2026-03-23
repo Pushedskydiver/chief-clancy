@@ -1,6 +1,6 @@
 # Development Process
 
-How the Clancy monorepo is developed. Covers the phase-based delivery lifecycle, review process, and session patterns.
+How the Clancy monorepo is developed. Covers the phase-based delivery lifecycle, review process, and session patterns. See [GLOSSARY.md](GLOSSARY.md) for terminology.
 
 **Last reviewed:** 2026-03-23
 
@@ -116,7 +116,7 @@ Start a new session when **any** of these triggers fire:
 **How to hand off:**
 
 1. Update PROGRESS.md with current state
-2. Save any important decisions to memory (so future sessions have context)
+2. Save any important decisions to memory files (e.g. `project_monorepo_status.md`, feedback files for new conventions). Update MEMORY.md index if adding new files.
 3. Leave a handoff summary with:
    - What was completed (PR numbers, key files)
    - What's next (next PR, any setup needed)
@@ -169,7 +169,7 @@ Run through the **[Self-Review Checklist](SELF-REVIEW.md)**. Read every changed 
 
 After DA and self-review are clean:
 
-1. Push branch and create PR — assign to Alex (`Pushedskydiver`) and add labels (`feature`/`fix`/`chore` + affected package e.g. `terminal`, `core`)
+1. Push branch and create PR — assign to Alex (`Pushedskydiver`) and add labels (`feature`/`fix`/`chore` + affected package e.g. `terminal`, `core`). See [GIT.md](GIT.md) for label conventions and merge strategy.
 2. Request Copilot review:
    ```bash
    gh api repos/{owner}/{repo}/pulls/{number}/requested_reviewers \

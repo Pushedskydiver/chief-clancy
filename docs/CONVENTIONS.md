@@ -14,7 +14,7 @@ Standards enforced across the `@chief-clancy` monorepo. All rules are configured
 | `sonarjs/cognitive-complexity` | 15                         | Penalises nesting over flat branching. More forgiving for early-return patterns. |
 | `max-lines-per-function`       | 50 (skip blanks/comments)  | Forces decomposition. If a function needs 51 lines, it's doing two things.       |
 | `max-lines` (per file)         | 300 (skip blanks/comments) | Keeps modules focused.                                                           |
-| `max-params`                   | 3                          | Forces options objects. Self-documenting call sites.                             |
+| `max-params`                   | 3                          | 3 is the limit. 4+ params must use an options object.                           |
 | `max-depth`                    | 3                          | No deep nesting. Forces early returns and extraction.                            |
 
 ---
@@ -34,10 +34,11 @@ Standards enforced across the `@chief-clancy` monorepo. All rules are configured
 
 | Rule                                       | Effect   |
 | ------------------------------------------ | -------- |
-| Core imports nothing from terminal or chat | Enforced |
-| Terminal imports from core only            | Enforced |
-| Chat imports from core only                | Enforced |
-| No cross-imports between terminal and chat | Enforced |
+| Core imports nothing from terminal or chat   | Enforced |
+| Terminal imports from core only              | Enforced |
+| Chat imports from core only                  | Enforced |
+| Wrapper imports from terminal only           | Enforced |
+| No cross-imports between terminal and chat   | Enforced |
 
 ---
 
@@ -70,7 +71,8 @@ Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 - **No `any`.** Use `unknown` + type narrowing. `as` casts only where structurally justified with a comment explaining why.
 - **Pure functions by default.** Side effects (HTTP, git, filesystem) isolated to boundary functions. Pure logic extracted into separate functions that take data in and return data out.
 - **Dependency injection via function parameters** for I/O. Pass `fetch`, pass `exec` — don't import live implementations in pure logic modules.
-- **Options objects for 3+ parameters.** Named properties, self-documenting call sites.
+- **Options objects for 4+ parameters.** 3 is the ESLint limit. 4+ must use an options object with named properties.
+- **Unused parameters:** prefix with `_` (e.g. `_unused`) if keeping for API stability. Otherwise remove.
 - **Max one level of function nesting.** No functions defined inside functions defined inside functions.
 - **`type` over `interface`.** Use `type` by default. Only use `interface` when you need declaration merging or `extends` for object hierarchies. Consistency over convention — one fewer decision to make.
 - **Co-locate types with their module.** Types used by a single module live in that module's file. Types used across multiple modules go in `types/`. Types start local and only migrate when there's actual reuse.
@@ -98,6 +100,7 @@ Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 - **Types/Interfaces:** PascalCase (`Board`, `FetchedTicket`, `RunContext`)
 - **Functions:** camelCase (`createBoard`, `fetchAndParse`)
 - **Constants:** UPPER_SNAKE_CASE for env vars and status values (`CLANCY_BASE_BRANCH`, `PR_CREATED`)
+- **Module directories:** `feature-name/feature-name.ts` pattern (`env-parser/env-parser.ts`, `file-ops/file-ops.ts`)
 - **Barrel exports:** `index.ts` in each module directory, re-exports public API
 
 ---
