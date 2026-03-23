@@ -10,7 +10,7 @@
 | 1.4  | ESLint: root eslint.config.ts with all rules                                                | Done        |
 | 1.5  | Prettier: .prettierrc with import sort plugin                                               | Done        |
 | 1.6  | Vitest: root workspace config, per-package config, trivial tests                            | Done        |
-| 1.7  | Turborepo: turbo.json with build/test/lint/typecheck tasks                                  | Not started |
+| 1.7  | Turborepo: turbo.json with build/test/lint/typecheck tasks                                  | Done        |
 | 1.8  | CI: GitHub Actions workflow, branch protection                                              | Not started |
 | 1.9  | Quality tooling: knip, publint, attw                                                        | Not started |
 | 1.10 | Changesets: config, independent versioning                                                  | Not started |
