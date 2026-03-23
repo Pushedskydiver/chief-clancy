@@ -14,7 +14,7 @@ Standards enforced across the `@chief-clancy` monorepo. All rules are configured
 | `sonarjs/cognitive-complexity` | 15                         | Penalises nesting over flat branching. More forgiving for early-return patterns. |
 | `max-lines-per-function`       | 50 (skip blanks/comments)  | Forces decomposition. If a function needs 51 lines, it's doing two things.       |
 | `max-lines` (per file)         | 300 (skip blanks/comments) | Keeps modules focused.                                                           |
-| `max-params`                   | 3                          | 3 is the limit. 4+ params must use an options object.                           |
+| `max-params`                   | 3                          | 3 is the limit. 4+ params must use an options object.                            |
 | `max-depth`                    | 3                          | No deep nesting. Forces early returns and extraction.                            |
 
 ---
@@ -34,11 +34,11 @@ Standards enforced across the `@chief-clancy` monorepo. All rules are configured
 
 | Rule                                       | Effect   |
 | ------------------------------------------ | -------- |
-| Core imports nothing from terminal or chat   | Enforced |
-| Terminal imports from core only              | Enforced |
-| Chat imports from core only                  | Enforced |
-| Wrapper imports from terminal only           | Enforced |
-| No cross-imports between terminal and chat   | Enforced |
+| Core imports nothing from terminal or chat | Enforced |
+| Terminal imports from core only            | Enforced |
+| Chat imports from core only                | Enforced |
+| Wrapper imports from terminal only         | Enforced |
+| No cross-imports between terminal and chat | Enforced |
 
 ---
 
