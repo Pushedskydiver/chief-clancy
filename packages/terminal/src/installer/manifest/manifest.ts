@@ -26,6 +26,11 @@ function isInsideBase(base: string, target: string): boolean {
   return resolved.startsWith(`${resolve(base)}/`) || resolved === resolve(base);
 }
 
+/** Check whether an error is a file-not-found (ENOENT). */
+function isEnoent(err: unknown): boolean {
+  return err instanceof Error && 'code' in err && err.code === 'ENOENT';
+}
+
 /**
  * Recursively collect file entries as `[relativePath, hash]` pairs.
  *
@@ -65,23 +70,27 @@ export function buildManifest(baseDir: string): Record<string, string> {
   return Object.fromEntries(collectEntries(baseDir, ''));
 }
 
+/** Check whether a value looks like a plain object (not array, not null). */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/** Keep only entries where the value is a string. */
+function stringValuesOnly(
+  record: Record<string, unknown>,
+): Record<string, string> {
+  const stringEntries = Object.entries(record).filter(
+    (entry): entry is [string, string] => typeof entry[1] === 'string',
+  );
+  return Object.fromEntries(stringEntries);
+}
+
 /** Safely parse manifest JSON, filtering out non-string values. */
 function parseManifestJson(raw: string): Record<string, string> | null {
   try {
     const parsed: unknown = JSON.parse(raw);
-    if (
-      typeof parsed !== 'object' ||
-      parsed === null ||
-      Array.isArray(parsed)
-    ) {
-      return null;
-    }
-    const record = parsed as Record<string, unknown>;
-    return Object.fromEntries(
-      Object.entries(record).filter(
-        (entry): entry is [string, string] => typeof entry[1] === 'string',
-      ),
-    );
+    if (!isPlainObject(parsed)) return null;
+    return stringValuesOnly(parsed);
   } catch {
     return null;
   }
@@ -92,11 +101,19 @@ function safeFileHash(filePath: string): string | null {
   try {
     return fileHash(filePath);
   } catch (err: unknown) {
-    const isNotFound =
-      err instanceof Error && 'code' in err && err.code === 'ENOENT';
-    if (isNotFound) return null;
+    if (isEnoent(err)) return null;
     throw err;
   }
+}
+
+/** Check whether a manifest entry has been modified on disk. */
+function isModified(baseDir: string, rel: string, hash: string): boolean {
+  const absPath = join(baseDir, rel);
+
+  if (!isInsideBase(baseDir, absPath)) return false;
+
+  const currentHash = safeFileHash(absPath);
+  return currentHash !== null && currentHash !== hash;
 }
 
 /**
@@ -116,15 +133,11 @@ export function detectModifiedFiles(
   if (!existsSync(manifestPath)) return [];
 
   const manifest = parseManifestJson(readFileSync(manifestPath, 'utf8'));
+
   if (manifest === null) return [];
 
   return Object.entries(manifest)
-    .filter(([rel, hash]) => {
-      const absPath = join(baseDir, rel);
-      if (!isInsideBase(baseDir, absPath)) return false;
-      const currentHash = safeFileHash(absPath);
-      return currentHash !== null && currentHash !== hash;
-    })
+    .filter(([rel, hash]) => isModified(baseDir, rel, hash))
     .map(([rel]) => ({ rel, absPath: join(baseDir, rel) }));
 }
 
@@ -133,9 +146,7 @@ function safeCopy(src: string, dest: string): void {
   try {
     copyFileSync(src, dest);
   } catch (err: unknown) {
-    const isNotFound =
-      err instanceof Error && 'code' in err && err.code === 'ENOENT';
-    if (isNotFound) return;
+    if (isEnoent(err)) return;
     throw err;
   }
 }
@@ -164,12 +175,16 @@ export function backupModifiedFiles(
     safeCopy(absPath, backupPath);
   });
 
-  const meta = JSON.stringify(
-    { backed_up: modified.map((m) => m.rel), date: new Date().toISOString() },
-    null,
-    2,
+  const backedUpPaths = modified.map((m) => m.rel);
+  const backupMeta = {
+    backed_up: backedUpPaths,
+    date: new Date().toISOString(),
+  };
+
+  writeFileSync(
+    join(patchesDir, 'backup-meta.json'),
+    JSON.stringify(backupMeta, null, 2),
   );
-  writeFileSync(join(patchesDir, 'backup-meta.json'), meta);
 
   return patchesDir;
 }
