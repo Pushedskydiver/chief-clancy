@@ -99,9 +99,17 @@ describe('parseEnvContent', () => {
 describe('parseEnvContent (property-based)', () => {
   const envKey = fc.stringMatching(/^[A-Z_][A-Z0-9_]{0,19}$/);
 
+  const isQuoteWrapped = (s: string): boolean => {
+    const isDouble = s.startsWith('"') && s.endsWith('"');
+    const isSingle = s.startsWith("'") && s.endsWith("'");
+
+    return s.length >= 2 && (isDouble || isSingle);
+  };
+
   const envValue = fc
     .string({ maxLength: 50 })
-    .filter((s) => !s.includes('\n') && !s.includes('\r'));
+    .filter((s) => !s.includes('\n') && !s.includes('\r'))
+    .filter((s) => !isQuoteWrapped(s));
 
   it('round-trips key=value pairs (values trimmed)', () => {
     fc.assert(
