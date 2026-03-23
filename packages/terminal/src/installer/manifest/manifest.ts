@@ -7,13 +7,12 @@
 
 import {
   copyFileSync,
-  existsSync,
   mkdirSync,
   readdirSync,
   readFileSync,
   writeFileSync,
 } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 
 import { fileHash } from '~/installer/file-ops/file-ops.js';
 
@@ -22,8 +21,8 @@ type ModifiedFile = { readonly rel: string; readonly absPath: string };
 
 /** Check whether a resolved path stays within a base directory. */
 function isInsideBase(base: string, target: string): boolean {
-  const resolved = resolve(target);
-  return resolved.startsWith(`${resolve(base)}/`) || resolved === resolve(base);
+  const rel = relative(resolve(base), resolve(target));
+  return rel !== '' && !rel.startsWith('..') && !isAbsolute(rel);
 }
 
 /** Check whether an error is a file-not-found (ENOENT). */
@@ -34,8 +33,8 @@ function isEnoent(err: unknown): boolean {
 /**
  * Recursively collect file entries as `[relativePath, hash]` pairs.
  *
- * Pure recursive function — no mutable closure. Skips symlinks to
- * prevent traversal outside the install tree.
+ * Pure recursive function — no mutable closure. Skips symlinks and
+ * non-file entries (FIFO, socket, etc.) to prevent unexpected behaviour.
  */
 function collectEntries(
   dir: string,
@@ -53,6 +52,8 @@ function collectEntries(
       return collectEntries(full, rel);
     }
 
+    if (!entry.isFile()) return [];
+
     return [[rel, fileHash(full)] as const];
   });
 }
@@ -61,7 +62,7 @@ function collectEntries(
  * Build a manifest of installed files with SHA-256 hashes.
  *
  * Recursively walks a directory and records the hash of every file.
- * Symlinks are skipped to prevent traversal outside the install tree.
+ * Symlinks and non-file entries are skipped.
  *
  * @param baseDir - Root directory to scan.
  * @returns A record mapping relative paths to their SHA-256 hashes.
@@ -93,6 +94,16 @@ function parseManifestJson(raw: string): Record<string, string> | null {
     return stringValuesOnly(parsed);
   } catch {
     return null;
+  }
+}
+
+/** Try to read and parse a manifest file, returning `null` on any failure. */
+function readManifest(manifestPath: string): Record<string, string> | null {
+  try {
+    return parseManifestJson(readFileSync(manifestPath, 'utf8'));
+  } catch (err: unknown) {
+    if (isEnoent(err)) return null;
+    throw err;
   }
 }
 
@@ -130,10 +141,7 @@ export function detectModifiedFiles(
   baseDir: string,
   manifestPath: string,
 ): readonly ModifiedFile[] {
-  if (!existsSync(manifestPath)) return [];
-
-  const manifest = parseManifestJson(readFileSync(manifestPath, 'utf8'));
-
+  const manifest = readManifest(manifestPath);
   if (manifest === null) return [];
 
   return Object.entries(manifest)
@@ -141,12 +149,17 @@ export function detectModifiedFiles(
     .map(([rel]) => ({ rel, absPath: join(baseDir, rel) }));
 }
 
-/** Try to copy a file, silently skipping if it no longer exists. */
-function safeCopy(src: string, dest: string): void {
+/**
+ * Try to copy a file, silently skipping if it no longer exists.
+ *
+ * @returns `true` if the copy succeeded, `false` if the source was missing.
+ */
+function safeCopy(src: string, dest: string): boolean {
   try {
     copyFileSync(src, dest);
+    return true;
   } catch (err: unknown) {
-    if (isEnoent(err)) return;
+    if (isEnoent(err)) return false;
     throw err;
   }
 }
@@ -156,6 +169,7 @@ function safeCopy(src: string, dest: string): void {
  *
  * Copies each modified file and writes a `backup-meta.json` with metadata.
  * Files that vanish between detection and backup are silently skipped.
+ * Paths that escape the patches directory are rejected.
  *
  * @param modified - Array of modified file records.
  * @param patchesDir - Directory to store backups.
@@ -169,15 +183,17 @@ export function backupModifiedFiles(
 
   mkdirSync(patchesDir, { recursive: true });
 
-  modified.forEach(({ rel, absPath }) => {
+  const copiedPaths = modified.flatMap(({ rel, absPath }) => {
     const backupPath = join(patchesDir, rel);
+    if (!isInsideBase(patchesDir, backupPath)) return [];
     mkdirSync(dirname(backupPath), { recursive: true });
-    safeCopy(absPath, backupPath);
+    return safeCopy(absPath, backupPath) ? [rel] : [];
   });
 
-  const backedUpPaths = modified.map((m) => m.rel);
+  if (copiedPaths.length === 0) return null;
+
   const backupMeta = {
-    backed_up: backedUpPaths,
+    backed_up: copiedPaths,
     date: new Date().toISOString(),
   };
 
