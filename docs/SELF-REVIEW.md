@@ -9,6 +9,7 @@ This is a **living document** — when Copilot catches something the self-review
 ## Code accuracy
 
 - Do comments/JSDoc match what the code actually does? (stale comments are the #1 review catch)
+- After renaming a type field, did all JSDoc and comments referencing the old name get updated? (Copilot caught `"optional"` in JSDoc after the field was renamed to `roleKey`)
 - Is each JSDoc block immediately above the function it documents? (inserting helpers between JSDoc and its export attaches the docs to the wrong function)
 - Do comments hardcode counts, versions, or phase numbers that will go stale? Use generic language instead
 - Are all function parameters used? If not, remove or use them
