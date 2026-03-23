@@ -17,3 +17,8 @@ export {
   red,
   yellow,
 } from './shared/ansi/index.js';
+export {
+  copyDir,
+  fileHash,
+  inlineWorkflows,
+} from './installer/file-ops/index.js';
