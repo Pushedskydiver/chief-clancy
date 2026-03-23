@@ -162,9 +162,11 @@ export function detectModifiedFiles(
   const manifest = readManifest(manifestPath);
   if (manifest === null) return [];
 
+  const resolvedBase = resolve(baseDir);
+
   return Object.entries(manifest)
-    .filter(([rel, hash]) => isModified(baseDir, rel, hash))
-    .map(([rel]) => ({ rel, absPath: join(baseDir, rel) }));
+    .filter(([rel, hash]) => isModified(resolvedBase, rel, hash))
+    .map(([rel]) => ({ rel, absPath: join(resolvedBase, rel) }));
 }
 
 /**
@@ -187,6 +189,7 @@ function copyToPatches(
   entry: ModifiedFile,
   patchesDir: string,
 ): readonly string[] {
+  if (!isSafeRelativePath(entry.rel)) return [];
   const backupPath = join(patchesDir, entry.rel);
   if (!isInsideBase(patchesDir, backupPath)) return [];
   mkdirSync(dirname(backupPath), { recursive: true });
