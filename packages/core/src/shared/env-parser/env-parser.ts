@@ -53,6 +53,11 @@ const parseLine = (line: string): readonly [string, string] | undefined => {
   return [key, value] as const;
 };
 
+/** Type guard to filter out undefined entries from parsed lines. */
+const isDefined = (
+  entry: readonly [string, string] | undefined,
+): entry is readonly [string, string] => entry !== undefined;
+
 /**
  * Parse a .env file content string into a key-value record.
  *
@@ -70,11 +75,6 @@ const parseLine = (line: string): readonly [string, string] | undefined => {
  * // { JIRA_BASE_URL: 'https://example.atlassian.net', JIRA_USER: 'user@example.com' }
  * ```
  */
-/** Type guard to filter out undefined entries from parsed lines. */
-const isDefined = (
-  entry: readonly [string, string] | undefined,
-): entry is readonly [string, string] => entry !== undefined;
-
 export const parseEnvContent = (content: string): Record<string, string> => {
   const lines = content.split('\n');
   const entries = lines.map(parseLine).filter(isDefined);
