@@ -99,19 +99,20 @@ describe('parseEnvContent', () => {
 describe('parseEnvContent (property-based)', () => {
   const envKey = fc.stringMatching(/^[A-Z_][A-Z0-9_]{0,19}$/);
 
-  const isQuoteWrapped = (s: string): boolean => {
+  const envValue = fc
+    .string({ maxLength: 50 })
+    .filter((s) => !s.includes('\n') && !s.includes('\r'));
+
+  const stripQuotes = (s: string): string => {
+    if (s.length < 2) return s;
+
     const isDouble = s.startsWith('"') && s.endsWith('"');
     const isSingle = s.startsWith("'") && s.endsWith("'");
 
-    return s.length >= 2 && (isDouble || isSingle);
+    return isDouble || isSingle ? s.slice(1, -1) : s;
   };
 
-  const envValue = fc
-    .string({ maxLength: 50 })
-    .filter((s) => !s.includes('\n') && !s.includes('\r'))
-    .filter((s) => !isQuoteWrapped(s));
-
-  it('round-trips key=value pairs (values trimmed)', () => {
+  it('round-trips key=value pairs (values trimmed and unquoted)', () => {
     fc.assert(
       fc.property(
         fc.array(fc.tuple(envKey, envValue), { minLength: 1, maxLength: 10 }),
@@ -120,7 +121,7 @@ describe('parseEnvContent (property-based)', () => {
           const result = parseEnvContent(content);
 
           const expected = Object.fromEntries(
-            entries.map(([k, v]) => [k, v.trim()]),
+            entries.map(([k, v]) => [k, stripQuotes(v.trim())]),
           );
           expect(result).toEqual(expected);
         },
