@@ -211,16 +211,22 @@ function writeCommonJsMarker(installDir: string): void {
   );
 }
 
-/** Read and parse settings.json, returning an empty object on any failure. */
+/** Read and parse settings.json, returning empty on ENOENT or malformed JSON. */
 function readSettingsFile(settingsFile: string): Record<string, unknown> {
   try {
     return JSON.parse(readFileSync(settingsFile, 'utf8')) as Record<
       string,
       unknown
     >;
-  } catch {
-    // ENOENT (first install) and malformed JSON both fall through to empty
-    return {};
+  } catch (err: unknown) {
+    const isNotFound =
+      err instanceof Error &&
+      (err as { readonly code?: string }).code === 'ENOENT';
+    const isParseError = err instanceof SyntaxError;
+
+    if (isNotFound || isParseError) return {};
+
+    throw err;
   }
 }
 
