@@ -25,7 +25,7 @@ Adjusted after phase validation (2026-03-23). Reordered to build leaves first, s
 | 2.1 | File operations: `file-ops/` — fileHash, copyDir, inlineWorkflows             | Done        |
 | 2.2 | Prompts + UI: `prompts/` (DI readline) + `ui/` (banner, success)              | Done        |
 | 2.3 | Manifest: `manifest/` — buildManifest, detectModified, backup (immutable)     | Done        |
-| 2.4 | Hook installer: `hook-installer/` — register hooks immutably in settings.json | Not started |
+| 2.4 | Hook installer: `hook-installer/` — register hooks immutably in settings.json | Done        |
 | 2.5 | Role filter: `role-filter/` — determineRoles, copyRoleFiles, cleanDisabled    | Not started |
 | 2.6 | Orchestrator: `install.ts` — decomposed main(), runInstall(config) pipeline   | Not started |
 | 2.7 | Integration test: E2E against temp directory, fresh + update paths            | Not started |
