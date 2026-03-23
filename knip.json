@@ -6,8 +6,8 @@
       "project": ["src/**/*.ts"]
     },
     "packages/terminal": {
-      "entry": ["src/**/index.ts"],
-      "project": ["src/**/*.ts"]
+      "project": ["src/**/*.ts"],
+      "ignore": ["src/installer/file-ops/index.ts"]
     }
   }
 }
