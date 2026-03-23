@@ -1,0 +1,139 @@
+/**
+ * Installer UI — banner and success message.
+ */
+
+import { blue, bold, cyan, dim, green } from '~/shared/ansi/index.js';
+
+/** A single slash command entry: [command, description]. */
+type Command = readonly [string, string];
+
+/** A command group with optional role gating. */
+type CommandGroup = {
+  readonly name: string;
+  readonly optional: boolean;
+  readonly commands: readonly Command[];
+};
+
+// Keep in sync with packages/terminal/src/roles/ once the command registry exists.
+const COMMAND_GROUPS: readonly CommandGroup[] = [
+  {
+    name: 'Strategist',
+    optional: true,
+    commands: [
+      ['/clancy:brief', 'Generate a strategic brief for a feature'],
+      ['/clancy:approve-brief', 'Convert brief into board tickets'],
+    ],
+  },
+  {
+    name: 'Planner',
+    optional: true,
+    commands: [
+      ['/clancy:plan', 'Refine backlog tickets into plans'],
+      ['/clancy:approve-plan', 'Promote plan to ticket description'],
+    ],
+  },
+  {
+    name: 'Implementer',
+    optional: false,
+    commands: [
+      ['/clancy:once', 'Pick up one ticket and stop'],
+      ['/clancy:run', 'Run Clancy in loop mode'],
+      ['/clancy:dry-run', 'Preview next ticket without changes'],
+    ],
+  },
+  {
+    name: 'Reviewer',
+    optional: false,
+    commands: [
+      ['/clancy:review', 'Score next ticket and get recommendations'],
+      ['/clancy:status', 'Show next tickets without running'],
+      ['/clancy:logs', 'Display progress log'],
+    ],
+  },
+  {
+    name: 'Setup & Maintenance',
+    optional: false,
+    commands: [
+      ['/clancy:init', 'Set up Clancy in your project'],
+      ['/clancy:map-codebase', 'Scan codebase with 5 parallel agents'],
+      ['/clancy:settings', 'View and change configuration'],
+      ['/clancy:doctor', 'Diagnose your setup'],
+      ['/clancy:update-docs', 'Refresh codebase documentation'],
+      ['/clancy:update', 'Update Clancy to latest version'],
+      ['/clancy:uninstall', 'Remove Clancy from your project'],
+      ['/clancy:help', 'Show all commands'],
+    ],
+  },
+];
+
+const BANNER_LINES: readonly string[] = [
+  '  ██████╗██╗      █████╗ ███╗   ██╗ ██████╗██╗   ██╗',
+  ' ██╔════╝██║     ██╔══██╗████╗  ██║██╔════╝╚██╗ ██╔╝',
+  ' ██║     ██║     ███████║██╔██╗ ██║██║      ╚████╔╝ ',
+  ' ██║     ██║     ██╔══██║██║╚██╗██║██║       ╚██╔╝  ',
+  ' ╚██████╗███████╗██║  ██║██║ ╚████║╚██████╗   ██║   ',
+  '  ╚═════╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝   ╚═╝  ',
+];
+
+/**
+ * Print the Clancy ASCII banner and version info.
+ *
+ * @param version - The package version string to display.
+ */
+export function printBanner(version: string): void {
+  console.log('');
+  BANNER_LINES.forEach((line) => console.log(blue(line)));
+  console.log('');
+  console.log(
+    `  ${bold(`v${version}`)}${dim('  Autonomous, board-driven development for Claude Code.')}`,
+  );
+  console.log(
+    dim(
+      '  Named after Chief Clancy Wiggum. Built on the Ralph technique by Geoffrey Huntley.',
+    ),
+  );
+}
+
+/** Check whether a group should be shown for the given enabled roles. */
+function isGroupVisible(
+  group: CommandGroup,
+  enabledRoles: ReadonlySet<string> | null,
+): boolean {
+  if (!group.optional) return true;
+  if (enabledRoles === null) return true;
+  return enabledRoles.has(group.name.toLowerCase());
+}
+
+/** Format a single command line for display. */
+function formatCommand([cmd, desc]: Command): string {
+  return `      ${cyan(cmd.padEnd(22))}  ${dim(desc)}`;
+}
+
+/**
+ * Print the post-install success message with available commands.
+ *
+ * Groups flagged as optional are hidden when the corresponding role
+ * is absent from `enabledRoles`. Pass `null` to show all groups.
+ *
+ * @param enabledRoles - Lowercase role names (e.g. `"strategist"`), or `null` to show all.
+ */
+export function printSuccess(enabledRoles: ReadonlySet<string> | null): void {
+  console.log('');
+  console.log(green('  ✓ Clancy installed successfully.'));
+  console.log('');
+  console.log('  Next steps:');
+  console.log(dim('    1. Open a project in Claude Code'));
+  console.log(`    2. Run: ${cyan('/clancy:init')}`);
+  console.log('');
+  console.log('  Commands available:');
+
+  COMMAND_GROUPS.filter((g) => isGroupVisible(g, enabledRoles)).forEach(
+    (group) => {
+      console.log('');
+      console.log(`    ${bold(group.name)}`);
+      group.commands.forEach((cmd) => console.log(formatCommand(cmd)));
+    },
+  );
+
+  console.log('');
+}
