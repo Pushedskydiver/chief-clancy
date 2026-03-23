@@ -45,6 +45,11 @@ This is a **living document** — when Copilot catches something the self-review
 - Are test credential values constructed at runtime where needed? (GitHub secret scanner)
 - Does any security guard use `existsSync` before `lstatSync`? If so, dangling symlinks bypass it — use `lstatSync` in a try/catch swallowing only ENOENT instead
 - Do catch blocks only swallow expected error codes? (e.g. only ENOENT, not EACCES/EPERM — unexpected filesystem states should fail loud)
+- Is `existsSync` followed by a read/write on the same path? That's a TOCTOU race — wrap the read/write in a try/catch instead (Copilot caught `existsSync` + `readFileSync` on the manifest file)
+- Does any path check use hardcoded `/` as separator? Use `path.relative()` or `path.sep` for cross-platform safety (Copilot caught `startsWith(base + '/')` in `isInsideBase`)
+- Does `readdirSync` with `withFileTypes` assume entries are files or directories? Check `entry.isFile()` explicitly — FIFO/socket/block device entries exist (Copilot caught missing `isFile()` guard)
+- If a function guards input paths (e.g. path traversal), is the same guard applied in every exported function that accepts paths? (DA caught traversal guard on detect but Copilot caught the same gap on backup)
+- Does metadata/logging accurately reflect what actually happened? If operations can be skipped (e.g. ENOENT), track successes and report those, not the input list (Copilot caught backup-meta listing files that weren't actually copied)
 
 ## Config inheritance
 
