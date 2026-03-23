@@ -104,3 +104,5 @@ Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 ## When to adjust rules
 
 If a lint rule creates unreadable workarounds in practice, flag it. Rules can be tuned based on real experience. Don't suppress warnings silently — discuss and adjust the config.
+
+**`eslint-disable` is a last resort.** Before suppressing a rule, look for a simpler alternative. For example, `for...of` loops can usually be replaced with `.forEach()` and a named function. Only disable when no simple alternative exists and the workaround would be worse than the suppression.

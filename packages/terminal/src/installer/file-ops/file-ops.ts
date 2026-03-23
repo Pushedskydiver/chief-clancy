@@ -5,6 +5,8 @@
  * and workflow content inlining.
  */
 import { createHash } from 'node:crypto';
+import type { Dirent } from 'node:fs';
+
 import {
   copyFileSync,
   existsSync,
@@ -38,6 +40,18 @@ export const fileHash = (filePath: string): string => {
  * @param dest - Destination directory path.
  * @throws If the destination is a symlink or the source does not exist.
  */
+/** Copy a single directory entry from src to dest, recursing into subdirectories. */
+const copyEntry = (src: string, dest: string) => (entry: Dirent): void => {
+  const srcPath = join(src, entry.name);
+  const destPath = join(dest, entry.name);
+
+  if (entry.isDirectory()) {
+    copyDir(srcPath, destPath);
+  } else {
+    copyFileSync(srcPath, destPath);
+  }
+};
+
 export const copyDir = (src: string, dest: string): void => {
   if (existsSync(dest)) {
     const isSymlink = lstatSync(dest).isSymbolicLink();
@@ -52,18 +66,7 @@ export const copyDir = (src: string, dest: string): void => {
   mkdirSync(dest, { recursive: true });
 
   const entries = readdirSync(src, { withFileTypes: true });
-
-  // eslint-disable-next-line functional/no-loop-statements
-  for (const entry of entries) {
-    const srcPath = join(src, entry.name);
-    const destPath = join(dest, entry.name);
-
-    if (entry.isDirectory()) {
-      copyDir(srcPath, destPath);
-    } else {
-      copyFileSync(srcPath, destPath);
-    }
-  }
+  entries.forEach(copyEntry(src, dest));
 };
 
 /** Matches `@.claude/clancy/workflows/<filename>.md` on its own line (global). */
@@ -102,17 +105,13 @@ const resolveWorkflowRef = (
  * @param commandsDir - The installed commands directory.
  * @param workflowsDir - The installed workflows directory.
  */
-export const inlineWorkflows = (
-  commandsDir: string,
-  workflowsDir: string,
-): void => {
-  const files = readdirSync(commandsDir);
-
-  // eslint-disable-next-line functional/no-loop-statements
-  for (const file of files) {
+/** Inline workflow references in a single command file. */
+const inlineFileWorkflows =
+  (commandsDir: string, workflowsDir: string) =>
+  (file: string): void => {
     const isMarkdown = file.endsWith('.md');
 
-    if (!isMarkdown) continue;
+    if (!isMarkdown) return;
 
     const cmdPath = join(commandsDir, file);
     const content = readFileSync(cmdPath, 'utf8');
@@ -123,8 +122,15 @@ export const inlineWorkflows = (
     );
     const hasChanges = resolved !== content;
 
-    if (!hasChanges) continue;
+    if (!hasChanges) return;
 
     writeFileSync(cmdPath, resolved);
-  }
+  };
+
+export const inlineWorkflows = (
+  commandsDir: string,
+  workflowsDir: string,
+): void => {
+  const files = readdirSync(commandsDir);
+  files.forEach(inlineFileWorkflows(commandsDir, workflowsDir));
 };
