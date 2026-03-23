@@ -72,6 +72,9 @@ pnpm typecheck          # Type-check all packages
 pnpm format             # Format with Prettier
 pnpm format:check       # Check formatting
 
+# Pre-push quality suite (run before every git push — no exceptions)
+pnpm test && pnpm lint && pnpm typecheck && pnpm format:check
+
 # Per-package — run from package directory
 pnpm test               # Run package tests (vitest)
 pnpm build              # Build package
