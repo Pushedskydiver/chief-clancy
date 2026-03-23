@@ -28,6 +28,14 @@ All code changes go through: branch → review gate → PR → Copilot review �
 
 ---
 
+## Package Evolution
+
+v1 ships as two packages (`core` + `terminal`) but code is organised internally by **capability directories** that map to future packages (`dev/`, `brief/`, `plan/`, `design/`, `qa/`, `automate/`). When placing code during any phase, use the correct capability directory — not flat `lifecycle/` or `pipeline/`.
+
+See [package evolution strategy](decisions/architecture/package-evolution.md) for the full directory map, extraction criteria, and target architecture.
+
+---
+
 ## Phase-Based Delivery
 
 The monorepo is built in 14 phases, each containing small, focused PRs. See the [monorepo brief](decisions/monorepo/brief.md) for the full phase breakdown.
