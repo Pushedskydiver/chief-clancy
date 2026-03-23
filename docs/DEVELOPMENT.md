@@ -11,8 +11,20 @@ How the Clancy monorepo is developed. Covers the phase-based delivery lifecycle,
 1. **Read** — brief + PROGRESS.md
 2. **Validate** — phase validation protocol (if starting a new phase)
 3. **Build** — TDD: write tests → implement → lint passes
-4. **Review** — DA review of completed PR
-5. **Ship** — mark PR complete in PROGRESS.md, commit
+4. **Review gate** — DA review → self-review → fix all findings
+5. **Ship** — create PR, request Copilot review, fix findings, squash merge
+
+---
+
+## Two Modes: Scaffold vs Application Code
+
+### Phase 1 (Scaffold) — direct to main
+
+Config files, tooling setup, docs. No feature branches needed. Commit directly to main.
+
+### Phase 2+ (Application Code) — branches + PRs
+
+All code changes go through: branch → review gate → PR → Copilot review → squash merge. See [Review Gate](#review-gate--da--self-review--copilot) below.
 
 ---
 
@@ -24,7 +36,7 @@ Each PR follows TDD:
 1. Write tests first against the desired interface
 2. Implement to make tests pass
 3. Lint + typecheck must pass
-4. DA review before marking complete
+4. Review gate before merge
 
 ---
 
@@ -64,10 +76,11 @@ Every session follows this pattern:
 2. Read PROGRESS.md to see current state
 3. Run phase validation (if starting a new phase)
 4. Pick up the next PR
-5. TDD: write tests → implement → lint → review
-6. DA review of completed PR
-7. Mark PR complete in PROGRESS.md
-8. If handing off: update handoff doc with summary
+5. TDD: write tests → implement → lint → review gate
+6. Create PR with Copilot review (Phase 2+)
+7. Fix all review findings
+8. Squash merge, mark PR complete in PROGRESS.md
+9. If handing off: update handoff doc with summary
 ```
 
 ### Session Handoff
@@ -79,21 +92,63 @@ When context degrades or a session ends mid-phase, leave a handoff with:
 
 ---
 
-## Devil's Advocate Reviews
+## Review Gate — DA → Self-Review → Copilot
 
-### When to Review
+Three checks, in this strict order, before merging a PR. **DA always runs before self-review** — DA catches architectural issues that change what the self-review should focus on.
 
-| Phase | What the DA checks |
-|---|---|
-| **Phase start** | PR breakdown, scope, ordering, missing items |
-| **PR complete** | Bugs, stale references, missing tests, type safety, architecture violations |
-| **Pre-merge** | Cross-doc consistency, version numbers, test counts |
+### 1. DA Review (architecture-level)
 
-### Severity Handling
+Spin up a devil's advocate agent to read all changed files. For non-trivial changes this is mandatory.
 
+**What DA checks:**
+- Architecture violations (cross-package imports, dependency direction)
+- Missing tests for new exported functions
+- Edge cases not handled
+- Stale references (renamed files, moved modules, wrong paths)
+- Type safety issues (sneaky `any`, unsafe casts, missing narrowing)
+- Barrel export completeness (new exports added to `index.ts`?)
+- Boundary violations (core importing from terminal)
+- Consistency with conventions (complexity limits, functional rules)
+- Missing JSDoc on exported functions
+- Unnecessary complexity or over-engineering
+
+**Severity handling:**
 - **Medium+ findings:** must be fixed before proceeding
-- **Low findings:** can be acknowledged and deferred with justification
+- **Low findings:** can be acknowledged and deferred with explicit justification
 - If you disagree with a finding, articulate why — don't silently skip it
+- Deferring a DA finding to see if Copilot catches it is not acceptable — fix it now
+
+### 2. Self-Review (line-level)
+
+Run through the **[Self-Review Checklist](SELF-REVIEW.md)**. Read every changed file (`git diff main...HEAD`) and check for detail-level issues that DA misses — stale comments, wrong endpoints, fixture shapes, unused params, test isolation.
+
+### 3. Copilot Review (PR-level)
+
+After DA and self-review are clean:
+
+1. Push branch and create PR
+2. Request Copilot review:
+   ```bash
+   gh api repos/{owner}/{repo}/pulls/{number}/requested_reviewers \
+     -X POST -f "reviewers[]=copilot-pull-request-reviewer[bot]"
+   ```
+3. For each Copilot comment:
+   - **Evaluate** — understand the underlying issue, decide if the suggested fix is the best approach
+   - **Fix or decline** — apply your own fix if better, apply Copilot's if it's the best option, or decline with reasoning
+   - **Reply** — always reply to every comment explaining what was done and why
+4. If pushing additional commits, update the PR body to reflect all changes
+
+### When to skip reviews
+
+**What is non-trivial?** Code with logic (new functions, changed conditionals, refactored modules), changed type signatures, new env vars, test infrastructure changes. All non-trivial changes get the full review gate.
+
+**What is trivial?** Typos, badge updates, reformatting, adding test cases to proven structures. Trivial changes can skip DA but should still get a self-review pass.
+
+### Why this order matters
+
+DA may flag issues that change the code, which invalidates a self-review done earlier. Self-review may fix issues that change what Copilot sees. Running them out of order means repeating work or shipping with stale artifacts.
+
+The self-review checklist is a **living document** — when Copilot catches something the self-review should have spotted, add the check to [SELF-REVIEW.md](SELF-REVIEW.md) immediately.
 
 ---
 
@@ -130,6 +185,8 @@ Every PR must pass before merging:
 - [ ] Lint clean (`pnpm lint`)
 - [ ] Format clean (`pnpm format:check`)
 - [ ] DA review completed (for non-trivial changes)
+- [ ] Self-review checklist completed
+- [ ] Copilot review findings addressed
 - [ ] PROGRESS.md updated
 
 ---
@@ -139,5 +196,5 @@ Every PR must pass before merging:
 Update DEVELOPMENT.md when:
 - A new step is added to the process
 - The phase validation protocol changes
-- The DA review process changes
+- The review gate process changes
 - The release flow changes

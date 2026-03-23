@@ -36,7 +36,8 @@ Autonomous, board-driven development for Claude Code. Monorepo for `@chief-clanc
 | Doc | Purpose |
 |---|---|
 | [docs/CONVENTIONS.md](docs/CONVENTIONS.md) | Code quality standards, complexity limits, functional rules, import ordering |
-| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Development process — phase validation, session pattern, DA reviews |
+| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Development process — phase validation, session pattern, review gate |
+| [docs/SELF-REVIEW.md](docs/SELF-REVIEW.md) | Self-review checklist — living document, evolves from Copilot findings |
 | [docs/GIT.md](docs/GIT.md) | Branch strategy, commit format, merge conventions |
 | [docs/GLOSSARY.md](docs/GLOSSARY.md) | Ubiquitous language — term definitions |
 | [docs/decisions/](docs/decisions/) | Design decisions by version |
@@ -100,9 +101,12 @@ See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the full process. Summary:
 1. Read the brief + PROGRESS.md
 2. Run phase validation (if starting a new phase)
 3. Pick up the next PR
-4. TDD: write tests → implement → lint → review
-5. DA review of completed PR
-6. Mark PR complete in PROGRESS.md
+4. TDD: write tests → implement → lint passes
+5. Review gate: DA review → self-review ([checklist](docs/SELF-REVIEW.md)) → fix all findings
+6. Create PR, request Copilot review, fix findings, squash merge
+7. Mark PR complete in PROGRESS.md
+
+**Review gate order is strict:** DA always runs before self-review. See [DEVELOPMENT.md step-by-step](docs/DEVELOPMENT.md#review-gate--da--self-review--copilot).
 
 ## Code standards
 
