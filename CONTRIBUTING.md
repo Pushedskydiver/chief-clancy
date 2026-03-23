@@ -33,14 +33,14 @@ Gitmoji + conventional commit type:
 <gitmoji> <type>(scope): description
 ```
 
-| Type | Gitmoji | Use for |
-|---|---|---|
-| `feat` | ✨ | New feature |
-| `fix` | 🐛 | Bug fix |
-| `chore` | 📦 | Maintenance, deps, config |
-| `refactor` | ♻️ | Code change that doesn't fix or add |
-| `test` | ✅ | Adding or updating tests |
-| `docs` | 📝 | Documentation only |
+| Type       | Gitmoji | Use for                             |
+| ---------- | ------- | ----------------------------------- |
+| `feat`     | ✨      | New feature                         |
+| `fix`      | 🐛      | Bug fix                             |
+| `chore`    | 📦      | Maintenance, deps, config           |
+| `refactor` | ♻️      | Code change that doesn't fix or add |
+| `test`     | ✅      | Adding or updating tests            |
+| `docs`     | 📝      | Documentation only                  |
 
 PR titles become squash commit messages — they must follow the same format.
 

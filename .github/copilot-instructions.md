@@ -71,18 +71,18 @@ Examples: `✨ feat:`, `🐛 fix:`, `♻️ refactor:`, `📝 docs:`, `📦 chor
 
 ## Key paths
 
-| Path | Purpose |
-|---|---|
-| `packages/core/src/board/` | Board type, factory, 6 implementations |
-| `packages/core/src/lifecycle/` | Ticket lifecycle (fetch-ticket, deliver, rework, lock, cost, resume) |
-| `packages/core/src/pipeline/` | Phase pipeline (phases, context) |
-| `packages/core/src/schemas/` | Zod validation schemas |
-| `packages/core/src/types/` | Shared type definitions |
-| `packages/core/src/shared/` | Pure utilities (git-ops, env-parser, branch, format, remote, http) |
-| `packages/terminal/src/installer/` | Installer modules |
-| `packages/terminal/src/roles/` | 5 roles — slash commands and workflows |
-| `packages/terminal/src/agents/` | 7 agent prompts |
-| `packages/terminal/hooks/` | Pre-built CommonJS hooks |
+| Path                               | Purpose                                                                                                 |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `packages/core/src/board/`         | Board type, factory, 6 implementations                                                                  |
+| `packages/core/src/lifecycle/`     | Ticket lifecycle (fetch-ticket, deliver, rework, pr-creation, lock, cost, resume, quality)              |
+| `packages/core/src/pipeline/`      | Phase pipeline (phases, context)                                                                        |
+| `packages/core/src/schemas/`       | Zod validation schemas                                                                                  |
+| `packages/core/src/types/`         | Shared type definitions                                                                                 |
+| `packages/core/src/shared/`        | Pure utilities (git-ops, env-parser, branch, progress, format, remote, http, feasibility, pull-request) |
+| `packages/terminal/src/installer/` | Installer modules                                                                                       |
+| `packages/terminal/src/roles/`     | 5 roles — slash commands and workflows                                                                  |
+| `packages/terminal/src/agents/`    | 7 agent prompts                                                                                         |
+| `packages/terminal/hooks/`         | Pre-built CommonJS hooks                                                                                |
 
 ## Testing
 

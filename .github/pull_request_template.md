@@ -29,6 +29,7 @@
 ### Code quality
 
 - [ ] All checks pass: `pnpm test && pnpm typecheck && pnpm lint && pnpm format:check`
+- [ ] Quality tools pass: `pnpm knip && pnpm publint && pnpm attw`
 - [ ] No `any` — uses `unknown` + type narrowing
 - [ ] JSDoc on all new exported functions with explicit return types
 - [ ] Functions under 50 lines, files under 300 lines

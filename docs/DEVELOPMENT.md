@@ -11,8 +11,8 @@ How the Clancy monorepo is developed. Covers the phase-based delivery lifecycle,
 1. **Read** — brief + PROGRESS.md
 2. **Validate** — phase validation protocol (if starting a new phase)
 3. **Build** — tracer bullet TDD: one test → implement → next test → repeat → refactor → lint
-4. **Review gate** — DA review → self-review → fix all findings
-5. **Ship** — create PR, request Copilot review, fix findings, squash merge
+4. **Review gate** — DA review → self-review → fix all findings → create PR → Copilot review → fix findings
+5. **Ship** — squash merge, update PROGRESS.md
 
 ---
 
@@ -85,13 +85,13 @@ Adjust the PR breakdown based on findings. Only begin implementation after both 
 Every session follows this pattern:
 
 ```
-1. Read the brief (docs/decisions/monorepo/brief.md)
+1. Read the brief (decisions/monorepo/brief.md)
 2. Read PROGRESS.md to see current state
 3. Run phase validation (if starting a new phase)
 4. Pick up the next PR
 5. Tracer bullet TDD: one test → implement → next test → repeat → refactor → lint
-6. Create PR with Copilot review (Phase 2+)
-7. Fix all review findings
+6. Review gate: DA review → self-review → fix findings (Phase 2+)
+7. Create PR, request Copilot review, fix findings (Phase 2+)
 8. Squash merge, mark PR complete in PROGRESS.md
 9. If handing off: update handoff doc with summary
 ```
@@ -235,6 +235,7 @@ Every PR must pass before merging:
 - [ ] Type-check clean (`pnpm typecheck`)
 - [ ] Lint clean (`pnpm lint`)
 - [ ] Format clean (`pnpm format:check`)
+- [ ] Quality tools pass (`pnpm knip && pnpm publint && pnpm attw`)
 - [ ] DA review completed (for non-trivial changes)
 - [ ] Self-review checklist completed
 - [ ] Copilot review findings addressed

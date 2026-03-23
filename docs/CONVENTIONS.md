@@ -43,24 +43,17 @@ Standards enforced across the `@chief-clancy` monorepo. All rules are configured
 
 ## Import Ordering (@ianvs/prettier-plugin-sort-imports)
 
-```typescript
-// 1. Type imports (from anywhere)
-import type { Board } from '@chief-clancy/core';
-import type { RequestInit } from 'node:http';
+Imports are sorted into 5 groups, separated by blank lines:
 
-// 2. Node built-ins
-import { resolve } from 'node:path';
+| Group                 | Pattern                             | Example                                            |
+| --------------------- | ----------------------------------- | -------------------------------------------------- |
+| 1. Type imports       | `import type { ... }` from anywhere | `import type { Board } from '@chief-clancy/core'`  |
+| 2. Node built-ins     | `node:*`                            | `import { resolve } from 'node:path'`              |
+| 3. Third-party        | npm packages                        | `import { z } from 'zod/mini'`                     |
+| 4. Workspace packages | `@chief-clancy/*`                   | `import { createBoard } from '@chief-clancy/core'` |
+| 5. Local              | `~/`, `./`, `../`                   | `import { parse } from '~/branch/branch.js'`       |
 
-// 3. Third-party
-import { z } from 'zod/mini';
-
-// 4. Workspace packages
-import { createBoard } from '@chief-clancy/core';
-
-// 5. Local
-import { parseBranchName } from '../branch/branch.js';
-import { ANSI } from './ansi.js';
-```
+The `~/` path alias resolves to `./src/*` within each package (configured per-package in `tsconfig.json`). Prefer `~/` for imports that would otherwise need deep relative paths (`../../`). Short relative paths (`./`, `../`) are fine.
 
 Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 

@@ -49,8 +49,8 @@ Shipped decision docs are deleted per the lifecycle above. For historical contex
 
 ## What does NOT belong here
 
-- **Architecture docs** — those live in `docs/ARCHITECTURE.md`
-- **Role descriptions** — those live in `docs/roles/`
-- **Configuration guides** — those live in `docs/guides/`
-- **Glossary** — that lives in `docs/GLOSSARY.md`
-- **Code comments or inline docs** — those live next to the code
+- **Architecture docs** — will live in `docs/ARCHITECTURE.md` (created in Phase 13)
+- **Role descriptions** — will live in `docs/roles/` (created in Phase 13)
+- **Configuration guides** — will live in `docs/guides/` (created in Phase 13)
+- **Glossary** — lives in `docs/GLOSSARY.md`
+- **Code comments or inline docs** — live next to the code

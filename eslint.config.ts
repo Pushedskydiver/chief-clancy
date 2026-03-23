@@ -68,7 +68,7 @@ export default defineConfig(
           ignoreClasses: true,
         },
       ],
-      'functional/prefer-readonly-type': 'warn',
+      'functional/prefer-readonly-type': ['warn', { allowLocalMutation: true }],
       'functional/no-loop-statements': 'warn',
 
       // ── Architecture boundaries ─────────────────────────────

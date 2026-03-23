@@ -4,17 +4,19 @@ Ubiquitous language for the Clancy project. Use these terms consistently in code
 
 ## Monorepo
 
-| Term                     | Definition                                                                                                                                                                   |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Core**                 | The `@chief-clancy/core` package. Contains board intelligence, schemas, types, ticket lifecycle, phase pipeline, and shared utilities. Has no terminal or CLI dependencies.  |
-| **Terminal**             | The `@chief-clancy/terminal` package. Contains the installer, slash commands, hooks, AFK runner, agents, and Claude CLI bridge. Depends on core.                             |
-| **Wrapper**              | The `chief-clancy` package. Thin bin entry point that delegates to terminal. What users install via `npx chief-clancy`.                                                      |
-| **Workspace**            | A pnpm workspace — each directory under `packages/` is a workspace with its own `package.json`.                                                                              |
-| **Barrel export**        | An `index.ts` file that re-exports the public API of a module or package. Controls what is importable from outside.                                                          |
-| **Dependency direction** | Core ← terminal ← wrapper. Core imports nothing from terminal. Terminal imports from core only. Enforced by eslint-plugin-boundaries.                                        |
-| **Changeset**            | A file describing a version bump and changelog entry, managed by `@changesets/cli`. Created with `pnpm changeset`.                                                           |
-| **Phase validation**     | Protocol run before starting each delivery phase. Two agents (breakdown validator + DA) review the PR list for scope, ordering, and risk.                                    |
-| **Invoke strategy**      | The pattern where core's pipeline defines pure phases, but the actual Claude CLI invocation is terminal's responsibility. Core returns what to invoke; terminal executes it. |
+| Term                      | Definition                                                                                                                                                                                                                                                |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Core**                  | The `@chief-clancy/core` package. Contains board intelligence, schemas, types, ticket lifecycle, phase pipeline, and shared utilities. Has no terminal or CLI dependencies.                                                                               |
+| **Terminal**              | The `@chief-clancy/terminal` package. Contains the installer, slash commands, hooks, AFK runner, agents, and Claude CLI bridge. Depends on core.                                                                                                          |
+| **Wrapper**               | The `chief-clancy` package. Thin bin entry point that delegates to terminal. What users install via `npx chief-clancy`.                                                                                                                                   |
+| **Workspace**             | A pnpm workspace — each directory under `packages/` is a workspace with its own `package.json`.                                                                                                                                                           |
+| **Barrel export**         | An `index.ts` file that re-exports the public API of a module or package. Controls what is importable from outside.                                                                                                                                       |
+| **Dependency direction**  | Core ← terminal ← wrapper. Core imports nothing from terminal. Terminal imports from core only. Enforced by eslint-plugin-boundaries.                                                                                                                     |
+| **Changeset**             | A file describing a version bump and changelog entry, managed by `@changesets/cli`. Created with `pnpm changeset`.                                                                                                                                        |
+| **Phase validation**      | Protocol run before starting each delivery phase. Two agents (breakdown validator + DA) review the PR list for scope, ordering, and risk.                                                                                                                 |
+| **Invoke strategy**       | The pattern where core's pipeline defines pure phases, but the actual Claude CLI invocation is terminal's responsibility. Core returns what to invoke; terminal executes it.                                                                              |
+| **DA (devil's advocate)** | A review agent spun up as a subagent to challenge code, docs, or plans. Runs in a fresh context (not biased by having written the code). Used at phase validation, PR completion, and pre-merge. Findings are graded by severity — medium+ must be fixed. |
+| **Tracer bullet TDD**     | The project's TDD approach: write one test → implement to pass → next test → repeat → refactor. Vertical slices, not horizontal. Never write all tests first then all implementation — tests written in bulk test imagined behaviour.                     |
 
 ## Roles
 

@@ -9,7 +9,8 @@ Autonomous, board-driven development for Claude Code. Monorepo for `@chief-clanc
 | `packages/core`         | `@chief-clancy/core`     | Board intelligence, schemas, types, ticket lifecycle, phase pipeline, shared utilities |
 | `packages/terminal`     | `@chief-clancy/terminal` | Installer, slash commands, hooks, AFK runner, agents, Claude CLI bridge                |
 | `packages/chief-clancy` | `chief-clancy`           | Thin bin wrapper — `npx chief-clancy` delegates to terminal                            |
-| `packages/chat`         | `@chief-clancy/chat`     | Future — MCP server, Chat SDK bot                                                      |
+
+> **Planned:** `packages/chat` (`@chief-clancy/chat`) — MCP server, Chat SDK bot. Not built until demand exists. ESLint boundary rules are pre-configured.
 
 ## Key paths
 
@@ -103,9 +104,8 @@ See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the full process. Summary:
 2. Run phase validation (if starting a new phase)
 3. Pick up the next PR
 4. Tracer bullet TDD: one test → implement → next test → repeat → refactor → lint
-5. Review gate: DA review → self-review ([checklist](docs/SELF-REVIEW.md)) → fix all findings
-6. Create PR, request Copilot review, fix findings, squash merge
-7. Mark PR complete in PROGRESS.md
+5. Review gate: DA review → self-review ([checklist](docs/SELF-REVIEW.md)) → fix findings → PR → Copilot review → fix findings
+6. Squash merge, mark PR complete in PROGRESS.md
 
 **TDD is vertical slices, not horizontal.** Don't write all tests then all code. One test → implement to pass → next test. See [DEVELOPMENT.md](docs/DEVELOPMENT.md#phase-based-delivery).
 
