@@ -6,6 +6,7 @@
       "project": ["src/**/*.ts"]
     },
     "packages/terminal": {
+      "entry": ["src/**/index.ts"],
       "project": ["src/**/*.ts"]
     }
   }

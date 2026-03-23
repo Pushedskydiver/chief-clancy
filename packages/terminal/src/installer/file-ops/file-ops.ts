@@ -145,6 +145,9 @@ export const inlineWorkflows = (
   commandsDir: string,
   workflowsDir: string,
 ): void => {
+  rejectSymlink(commandsDir);
+  rejectSymlink(workflowsDir);
+
   const entries = readdirSync(commandsDir, { withFileTypes: true });
   entries.forEach(inlineFileWorkflows(commandsDir, workflowsDir));
 };
