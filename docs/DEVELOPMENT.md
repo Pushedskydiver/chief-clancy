@@ -116,7 +116,7 @@ Start a new session when **any** of these triggers fire:
 **How to hand off:**
 
 1. Update PROGRESS.md with current state
-2. Save any important decisions to memory files (e.g. `project_monorepo_status.md`, feedback files for new conventions). Update MEMORY.md index if adding new files.
+2. Save any important decisions to Claude Code's memory system (the `.claude/projects/` directory, managed via the auto-memory feature — not checked into the repo).
 3. Leave a handoff summary with:
    - What was completed (PR numbers, key files)
    - What's next (next PR, any setup needed)

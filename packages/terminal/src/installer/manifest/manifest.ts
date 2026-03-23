@@ -36,7 +36,8 @@ function isSafeRelativePath(rel: string): boolean {
 
 /** Check whether an error is a file-not-found (ENOENT). */
 function isEnoent(err: unknown): boolean {
-  return err instanceof Error && 'code' in err && err.code === 'ENOENT';
+  if (!(err instanceof Error) || !('code' in err)) return false;
+  return (err as { readonly code?: unknown }).code === 'ENOENT';
 }
 
 /** Resolve a single directory entry into `[rel, hash]` pairs. */
@@ -85,7 +86,7 @@ function collectEntries(
  * @returns A record mapping relative paths to their SHA-256 hashes.
  */
 export function buildManifest(baseDir: string): Record<string, string> {
-  return Object.fromEntries(collectEntries(baseDir, ''));
+  return Object.fromEntries(collectEntries(resolve(baseDir), ''));
 }
 
 /** Check whether a value looks like a plain object (not array, not null). */
