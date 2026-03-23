@@ -8,18 +8,28 @@ This is a **living document** — when Copilot catches something the DA should h
 
 ---
 
-## Architecture & conventions
+## Architecture & imports
 
 - [ ] No cross-package imports violating dependency direction (core ← terminal ← wrapper)
 - [ ] No boundary violations (core importing from terminal or chat)
-- [ ] Complexity limits respected (cyclomatic 10, cognitive 15, 50 lines/function, 300 lines/file, max-depth 3)
-- [ ] Functional rules followed (`const` everywhere, no mutation, no `reduce()`, no nested ternaries)
+- [ ] Should this be exported? Who calls it? Are internal modules leaking through the package barrel?
+- [ ] Barrel export completeness — or correctly NOT exported (knip will flag unused barrels)
+
+## Conventions & code patterns
+
+- [ ] Complexity limits: cyclomatic ≤ 10, cognitive ≤ 15, max-depth ≤ 3
+- [ ] Size limits: ≤ 50 lines/function (excluding blanks/comments), ≤ 300 lines/file
+- [ ] `const` everywhere, no mutation (`spread`/`concat` not `push`/`splice`), no `reduce()`
+- [ ] No nested ternaries; multiline ternaries use `if`/`else` instead
 - [ ] Max 3 chained method calls — beyond 3, use named intermediates
-- [ ] Inline callbacks in chains are 1–2 lines — extract longer logic into named functions
+- [ ] Inline callbacks in chains are 1–2 lines of code — extract longer logic into named functions
 - [ ] Compound boolean conditions extracted into named `const` variables
+- [ ] Functions with 3+ parameters use options objects (not individual params)
+- [ ] Max one level of function nesting — no functions defined inside functions defined inside functions
 - [ ] `type` used over `interface` (unless declaration merging needed)
-- [ ] Types co-located with their module (not prematurely in `types/`)
-- [ ] No unnecessary complexity or over-engineering
+- [ ] Types and helpers co-located with their module — extract to `shared/` only at 2+ consumers
+- [ ] No `eslint-disable` without justification — look for simpler alternatives first
+- [ ] Naming: files/dirs kebab-case, types PascalCase, functions camelCase, constants UPPER_SNAKE_CASE
 
 ## JSDoc & documentation
 
@@ -29,36 +39,39 @@ This is a **living document** — when Copilot catches something the DA should h
 - [ ] Comments match what the code actually does (stale comments after refactoring)
 - [ ] No hardcoded counts, versions, or phase numbers in comments
 
+## Type safety
+
+- [ ] No `any` — use `unknown` + type narrowing
+- [ ] Unsafe `as` casts justified with inline comments explaining why
+- [ ] I/O functions (fetch, exec, fs) injected as parameters in pure logic, not imported at module level
+- [ ] Pure logic separated from side effects — boundary functions isolated
+
 ## Completeness
 
 - [ ] Unit tests for every exported function
 - [ ] Edge cases tested (empty input, missing files, malformed data)
+- [ ] Parsers, serializers, and string transformers use property-based tests (fast-check)
+- [ ] Tests co-located with source (`module/module.test.ts`)
 - [ ] Stale references checked (renamed files, moved modules, wrong paths in comments)
-- [ ] Type safety — no sneaky `any`, unsafe `as` casts justified with comments, `unknown` + narrowing used
-
-## Public API surface
-
-- [ ] Should this be exported? Who calls it? Are internal modules leaking through the package barrel?
-- [ ] Barrel export completeness — or correctly NOT exported (knip will flag unused barrels)
 
 ## Security & error handling
 
 - [ ] How could malicious or unexpected input exploit each function? (symlinks, path traversal, injection)
-- [ ] Symlink handling — does `readdirSync` or directory walking follow symlinks outside the intended tree? Check `entry.isSymbolicLink()`
+- [ ] Symlink handling — does directory walking check `entry.isSymbolicLink()`? Does it follow symlinks outside the intended tree?
+- [ ] Entry type guards — does `readdirSync` with `withFileTypes` check `entry.isFile()` explicitly? (FIFO/socket/block device entries exist)
 - [ ] Path traversal — are paths from external input (JSON, user input) validated to stay within the expected directory? Use `path.relative()` to check
-- [ ] Does `readdirSync` with `withFileTypes` assume entries are files or directories? Check `entry.isFile()` explicitly — FIFO/socket/block device entries exist
-- [ ] Does any security guard use `existsSync` before `lstatSync`? Dangling symlinks bypass it
+- [ ] Path traversal guards consistent — if one exported function guards paths, every exported function accepting paths has the same guard
 - [ ] TOCTOU races — is `existsSync` followed by a read/write on the same path? Wrap in try/catch instead
-- [ ] Do catch blocks only swallow expected error codes? (ENOENT is expected; EACCES/EPERM should fail loud)
-- [ ] Are file paths constructed safely? (`path.join`, reject path separators in user input)
-- [ ] If one function guards input paths, is the same guard applied in every exported function that accepts similar paths? (e.g. DA guarded detect, but Copilot caught the same traversal gap on backup)
-- [ ] Does metadata/logging accurately reflect what actually happened? If operations can be skipped, track successes and report those, not the input list
+- [ ] Dangling symlinks — `existsSync` doesn't detect them; use `lstatSync` in try/catch swallowing only ENOENT
+- [ ] Catch blocks only swallow expected error codes (ENOENT is expected; EACCES/EPERM should fail loud)
+- [ ] File paths constructed safely (`path.join`, reject path separators in user input)
+- [ ] Metadata/logging reflects actual outcomes — if operations can be skipped, track successes, not the input list
 
 ## Cross-platform
 
-- [ ] Does this work on Windows? (path separators, CRLF line endings, platform-specific APIs)
-- [ ] Are path checks using `path.relative()` / `path.sep` instead of hardcoded `/`? (e.g. `startsWith(base + '/')` fails on Windows)
-- [ ] Are forward slashes in relative paths consistent across platforms?
+- [ ] Path checks use `path.relative()` / `path.sep` instead of hardcoded `/`
+- [ ] Text processing handles both `\n` and `\r\n` line endings
+- [ ] No platform-specific APIs without cross-platform alternatives
 
 ## Severity handling
 
