@@ -55,6 +55,7 @@ Autonomous, board-driven development for Claude Code. Monorepo for `@chief-clanc
 | ------------------------------------------ | ---------------------------------------------------------------------------- |
 | [docs/CONVENTIONS.md](docs/CONVENTIONS.md) | Code quality standards, complexity limits, functional rules, import ordering |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Development process — phase validation, session pattern, review gate         |
+| [docs/DA-REVIEW.md](docs/DA-REVIEW.md)     | DA review checklist — living document, evolves from Copilot findings         |
 | [docs/SELF-REVIEW.md](docs/SELF-REVIEW.md) | Self-review checklist — living document, evolves from Copilot findings       |
 | [docs/GIT.md](docs/GIT.md)                 | Branch strategy, commit format, merge conventions                            |
 | [docs/GLOSSARY.md](docs/GLOSSARY.md)       | Ubiquitous language — term definitions                                       |
