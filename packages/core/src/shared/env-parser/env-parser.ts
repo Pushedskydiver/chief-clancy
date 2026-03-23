@@ -65,21 +65,23 @@ const parseLine = (line: string): readonly [string, string] | undefined => {
  * // { JIRA_BASE_URL: 'https://example.atlassian.net', JIRA_USER: 'user@example.com' }
  * ```
  */
-export const parseEnvContent = (content: string): Record<string, string> =>
-  Object.fromEntries(
-    content
-      .split('\n')
-      .map(parseLine)
-      .filter(
-        (entry): entry is readonly [string, string] => entry !== undefined,
-      ),
-  );
+/** Type guard to filter out undefined entries from parsed lines. */
+const isDefined = (
+  entry: readonly [string, string] | undefined,
+): entry is readonly [string, string] => entry !== undefined;
+
+export const parseEnvContent = (content: string): Record<string, string> => {
+  const lines = content.split('\n');
+  const entries = lines.map(parseLine).filter(isDefined);
+
+  return Object.fromEntries(entries);
+};
 
 /** File system operations required by {@link loadClancyEnv}. */
-export interface EnvFileSystem {
+export type EnvFileSystem = {
   readonly exists: (path: string) => boolean;
   readonly readFile: (path: string) => string;
-}
+};
 
 /**
  * Load environment variables from a `.clancy/.env` file.

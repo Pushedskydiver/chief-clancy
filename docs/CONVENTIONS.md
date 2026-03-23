@@ -62,6 +62,7 @@ Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 ## Code Style
 
 - **No `reduce()`.** Use `.map()/.filter()` chains or explicit simple functions. Readability over cleverness.
+- **Max 3 chained method calls.** Beyond 3, assign intermediate results to named variables. Inline callbacks in chains must be short (1–2 lines) — extract longer logic into a named function and pass it in.
 - **No long ternaries.** If it doesn't fit on one line, use `if/else` or extract a function.
 - **No nested ternaries.** Ever.
 - **JSDoc on all exported functions.** Description, `@param` for each parameter, `@returns`. Not on internal helpers where types make it obvious.
@@ -71,6 +72,8 @@ Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 - **Dependency injection via function parameters** for I/O. Pass `fetch`, pass `exec` — don't import live implementations in pure logic modules.
 - **Options objects for 3+ parameters.** Named properties, self-documenting call sites.
 - **Max one level of function nesting.** No functions defined inside functions defined inside functions.
+- **`type` over `interface`.** Use `type` by default. Only use `interface` when you need declaration merging or `extends` for object hierarchies. Consistency over convention — one fewer decision to make.
+- **Co-locate types with their module.** Types used by a single module live in that module's file. Types used across multiple modules go in `types/`. Types start local and only migrate when there's actual reuse.
 
 ---
 
