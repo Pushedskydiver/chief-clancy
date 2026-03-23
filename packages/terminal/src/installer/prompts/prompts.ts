@@ -13,7 +13,7 @@ import { blue, cyan } from '~/shared/ansi/index.js';
  * Accepts any object with `question` and `close` — works with
  * `node:readline` createInterface or a test double.
  */
-export type ReadlineInterface = {
+type ReadlineInterface = {
   readonly question: (
     query: string,
     callback: (answer: string) => void,
@@ -22,7 +22,7 @@ export type ReadlineInterface = {
 };
 
 /** Public API returned by {@link createPrompts}. */
-export type PromptApi = {
+type PromptApi = {
   /** Prompt the user for text input. */
   readonly ask: (label: string) => Promise<string>;
   /** Present a numbered list of options and return the user's choice. */
