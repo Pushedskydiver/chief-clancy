@@ -258,7 +258,7 @@ describe('inlineWorkflows', () => {
     expect(result).toBe(original);
   });
 
-  it('throws if a command file is a symlink', () => {
+  it('skips symlinked command files', () => {
     const cmds = join(tmp, 'commands');
     const workflows = join(tmp, 'workflows');
     const target = join(tmp, 'target.md');
@@ -269,6 +269,9 @@ describe('inlineWorkflows', () => {
     symlinkSync(target, join(cmds, 'cmd.md'));
     writeFileSync(join(workflows, 'build.md'), 'inlined');
 
-    expect(() => inlineWorkflows(cmds, workflows)).toThrow('symlink');
+    inlineWorkflows(cmds, workflows);
+
+    const result = readFileSync(target, 'utf8');
+    expect(result).toBe('@.claude/clancy/workflows/build.md');
   });
 });

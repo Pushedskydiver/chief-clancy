@@ -18,12 +18,16 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 
-/** Check if a path is a symlink (including dangling symlinks). */
+/** Check if a path is a symlink (including dangling symlinks). Only swallows ENOENT. */
 const isSymlinkAt = (path: string): boolean => {
   try {
     return lstatSync(path).isSymbolicLink();
-  } catch {
-    return false;
+  } catch (error: unknown) {
+    const code = (error as { readonly code?: string }).code;
+
+    if (code === 'ENOENT') return false;
+
+    throw error;
   }
 };
 
@@ -97,18 +101,20 @@ const resolveWorkflowRef = (
 
   if (!workflowExists) return fullMatch;
 
+  rejectSymlink(workflowFile);
+
   return readFileSync(workflowFile, 'utf8');
 };
 
 /** Inline workflow references in a single command file. */
 const inlineFileWorkflows =
   (commandsDir: string, workflowsDir: string) =>
-  (file: string): void => {
-    const isMarkdown = file.endsWith('.md');
+  (entry: Dirent): void => {
+    const isMarkdownFile = entry.isFile() && entry.name.endsWith('.md');
 
-    if (!isMarkdown) return;
+    if (!isMarkdownFile) return;
 
-    const cmdPath = join(commandsDir, file);
+    const cmdPath = join(commandsDir, entry.name);
     const content = readFileSync(cmdPath, 'utf8');
     const resolved = content.replaceAll(
       WORKFLOW_REF,
@@ -139,6 +145,6 @@ export const inlineWorkflows = (
   commandsDir: string,
   workflowsDir: string,
 ): void => {
-  const files = readdirSync(commandsDir);
-  files.forEach(inlineFileWorkflows(commandsDir, workflowsDir));
+  const entries = readdirSync(commandsDir, { withFileTypes: true });
+  entries.forEach(inlineFileWorkflows(commandsDir, workflowsDir));
 };
