@@ -92,6 +92,19 @@ describe('copyDir', () => {
     expect(() => copyDir(src, dest)).toThrow('symlink');
   });
 
+  it('throws if an individual file in destination is a symlink', () => {
+    const src = join(tmp, 'src');
+    const dest = join(tmp, 'dest');
+    const target = join(tmp, 'target.txt');
+    mkdirSync(src, { recursive: true });
+    mkdirSync(dest, { recursive: true });
+    writeFileSync(join(src, 'file.txt'), 'content');
+    writeFileSync(target, 'target content');
+    symlinkSync(target, join(dest, 'file.txt'));
+
+    expect(() => copyDir(src, dest)).toThrow('symlink');
+  });
+
   it('merges multiple source directories into a single destination', () => {
     const roleA = join(tmp, 'roles', 'implementer', 'commands');
     const roleB = join(tmp, 'roles', 'reviewer', 'commands');
@@ -218,6 +231,21 @@ describe('inlineWorkflows', () => {
     inlineWorkflows(cmds, workflows);
 
     const result = readFileSync(join(cmds, 'notes.txt'), 'utf8');
+    expect(result).toBe(original);
+  });
+
+  it('ignores references with path traversal attempts', () => {
+    const cmds = join(tmp, 'commands');
+    const workflows = join(tmp, 'workflows');
+    mkdirSync(cmds, { recursive: true });
+    mkdirSync(workflows, { recursive: true });
+
+    const original = '@.claude/clancy/workflows/../../../secrets.md';
+    writeFileSync(join(cmds, 'cmd.md'), original);
+
+    inlineWorkflows(cmds, workflows);
+
+    const result = readFileSync(join(cmds, 'cmd.md'), 'utf8');
     expect(result).toBe(original);
   });
 });

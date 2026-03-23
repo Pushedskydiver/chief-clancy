@@ -4,9 +4,9 @@
  * Provides SHA-256 hashing, recursive directory copying,
  * and workflow content inlining.
  */
-import { createHash } from 'node:crypto';
 import type { Dirent } from 'node:fs';
 
+import { createHash } from 'node:crypto';
 import {
   copyFileSync,
   existsSync,
@@ -31,22 +31,36 @@ export const fileHash = (filePath: string): string => {
 };
 
 /** Copy a single directory entry from src to dest, recursing into subdirectories. */
-const copyEntry = (src: string, dest: string) => (entry: Dirent): void => {
-  const srcPath = join(src, entry.name);
-  const destPath = join(dest, entry.name);
+const copyEntry =
+  (src: string, dest: string) =>
+  (entry: Dirent): void => {
+    const srcPath = join(src, entry.name);
+    const destPath = join(dest, entry.name);
 
-  if (entry.isDirectory()) {
-    copyDir(srcPath, destPath);
-  } else {
+    if (entry.isDirectory()) {
+      copyDir(srcPath, destPath);
+      return;
+    }
+
+    const destIsSymlink =
+      existsSync(destPath) && lstatSync(destPath).isSymbolicLink();
+
+    if (destIsSymlink) {
+      throw new Error(
+        `${destPath} is a symlink. Remove it first before installing.`,
+      );
+    }
+
     copyFileSync(srcPath, destPath);
-  }
-};
+  };
 
 /**
- * Recursively copy a directory, throwing if the destination is a symlink.
+ * Recursively copy a directory, throwing if any destination path is a symlink.
  *
- * Only the destination is checked for symlinks — the source is trusted
- * installer content. Throws `ENOENT` if the source does not exist.
+ * Checks both the destination root and individual file paths for symlinks.
+ * The source is trusted installer content and not checked.
+ * Reads the source before creating the destination to avoid leaving empty
+ * directories on failure.
  *
  * @param src - Source directory path.
  * @param dest - Destination directory path.
@@ -63,14 +77,14 @@ export const copyDir = (src: string, dest: string): void => {
     }
   }
 
-  mkdirSync(dest, { recursive: true });
-
   const entries = readdirSync(src, { withFileTypes: true });
+
+  mkdirSync(dest, { recursive: true });
   entries.forEach(copyEntry(src, dest));
 };
 
-/** Matches `@.claude/clancy/workflows/<filename>.md` on its own line (global). */
-const WORKFLOW_REF = /^@\.claude\/clancy\/workflows\/(.+\.md)$/gm;
+/** Matches `@.claude/clancy/workflows/<filename>.md` on its own line (global). Disallows path separators. */
+const WORKFLOW_REF = /^@\.claude\/clancy\/workflows\/([^/\\]+\.md)$/gm;
 
 /** Resolve a workflow @-file reference to its content, or return the original if missing. */
 const resolveWorkflowRef = (
