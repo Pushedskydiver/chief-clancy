@@ -209,7 +209,7 @@ Run through the **[Self-Review Checklist](SELF-REVIEW.md)**. Read every changed 
 
 After DA and self-review are clean:
 
-1. Push branch and create PR
+1. Push branch and create PR — assign to Alex (`Pushedskydiver`) and add labels (`feature`/`fix`/`chore` + affected package e.g. `terminal`, `core`)
 2. Request Copilot review:
    ```bash
    gh api repos/{owner}/{repo}/pulls/{number}/requested_reviewers \
@@ -274,7 +274,7 @@ Husky + lint-staged runs on every commit automatically:
 Run the full quality suite before every `git push`. No shortcuts, no "I only changed a doc." Pushing code that fails CI wastes a round-trip.
 
 ```bash
-pnpm test && pnpm lint && pnpm typecheck && pnpm format:check
+pnpm test && pnpm lint && pnpm typecheck && pnpm format:check && pnpm knip && pnpm publint && pnpm attw
 ```
 
 ### Pre-merge
