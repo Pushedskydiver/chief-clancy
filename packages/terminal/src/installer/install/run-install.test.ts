@@ -137,6 +137,21 @@ describe('runInstall', () => {
         join(paths.clancyProjectDir, 'clancy-afk.js'),
       );
     });
+
+    it('skips overwrite prompt when no existing install', async () => {
+      resetMocks();
+      const freshFs = {
+        ...stubFs,
+        exists: (p: string) =>
+          !p.includes('commands/clancy') && !p.includes('clancy/workflows'),
+      };
+
+      await runInstall({ ...baseOptions, fs: freshFs, nonInteractive: false });
+
+      expect(stubPrompts.ask).not.toHaveBeenCalled();
+      expect(mockDetectModified).not.toHaveBeenCalled();
+      expect(mockCopyRoleFiles).toHaveBeenCalled();
+    });
   });
 
   describe('global mode', () => {

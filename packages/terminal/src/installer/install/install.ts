@@ -182,6 +182,8 @@ function requirePath(
  * Validate that all required source directories and files exist.
  *
  * Guards against a corrupted npm package. Throws on the first missing path.
+ * `agentsDir` is intentionally not validated — the verification gate prompt
+ * is read best-effort in {@link registerHooks} and skipped if missing.
  *
  * @param sources - The source directories to check.
  * @param exists - File existence check (injected for testability).
