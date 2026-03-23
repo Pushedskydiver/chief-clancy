@@ -54,12 +54,15 @@ function cleanDisabledFiles(srcDir: string, dest: string): void {
     });
 }
 
-/** Try to read a directory, returning null if it doesn't exist. */
+/** Try to read a directory, returning null if it doesn't exist or isn't a directory. */
 function safeReaddir(dir: string): readonly string[] | null {
   try {
     return readdirSync(dir);
   } catch (err: unknown) {
-    if (hasErrorCode(err, 'ENOENT')) return null;
+    const isMissingDir = hasErrorCode(err, 'ENOENT');
+    const isNotDirectory = hasErrorCode(err, 'ENOTDIR');
+
+    if (isMissingDir || isNotDirectory) return null;
 
     throw err;
   }
@@ -73,7 +76,9 @@ function safeReaddir(dir: string): readonly string[] | null {
  * copied. Optional roles are only copied if listed in `enabledRoles`,
  * or if `enabledRoles` is `null` (first install — install all).
  *
- * Files for disabled optional roles are removed from the destination.
+ * Files for disabled optional roles are removed from the destination
+ * based on the current source tree. If a role's subdir is missing,
+ * no cleanup occurs (we can't know what to remove).
  *
  * Filenames must be unique across all roles — if two roles define the same
  * filename, the last one copied wins silently. This is enforced by convention
