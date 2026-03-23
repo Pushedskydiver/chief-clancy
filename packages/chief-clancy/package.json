@@ -1,0 +1,17 @@
+{
+  "name": "chief-clancy",
+  "version": "0.9.0",
+  "description": "Autonomous, board-driven development for Claude Code",
+  "author": "Alex Clapperton",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "chief-clancy": "./bin/clancy.js"
+  },
+  "files": [
+    "bin"
+  ],
+  "dependencies": {
+    "@chief-clancy/terminal": "workspace:*"
+  }
+}
