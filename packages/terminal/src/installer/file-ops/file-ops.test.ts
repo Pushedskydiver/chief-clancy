@@ -105,6 +105,15 @@ describe('copyDir', () => {
     expect(() => copyDir(src, dest)).toThrow('symlink');
   });
 
+  it('throws if destination is a dangling symlink', () => {
+    const src = join(tmp, 'src');
+    const dest = join(tmp, 'dangling-link');
+    mkdirSync(src, { recursive: true });
+    symlinkSync(join(tmp, 'nonexistent'), dest);
+
+    expect(() => copyDir(src, dest)).toThrow('symlink');
+  });
+
   it('merges multiple source directories into a single destination', () => {
     const roleA = join(tmp, 'roles', 'implementer', 'commands');
     const roleB = join(tmp, 'roles', 'reviewer', 'commands');
@@ -247,5 +256,19 @@ describe('inlineWorkflows', () => {
 
     const result = readFileSync(join(cmds, 'cmd.md'), 'utf8');
     expect(result).toBe(original);
+  });
+
+  it('throws if a command file is a symlink', () => {
+    const cmds = join(tmp, 'commands');
+    const workflows = join(tmp, 'workflows');
+    const target = join(tmp, 'target.md');
+    mkdirSync(cmds, { recursive: true });
+    mkdirSync(workflows, { recursive: true });
+
+    writeFileSync(target, '@.claude/clancy/workflows/build.md');
+    symlinkSync(target, join(cmds, 'cmd.md'));
+    writeFileSync(join(workflows, 'build.md'), 'inlined');
+
+    expect(() => inlineWorkflows(cmds, workflows)).toThrow('symlink');
   });
 });

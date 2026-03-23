@@ -18,6 +18,22 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 
+/** Check if a path is a symlink (including dangling symlinks). */
+const isSymlinkAt = (path: string): boolean => {
+  try {
+    return lstatSync(path).isSymbolicLink();
+  } catch {
+    return false;
+  }
+};
+
+/** Throw if the given path is a symlink. */
+const rejectSymlink = (path: string): void => {
+  if (isSymlinkAt(path)) {
+    throw new Error(`${path} is a symlink. Remove it first before installing.`);
+  }
+};
+
 /**
  * Compute the SHA-256 hash of a file.
  *
@@ -42,15 +58,7 @@ const copyEntry =
       return;
     }
 
-    const destIsSymlink =
-      existsSync(destPath) && lstatSync(destPath).isSymbolicLink();
-
-    if (destIsSymlink) {
-      throw new Error(
-        `${destPath} is a symlink. Remove it first before installing.`,
-      );
-    }
-
+    rejectSymlink(destPath);
     copyFileSync(srcPath, destPath);
   };
 
@@ -67,15 +75,7 @@ const copyEntry =
  * @throws If the destination is a symlink or the source does not exist.
  */
 export const copyDir = (src: string, dest: string): void => {
-  if (existsSync(dest)) {
-    const isSymlink = lstatSync(dest).isSymbolicLink();
-
-    if (isSymlink) {
-      throw new Error(
-        `${dest} is a symlink. Remove it first before installing.`,
-      );
-    }
-  }
+  rejectSymlink(dest);
 
   const entries = readdirSync(src, { withFileTypes: true });
 
@@ -89,13 +89,13 @@ const WORKFLOW_REF = /^@\.claude\/clancy\/workflows\/([^/\\]+\.md)\r?$/gm;
 /** Resolve a workflow @-file reference to its content, or return the original if missing. */
 const resolveWorkflowRef = (
   workflowsDir: string,
-  _fullMatch: string,
+  fullMatch: string,
   fileName: string,
 ): string => {
   const workflowFile = join(workflowsDir, fileName);
   const workflowExists = existsSync(workflowFile);
 
-  if (!workflowExists) return _fullMatch;
+  if (!workflowExists) return fullMatch;
 
   return readFileSync(workflowFile, 'utf8');
 };
@@ -112,13 +112,14 @@ const inlineFileWorkflows =
     const content = readFileSync(cmdPath, 'utf8');
     const resolved = content.replaceAll(
       WORKFLOW_REF,
-      (_match, fileName: string) =>
-        resolveWorkflowRef(workflowsDir, _match, fileName),
+      (match, fileName: string) =>
+        resolveWorkflowRef(workflowsDir, match, fileName),
     );
     const hasChanges = resolved !== content;
 
     if (!hasChanges) return;
 
+    rejectSymlink(cmdPath);
     writeFileSync(cmdPath, resolved);
   };
 
