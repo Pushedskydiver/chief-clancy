@@ -10,7 +10,7 @@ type Command = readonly [string, string];
 /** A command group with optional role gating. */
 type CommandGroup = {
   readonly name: string;
-  readonly optional: boolean;
+  readonly roleKey: string | null;
   readonly commands: readonly Command[];
 };
 
@@ -18,7 +18,7 @@ type CommandGroup = {
 const COMMAND_GROUPS: readonly CommandGroup[] = [
   {
     name: 'Strategist',
-    optional: true,
+    roleKey: 'strategist',
     commands: [
       ['/clancy:brief', 'Generate a strategic brief for a feature'],
       ['/clancy:approve-brief', 'Convert brief into board tickets'],
@@ -26,7 +26,7 @@ const COMMAND_GROUPS: readonly CommandGroup[] = [
   },
   {
     name: 'Planner',
-    optional: true,
+    roleKey: 'planner',
     commands: [
       ['/clancy:plan', 'Refine backlog tickets into plans'],
       ['/clancy:approve-plan', 'Promote plan to ticket description'],
@@ -34,7 +34,7 @@ const COMMAND_GROUPS: readonly CommandGroup[] = [
   },
   {
     name: 'Implementer',
-    optional: false,
+    roleKey: null,
     commands: [
       ['/clancy:once', 'Pick up one ticket and stop'],
       ['/clancy:run', 'Run Clancy in loop mode'],
@@ -43,7 +43,7 @@ const COMMAND_GROUPS: readonly CommandGroup[] = [
   },
   {
     name: 'Reviewer',
-    optional: false,
+    roleKey: null,
     commands: [
       ['/clancy:review', 'Score next ticket and get recommendations'],
       ['/clancy:status', 'Show next tickets without running'],
@@ -52,7 +52,7 @@ const COMMAND_GROUPS: readonly CommandGroup[] = [
   },
   {
     name: 'Setup & Maintenance',
-    optional: false,
+    roleKey: null,
     commands: [
       ['/clancy:init', 'Set up Clancy in your project'],
       ['/clancy:map-codebase', 'Scan codebase with 5 parallel agents'],
@@ -99,14 +99,17 @@ function isGroupVisible(
   group: CommandGroup,
   enabledRoles: ReadonlySet<string> | null,
 ): boolean {
-  if (!group.optional) return true;
+  if (group.roleKey === null) return true;
   if (enabledRoles === null) return true;
-  return enabledRoles.has(group.name.toLowerCase());
+  return enabledRoles.has(group.roleKey);
 }
+
+/** Column width for command names — keeps descriptions aligned. */
+const CMD_COL_WIDTH = 22;
 
 /** Format a single command line for display. */
 function formatCommand([cmd, desc]: Command): string {
-  return `      ${cyan(cmd.padEnd(22))}  ${dim(desc)}`;
+  return `      ${cyan(cmd.padEnd(CMD_COL_WIDTH))}  ${dim(desc)}`;
 }
 
 /** Print a single command group header and its commands. */
@@ -122,7 +125,7 @@ function printGroup(group: CommandGroup): void {
  * Groups flagged as optional are hidden when the corresponding role
  * is absent from `enabledRoles`. Pass `null` to show all groups.
  *
- * @param enabledRoles - Lowercase role names (e.g. `"strategist"`), or `null` to show all.
+ * @param enabledRoles - Role keys matching `CommandGroup.roleKey` (e.g. `"strategist"`), or `null` to show all.
  */
 export function printSuccess(enabledRoles: ReadonlySet<string> | null): void {
   console.log('');
