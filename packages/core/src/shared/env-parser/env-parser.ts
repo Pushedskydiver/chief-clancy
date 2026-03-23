@@ -19,8 +19,10 @@ const stripQuotes = (value: string): string => {
 
   const first = value[0];
   const last = value[value.length - 1];
+  const isDoubleQuoted = first === '"' && last === '"';
+  const isSingleQuoted = first === "'" && last === "'";
 
-  if ((first === '"' && last === '"') || (first === "'" && last === "'")) {
+  if (isDoubleQuoted || isSingleQuoted) {
     return value.slice(1, -1);
   }
 

@@ -74,6 +74,7 @@ Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 - **Max one level of function nesting.** No functions defined inside functions defined inside functions.
 - **`type` over `interface`.** Use `type` by default. Only use `interface` when you need declaration merging or `extends` for object hierarchies. Consistency over convention — one fewer decision to make.
 - **Co-locate types with their module.** Types used by a single module live in that module's file. Types used across multiple modules go in `types/`. Types start local and only migrate when there's actual reuse.
+- **Name compound boolean conditions.** Extract multi-part conditions into named `const` variables (e.g. `const isDoubleQuoted = first === '"' && last === '"'`). The `if` statement should read like prose.
 
 ---
 
