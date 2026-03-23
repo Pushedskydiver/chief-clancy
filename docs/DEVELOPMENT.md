@@ -49,7 +49,7 @@ RIGHT (vertical / tracer bullet):
 5. **Verify** — lint + typecheck must pass.
 6. **Review gate** before merge.
 
-**Why vertical slices?** Tests written in bulk test *imagined* behaviour, not *actual* behaviour. Writing one test at a time means each test responds to what you learned from the previous cycle. The tests end up testing real behaviour through public interfaces, not implementation details.
+**Why vertical slices?** Tests written in bulk test _imagined_ behaviour, not _actual_ behaviour. Writing one test at a time means each test responds to what you learned from the previous cycle. The tests end up testing real behaviour through public interfaces, not implementation details.
 
 ---
 
@@ -126,6 +126,7 @@ The next session starts clean: reads the brief, reads PROGRESS.md, picks up wher
 When investigating code in the old repo or exploring architecture options, use subagents (`Agent` tool) instead of reading files directly. Subagents run in separate context windows — they explore, summarise, and report back without filling the main conversation with file contents.
 
 This is especially important for:
+
 - Phase validation (reading old repo code for each PR)
 - DA reviews (reviewing all changed files)
 - Codebase exploration before implementing a module
@@ -149,6 +150,7 @@ Three checks, in this strict order, before merging a PR. **DA always runs before
 Spin up a devil's advocate agent to read all changed files. For non-trivial changes this is mandatory.
 
 **What DA checks:**
+
 - Architecture violations (cross-package imports, dependency direction)
 - Missing tests for new exported functions
 - Edge cases not handled
@@ -161,6 +163,7 @@ Spin up a devil's advocate agent to read all changed files. For non-trivial chan
 - Unnecessary complexity or over-engineering
 
 **Severity handling:**
+
 - **Medium+ findings:** must be fixed before proceeding
 - **Low findings:** can be acknowledged and deferred with explicit justification
 - If you disagree with a finding, articulate why — don't silently skip it
@@ -202,11 +205,11 @@ The self-review checklist is a **living document** — when Copilot catches some
 
 ## Versioning
 
-| Package | Initial version | Rationale |
-|---|---|---|
-| `@chief-clancy/core` | 0.1.0 | New package, proven code, unstable API surface |
-| `@chief-clancy/terminal` | 0.1.0 | New package, proven code, unstable API surface |
-| `chief-clancy` (wrapper) | 0.9.0 | Continues existing lineage, becomes thin re-export |
+| Package                  | Initial version | Rationale                                          |
+| ------------------------ | --------------- | -------------------------------------------------- |
+| `@chief-clancy/core`     | 0.1.0           | New package, proven code, unstable API surface     |
+| `@chief-clancy/terminal` | 0.1.0           | New package, proven code, unstable API surface     |
+| `chief-clancy` (wrapper) | 0.9.0           | Continues existing lineage, becomes thin re-export |
 
 Independent versioning managed by `@changesets/cli`. Coordinated v1.0.0 release when API surfaces are stable.
 
@@ -242,6 +245,7 @@ Every PR must pass before merging:
 ## When to Update This Doc
 
 Update DEVELOPMENT.md when:
+
 - A new step is added to the process
 - The phase validation protocol changes
 - The review gate process changes

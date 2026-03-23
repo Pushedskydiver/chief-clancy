@@ -4,44 +4,44 @@ Autonomous, board-driven development for Claude Code. Monorepo for `@chief-clanc
 
 ## Packages
 
-| Workspace | npm name | Purpose |
-|---|---|---|
-| `packages/core` | `@chief-clancy/core` | Board intelligence, schemas, types, ticket lifecycle, phase pipeline, shared utilities |
-| `packages/terminal` | `@chief-clancy/terminal` | Installer, slash commands, hooks, AFK runner, agents, Claude CLI bridge |
-| `packages/chief-clancy` | `chief-clancy` | Thin bin wrapper — `npx chief-clancy` delegates to terminal |
-| `packages/chat` | `@chief-clancy/chat` | Future — MCP server, Chat SDK bot |
+| Workspace               | npm name                 | Purpose                                                                                |
+| ----------------------- | ------------------------ | -------------------------------------------------------------------------------------- |
+| `packages/core`         | `@chief-clancy/core`     | Board intelligence, schemas, types, ticket lifecycle, phase pipeline, shared utilities |
+| `packages/terminal`     | `@chief-clancy/terminal` | Installer, slash commands, hooks, AFK runner, agents, Claude CLI bridge                |
+| `packages/chief-clancy` | `chief-clancy`           | Thin bin wrapper — `npx chief-clancy` delegates to terminal                            |
+| `packages/chat`         | `@chief-clancy/chat`     | Future — MCP server, Chat SDK bot                                                      |
 
 ## Key paths
 
-| Path | Purpose |
-|---|---|
-| `packages/core/src/board/` | Board type, factory, 6 implementations (jira, github, linear, shortcut, notion, azdo) |
-| `packages/core/src/lifecycle/` | Ticket lifecycle modules (fetch-ticket, deliver, rework, pr-creation, lock, cost, resume, quality) |
-| `packages/core/src/pipeline/` | Phase pipeline (13 pure phases, context) |
-| `packages/core/src/schemas/` | Zod validation (env, board APIs) |
-| `packages/core/src/types/` | Shared type definitions (board, remote) |
-| `packages/core/src/shared/` | Pure utilities (git-ops, env-parser, branch, progress, format, remote, http, feasibility, pull-request) |
-| `packages/terminal/src/installer/` | Installer modules (file-ops, hook-installer, manifest, prompts, UI) |
-| `packages/terminal/src/roles/` | 5 roles — slash commands and workflows |
-| `packages/terminal/src/afk/` | AFK runner + session reports |
-| `packages/terminal/src/agents/` | 7 agent prompts |
-| `packages/terminal/src/templates/` | CLAUDE.md template for user projects |
-| `packages/terminal/src/shared/` | Terminal-specific utilities (claude-cli, prompt, notify, ansi) |
-| `packages/terminal/hooks/` | 9 pre-built CommonJS hooks |
-| `docs/` | Project documentation |
-| `docs/decisions/` | Design decisions organised by version |
+| Path                               | Purpose                                                                                                 |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `packages/core/src/board/`         | Board type, factory, 6 implementations (jira, github, linear, shortcut, notion, azdo)                   |
+| `packages/core/src/lifecycle/`     | Ticket lifecycle modules (fetch-ticket, deliver, rework, pr-creation, lock, cost, resume, quality)      |
+| `packages/core/src/pipeline/`      | Phase pipeline (13 pure phases, context)                                                                |
+| `packages/core/src/schemas/`       | Zod validation (env, board APIs)                                                                        |
+| `packages/core/src/types/`         | Shared type definitions (board, remote)                                                                 |
+| `packages/core/src/shared/`        | Pure utilities (git-ops, env-parser, branch, progress, format, remote, http, feasibility, pull-request) |
+| `packages/terminal/src/installer/` | Installer modules (file-ops, hook-installer, manifest, prompts, UI)                                     |
+| `packages/terminal/src/roles/`     | 5 roles — slash commands and workflows                                                                  |
+| `packages/terminal/src/afk/`       | AFK runner + session reports                                                                            |
+| `packages/terminal/src/agents/`    | 7 agent prompts                                                                                         |
+| `packages/terminal/src/templates/` | CLAUDE.md template for user projects                                                                    |
+| `packages/terminal/src/shared/`    | Terminal-specific utilities (claude-cli, prompt, notify, ansi)                                          |
+| `packages/terminal/hooks/`         | 9 pre-built CommonJS hooks                                                                              |
+| `docs/`                            | Project documentation                                                                                   |
+| `docs/decisions/`                  | Design decisions organised by version                                                                   |
 
 ## Key documentation
 
-| Doc | Purpose |
-|---|---|
+| Doc                                        | Purpose                                                                      |
+| ------------------------------------------ | ---------------------------------------------------------------------------- |
 | [docs/CONVENTIONS.md](docs/CONVENTIONS.md) | Code quality standards, complexity limits, functional rules, import ordering |
-| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Development process — phase validation, session pattern, review gate |
-| [docs/SELF-REVIEW.md](docs/SELF-REVIEW.md) | Self-review checklist — living document, evolves from Copilot findings |
-| [docs/GIT.md](docs/GIT.md) | Branch strategy, commit format, merge conventions |
-| [docs/GLOSSARY.md](docs/GLOSSARY.md) | Ubiquitous language — term definitions |
-| [docs/decisions/](docs/decisions/) | Design decisions by version |
-| [PROGRESS.md](PROGRESS.md) | Current phase and PR status |
+| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Development process — phase validation, session pattern, review gate         |
+| [docs/SELF-REVIEW.md](docs/SELF-REVIEW.md) | Self-review checklist — living document, evolves from Copilot findings       |
+| [docs/GIT.md](docs/GIT.md)                 | Branch strategy, commit format, merge conventions                            |
+| [docs/GLOSSARY.md](docs/GLOSSARY.md)       | Ubiquitous language — term definitions                                       |
+| [docs/decisions/](docs/decisions/)         | Design decisions by version                                                  |
+| [PROGRESS.md](PROGRESS.md)                 | Current phase and PR status                                                  |
 
 ## Commands
 
@@ -81,6 +81,7 @@ This project uses gitmoji + conventional commit type:
 ```
 
 Examples:
+
 - `✨ feat: add credential guard hook`
 - `🐛 fix: construct test values at runtime`
 - `📦 chore: scaffold monorepo with pnpm workspaces`

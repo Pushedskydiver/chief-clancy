@@ -10,12 +10,12 @@ All work branches from `main` and merges back to `main` via PR.
 
 ### Branches
 
-| Branch | Purpose | Branched from | Merges into |
-|---|---|---|---|
-| `main` | Production code, tagged releases | — | — |
-| `feature/<name>` | New features | `main` | `main` |
-| `fix/<name>` | Bug fixes | `main` | `main` |
-| `chore/<name>` | Maintenance, deps, config | `main` | `main` |
+| Branch           | Purpose                          | Branched from | Merges into |
+| ---------------- | -------------------------------- | ------------- | ----------- |
+| `main`           | Production code, tagged releases | —             | —           |
+| `feature/<name>` | New features                     | `main`        | `main`      |
+| `fix/<name>`     | Bug fixes                        | `main`        | `main`      |
+| `chore/<name>`   | Maintenance, deps, config        | `main`        | `main`      |
 
 ### Rules
 
@@ -23,6 +23,7 @@ All work branches from `main` and merges back to `main` via PR.
 - **If it's only read by humans/agents for context, direct to main is fine — but only when no branch/PR is open.** Decision docs (`docs/decisions/`), glossary, architecture docs (`docs/`), CLAUDE.md doc link updates, README badge/link fixes, typo corrections. If you have an open feature branch, commit doc changes there instead — pushing to main while a branch is open creates divergent history and merge conflicts on squash merge.
 
 **What is "executable markdown"?** Any markdown file containing instructions that Claude will execute as part of a command or workflow:
+
 - `packages/terminal/src/roles/*/commands/*.md` — slash command definitions
 - `packages/terminal/src/roles/*/workflows/*.md` — implementation workflows
 - `packages/terminal/src/templates/CLAUDE.md` — template injected into user projects
@@ -65,18 +66,18 @@ The gitmoji comes first, then the conventional commit type. Scope is optional.
 
 ### Types
 
-| Type | Gitmoji | Use for |
-|---|---|---|
-| `feat` | ✨ | New feature |
-| `fix` | 🐛 | Bug fix |
-| `chore` | 📦 | Maintenance, deps, config |
-| `refactor` | ♻️ | Code change that doesn't fix or add |
-| `test` | ✅ | Adding or updating tests |
-| `docs` | 📝 | Documentation only |
-| `style` | 💄 | Formatting, cosmetic (no logic change) |
-| `perf` | ⚡️ | Performance improvement |
-| `security` | 🔒 | Security fix |
-| `remove` | 🔥 | Removing code or files |
+| Type       | Gitmoji | Use for                                |
+| ---------- | ------- | -------------------------------------- |
+| `feat`     | ✨      | New feature                            |
+| `fix`      | 🐛      | Bug fix                                |
+| `chore`    | 📦      | Maintenance, deps, config              |
+| `refactor` | ♻️      | Code change that doesn't fix or add    |
+| `test`     | ✅      | Adding or updating tests               |
+| `docs`     | 📝      | Documentation only                     |
+| `style`    | 💄      | Formatting, cosmetic (no logic change) |
+| `perf`     | ⚡️      | Performance improvement                |
+| `security` | 🔒      | Security fix                           |
+| `remove`   | 🔥      | Removing code or files                 |
 
 ### Examples
 

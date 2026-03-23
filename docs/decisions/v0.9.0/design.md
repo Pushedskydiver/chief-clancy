@@ -73,23 +73,23 @@ The planner must address these for every UI component:
 
 Example specification table:
 
-| Element | Role | ARIA | Keyboard | Announcement |
-|---|---|---|---|---|
-| Login form | `form` | `aria-label="Sign in"` | — | — |
-| Email input | `textbox` | `aria-required="true"`, `aria-invalid` on error, `aria-describedby` for error | Tab to focus | "Email address, required" |
-| Submit button | `button` | `aria-busy` when loading | Enter to submit, Tab to reach | "Sign in" / "Signing in..." |
-| Error alert | `alert` | `aria-live="assertive"` | — | Announces error text on appear |
+| Element       | Role      | ARIA                                                                          | Keyboard                      | Announcement                   |
+| ------------- | --------- | ----------------------------------------------------------------------------- | ----------------------------- | ------------------------------ |
+| Login form    | `form`    | `aria-label="Sign in"`                                                        | —                             | —                              |
+| Email input   | `textbox` | `aria-required="true"`, `aria-invalid` on error, `aria-describedby` for error | Tab to focus                  | "Email address, required"      |
+| Submit button | `button`  | `aria-busy` when loading                                                      | Enter to submit, Tab to reach | "Sign in" / "Signing in..."    |
+| Error alert   | `alert`   | `aria-live="assertive"`                                                       | —                             | Announces error text on appear |
 
 **Content Specifications** — error messages, empty states, loading states, form labels, help text, toast messages. Example:
 
-| Context | Content |
-|---|---|
-| Email empty | "Email address is required" |
-| Email invalid | "Enter a valid email address" |
-| Password too short | "Password must be at least 8 characters" |
-| Auth failed | "Invalid email or password. Please try again." |
-| Loading state | "Signing in..." |
-| Success toast | "Welcome back, {name}" |
+| Context            | Content                                        |
+| ------------------ | ---------------------------------------------- |
+| Email empty        | "Email address is required"                    |
+| Email invalid      | "Enter a valid email address"                  |
+| Password too short | "Password must be at least 8 characters"       |
+| Auth failed        | "Invalid email or password. Please try again." |
+| Loading state      | "Signing in..."                                |
+| Success toast      | "Welcome back, {name}"                         |
 
 **User Flow Diagrams** — Mermaid state diagrams for multi-step interactions:
 
@@ -107,10 +107,10 @@ stateDiagram-v2
 
 **Pages** — explicit route/URL mapping for visual verification. Links component names to actual pages. Example:
 
-| Component | Route | URL |
-|---|---|---|
-| LoginForm | `/login` | `http://localhost:3000/login` |
-| LoginForm (Storybook) | — | `http://localhost:6006/?path=/story/loginform` |
+| Component             | Route    | URL                                            |
+| --------------------- | -------- | ---------------------------------------------- |
+| LoginForm             | `/login` | `http://localhost:3000/login`                  |
+| LoginForm (Storybook) | —        | `http://localhost:6006/?path=/story/loginform` |
 
 If the project uses Storybook, prefer story URLs. If dev server only, use route URLs. This section is **optional** in design specs — the planner includes it when route info is available, omits it otherwise. For visual verification (Wave 3), URL resolution uses a 3-tier fallback: (1) `CLANCY_DEV_URLS` env var (explicit, highest priority), (2) `### Pages` from design specs, (3) Storybook auto-detection. If all three yield no URLs, visual verification is skipped with a PR comment: "Visual verification skipped — no page URLs available."
 
@@ -133,6 +133,7 @@ Stitch is optional. Teams without Stitch continue as before — the design speci
 ### Stitch Context — Codebase-Aware Prompting
 
 The Stitch prompt is not a bare description. The planner has already explored the codebase, read `.clancy/docs/`, and produced design specifications. Stitch receives the full context:
+
 - **Existing design system** — component library, design tokens, CSS framework (from codebase exploration)
 - **Component specifications** — props, variants, states (from design specs)
 - **Content specifications** — actual copy, error messages, labels (from design specs)
@@ -182,6 +183,7 @@ only)       - A11y specs → ARIA annotations
 The design preview is posted as a ticket comment with the marker heading `## Clancy Design Preview`. This marker is used to detect existing design previews and replace them on revision (same pattern as the existing `## Clancy Plan` and `## Clancy Brief` comments).
 
 **Screenshot persistence:** Stitch returns download URLs that may be temporary. To ensure screenshots remain visible in board comments:
+
 - **GitHub:** Upload the screenshot via the repo's content API or use the Stitch project URL (persistent) as a link
 - **Jira:** Upload as an attachment via `POST /rest/api/3/issue/{key}/attachments`, then reference in the ADF comment
 - **Linear:** Linear supports markdown image URLs — use the Stitch project screenshot URL directly
@@ -223,16 +225,16 @@ Classification uses natural language understanding — Claude reads the comment 
 
 **The key distinction: is this ONLY about the technical approach, or does it touch design/visual/content at all?**
 
-| Feedback | Path | Action |
-|---|---|---|
-| "Use server components" | Technical only | Revise plan, no Stitch |
-| "Add rate limiting" | Technical only | Revise plan, no Stitch |
-| "Make the sidebar wider" | Design | Revise specs + regenerate Stitch |
-| "Change the primary colour" | Design | Revise specs + regenerate Stitch |
-| "Add a close button" | Design | Revise specs + regenerate Stitch |
-| "The form needs validation" | Design | Revise specs + regenerate Stitch |
-| "Wrong layout AND wrong API" | Both | Revise both + regenerate Stitch |
-| Unclear / mixed | Fallback | Revise both + regenerate Stitch |
+| Feedback                     | Path           | Action                           |
+| ---------------------------- | -------------- | -------------------------------- |
+| "Use server components"      | Technical only | Revise plan, no Stitch           |
+| "Add rate limiting"          | Technical only | Revise plan, no Stitch           |
+| "Make the sidebar wider"     | Design         | Revise specs + regenerate Stitch |
+| "Change the primary colour"  | Design         | Revise specs + regenerate Stitch |
+| "Add a close button"         | Design         | Revise specs + regenerate Stitch |
+| "The form needs validation"  | Design         | Revise specs + regenerate Stitch |
+| "Wrong layout AND wrong API" | Both           | Revise both + regenerate Stitch  |
+| Unclear / mixed              | Fallback       | Revise both + regenerate Stitch  |
 
 If in doubt, treat as design feedback. The cost of an unnecessary Stitch regeneration (~1 generation out of 350/month) is lower than the cost of missing a design change.
 
@@ -271,6 +273,7 @@ Step 4g: Design Tools (gated on Planner OR Strategist enabled)
 ```
 
 **If [2] Figma MCP selected:**
+
 ```
   Figma MCP is configured through Claude Code's MCP settings.
   See: https://docs.figma.com/mcp
@@ -279,17 +282,20 @@ Step 4g: Design Tools (gated on Planner OR Strategist enabled)
 ```
 
 **If [3] or [4] Google Stitch selected:**
+
 ```
   Stitch API key (from stitch.withgoogle.com/settings): ___
 ```
 
 Writes to `.clancy/.env`:
+
 ```
 CLANCY_STITCH=true
 STITCH_API_KEY=xxx
 ```
 
 Configures Claude Code MCP server (writes to `.claude/settings.json`):
+
 ```json
 {
   "mcpServers": {
@@ -307,6 +313,7 @@ Configures Claude Code MCP server (writes to `.claude/settings.json`):
 ### Settings Workflow
 
 `/clancy:settings` gains a Design Tools section:
+
 ```
   [D1] Design tool    (None / Figma / Stitch / Both)
   [D2] Stitch API key
@@ -319,6 +326,7 @@ Configures Claude Code MCP server (writes to `.claude/settings.json`):
 **The Stitch SDK (`@google/stitch-sdk`) is an MCP client internally.** It depends on `@modelcontextprotocol/sdk` and `zod@4`, which conflicts with Clancy's `zod/mini` and breaks esbuild bundling (MCP transport uses dynamic imports). The SDK cannot be used as a simple npm dependency.
 
 **Instead, use Stitch via Claude Code's native MCP support.** Configure the Stitch MCP server in Claude Code's settings. When the planner needs to generate a design preview, it invokes Stitch tools through the MCP protocol — Claude Code handles the connection lifecycle. This means:
+
 - No npm dependency on `@google/stitch-sdk`
 - No zod version conflict
 - No esbuild bundling issues
@@ -326,6 +334,7 @@ Configures Claude Code MCP server (writes to `.claude/settings.json`):
 - The community MCP proxy (`@_davideast/stitch-mcp`) provides Claude Code configuration out of the box
 
 **MCP tool names (from `@_davideast/stitch-mcp`):**
+
 - `build_site` — generate screens from a text prompt. Returns project URL + screen URLs.
 - `get_screen_code` — get HTML/CSS code for a generated screen.
 - `get_screen_image` — get screenshot URL for a generated screen.
@@ -333,6 +342,7 @@ Configures Claude Code MCP server (writes to `.claude/settings.json`):
 The planner workflow instructs Claude to call `build_site` with the design specs as the prompt, then `get_screen_image` to get the screenshot URL for the board comment.
 
 **MCP configuration (added by `/clancy:init`):**
+
 ```json
 {
   "mcpServers": {
@@ -346,6 +356,7 @@ The planner workflow instructs Claude to call `build_site` with the design specs
 ```
 
 **Rate limits:** Stitch allows 350 generations per month (~11/day). Heavy autonomous use could exhaust this quickly — a single AFK night with 20 UI tickets could use 20+ generations. Mitigation:
+
 - Track generation count in `.clancy/stitch-usage.json` — the planner prompt instructs Claude to read this file before generating, increment the count, and write it back. Simple JSON: `{ "month": "2026-03", "count": 42 }`. No TypeScript module needed — Claude reads/writes the file directly.
 - Warn at 50% (175 generations) — display a warning in the plan output
 - Skip generation at 100% with a note in the plan comment
@@ -394,6 +405,7 @@ After UI ticket implementation:
 Visual checks are fundamentally different from code checks (lint/test/typecheck): they're slow (10-30s each), non-deterministic (rendering varies), and most findings aren't auto-fixable (Lighthouse scores, visual regressions). They run as a **new phase 10a (visual-verify) in the once orchestrator**, between deliver (phase 10) and cost (phase 11). This phase only activates for UI tickets (detected from the plan's `## Design Specifications` section presence). Not in the Stop hook.
 
 **Phase 1: Stop hook (existing, fast, blocking)**
+
 ```
 Stop event fires → lint, test, typecheck
   Pass → allow delivery (create PR)
@@ -401,6 +413,7 @@ Stop event fires → lint, test, typecheck
 ```
 
 **Phase 2: Post-delivery visual checks (new, slow, non-blocking)**
+
 ```
 PR created → is this a UI ticket?
   No → skip
@@ -416,6 +429,7 @@ PR created → is this a UI ticket?
 ```
 
 This separation means:
+
 - Code checks remain fast and blocking (same as v0.7.0)
 - Visual checks run after the PR exists, don't block delivery, don't hit the time guard
 - The reviewer sees visual results alongside the code diff
@@ -426,12 +440,12 @@ This separation means:
 
 ## Env Vars
 
-| Variable | Default | Description |
-|---|---|---|
-| `CLANCY_STITCH` | `false` | Enable Google Stitch design preview generation. Requires `STITCH_API_KEY`. |
-| `STITCH_API_KEY` | — | Google Stitch API key. Required when `CLANCY_STITCH=true`. |
-| `CLANCY_LIGHTHOUSE_THRESHOLD` | `0` | Minimum Lighthouse score before warning. Range: 0–100. `0` = disabled (default). |
-| `CLANCY_DEV_URLS` | — | Manual URL mapping for visual verification. Format: `LoginForm=http://localhost:3000/login,Dashboard=http://localhost:3000/`. Falls back to `### Pages` in design specs or Storybook auto-detection. |
+| Variable                      | Default | Description                                                                                                                                                                                          |
+| ----------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CLANCY_STITCH`               | `false` | Enable Google Stitch design preview generation. Requires `STITCH_API_KEY`.                                                                                                                           |
+| `STITCH_API_KEY`              | —       | Google Stitch API key. Required when `CLANCY_STITCH=true`.                                                                                                                                           |
+| `CLANCY_LIGHTHOUSE_THRESHOLD` | `0`     | Minimum Lighthouse score before warning. Range: 0–100. `0` = disabled (default).                                                                                                                     |
+| `CLANCY_DEV_URLS`             | —       | Manual URL mapping for visual verification. Format: `LoginForm=http://localhost:3000/login,Dashboard=http://localhost:3000/`. Falls back to `### Pages` in design specs or Storybook auto-detection. |
 
 All env vars are defined in `.clancy/.env` and validated by the Zod schema in `src/schemas/env.ts`.
 
@@ -441,19 +455,19 @@ All env vars are defined in `.clancy/.env` and validated by the Zod schema in `s
 
 ### New Files
 
-| Path | Purpose | Format | Created by | Lifetime |
-|---|---|---|---|---|
+| Path                        | Purpose                          | Format                                      | Created by                               | Lifetime                 |
+| --------------------------- | -------------------------------- | ------------------------------------------- | ---------------------------------------- | ------------------------ |
 | `.clancy/stitch-usage.json` | Stitch generation count tracking | JSON: `{ "month": "2026-03", "count": 42 }` | Claude (via planner prompt instructions) | Reset when month changes |
 
 ### Modified Files
 
-| Path | Change |
-|---|---|
-| `src/roles/planner/workflows/plan.md` | Add conditional design instructions, `## Design Specifications` template (6 sections incl. Pages), UI ticket detection, smart feedback classification, Stitch MCP invocation, usage tracking |
-| `src/roles/setup/workflows/init.md` | Add design tool prompt (None / Figma MCP / Google Stitch / Both) |
-| `src/schemas/env.ts` | Add `CLANCY_STITCH`, `STITCH_API_KEY`, `CLANCY_LIGHTHOUSE_THRESHOLD`, `CLANCY_DEV_URLS` |
-| `src/scripts/once/phases/visual-verify.ts` | NEW: post-delivery visual verification phase (Playwright + axe-core + Lighthouse). Runs after deliver phase, before cost phase. Dev server lifecycle managed here. |
-| `src/scripts/shared/pull-request/pr-body/pr-body.ts` | Add `## Visual Verification`, `## Accessibility Verification`, `## Lighthouse Scores` sections (all 6 boards) |
+| Path                                                 | Change                                                                                                                                                                                       |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/roles/planner/workflows/plan.md`                | Add conditional design instructions, `## Design Specifications` template (6 sections incl. Pages), UI ticket detection, smart feedback classification, Stitch MCP invocation, usage tracking |
+| `src/roles/setup/workflows/init.md`                  | Add design tool prompt (None / Figma MCP / Google Stitch / Both)                                                                                                                             |
+| `src/schemas/env.ts`                                 | Add `CLANCY_STITCH`, `STITCH_API_KEY`, `CLANCY_LIGHTHOUSE_THRESHOLD`, `CLANCY_DEV_URLS`                                                                                                      |
+| `src/scripts/once/phases/visual-verify.ts`           | NEW: post-delivery visual verification phase (Playwright + axe-core + Lighthouse). Runs after deliver phase, before cost phase. Dev server lifecycle managed here.                           |
+| `src/scripts/shared/pull-request/pr-body/pr-body.ts` | Add `## Visual Verification`, `## Accessibility Verification`, `## Lighthouse Scores` sections (all 6 boards)                                                                                |
 
 ---
 
@@ -466,6 +480,7 @@ Three waves with devil's advocate review gates. Each wave is a branch + PR. Ship
 **Scope:** Extend planner workflow with design instructions. Add conditional `## Design Specifications` template. Implement UI ticket detection. Add smart feedback classification for post-design comments.
 
 **Files:**
+
 - `src/roles/planner/workflows/plan.md` — conditional design instructions, specification template, feedback classification guidance
 - `src/roles/planner/workflows/plan.md` test scenarios — verify design specs appear for UI tickets, verify skipped for non-UI tickets, verify feedback classification
 
@@ -476,6 +491,7 @@ Three waves with devil's advocate review gates. Each wave is a branch + PR. Ship
 **Scope:** SDK setup, Stitch generation from design specs, board comment posting (screenshot + link), feedback loop integration, init wizard update, usage tracking.
 
 **Files:**
+
 - `src/roles/planner/workflows/plan.md` — add Stitch MCP tool invocation after plan generation (conditional on `CLANCY_STITCH=true`). Includes inline instructions for: reading `.clancy/stitch-usage.json`, checking generation count, calling `build_site` + `get_screen_image` MCP tools, posting board comment with screenshot, incrementing usage count. All Stitch logic lives in the markdown prompt — no separate TypeScript modules needed (the planner is a markdown workflow, not TypeScript).
 - `src/roles/setup/workflows/init.md` — design tool prompt + MCP server configuration
 - `src/schemas/env.ts` — `CLANCY_STITCH`, `STITCH_API_KEY`
@@ -491,6 +507,7 @@ Three waves with devil's advocate review gates. Each wave is a branch + PR. Ship
 **Scope:** Playwright CLI (dev server detection, screenshot, visual diff), axe-core CLI (WCAG check against specs), Lighthouse CI (score reporting). Verification gate agent prompt update. PR body format updates.
 
 **Files:**
+
 - `src/scripts/shared/verify/playwright.ts` — NEW: dev server detection, launch, screenshot, structural comparison
 - `src/scripts/shared/verify/axe.ts` — NEW: run axe-core, check against specs, classify violations by WCAG level
 - `src/scripts/shared/verify/lighthouse.ts` — NEW: run Lighthouse, parse scores, format report

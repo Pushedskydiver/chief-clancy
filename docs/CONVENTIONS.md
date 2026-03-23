@@ -8,35 +8,35 @@ Standards enforced across the `@chief-clancy` monorepo. All rules are configured
 
 ## Complexity Limits (ESLint)
 
-| Rule | Limit | Rationale |
-|---|---|---|
-| `complexity` (cyclomatic) | 10 | NIST standard. Forces extraction of complex logic. |
-| `sonarjs/cognitive-complexity` | 15 | Penalises nesting over flat branching. More forgiving for early-return patterns. |
-| `max-lines-per-function` | 50 (skip blanks/comments) | Forces decomposition. If a function needs 51 lines, it's doing two things. |
-| `max-lines` (per file) | 300 (skip blanks/comments) | Keeps modules focused. |
-| `max-params` | 3 | Forces options objects. Self-documenting call sites. |
-| `max-depth` | 3 | No deep nesting. Forces early returns and extraction. |
+| Rule                           | Limit                      | Rationale                                                                        |
+| ------------------------------ | -------------------------- | -------------------------------------------------------------------------------- |
+| `complexity` (cyclomatic)      | 10                         | NIST standard. Forces extraction of complex logic.                               |
+| `sonarjs/cognitive-complexity` | 15                         | Penalises nesting over flat branching. More forgiving for early-return patterns. |
+| `max-lines-per-function`       | 50 (skip blanks/comments)  | Forces decomposition. If a function needs 51 lines, it's doing two things.       |
+| `max-lines` (per file)         | 300 (skip blanks/comments) | Keeps modules focused.                                                           |
+| `max-params`                   | 3                          | Forces options objects. Self-documenting call sites.                             |
+| `max-depth`                    | 3                          | No deep nesting. Forces early returns and extraction.                            |
 
 ---
 
 ## Functional Rules (eslint-plugin-functional)
 
-| Rule | Setting | Notes |
-|---|---|---|
-| `no-let` | error | `const` everywhere. Disable per-line where genuinely needed. |
-| `immutable-data` | error (ignoreImmediateMutation, ignoreClasses) | No `obj.foo = bar`, no `arr.push()`. Spread/concat. Test files exempt. |
-| `prefer-readonly-type` | warn (allowLocalMutation) | Function params marked readonly. Gradual adoption. |
-| `no-loop-statements` | warn | Prefer `.map()/.filter()`. Disable for orchestration where loops are clearer. |
+| Rule                   | Setting                                        | Notes                                                                         |
+| ---------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------- |
+| `no-let`               | error                                          | `const` everywhere. Disable per-line where genuinely needed.                  |
+| `immutable-data`       | error (ignoreImmediateMutation, ignoreClasses) | No `obj.foo = bar`, no `arr.push()`. Spread/concat. Test files exempt.        |
+| `prefer-readonly-type` | warn (allowLocalMutation)                      | Function params marked readonly. Gradual adoption.                            |
+| `no-loop-statements`   | warn                                           | Prefer `.map()/.filter()`. Disable for orchestration where loops are clearer. |
 
 ---
 
 ## Architecture Enforcement (eslint-plugin-boundaries)
 
-| Rule | Effect |
-|---|---|
+| Rule                                       | Effect   |
+| ------------------------------------------ | -------- |
 | Core imports nothing from terminal or chat | Enforced |
-| Terminal imports from core only | Enforced |
-| Chat imports from core only | Enforced |
+| Terminal imports from core only            | Enforced |
+| Chat imports from core only                | Enforced |
 | No cross-imports between terminal and chat | Enforced |
 
 ---

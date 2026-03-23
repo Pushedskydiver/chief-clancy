@@ -25,15 +25,15 @@ docs/decisions/v0.8.24/
 
 ### Active
 
-| Directory | Feature | Version |
-|---|---|---|
-| `monorepo/` | Monorepo rebuild — `@chief-clancy` workspace. Full brief with phases, standards, PR breakdowns. | — |
-| `v0.9.0/` | Design sub-phase in planner, Google Stitch integration, Playwright/axe-core/Lighthouse verification. Has `brief.md` + `design.md`. | v0.9.0 |
+| Directory   | Feature                                                                                                                            | Version |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `monorepo/` | Monorepo rebuild — `@chief-clancy` workspace. Full brief with phases, standards, PR breakdowns.                                    | —       |
+| `v0.9.0/`   | Design sub-phase in planner, Google Stitch integration, Playwright/axe-core/Lighthouse verification. Has `brief.md` + `design.md`. | v0.9.0  |
 
 ### Carried over from old repo
 
-| Directory | Feature | Notes |
-|---|---|---|
+| Directory  | Feature                                                                                                         | Notes                        |
+| ---------- | --------------------------------------------------------------------------------------------------------------- | ---------------------------- |
 | `v0.8.24/` | Code quality refactor — `fetchAndParse<T>()`, deliver decomposition, label CRUD consolidation. Has `design.md`. | Carried as-is from old repo. |
 
 ### Archived (deleted after shipping)

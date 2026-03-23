@@ -7,11 +7,11 @@
 
 ## Packages
 
-| Package | Description |
-|---|---|
-| [`@chief-clancy/core`](./packages/core) | Board intelligence, schemas, types, ticket lifecycle, phase pipeline, shared utilities |
-| [`@chief-clancy/terminal`](./packages/terminal) | Installer, slash commands, hooks, AFK runner, agents, Claude CLI bridge |
-| [`chief-clancy`](./packages/chief-clancy) | Thin bin wrapper — `npx chief-clancy` delegates to `@chief-clancy/terminal` |
+| Package                                         | Description                                                                            |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [`@chief-clancy/core`](./packages/core)         | Board intelligence, schemas, types, ticket lifecycle, phase pipeline, shared utilities |
+| [`@chief-clancy/terminal`](./packages/terminal) | Installer, slash commands, hooks, AFK runner, agents, Claude CLI bridge                |
+| [`chief-clancy`](./packages/chief-clancy)       | Thin bin wrapper — `npx chief-clancy` delegates to `@chief-clancy/terminal`            |
 
 ## License
 

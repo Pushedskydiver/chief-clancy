@@ -45,19 +45,19 @@ This avoids Stitch/Playwright issues blocking the highest-value feature (design 
 
 ### In scope
 
-| Feature | Description |
-|---|---|
-| Design sub-phase | Conditional `## Design Specifications` section in planner output for UI tickets |
-| 6 specification sections | Component specs, accessibility specs, content specs, user flows (Mermaid), layout descriptions, pages (URL mapping) |
-| Google Stitch integration | Optional (`CLANCY_STITCH=true`). MCP-based, not SDK. Screenshot + link posted as board comment. All 6 boards with per-board screenshot persistence (GitHub content API, Jira attachment, others via URL). |
-| 2-path feedback classification | Technical-only feedback → revise plan only. Everything else → revise specs + regenerate Stitch. |
-| Stitch usage tracking | `.clancy/stitch-usage.json` — monthly count, warn at 50%, skip at 100%. Claude reads/writes directly (no TypeScript module). |
-| Playwright CLI | Post-delivery screenshots of affected pages. Structural comparison against Stitch (if available) or spec descriptions. |
-| axe-core CLI | WCAG compliance against accessibility specs. A-level violations flagged, auto-fixable ones get follow-up commits. |
-| Lighthouse CI | Performance/accessibility/SEO scores posted as PR comment. Configurable threshold (`CLANCY_LIGHTHOUSE_THRESHOLD`, default: 0 = disabled). |
-| Phase 10a (visual-verify) | New orchestrator phase between deliver (10) and cost (11). Phase file in `phases/`, utility modules in `src/scripts/shared/verify/`. Only activates for UI tickets. Dev server lifecycle managed here. |
-| Init wizard update | Design tool selection (None / Figma / Stitch / Both) when Planner or Strategist enabled. |
-| `CLANCY_DEV_URLS` env var | Manual URL mapping for visual verification (`LoginForm=http://localhost:3000/login`). Falls back to `### Pages` in design specs or Storybook auto-detection. |
+| Feature                        | Description                                                                                                                                                                                               |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Design sub-phase               | Conditional `## Design Specifications` section in planner output for UI tickets                                                                                                                           |
+| 6 specification sections       | Component specs, accessibility specs, content specs, user flows (Mermaid), layout descriptions, pages (URL mapping)                                                                                       |
+| Google Stitch integration      | Optional (`CLANCY_STITCH=true`). MCP-based, not SDK. Screenshot + link posted as board comment. All 6 boards with per-board screenshot persistence (GitHub content API, Jira attachment, others via URL). |
+| 2-path feedback classification | Technical-only feedback → revise plan only. Everything else → revise specs + regenerate Stitch.                                                                                                           |
+| Stitch usage tracking          | `.clancy/stitch-usage.json` — monthly count, warn at 50%, skip at 100%. Claude reads/writes directly (no TypeScript module).                                                                              |
+| Playwright CLI                 | Post-delivery screenshots of affected pages. Structural comparison against Stitch (if available) or spec descriptions.                                                                                    |
+| axe-core CLI                   | WCAG compliance against accessibility specs. A-level violations flagged, auto-fixable ones get follow-up commits.                                                                                         |
+| Lighthouse CI                  | Performance/accessibility/SEO scores posted as PR comment. Configurable threshold (`CLANCY_LIGHTHOUSE_THRESHOLD`, default: 0 = disabled).                                                                 |
+| Phase 10a (visual-verify)      | New orchestrator phase between deliver (10) and cost (11). Phase file in `phases/`, utility modules in `src/scripts/shared/verify/`. Only activates for UI tickets. Dev server lifecycle managed here.    |
+| Init wizard update             | Design tool selection (None / Figma / Stitch / Both) when Planner or Strategist enabled.                                                                                                                  |
+| `CLANCY_DEV_URLS` env var      | Manual URL mapping for visual verification (`LoginForm=http://localhost:3000/login`). Falls back to `### Pages` in design specs or Storybook auto-detection.                                              |
 
 ### Out of scope
 
@@ -70,24 +70,24 @@ This avoids Stitch/Playwright issues blocking the highest-value feature (design 
 
 ### v0.9.0 — Design sub-phase
 
-| # | Title | Description | Size | Deps | Mode |
-|---|---|---|---|---|---|
-| 1 | Design sub-phase in planner | Extend `plan.md` with conditional UI detection + 6 specification sections + tests | M | — | AFK |
-| 2 | Smart feedback classification | Add 2-path classification (technical vs everything-else) to `plan.md` re-run flow + tests | S | #1 | AFK |
-| 3 | Documentation + release (v0.9.0) | Doc updates, version bump, CHANGELOG, test badge, glossary, architecture, lifecycle | M | #1, #2 | HITL |
+| #   | Title                            | Description                                                                               | Size | Deps   | Mode |
+| --- | -------------------------------- | ----------------------------------------------------------------------------------------- | ---- | ------ | ---- |
+| 1   | Design sub-phase in planner      | Extend `plan.md` with conditional UI detection + 6 specification sections + tests         | M    | —      | AFK  |
+| 2   | Smart feedback classification    | Add 2-path classification (technical vs everything-else) to `plan.md` re-run flow + tests | S    | #1     | AFK  |
+| 3   | Documentation + release (v0.9.0) | Doc updates, version bump, CHANGELOG, test badge, glossary, architecture, lifecycle       | M    | #1, #2 | HITL |
 
 ### v0.9.1 — Stitch + visual verification
 
-| # | Title | Description | Size | Deps | Mode |
-|---|---|---|---|---|---|
-| 4 | Init wizard — design tools | Add design tool selection step, Stitch API key prompt, MCP server config. Verify Figma MCP coexistence. | S | #1 | AFK |
-| 5 | Settings — design tools | Add D1/D2 design tool settings to settings workflow | S | #4 | AFK |
-| 6 | Stitch MCP — core integration | MCP tool invocation in planner (`build_site` + `get_screen_image`), usage tracking, feedback loop | M | #1, #4 | HITL |
-| 7 | Stitch MCP — board comment posting | Screenshot persistence per board (GitHub upload, Jira attachment, others URL). All 6 boards. | M | #6 | AFK |
-| 8 | Playwright visual verification | Phase 10a, dev server detection/launch/cleanup, screenshot capture, structural comparison. Structural comparison is the primary risk. + tests | L | #1 | HITL |
-| 9 | axe-core accessibility verification | Run axe-core against pages, check against specs, flag A-level violations, auto-fix commits + tests | M | #8 | AFK |
-| 10 | Lighthouse CI | Run Lighthouse, parse scores, post to PR body, configurable threshold + tests | S | #8 | AFK |
-| 11 | Documentation + release (v0.9.1) | All doc updates, version bump, CHANGELOG, test badge | M | #4-#10 | HITL |
+| #   | Title                               | Description                                                                                                                                   | Size | Deps   | Mode |
+| --- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ---- | ------ | ---- |
+| 4   | Init wizard — design tools          | Add design tool selection step, Stitch API key prompt, MCP server config. Verify Figma MCP coexistence.                                       | S    | #1     | AFK  |
+| 5   | Settings — design tools             | Add D1/D2 design tool settings to settings workflow                                                                                           | S    | #4     | AFK  |
+| 6   | Stitch MCP — core integration       | MCP tool invocation in planner (`build_site` + `get_screen_image`), usage tracking, feedback loop                                             | M    | #1, #4 | HITL |
+| 7   | Stitch MCP — board comment posting  | Screenshot persistence per board (GitHub upload, Jira attachment, others URL). All 6 boards.                                                  | M    | #6     | AFK  |
+| 8   | Playwright visual verification      | Phase 10a, dev server detection/launch/cleanup, screenshot capture, structural comparison. Structural comparison is the primary risk. + tests | L    | #1     | HITL |
+| 9   | axe-core accessibility verification | Run axe-core against pages, check against specs, flag A-level violations, auto-fix commits + tests                                            | M    | #8     | AFK  |
+| 10  | Lighthouse CI                       | Run Lighthouse, parse scores, post to PR body, configurable threshold + tests                                                                 | S    | #8     | AFK  |
+| 11  | Documentation + release (v0.9.1)    | All doc updates, version bump, CHANGELOG, test badge                                                                                          | M    | #4-#10 | HITL |
 
 ## Success Criteria
 
