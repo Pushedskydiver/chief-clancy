@@ -45,6 +45,9 @@ const parseLine = (line: string): readonly [string, string] | undefined => {
   if (eqIndex === -1) return undefined;
 
   const key = trimmed.slice(0, eqIndex).trim();
+
+  if (!key) return undefined;
+
   const value = stripQuotes(trimmed.slice(eqIndex + 1).trim());
 
   return [key, value] as const;
@@ -95,7 +98,6 @@ export type EnvFileSystem = {
  * @example
  * ```ts
  * import { existsSync, readFileSync } from 'node:fs';
- * import { join } from 'node:path';
  *
  * const env = loadClancyEnv('/path/to/project', {
  *   exists: existsSync,
@@ -107,7 +109,8 @@ export const loadClancyEnv = (
   projectRoot: string,
   fs: EnvFileSystem,
 ): Record<string, string> | undefined => {
-  const envPath = `${projectRoot}/.clancy/.env`;
+  const root = projectRoot.replace(/\/+$/, '');
+  const envPath = `${root}/.clancy/.env`;
 
   if (!fs.exists(envPath)) return undefined;
 

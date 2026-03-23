@@ -56,6 +56,11 @@ describe('parseEnvContent', () => {
     expect(result).toEqual({ KEY: '"value\'' });
   });
 
+  it('ignores lines with empty keys', () => {
+    const result = parseEnvContent('=value\nKEY=val');
+    expect(result).toEqual({ KEY: 'val' });
+  });
+
   it('resolves duplicate keys to the last value', () => {
     const result = parseEnvContent('KEY=first\nKEY=second');
     expect(result).toEqual({ KEY: 'second' });
@@ -181,5 +186,21 @@ describe('loadClancyEnv', () => {
 
     expect(existsPath).toBe('/my/project/.clancy/.env');
     expect(readPath).toBe('/my/project/.clancy/.env');
+  });
+
+  it('strips trailing slashes from projectRoot', () => {
+    let existsPath = '';
+
+    const fs: EnvFileSystem = {
+      exists: (path) => {
+        existsPath = path;
+        return false;
+      },
+      readFile: () => '',
+    };
+
+    loadClancyEnv('/my/project/', fs);
+
+    expect(existsPath).toBe('/my/project/.clancy/.env');
   });
 });
