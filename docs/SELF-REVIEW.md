@@ -34,10 +34,16 @@ This is a **living document** — when Copilot catches something the self-review
 - Are `workspace:*` dependencies correct? (core has no workspace deps, terminal depends on core)
 - Do new modules respect the dependency direction? (core ← terminal ← wrapper)
 
+## Public API surface
+
+- Are new barrel exports genuinely public API, or internal modules that intra-package code consumes via `~/` imports? (installer internals should not be in the package barrel)
+
 ## Security / robustness
 
 - Is `execSync` used with string interpolation? (use `execFileSync` with argument arrays)
 - Are test credential values constructed at runtime where needed? (GitHub secret scanner)
+- Does any security guard use `existsSync` before `lstatSync`? If so, dangling symlinks bypass it — use `lstatSync` in a try/catch swallowing only ENOENT instead
+- Do catch blocks only swallow expected error codes? (e.g. only ENOENT, not EACCES/EPERM — unexpected filesystem states should fail loud)
 
 ## Config inheritance
 
