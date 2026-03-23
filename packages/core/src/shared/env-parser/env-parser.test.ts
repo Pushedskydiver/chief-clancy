@@ -103,7 +103,16 @@ describe('parseEnvContent (property-based)', () => {
     .string({ maxLength: 50 })
     .filter((s) => !s.includes('\n') && !s.includes('\r'));
 
-  it('round-trips key=value pairs (values trimmed)', () => {
+  const stripQuotes = (s: string): string => {
+    if (s.length < 2) return s;
+
+    const isDouble = s.startsWith('"') && s.endsWith('"');
+    const isSingle = s.startsWith("'") && s.endsWith("'");
+
+    return isDouble || isSingle ? s.slice(1, -1) : s;
+  };
+
+  it('round-trips key=value pairs (values trimmed and unquoted)', () => {
     fc.assert(
       fc.property(
         fc.array(fc.tuple(envKey, envValue), { minLength: 1, maxLength: 10 }),
@@ -112,7 +121,7 @@ describe('parseEnvContent (property-based)', () => {
           const result = parseEnvContent(content);
 
           const expected = Object.fromEntries(
-            entries.map(([k, v]) => [k, v.trim()]),
+            entries.map(([k, v]) => [k, stripQuotes(v.trim())]),
           );
           expect(result).toEqual(expected);
         },

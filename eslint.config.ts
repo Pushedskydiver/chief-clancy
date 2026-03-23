@@ -17,7 +17,7 @@ export default defineConfig(
 
   // ── Global ignores ────────────────────────────────────────────
   {
-    ignores: ['dist/', 'node_modules/', '**/hooks/', '**/bin/'],
+    ignores: ['**/dist/', 'node_modules/', '**/hooks/', '**/bin/'],
   },
 
   // ── All TypeScript files ──────────────────────────────────────

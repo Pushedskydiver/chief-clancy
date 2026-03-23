@@ -157,18 +157,41 @@ Three checks, in this strict order, before merging a PR. **DA always runs before
 
 Spin up a devil's advocate agent to read all changed files. For non-trivial changes this is mandatory.
 
+**DA mindset: assume the code is wrong until proven otherwise.** The DA is not a polite colleague — it's a strict reviewer who actively looks for ways the code can break, be exploited, or surprise future callers. Err on the side of over-flagging. If uncertain, flag it as medium+.
+
 **What DA checks:**
 
+Architecture & conventions:
+
 - Architecture violations (cross-package imports, dependency direction)
+- Boundary violations (core importing from terminal)
+- Consistency with conventions (complexity limits, functional rules, chaining limits, named booleans)
+- Missing JSDoc on exported functions, JSDoc proximity to exports
+- Unnecessary complexity or over-engineering
+
+Completeness:
+
 - Missing tests for new exported functions
 - Edge cases not handled
 - Stale references (renamed files, moved modules, wrong paths)
 - Type safety issues (sneaky `any`, unsafe casts, missing narrowing)
+
+Public API:
+
+- Should this be exported? Who calls it? Are internal modules leaking through the package barrel?
 - Barrel export completeness (new exports added to `index.ts`?)
-- Boundary violations (core importing from terminal)
-- Consistency with conventions (complexity limits, functional rules)
-- Missing JSDoc on exported functions
-- Unnecessary complexity or over-engineering
+
+Security & error handling:
+
+- How could a malicious or unexpected input exploit this function? (symlinks, path traversal, injection)
+- Does any security guard use `existsSync` before `lstatSync`? (dangling symlink bypass)
+- What happens when I/O operations fail? Are error codes checked specifically or caught broadly?
+- Do catch blocks only swallow expected errors? (ENOENT is expected; EACCES/EPERM should fail loud)
+- Are file paths constructed safely? (use `node:path` join, reject path separators in user input)
+
+Cross-platform:
+
+- Does this work on Windows? (path separators, CRLF line endings, platform-specific APIs)
 
 **Severity handling:**
 
@@ -176,6 +199,7 @@ Spin up a devil's advocate agent to read all changed files. For non-trivial chan
 - **Low findings:** can be acknowledged and deferred with explicit justification
 - If you disagree with a finding, articulate why — don't silently skip it
 - Deferring a DA finding to see if Copilot catches it is not acceptable — fix it now
+- When in doubt, flag it. A false positive costs a minute to evaluate; a missed finding costs a round-trip with Copilot
 
 ### 2. Self-Review (line-level)
 
@@ -194,6 +218,7 @@ After DA and self-review are clean:
 3. For each Copilot comment:
    - **Evaluate** — understand the underlying issue, not just the suggested code. Copilot identifies valid problems but its fix may not follow our conventions. Decide the best approach independently.
    - **Fix or decline** — apply your own fix if it better follows conventions, apply Copilot's if it's the best option, or decline with reasoning. Always check fixes against CONVENTIONS.md (chaining limits, named booleans, type over interface, etc.).
+   - **Before declining, ask: "What would DA and self-review say?"** Think through whether the issue matters for exported functions, security, cross-platform, or future callers. Pushing back is fine, but only after genuinely stress-testing the reasoning — not as a default response.
    - **Reply** — always reply to every comment explaining what was done and why. If diverging from Copilot's suggestion, explain the reasoning.
 4. If pushing additional commits, update the PR body to reflect all changes
 
@@ -236,6 +261,23 @@ Independent versioning managed by `@changesets/cli`. Coordinated v1.0.0 release 
 ---
 
 ## Quality Gates
+
+### Pre-commit (automated)
+
+Husky + lint-staged runs on every commit automatically:
+
+- `eslint --fix` on staged `.ts` files
+- `prettier --write` on staged `.ts` files
+
+### Pre-push (manual — no exceptions)
+
+Run the full quality suite before every `git push`. No shortcuts, no "I only changed a doc." Pushing code that fails CI wastes a round-trip.
+
+```bash
+pnpm test && pnpm lint && pnpm typecheck && pnpm format:check
+```
+
+### Pre-merge
 
 Every PR must pass before merging:
 

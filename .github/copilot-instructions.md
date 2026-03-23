@@ -34,9 +34,17 @@ Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash comman
 - **Security:** Use `execFileSync` (argument arrays), never `execSync` with string interpolation
 - **Pure functions by default.** Side effects isolated to boundary functions.
 - **No `reduce()`.** Use `.map()/.filter()` or explicit functions.
+- **Max 3 chained method calls.** Beyond 3, assign to named variables. Inline callbacks must be short — extract longer logic into a named function.
+- **Name compound boolean conditions.** `const isDoubleQuoted = ...` then `if (isDoubleQuoted || isSingleQuoted)`.
 - **No nested ternaries.** Ever.
-- **JSDoc on all exported functions.** Explicit return types on exports.
+- **JSDoc on all exported functions.** Explicit return types on exports. JSDoc must be immediately above its export.
 - **Options objects for 3+ parameters.**
+- **Co-locate types with their module.** Only move to `types/` when used by 2+ modules.
+- **Co-locate helpers with their module.** Extract to `shared/` only when used by 2+ modules.
+- **`eslint-disable` is a last resort.** Look for simpler alternatives first (e.g. `.forEach()` + named function instead of `for...of`).
+- **Cross-platform paths:** Use `node:path` join, never string concatenation. Support Windows.
+- **Symlink guards:** Use `lstatSync` with ENOENT-only catch, not `existsSync` + `lstatSync` (dangling symlink bypass).
+- **Internal modules stay out of the package barrel.** Only public API goes in `src/index.ts`.
 
 ## Complexity limits (enforced by ESLint)
 

@@ -12,7 +12,7 @@ Thanks for your interest in contributing to Clancy! This guide covers the basics
 ```bash
 git clone git@github.com:Pushedskydiver/chief-clancy.git
 cd chief-clancy
-pnpm install
+pnpm install    # also sets up husky pre-commit hooks
 pnpm build
 pnpm test
 ```
@@ -22,8 +22,9 @@ pnpm test
 1. Create a branch from `main` (`feature/`, `fix/`, or `chore/`)
 2. Make your changes following the [code conventions](docs/CONVENTIONS.md)
 3. Write tests — tracer bullet TDD: one test → implement → next test → repeat
-4. Verify: `pnpm test && pnpm typecheck && pnpm lint && pnpm format:check`
-5. Create a PR — the [PR template](.github/pull_request_template.md) has a checklist
+4. Pre-commit hooks run ESLint + Prettier automatically on staged `.ts` files
+5. Before pushing: `pnpm test && pnpm lint && pnpm typecheck && pnpm format:check`
+6. Create a PR — the [PR template](.github/pull_request_template.md) has a checklist
 
 ## Commit format
 
