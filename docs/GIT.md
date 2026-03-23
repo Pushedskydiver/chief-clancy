@@ -42,7 +42,7 @@ type/short-description
 
 Types: `feature`, `fix`, `chore`
 
-Each type has a matching GitHub PR label — use `--label {type}` when creating PRs. Do not create new PR labels unless adding a new branch prefix type.
+Each type has a matching GitHub PR label — use `--label {type}` when creating PRs.
 
 Examples:
 
@@ -90,6 +90,46 @@ The gitmoji comes first, then the conventional commit type. Scope is optional.
 ♻️ refactor: extract preflight into shared function
 📦 chore: scaffold monorepo with pnpm workspaces
 ```
+
+## Labels
+
+### PR labels (required — one per PR)
+
+Every PR must have exactly one type label matching its branch prefix:
+
+| Label | Branch prefix | When to use |
+|---|---|---|
+| `feature` | `feature/` | New user-facing capability |
+| `fix` | `fix/` | Bug fix |
+| `chore` | `chore/` | Maintenance, deps, config, refactors, docs |
+
+Apply with `--label {type}` when creating the PR.
+
+### Package scope labels (recommended)
+
+Add when the PR touches package-specific code:
+
+| Label | When to use |
+|---|---|
+| `core` | Changes to `packages/core/` |
+| `terminal` | Changes to `packages/terminal/` |
+
+PRs touching both packages get both labels. Root-only changes (CI, docs, config) get no scope label.
+
+### Issue labels
+
+Applied automatically by issue templates:
+
+| Label | Source |
+|---|---|
+| `bug` | Bug report template |
+| `enhancement` | Feature request template |
+
+### Rules
+
+- **Do not create ad-hoc labels.** If a new label is needed, discuss first and add it to this list.
+- **One type label per PR.** Never apply both `feature` and `fix` to the same PR — pick the primary intent.
+- **Scope labels are additive.** A PR can have `feature` + `core` + `terminal`.
 
 ## Merge Strategy
 
