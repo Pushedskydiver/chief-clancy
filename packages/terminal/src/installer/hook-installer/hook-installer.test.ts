@@ -194,6 +194,40 @@ describe('installHooks', () => {
     expect(settings.statusLine).toBe(42);
   });
 
+  it('handles malformed hook event arrays gracefully', () => {
+    writeFileSync(
+      join(claudeDir, 'settings.json'),
+      JSON.stringify(
+        {
+          hooks: {
+            SessionStart: ['bad'],
+            PreToolUse: [{ hooks: 'not-an-array' }],
+          },
+        },
+        null,
+        2,
+      ),
+    );
+
+    const result = installHooks({
+      claudeConfigDir: claudeDir,
+      hooksSourceDir: hooksSource,
+    });
+
+    expect(result).toBe(true);
+
+    const settings = JSON.parse(
+      readFileSync(join(claudeDir, 'settings.json'), 'utf8'),
+    ) as Record<string, unknown>;
+    const hooks = settings.hooks as Record<string, unknown[]>;
+
+    expect(hooks.SessionStart).toHaveLength(1);
+    expect(hooks.PostToolUse).toHaveLength(2);
+    expect(hooks.PreToolUse).toHaveLength(2);
+    expect(hooks.PostCompact).toHaveLength(1);
+    expect(hooks.Notification).toHaveLength(1);
+  });
+
   it('returns false when source hooks are missing', () => {
     const result = installHooks({
       claudeConfigDir: claudeDir,

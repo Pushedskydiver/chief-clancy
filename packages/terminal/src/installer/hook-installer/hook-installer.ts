@@ -107,11 +107,13 @@ function isAgentMatch(
   return hasStringPrompt && hook.prompt.slice(0, 100) === fingerprint;
 }
 
-/** Flatten all hooks from a list of entries into a single array. */
+/** Flatten all hooks from a list of entries, filtering out non-object values. */
 function allHooks(
   entries: readonly HookEntry[],
 ): readonly (CommandHook | AgentHook)[] {
-  return entries.flatMap((e) => e.hooks);
+  return entries
+    .flatMap((e) => e.hooks)
+    .filter((h): h is CommandHook | AgentHook => isPlainObject(h));
 }
 
 /** Check whether an event's entries already contain a given command. */
@@ -216,14 +218,24 @@ function mergeHookRegistrations(
   return Object.fromEntries(entries);
 }
 
+/** Check whether a value looks like a HookEntry ({ hooks: [...] }). */
+function isHookEntry(value: unknown): value is HookEntry {
+  if (!isPlainObject(value)) return false;
+  const hooks = (value as { readonly hooks?: unknown }).hooks;
+
+  return Array.isArray(hooks);
+}
+
 /** Safely extract a HookRegistrations record from raw settings.hooks. */
 function normalizeHooks(raw: unknown): HookRegistrations {
   if (!isPlainObject(raw)) return {};
 
-  // Keep only values that are arrays — non-array event values are discarded
-  const safeEntries = Object.entries(raw).filter(
-    (entry): entry is [string, readonly HookEntry[]] => Array.isArray(entry[1]),
-  );
+  const safeEntries = Object.entries(raw)
+    .filter(([, value]) => Array.isArray(value))
+    .map(
+      ([event, value]) =>
+        [event, (value as readonly unknown[]).filter(isHookEntry)] as const,
+    );
 
   return Object.fromEntries(safeEntries);
 }
@@ -265,8 +277,11 @@ function copyHookFiles(sourceDir: string, installDir: string): void {
 
 /** Write a CommonJS package.json so hooks resolve as CJS in ESM projects. */
 function writeCommonJsMarker(installDir: string): void {
+  const packageJsonPath = join(installDir, 'package.json');
+  rejectSymlink(packageJsonPath);
+
   writeFileSync(
-    join(installDir, 'package.json'),
+    packageJsonPath,
     JSON.stringify({ type: 'commonjs' }, null, 2) + '\n',
   );
 }
@@ -274,10 +289,9 @@ function writeCommonJsMarker(installDir: string): void {
 /** Read and parse settings.json, returning empty on ENOENT or malformed JSON. */
 function readSettingsFile(settingsFile: string): Record<string, unknown> {
   try {
-    return JSON.parse(readFileSync(settingsFile, 'utf8')) as Record<
-      string,
-      unknown
-    >;
+    const parsed: unknown = JSON.parse(readFileSync(settingsFile, 'utf8'));
+
+    return isPlainObject(parsed) ? parsed : {};
   } catch (err: unknown) {
     if (hasErrorCode(err, 'ENOENT') || err instanceof SyntaxError) return {};
 
