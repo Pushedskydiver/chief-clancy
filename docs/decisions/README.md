@@ -25,10 +25,11 @@ docs/decisions/v0.8.24/
 
 ### Active
 
-| Directory   | Feature                                                                                                                            | Version |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| `monorepo/` | Monorepo rebuild — `@chief-clancy` workspace. Full brief with phases, standards, PR breakdowns.                                    | —       |
-| `v0.9.0/`   | Design sub-phase in planner, Google Stitch integration, Playwright/axe-core/Lighthouse verification. Has `brief.md` + `design.md`. | v0.9.0  |
+| Directory       | Feature                                                                                                                            | Version |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `monorepo/`     | Monorepo rebuild — `@chief-clancy` workspace. Full brief with phases, standards, PR breakdowns.                                    | —       |
+| `architecture/` | Package evolution strategy — v1 as core+terminal, internal capability boundaries, future extraction plan.                          | —       |
+| `v0.9.0/`       | Design sub-phase in planner, Google Stitch integration, Playwright/axe-core/Lighthouse verification. Has `brief.md` + `design.md`. | v0.9.0  |
 
 ### Carried over from old repo
 

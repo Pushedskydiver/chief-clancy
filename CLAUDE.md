@@ -14,23 +14,40 @@ Autonomous, board-driven development for Claude Code. Monorepo for `@chief-clanc
 
 ## Key paths
 
-| Path                               | Purpose                                                                                                 |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `packages/core/src/board/`         | Board type, factory, 6 implementations (jira, github, linear, shortcut, notion, azdo)                   |
-| `packages/core/src/lifecycle/`     | Ticket lifecycle modules (fetch-ticket, deliver, rework, pr-creation, lock, cost, resume, quality)      |
-| `packages/core/src/pipeline/`      | Phase pipeline (13 pure phases, context)                                                                |
-| `packages/core/src/schemas/`       | Zod validation (env, board APIs)                                                                        |
-| `packages/core/src/types/`         | Shared type definitions (board, remote)                                                                 |
-| `packages/core/src/shared/`        | Pure utilities (git-ops, env-parser, branch, progress, format, remote, http, feasibility, pull-request) |
-| `packages/terminal/src/installer/` | Installer modules (file-ops, hook-installer, manifest, prompts, UI)                                     |
-| `packages/terminal/src/roles/`     | 5 roles — slash commands and workflows                                                                  |
-| `packages/terminal/src/afk/`       | AFK runner + session reports                                                                            |
-| `packages/terminal/src/agents/`    | 7 agent prompts                                                                                         |
-| `packages/terminal/src/templates/` | CLAUDE.md template for user projects                                                                    |
-| `packages/terminal/src/shared/`    | Terminal-specific utilities (claude-cli, prompt, notify, ansi)                                          |
-| `packages/terminal/hooks/`         | 9 pre-built CommonJS hooks                                                                              |
-| `docs/`                            | Project documentation                                                                                   |
-| `docs/decisions/`                  | Design decisions organised by version                                                                   |
+### Core (domain model + capabilities)
+
+| Path                         | Future package | Purpose                                                       |
+| ---------------------------- | -------------- | ------------------------------------------------------------- |
+| `packages/core/src/board/`   | core (forever) | Board type, factory, 6 implementations                        |
+| `packages/core/src/types/`   | core (forever) | Shared type definitions (board, remote)                       |
+| `packages/core/src/schemas/` | core (forever) | Zod validation (env, board APIs)                              |
+| `packages/core/src/shared/`  | core (forever) | Pure utilities (git-ops, env-parser, branch, format, http...) |
+| `packages/core/src/dev/`     | @c-c/dev       | Ticket lifecycle, phase pipeline, delivery orchestration      |
+| `packages/core/src/brief/`   | @c-c/brief     | Strategist — grill, decomposition, ticket creation            |
+| `packages/core/src/plan/`    | @c-c/plan      | Implementation planning, approval flow                        |
+| `packages/core/src/design/`  | @c-c/design    | Design specs, Stitch integration, visual verification         |
+| `packages/core/src/qa/`      | @c-c/qa        | Verification gate, self-healing retry, quality metrics        |
+
+### Terminal (CLI + automation)
+
+| Path                               | Future package | Purpose                                           |
+| ---------------------------------- | -------------- | ------------------------------------------------- |
+| `packages/terminal/src/installer/` | terminal       | Installer modules (file-ops, hooks, manifest, UI) |
+| `packages/terminal/src/roles/`     | terminal       | 5 roles — slash commands and workflows            |
+| `packages/terminal/src/hooks/`     | terminal       | 9 pre-built CommonJS hooks                        |
+| `packages/terminal/src/agents/`    | terminal       | 7 agent prompts                                   |
+| `packages/terminal/src/templates/` | terminal       | CLAUDE.md template for user projects              |
+| `packages/terminal/src/shared/`    | terminal       | Terminal utilities (ansi, prompt, notify)         |
+| `packages/terminal/src/automate/`  | @c-c/automate  | AFK runner, board watcher, quiet hours, reports   |
+
+### Docs
+
+| Path              | Purpose                               |
+| ----------------- | ------------------------------------- |
+| `docs/`           | Project documentation                 |
+| `docs/decisions/` | Design decisions organised by version |
+
+> See [package evolution strategy](docs/decisions/architecture/package-evolution.md) for the full extraction plan and criteria.
 
 ## Key documentation
 
