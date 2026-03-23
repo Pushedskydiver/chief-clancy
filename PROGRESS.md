@@ -21,7 +21,7 @@ Adjusted after phase validation (2026-03-23). Reordered to build leaves first, s
 
 | PR  | Description                                                                   | Status      |
 | --- | ----------------------------------------------------------------------------- | ----------- |
-| 2.0 | Prerequisites: `terminal/src/shared/ansi/` + `core/src/shared/env-parser/`    | In review   |
+| 2.0 | Prerequisites: `terminal/src/shared/ansi/` + `core/src/shared/env-parser/`    | Done        |
 | 2.1 | File operations: `file-ops/` — fileHash, copyDir, inlineWorkflows             | Not started |
 | 2.2 | Prompts + UI: `prompts/` (DI readline) + `ui/` (banner, success)              | Not started |
 | 2.3 | Manifest: `manifest/` — buildManifest, detectModified, backup (immutable)     | Not started |
