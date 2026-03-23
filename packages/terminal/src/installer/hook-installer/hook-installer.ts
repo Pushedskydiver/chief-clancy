@@ -15,6 +15,8 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 
+import { hasErrorCode } from '~/installer/shared/fs-errors.js';
+
 /** A command hook entry in Claude's settings.json. */
 type CommandHook = { readonly type: 'command'; readonly command: string };
 
@@ -49,13 +51,6 @@ const HOOK_FILES = [
   'clancy-notification.js',
   'clancy-drift-detector.js',
 ] as const;
-
-/** Check whether an error has a specific Node.js error code. */
-function hasErrorCode(err: unknown, code: string): boolean {
-  return (
-    err instanceof Error && (err as { readonly code?: string }).code === code
-  );
-}
 
 /** Throw if the given path is a symlink. Only swallows ENOENT. */
 function rejectSymlink(path: string): void {

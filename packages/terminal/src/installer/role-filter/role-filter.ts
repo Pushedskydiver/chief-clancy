@@ -9,6 +9,7 @@ import { mkdirSync, readdirSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { copyDir } from '~/installer/file-ops/file-ops.js';
+import { hasErrorCode } from '~/installer/shared/fs-errors.js';
 
 /** Roles that are always installed regardless of CLANCY_ROLES. */
 const CORE_ROLES = new Set(['implementer', 'reviewer', 'setup']);
@@ -33,13 +34,6 @@ function shouldInstallRole(
   if (CORE_ROLES.has(roleName)) return true;
 
   return enabledRoles === null || enabledRoles.has(roleName);
-}
-
-/** Check whether an error has a specific Node.js error code. */
-function hasErrorCode(err: unknown, code: string): boolean {
-  return (
-    err instanceof Error && (err as { readonly code?: string }).code === code
-  );
 }
 
 /** Silently unlink a file, ignoring ENOENT if it no longer exists. */
