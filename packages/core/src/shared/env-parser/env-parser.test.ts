@@ -188,7 +188,7 @@ describe('loadClancyEnv', () => {
     expect(readPath).toBe('/my/project/.clancy/.env');
   });
 
-  it('strips trailing slashes from projectRoot', () => {
+  it('normalises trailing slashes from projectRoot', () => {
     let existsPath = '';
 
     const fs: EnvFileSystem = {

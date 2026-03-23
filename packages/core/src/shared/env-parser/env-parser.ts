@@ -2,8 +2,9 @@
  * Clancy .env file parser.
  *
  * Reads key=value pairs from `.clancy/.env` files. Supports quoted values,
- * comments, and blank lines. Zero dependencies.
+ * comments, and blank lines. No third-party dependencies.
  */
+import { join } from 'node:path';
 
 /**
  * Strip surrounding quotes from a value string.
@@ -109,8 +110,7 @@ export const loadClancyEnv = (
   projectRoot: string,
   fs: EnvFileSystem,
 ): Record<string, string> | undefined => {
-  const root = projectRoot.replace(/\/+$/, '');
-  const envPath = `${root}/.clancy/.env`;
+  const envPath = join(projectRoot, '.clancy', '.env');
 
   if (!fs.exists(envPath)) return undefined;
 
