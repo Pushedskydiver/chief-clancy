@@ -73,7 +73,7 @@ pnpm format             # Format with Prettier
 pnpm format:check       # Check formatting
 
 # Pre-push quality suite (run before every git push — no exceptions)
-pnpm test && pnpm lint && pnpm typecheck && pnpm format:check
+pnpm test && pnpm lint && pnpm typecheck && pnpm format:check && pnpm knip && pnpm publint && pnpm attw
 
 # Per-package — run from package directory
 pnpm test               # Run package tests (vitest)

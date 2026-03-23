@@ -274,7 +274,7 @@ Husky + lint-staged runs on every commit automatically:
 Run the full quality suite before every `git push`. No shortcuts, no "I only changed a doc." Pushing code that fails CI wastes a round-trip.
 
 ```bash
-pnpm test && pnpm lint && pnpm typecheck && pnpm format:check
+pnpm test && pnpm lint && pnpm typecheck && pnpm format:check && pnpm knip && pnpm publint && pnpm attw
 ```
 
 ### Pre-merge
