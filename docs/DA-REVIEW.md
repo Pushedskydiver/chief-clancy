@@ -51,13 +51,13 @@ This is a **living document** — when Copilot catches something the DA should h
 - [ ] TOCTOU races — is `existsSync` followed by a read/write on the same path? Wrap in try/catch instead
 - [ ] Do catch blocks only swallow expected error codes? (ENOENT is expected; EACCES/EPERM should fail loud)
 - [ ] Are file paths constructed safely? (`path.join`, reject path separators in user input)
-- [ ] If one function guards input paths, is the same guard applied in every exported function that accepts similar paths? (PR 2.3: DA caught traversal on detect but Copilot caught the gap on backup)
+- [ ] If one function guards input paths, is the same guard applied in every exported function that accepts similar paths? (e.g. DA guarded detect, but Copilot caught the same traversal gap on backup)
 - [ ] Does metadata/logging accurately reflect what actually happened? If operations can be skipped, track successes and report those, not the input list
 
 ## Cross-platform
 
 - [ ] Does this work on Windows? (path separators, CRLF line endings, platform-specific APIs)
-- [ ] Are path checks using `path.relative()` / `path.sep` instead of hardcoded `/`? (PR 2.3: `startsWith(base + '/')` failed on Windows)
+- [ ] Are path checks using `path.relative()` / `path.sep` instead of hardcoded `/`? (e.g. `startsWith(base + '/')` fails on Windows)
 - [ ] Are forward slashes in relative paths consistent across platforms?
 
 ## Severity handling

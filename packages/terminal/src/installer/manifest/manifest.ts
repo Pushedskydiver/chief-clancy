@@ -26,8 +26,10 @@ function isInsideBase(base: string, target: string): boolean {
   return rel !== '' && !escapesBase && !isAbsolute(rel);
 }
 
-/** Reject relative paths containing `.` or `..` segments or absolute prefixes. */
+/** Reject paths with traversal segments, backslashes, or absolute prefixes. */
 function isSafeRelativePath(rel: string): boolean {
+  if (rel === '' || rel.includes('\\')) return false;
+  if (isAbsolute(rel)) return false;
   const segments = rel.split('/');
   return segments.every((s) => s !== '.' && s !== '..');
 }
@@ -35,6 +37,28 @@ function isSafeRelativePath(rel: string): boolean {
 /** Check whether an error is a file-not-found (ENOENT). */
 function isEnoent(err: unknown): boolean {
   return err instanceof Error && 'code' in err && err.code === 'ENOENT';
+}
+
+/** Resolve a single directory entry into `[rel, hash]` pairs. */
+function entryToPairs(
+  entry: {
+    readonly isSymbolicLink: () => boolean;
+    readonly isDirectory: () => boolean;
+    readonly isFile: () => boolean;
+    readonly name: string;
+  },
+  dir: string,
+  prefix: string,
+): readonly (readonly [string, string])[] {
+  if (entry.isSymbolicLink()) return [];
+
+  const full = join(dir, entry.name);
+  const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
+
+  if (entry.isDirectory()) return collectEntries(full, rel);
+  if (!entry.isFile()) return [];
+
+  return [[rel, fileHash(full)] as const];
 }
 
 /**
@@ -48,21 +72,7 @@ function collectEntries(
   prefix: string,
 ): readonly (readonly [string, string])[] {
   const entries = readdirSync(dir, { withFileTypes: true });
-
-  return entries.flatMap((entry) => {
-    if (entry.isSymbolicLink()) return [];
-
-    const full = join(dir, entry.name);
-    const rel = prefix ? `${prefix}/${entry.name}` : entry.name;
-
-    if (entry.isDirectory()) {
-      return collectEntries(full, rel);
-    }
-
-    if (!entry.isFile()) return [];
-
-    return [[rel, fileHash(full)] as const];
-  });
+  return entries.flatMap((entry) => entryToPairs(entry, dir, prefix));
 }
 
 /**
@@ -172,6 +182,17 @@ function safeCopy(src: string, dest: string): boolean {
   }
 }
 
+/** Copy a single modified file into the patches directory, returning its rel path on success. */
+function copyToPatches(
+  entry: ModifiedFile,
+  patchesDir: string,
+): readonly string[] {
+  const backupPath = join(patchesDir, entry.rel);
+  if (!isInsideBase(patchesDir, backupPath)) return [];
+  mkdirSync(dirname(backupPath), { recursive: true });
+  return safeCopy(entry.absPath, backupPath) ? [entry.rel] : [];
+}
+
 /**
  * Back up modified files to a patches directory.
  *
@@ -191,12 +212,9 @@ export function backupModifiedFiles(
 
   mkdirSync(patchesDir, { recursive: true });
 
-  const copiedPaths = modified.flatMap(({ rel, absPath }) => {
-    const backupPath = join(patchesDir, rel);
-    if (!isInsideBase(patchesDir, backupPath)) return [];
-    mkdirSync(dirname(backupPath), { recursive: true });
-    return safeCopy(absPath, backupPath) ? [rel] : [];
-  });
+  const copiedPaths = modified.flatMap((entry) =>
+    copyToPatches(entry, patchesDir),
+  );
 
   if (copiedPaths.length === 0) return null;
 
