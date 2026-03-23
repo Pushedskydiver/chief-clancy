@@ -1,14 +1,17 @@
+import { defineConfig } from 'eslint/config';
 import eslint from '@eslint/js';
-import boundaries from 'eslint-plugin-boundaries';
+// boundaries v6 types don't export a valid ESLint Plugin shape
+import * as _boundaries from 'eslint-plugin-boundaries';
+const boundaries = _boundaries as Record<string, unknown>;
 import functional from 'eslint-plugin-functional';
 import sonarjs from 'eslint-plugin-sonarjs';
 import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
 
-export default tseslint.config(
+export default defineConfig(
   // ── Base configs ──────────────────────────────────────────────
   eslint.configs.recommended,
-  ...tseslint.configs.recommended,
+  tseslint.configs.recommended,
   prettier,
 
   // ── Global ignores ────────────────────────────────────────────
