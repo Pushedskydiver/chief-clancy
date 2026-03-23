@@ -59,11 +59,32 @@ function agentEntry(prompt: string, timeout: number): HookEntry {
   return { hooks: [{ type: 'agent', prompt, timeout }] };
 }
 
+/** Check whether a single hook matches a given command string. */
+function isCommandMatch(
+  hook: CommandHook | AgentHook,
+  command: string,
+): boolean {
+  return hook.type === 'command' && hook.command === command;
+}
+
+/** Check whether a single hook matches an agent prompt fingerprint. */
+function isAgentMatch(
+  hook: CommandHook | AgentHook,
+  fingerprint: string,
+): boolean {
+  return hook.type === 'agent' && hook.prompt.slice(0, 100) === fingerprint;
+}
+
+/** Flatten all hooks from a list of entries into a single array. */
+function allHooks(
+  entries: readonly HookEntry[],
+): readonly (CommandHook | AgentHook)[] {
+  return entries.flatMap((e) => e.hooks);
+}
+
 /** Check whether an event's entries already contain a given command. */
 function hasCommand(entries: readonly HookEntry[], command: string): boolean {
-  return entries.some((e) =>
-    e.hooks.some((h) => h.type === 'command' && h.command === command),
-  );
+  return allHooks(entries).some((h) => isCommandMatch(h, command));
 }
 
 /** Check whether an event's entries already contain a matching agent prompt. */
@@ -73,14 +94,7 @@ function hasAgentPrompt(
 ): boolean {
   const fingerprint = prompt.slice(0, 100);
 
-  return entries.some((e) =>
-    e.hooks.some(
-      (h) =>
-        h.type === 'agent' &&
-        'prompt' in h &&
-        h.prompt.slice(0, 100) === fingerprint,
-    ),
-  );
+  return allHooks(entries).some((h) => isAgentMatch(h, fingerprint));
 }
 
 /**
@@ -211,6 +225,13 @@ function writeCommonJsMarker(installDir: string): void {
   );
 }
 
+/** Check whether an error has a specific Node.js error code. */
+function hasErrorCode(err: unknown, code: string): boolean {
+  return (
+    err instanceof Error && (err as { readonly code?: string }).code === code
+  );
+}
+
 /** Read and parse settings.json, returning empty on ENOENT or malformed JSON. */
 function readSettingsFile(settingsFile: string): Record<string, unknown> {
   try {
@@ -219,12 +240,7 @@ function readSettingsFile(settingsFile: string): Record<string, unknown> {
       unknown
     >;
   } catch (err: unknown) {
-    const isNotFound =
-      err instanceof Error &&
-      (err as { readonly code?: string }).code === 'ENOENT';
-    const isParseError = err instanceof SyntaxError;
-
-    if (isNotFound || isParseError) return {};
+    if (hasErrorCode(err, 'ENOENT') || err instanceof SyntaxError) return {};
 
     throw err;
   }
