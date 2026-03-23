@@ -1,7 +1,7 @@
 /**
  * Role-based file filtering for the installer.
  *
- * Copies command/workflow files from role directories into a flat destination,
+ * Copies command/workflow files from role directories into a shared destination,
  * applying core vs optional role filtering. Disabled optional roles have their
  * previously-installed files removed.
  */
@@ -19,7 +19,7 @@ type CopyRoleFilesOptions = {
   readonly rolesDir: string;
   /** The subdirectory within each role (`commands` or `workflows`). */
   readonly subdir: string;
-  /** The flat destination directory. */
+  /** The shared destination directory (all roles merge into this). */
   readonly dest: string;
   /** Set of enabled optional roles, or `null` to install all (first install). */
   readonly enabledRoles: ReadonlySet<string> | null;
@@ -72,10 +72,10 @@ function safeReaddir(dir: string): readonly string[] | null {
 }
 
 /**
- * Copy files from role subdirectories into a flat destination directory.
+ * Copy files from role subdirectories into a shared destination directory.
  *
- * Walks `rolesDir/{role}/{subdir}/` for each role and copies all files
- * flat into `dest`. Core roles (implementer, reviewer, setup) are always
+ * Walks `rolesDir/{role}/{subdir}/` for each role and merges contents
+ * into `dest` (no per-role subdirectories). Core roles (implementer, reviewer, setup) are always
  * copied. Optional roles are only copied if listed in `enabledRoles`,
  * or if `enabledRoles` is `null` (first install — install all).
  *
