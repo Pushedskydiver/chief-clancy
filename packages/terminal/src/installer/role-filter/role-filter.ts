@@ -92,9 +92,9 @@ export function copyRoleFiles(options: CopyRoleFilesOptions): void {
 
   mkdirSync(dest, { recursive: true });
 
-  const roles = readdirSync(rolesDir, { withFileTypes: true }).filter((d) =>
-    d.isDirectory(),
-  );
+  const roles = readdirSync(rolesDir, { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   roles.forEach((role) => {
     const srcDir = join(rolesDir, role.name, subdir);

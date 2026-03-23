@@ -140,4 +140,30 @@ describe('copyRoleFiles', () => {
     // File removed, subdirectory entry skipped (not unlinkable)
     expect(existsSync(join(dest, 'plan.md'))).toBe(false);
   });
+
+  it('copies nested directory content for enabled roles', () => {
+    createRole('implementer', 'commands', ['run.md']);
+    // Add a nested subdirectory with a file
+    const nestedDir = join(
+      testDir,
+      'roles',
+      'implementer',
+      'commands',
+      'workflows',
+    );
+    mkdirSync(nestedDir, { recursive: true });
+    writeFileSync(join(nestedDir, 'deploy.md'), '# deploy workflow');
+
+    const dest = join(testDir, 'dest');
+    copyRoleFiles({
+      rolesDir: join(testDir, 'roles'),
+      subdir: 'commands',
+      dest,
+      enabledRoles: null,
+    });
+
+    // copyDir recursively copies — nested content is preserved
+    expect(existsSync(join(dest, 'run.md'))).toBe(true);
+    expect(existsSync(join(dest, 'workflows', 'deploy.md'))).toBe(true);
+  });
 });
