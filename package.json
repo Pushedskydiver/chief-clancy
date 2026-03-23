@@ -19,10 +19,17 @@
     "format:check": "prettier --check .",
     "knip": "knip",
     "publint": "publint packages/core && publint packages/terminal",
-    "attw": "attw --pack packages/core --ignore-rules cjs-resolves-to-esm no-resolution && attw --pack packages/terminal --ignore-rules cjs-resolves-to-esm no-resolution"
+    "attw": "attw --pack packages/core --ignore-rules cjs-resolves-to-esm no-resolution && attw --pack packages/terminal --ignore-rules cjs-resolves-to-esm no-resolution",
+    "prepare": "husky"
   },
   "volta": {
     "node": "24.14.0"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",
@@ -37,8 +44,10 @@
     "eslint-plugin-functional": "^9.0.4",
     "eslint-plugin-sonarjs": "^4.0.2",
     "fast-check": "^4.6.0",
+    "husky": "^9.1.7",
     "jiti": "^2.6.1",
     "knip": "^6.0.3",
+    "lint-staged": "^16.4.0",
     "prettier": "^3.8.1",
     "publint": "^0.3.18",
     "turbo": "^2.8.20",

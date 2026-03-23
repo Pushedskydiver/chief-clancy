@@ -262,6 +262,23 @@ Independent versioning managed by `@changesets/cli`. Coordinated v1.0.0 release 
 
 ## Quality Gates
 
+### Pre-commit (automated)
+
+Husky + lint-staged runs on every commit automatically:
+
+- `eslint --fix` on staged `.ts` files
+- `prettier --write` on staged `.ts` files
+
+### Pre-push (manual — no exceptions)
+
+Run the full quality suite before every `git push`. No shortcuts, no "I only changed a doc." Pushing code that fails CI wastes a round-trip.
+
+```bash
+pnpm test && pnpm lint && pnpm typecheck && pnpm format:check
+```
+
+### Pre-merge
+
 Every PR must pass before merging:
 
 - [ ] All tests pass (`pnpm test`)
