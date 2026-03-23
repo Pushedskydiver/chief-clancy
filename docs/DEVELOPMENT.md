@@ -192,9 +192,9 @@ After DA and self-review are clean:
      -X POST -f "reviewers[]=copilot-pull-request-reviewer[bot]"
    ```
 3. For each Copilot comment:
-   - **Evaluate** — understand the underlying issue, decide if the suggested fix is the best approach
-   - **Fix or decline** — apply your own fix if better, apply Copilot's if it's the best option, or decline with reasoning
-   - **Reply** — always reply to every comment explaining what was done and why
+   - **Evaluate** — understand the underlying issue, not just the suggested code. Copilot identifies valid problems but its fix may not follow our conventions. Decide the best approach independently.
+   - **Fix or decline** — apply your own fix if it better follows conventions, apply Copilot's if it's the best option, or decline with reasoning. Always check fixes against CONVENTIONS.md (chaining limits, named booleans, type over interface, etc.).
+   - **Reply** — always reply to every comment explaining what was done and why. If diverging from Copilot's suggestion, explain the reasoning.
 4. If pushing additional commits, update the PR body to reflect all changes
 
 ### When to skip reviews
