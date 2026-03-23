@@ -162,6 +162,7 @@ Spin up a devil's advocate agent to read all changed files. For non-trivial chan
 **What DA checks:**
 
 Architecture & conventions:
+
 - Architecture violations (cross-package imports, dependency direction)
 - Boundary violations (core importing from terminal)
 - Consistency with conventions (complexity limits, functional rules, chaining limits, named booleans)
@@ -169,16 +170,19 @@ Architecture & conventions:
 - Unnecessary complexity or over-engineering
 
 Completeness:
+
 - Missing tests for new exported functions
 - Edge cases not handled
 - Stale references (renamed files, moved modules, wrong paths)
 - Type safety issues (sneaky `any`, unsafe casts, missing narrowing)
 
 Public API:
+
 - Should this be exported? Who calls it? Are internal modules leaking through the package barrel?
 - Barrel export completeness (new exports added to `index.ts`?)
 
 Security & error handling:
+
 - How could a malicious or unexpected input exploit this function? (symlinks, path traversal, injection)
 - Does any security guard use `existsSync` before `lstatSync`? (dangling symlink bypass)
 - What happens when I/O operations fail? Are error codes checked specifically or caught broadly?
@@ -186,6 +190,7 @@ Security & error handling:
 - Are file paths constructed safely? (use `node:path` join, reject path separators in user input)
 
 Cross-platform:
+
 - Does this work on Windows? (path separators, CRLF line endings, platform-specific APIs)
 
 **Severity handling:**
