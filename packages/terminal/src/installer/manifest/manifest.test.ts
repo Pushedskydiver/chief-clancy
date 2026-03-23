@@ -138,6 +138,16 @@ describe('detectModifiedFiles', () => {
     expect(modified).toHaveLength(0);
   });
 
+  it('rejects manifest keys with normalised traversal like sub/../a.md', () => {
+    writeFileSync(join(tmp, 'a.md'), 'content');
+    const manifestPath = join(tmp, 'manifest.json');
+    writeFileSync(manifestPath, JSON.stringify({ 'sub/../a.md': 'fakehash' }));
+
+    const modified = detectModifiedFiles(tmp, manifestPath);
+
+    expect(modified).toHaveLength(0);
+  });
+
   it('filters out non-string manifest values', () => {
     writeFileSync(join(tmp, 'a.md'), 'content');
     const manifestPath = join(tmp, 'manifest.json');

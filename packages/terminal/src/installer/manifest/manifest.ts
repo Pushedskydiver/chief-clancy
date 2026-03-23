@@ -12,7 +12,7 @@ import {
   readFileSync,
   writeFileSync,
 } from 'node:fs';
-import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 
 import { fileHash } from '~/installer/file-ops/file-ops.js';
 
@@ -22,7 +22,14 @@ type ModifiedFile = { readonly rel: string; readonly absPath: string };
 /** Check whether a resolved path stays within a base directory. */
 function isInsideBase(base: string, target: string): boolean {
   const rel = relative(resolve(base), resolve(target));
-  return rel !== '' && !rel.startsWith('..') && !isAbsolute(rel);
+  const escapesBase = rel === '..' || rel.startsWith(`..${sep}`);
+  return rel !== '' && !escapesBase && !isAbsolute(rel);
+}
+
+/** Reject relative paths containing `.` or `..` segments or absolute prefixes. */
+function isSafeRelativePath(rel: string): boolean {
+  const segments = rel.split('/');
+  return segments.every((s) => s !== '.' && s !== '..');
 }
 
 /** Check whether an error is a file-not-found (ENOENT). */
@@ -119,8 +126,9 @@ function safeFileHash(filePath: string): string | null {
 
 /** Check whether a manifest entry has been modified on disk. */
 function isModified(baseDir: string, rel: string, hash: string): boolean {
-  const absPath = join(baseDir, rel);
+  if (!isSafeRelativePath(rel)) return false;
 
+  const absPath = join(baseDir, rel);
   if (!isInsideBase(baseDir, absPath)) return false;
 
   const currentHash = safeFileHash(absPath);
