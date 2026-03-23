@@ -22,6 +22,14 @@
     "node": "22.22.1"
   },
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.1.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-boundaries": "^6.0.1",
+    "eslint-plugin-functional": "^9.0.4",
+    "eslint-plugin-sonarjs": "^4.0.2",
+    "jiti": "^2.6.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.57.1"
   }
 }

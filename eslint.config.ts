@@ -1,0 +1,111 @@
+import eslint from '@eslint/js';
+import boundaries from 'eslint-plugin-boundaries';
+import functional from 'eslint-plugin-functional';
+import sonarjs from 'eslint-plugin-sonarjs';
+import tseslint from 'typescript-eslint';
+import prettier from 'eslint-config-prettier';
+
+export default tseslint.config(
+  // ── Base configs ──────────────────────────────────────────────
+  eslint.configs.recommended,
+  ...tseslint.configs.recommended,
+  prettier,
+
+  // ── Global ignores ────────────────────────────────────────────
+  {
+    ignores: ['dist/', 'node_modules/', '**/hooks/', '**/bin/'],
+  },
+
+  // ── All TypeScript files ──────────────────────────────────────
+  {
+    files: ['packages/*/src/**/*.ts'],
+    plugins: {
+      functional,
+      sonarjs,
+      boundaries,
+    },
+    settings: {
+      'boundaries/elements': [
+        { type: 'core', pattern: 'packages/core/*' },
+        { type: 'terminal', pattern: 'packages/terminal/*' },
+        { type: 'chat', pattern: 'packages/chat/*' },
+        { type: 'wrapper', pattern: 'packages/chief-clancy/*' },
+      ],
+    },
+    rules: {
+      // ── TypeScript ──────────────────────────────────────────
+      '@typescript-eslint/consistent-type-imports': 'error',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_' },
+      ],
+      '@typescript-eslint/no-explicit-any': 'error',
+
+      // ── Complexity limits ───────────────────────────────────
+      complexity: ['error', 10],
+      'sonarjs/cognitive-complexity': ['error', 15],
+      'max-lines-per-function': [
+        'error',
+        { max: 50, skipBlankLines: true, skipComments: true },
+      ],
+      'max-lines': [
+        'error',
+        { max: 300, skipBlankLines: true, skipComments: true },
+      ],
+      'max-params': ['error', 3],
+      'max-depth': ['error', 3],
+
+      // ── Functional rules ────────────────────────────────────
+      'functional/no-let': 'error',
+      'functional/immutable-data': [
+        'error',
+        {
+          ignoreImmediateMutation: true,
+          ignoreClasses: true,
+        },
+      ],
+      'functional/prefer-readonly-type': 'warn',
+      'functional/no-loop-statements': 'warn',
+
+      // ── Architecture boundaries ─────────────────────────────
+      'boundaries/dependencies': [
+        'error',
+        {
+          default: 'disallow',
+          rules: [
+            {
+              from: { type: 'core' },
+              allow: [{ to: { type: 'core' } }],
+            },
+            {
+              from: { type: 'terminal' },
+              allow: [{ to: { type: 'terminal' } }, { to: { type: 'core' } }],
+            },
+            {
+              from: { type: 'chat' },
+              allow: [{ to: { type: 'chat' } }, { to: { type: 'core' } }],
+            },
+            {
+              from: { type: 'wrapper' },
+              allow: [
+                { to: { type: 'wrapper' } },
+                { to: { type: 'terminal' } },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  // ── Test file overrides ───────────────────────────────────────
+  {
+    files: ['packages/*/src/**/*.test.ts', '**/test/**/*.ts'],
+    rules: {
+      'functional/immutable-data': 'off',
+      'functional/no-let': 'off',
+      'max-lines-per-function': 'off',
+      'sonarjs/no-duplicate-string': 'off',
+    },
+  },
+);
