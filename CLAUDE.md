@@ -110,6 +110,8 @@ See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the full process. Summary:
 
 **Review gate order is strict:** DA always runs before self-review. See [DEVELOPMENT.md](docs/DEVELOPMENT.md#review-gate--da--self-review--copilot).
 
+**Hand off after 3 PRs, on context compression, or at task boundaries.** Update PROGRESS.md, save decisions to memory, leave a handoff summary. See [DEVELOPMENT.md](docs/DEVELOPMENT.md#when-to-hand-off).
+
 ## Code standards
 
 See [docs/CONVENTIONS.md](docs/CONVENTIONS.md) for all rules. Key items:

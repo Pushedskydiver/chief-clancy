@@ -96,12 +96,47 @@ Every session follows this pattern:
 9. If handing off: update handoff doc with summary
 ```
 
-### Session Handoff
+### When to Hand Off
 
-When context degrades or a session ends mid-phase, leave a handoff with:
-- What was completed
-- What's next
-- Any decisions made or blockers hit
+Start a new session when **any** of these triggers fire:
+
+1. **3 PRs completed** in the current session — context is accumulating, fresh start is better
+2. **Context compression detected** — Claude's responses get vaguer, repeat themselves, or miss things previously discussed
+3. **Task boundary** — switching between unrelated work (e.g. finishing Phase 1 scaffold, starting Phase 2 application code)
+4. **Two failed corrections** — if Claude does something wrong twice despite corrections, the context is polluted with failed approaches. Start fresh with a better prompt.
+
+**How to hand off:**
+
+1. Update PROGRESS.md with current state
+2. Save any important decisions to memory (so future sessions have context)
+3. Leave a handoff summary with:
+   - What was completed (PR numbers, key files)
+   - What's next (next PR, any setup needed)
+   - Any decisions made or blockers hit
+   - If mid-PR: current branch, what's done, what remains
+
+The next session starts clean: reads the brief, reads PROGRESS.md, picks up where the handoff left off. Fresh context with full recall via memory and docs.
+
+---
+
+## Context Management
+
+### Use subagents for exploration
+
+When investigating code in the old repo or exploring architecture options, use subagents (`Agent` tool) instead of reading files directly. Subagents run in separate context windows — they explore, summarise, and report back without filling the main conversation with file contents.
+
+This is especially important for:
+- Phase validation (reading old repo code for each PR)
+- DA reviews (reviewing all changed files)
+- Codebase exploration before implementing a module
+
+### Clear between unrelated tasks
+
+If a session switches between unrelated work (e.g. fixing a config issue then starting a new PR), use `/clear` to reset context. Long sessions with irrelevant context reduce quality.
+
+### DA reviews use fresh context
+
+The DA review agent runs as a subagent — it reviews code in a separate context, not biased by having just written it. This is the writer/reviewer pattern: the agent that wrote the code should not be the same context that reviews it.
 
 ---
 
