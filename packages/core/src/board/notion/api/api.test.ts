@@ -44,6 +44,7 @@ function makePage(id: string, title: string, statusName = 'To-do') {
 
 describe('notion api', () => {
   afterEach(() => {
+    vi.unstubAllGlobals();
     vi.restoreAllMocks();
     vi.clearAllMocks();
   });

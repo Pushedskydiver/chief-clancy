@@ -51,6 +51,7 @@ function makeFullPage(
 
 describe('createNotionBoard', () => {
   afterEach(() => {
+    vi.unstubAllGlobals();
     vi.restoreAllMocks();
     vi.clearAllMocks();
   });
