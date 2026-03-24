@@ -57,6 +57,15 @@ This is a **living document** — when CodeRabbit catches something the self-rev
 ## Public API surface
 
 - Are new barrel exports genuinely public API, or internal modules that intra-package code consumes via `~/` imports? (installer internals should not be in the package barrel)
+- Are options types (`FetchOpts`, `TransitionOpts`) exported? They should stay internal unless consumed outside the file
+- Are board-internal label helpers (`createLabel`, `fetchLabels`, `getStoryLabelIds`) leaking through the barrel? (audit caught Shortcut exporting these)
+- Does core `index.ts` alias colliding names? (e.g. `transitionIssue` needs `transitionJiraIssue` alias)
+
+## Board patterns
+
+- Are header builders reused? (audit caught Jira `writeLabels` manually constructing auth instead of using `jiraHeaders()`)
+- Are all API responses schema-validated? No raw `as` casts on API data without justification
+- Is cache invalidation clean? Use `refresh` param, not sentinel values or `as unknown` casts
 
 ## Security / robustness (line-level)
 

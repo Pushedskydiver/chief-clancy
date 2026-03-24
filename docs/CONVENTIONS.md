@@ -81,6 +81,27 @@ Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 
 ---
 
+## Export Hygiene
+
+- **Types start internal.** Only add `export` to a type when it's consumed outside the file. Options objects (`FetchOpts`, `TransitionOpts`) used only by the function in the same file stay non-exported.
+- **Barrel exports match actual consumers.** If nothing outside the module directory imports a function/type, don't re-export it from `index.ts`. Run `pnpm knip` to catch unused exports before pushing.
+- **Core `index.ts` aliases colliding names.** When multiple boards export `fetchBlockerStatus`, alias them in the core barrel: `fetchGitHubBlockerStatus`, `fetchJiraBlockerStatus`, etc.
+- **Label internals stay private.** `ensureLabel`, `addLabel`, `removeLabel`, and low-level helpers (`createLabel`, `fetchLabels`, `getStoryLabelIds`) are internal to each board — don't re-export from the board barrel or core index.
+
+---
+
+## Board Implementation Patterns
+
+These patterns apply to all board adapters (`board/{provider}/`):
+
+- **Reuse header builders.** Every board has a `{provider}Headers()` function. Always use it — never manually construct auth headers in other functions.
+- **Schema-validate all API responses.** Use `fetchAndParse` with a Zod schema, or `.safeParse()` on raw responses. Never use `as` type assertions on API data without a comment justifying why a schema can't be used.
+- **Cache via `Cached<T>` class.** No module-level `let` for caches. Use the `Cached` class from `~/c/shared/cache/`. Invalidate by passing a `refresh` flag to the fetch function, not by storing sentinel values.
+- **`toFetchedTicket` in each factory.** Maps provider-specific tickets to the normalised `FetchedTicket` shape. Keep the mapping in the factory file, not in the API module.
+- **Extract helpers to stay under 50 lines.** Board factories should extract `fetchTickets`, `doTransition`, and `ensureAndAddLabel` as module-level functions above the factory.
+
+---
+
 ## Testing Standards
 
 - **Co-located tests** — `<name>/<name>.test.ts` next to source.
