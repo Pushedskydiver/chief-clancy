@@ -65,4 +65,4 @@ Adjusted after phase validation (2026-03-23). Reordered to build leaves first, s
 | --- | ------------------------------------------------------------------------------------------------ | ------- |
 | 3.1 | Role markdown files: 5 roles (35 `.md` files), reviewed for clarity/accuracy, Prettier-formatted | Done    |
 | 3.2 | Agent prompts: 7 agent `.md` files, reviewed for clarity and path references                     | Done    |
-| 3.3 | Templates: `CLAUDE.md` template, updated references for monorepo context                         | Pending |
+| 3.3 | Templates: `CLAUDE.md` template, updated references for monorepo context                         | Done    |
