@@ -318,7 +318,9 @@ function installContent(options: {
     inlineWorkflows(paths.commandsDest, paths.workflowsDest);
   }
 
-  fs.writeFile(join(paths.commandsDest, 'VERSION'), version);
+  const versionPath = join(paths.commandsDest, 'VERSION');
+  fs.rejectSymlink(versionPath);
+  fs.writeFile(versionPath, version);
 
   fs.mkdir(dirname(paths.manifestPath));
   const cmdManifest = JSON.stringify(
@@ -331,6 +333,8 @@ function installContent(options: {
     null,
     2,
   );
+  fs.rejectSymlink(paths.manifestPath);
+  fs.rejectSymlink(paths.workflowsManifestPath);
   fs.writeFile(paths.manifestPath, cmdManifest);
   fs.writeFile(paths.workflowsManifestPath, wfManifest);
 }
@@ -349,22 +353,19 @@ function setupProjectRuntime(options: {
   fs.mkdir(paths.clancyProjectDir);
 
   BUNDLE_SCRIPTS.forEach((script) => {
-    fs.copyFile(
-      join(sources.bundleDir, script),
-      join(paths.clancyProjectDir, script),
-    );
+    const dest = join(paths.clancyProjectDir, script);
+    fs.rejectSymlink(dest);
+    fs.copyFile(join(sources.bundleDir, script), dest);
   });
 
-  fs.writeFile(
-    join(paths.clancyProjectDir, 'package.json'),
-    JSON.stringify({ type: 'module' }, null, 2) + '\n',
-  );
+  const pkgJsonPath = join(paths.clancyProjectDir, 'package.json');
+  fs.rejectSymlink(pkgJsonPath);
+  fs.writeFile(pkgJsonPath, JSON.stringify({ type: 'module' }, null, 2) + '\n');
 
+  const versionJsonPath = join(paths.clancyProjectDir, 'version.json');
   const versionMeta = { version, installedAt: options.now() };
-  fs.writeFile(
-    join(paths.clancyProjectDir, 'version.json'),
-    JSON.stringify(versionMeta, null, 2) + '\n',
-  );
+  fs.rejectSymlink(versionJsonPath);
+  fs.writeFile(versionJsonPath, JSON.stringify(versionMeta, null, 2) + '\n');
 }
 
 /** Register Clancy hooks in Claude's settings.json. */
