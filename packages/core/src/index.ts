@@ -69,6 +69,33 @@ export type {
   AzdoWiqlResponse,
   AzdoWorkItem,
   AzdoWorkItemsBatchResponse,
+  // Linear API types
+  LinearIssueNode,
+  LinearIssueLabelSearchResponse,
+  LinearIssueRelationsResponse,
+  LinearIssueSearchResponse,
+  LinearIssueUpdateResponse,
+  LinearIssuesResponse,
+  LinearLabelCreateResponse,
+  LinearTeamLabelsResponse,
+  LinearViewerResponse,
+  LinearWorkflowStatesResponse,
+  LinearWorkspaceLabelsResponse,
+  // Notion API types
+  NotionDatabaseQueryResponse,
+  NotionMultiSelectOption,
+  NotionPage,
+  NotionUserResponse,
+  // Shortcut API types
+  ShortcutEpicStoriesResponse,
+  ShortcutLabelCreateResponse,
+  ShortcutLabelsResponse,
+  ShortcutMemberInfoResponse,
+  ShortcutStoryDetailResponse,
+  ShortcutStoryNode,
+  ShortcutStorySearchResponse,
+  ShortcutStoryUpdateResponse,
+  ShortcutWorkflowsResponse,
 } from './schemas/index.js';
 export {
   // Env schemas
@@ -101,6 +128,30 @@ export {
   azdoWiqlResponseSchema,
   azdoWorkItemSchema,
   azdoWorkItemsBatchResponseSchema,
+  // Linear API schemas
+  linearIssueLabelSearchResponseSchema,
+  linearIssueRelationsResponseSchema,
+  linearIssueSearchResponseSchema,
+  linearIssueUpdateResponseSchema,
+  linearIssuesResponseSchema,
+  linearLabelCreateResponseSchema,
+  linearTeamLabelsResponseSchema,
+  linearViewerResponseSchema,
+  linearWorkflowStatesResponseSchema,
+  linearWorkspaceLabelsResponseSchema,
+  // Notion API schemas
+  notionDatabaseQueryResponseSchema,
+  notionPageSchema,
+  notionUserResponseSchema,
+  // Shortcut API schemas
+  shortcutEpicStoriesResponseSchema,
+  shortcutLabelCreateResponseSchema,
+  shortcutLabelsResponseSchema,
+  shortcutMemberInfoResponseSchema,
+  shortcutStoryDetailResponseSchema,
+  shortcutStorySearchResponseSchema,
+  shortcutStoryUpdateResponseSchema,
+  shortcutWorkflowsResponseSchema,
 } from './schemas/index.js';
 
 export { detectBoard, sharedEnv } from './board/index.js';
