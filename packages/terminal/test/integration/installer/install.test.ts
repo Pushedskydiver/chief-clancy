@@ -22,8 +22,8 @@ import { join } from 'node:path';
 import {
   resolveInstallPaths,
   runInstall,
-} from '~/installer/install/install.js';
-import { hasErrorCode } from '~/installer/shared/fs-errors.js';
+} from '~/t/installer/install/install.js';
+import { hasErrorCode } from '~/t/installer/shared/fs-errors.js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------

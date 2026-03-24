@@ -1,4 +1,4 @@
-import type { ShortcutEnv } from '~/schemas/index.js';
+import type { ShortcutEnv } from '~/c/schemas/index.js';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 

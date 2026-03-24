@@ -4,7 +4,7 @@
  * Checks blocker status (via `Blocked by #N` in issue bodies) and
  * children status (via `Epic: #N` / `Parent: #N` text search).
  */
-import type { ChildrenStatus } from '~/types/index.js';
+import type { ChildrenStatus } from '~/c/types/index.js';
 
 import { GITHUB_API, githubHeaders, isValidRepo } from '../api/index.js';
 

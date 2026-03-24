@@ -1,6 +1,6 @@
-import type { ShortcutLabelsResponse } from '~/schemas/index.js';
+import type { ShortcutLabelsResponse } from '~/c/schemas/index.js';
 
-import { Cached } from '~/shared/cache/index.js';
+import { Cached } from '~/c/shared/cache/index.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {

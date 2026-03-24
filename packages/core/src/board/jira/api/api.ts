@@ -5,13 +5,13 @@
  * Uses the POST `/rest/api/3/search/jql` endpoint (old GET `/search`
  * was removed by Atlassian in August 2025).
  */
-import type { PingResult } from '~/types/index.js';
+import type { PingResult } from '~/c/types/index.js';
 
 import {
   jiraSearchResponseSchema,
   jiraTransitionsResponseSchema,
-} from '~/schemas/index.js';
-import { fetchAndParse, pingEndpoint } from '~/shared/http/index.js';
+} from '~/c/schemas/index.js';
+import { fetchAndParse, pingEndpoint } from '~/c/shared/http/index.js';
 
 /** Pattern for safe JQL values (prevents injection). */
 const SAFE_VALUE_PATTERN = /^[a-zA-Z0-9 _\-'.]+$/;

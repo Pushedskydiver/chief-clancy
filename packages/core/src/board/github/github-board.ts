@@ -5,10 +5,10 @@
  * to the GitHub API, relations, and label functions.
  */
 import type { GitHubTicket } from './api/index.js';
-import type { GitHubEnv } from '~/schemas/index.js';
-import type { Board, FetchedTicket, FetchTicketOpts } from '~/types/index.js';
+import type { GitHubEnv } from '~/c/schemas/index.js';
+import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/index.js';
 
-import { Cached } from '~/shared/cache/index.js';
+import { Cached } from '~/c/shared/cache/index.js';
 
 import {
   fetchIssues,

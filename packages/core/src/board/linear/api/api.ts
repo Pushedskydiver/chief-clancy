@@ -5,12 +5,12 @@
  * Personal API keys are passed directly (no "Bearer" prefix) per
  * Linear's documentation.
  */
-import type { PingResult } from '~/types/index.js';
+import type { PingResult } from '~/c/types/index.js';
 
 import {
   linearIssuesResponseSchema,
   linearViewerResponseSchema,
-} from '~/schemas/index.js';
+} from '~/c/schemas/index.js';
 
 /** Linear GraphQL API endpoint. */
 export const LINEAR_API = 'https://api.linear.app/graphql';

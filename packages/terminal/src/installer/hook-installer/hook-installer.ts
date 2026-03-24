@@ -15,7 +15,7 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 
-import { hasErrorCode } from '~/installer/shared/fs-errors.js';
+import { hasErrorCode } from '~/t/installer/shared/fs-errors.js';
 
 /** A command hook entry in Claude's settings.json. */
 type CommandHook = { readonly type: 'command'; readonly command: string };

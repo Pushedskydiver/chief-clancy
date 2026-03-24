@@ -1,7 +1,7 @@
 /**
  * Generic endpoint ping with HTTP status code mapping.
  */
-import type { PingResult } from '~/types/index.js';
+import type { PingResult } from '~/c/types/index.js';
 
 /** Options for {@link pingEndpoint}. */
 export type PingEndpointOpts = {

@@ -9,16 +9,16 @@ import type { EnvFileSystem } from '@chief-clancy/core';
 
 import { dirname, join } from 'node:path';
 
-import { inlineWorkflows } from '~/installer/file-ops/file-ops.js';
-import { installHooks } from '~/installer/hook-installer/hook-installer.js';
+import { inlineWorkflows } from '~/t/installer/file-ops/file-ops.js';
+import { installHooks } from '~/t/installer/hook-installer/hook-installer.js';
 import {
   backupModifiedFiles,
   buildManifest,
   detectModifiedFiles,
-} from '~/installer/manifest/manifest.js';
-import { copyRoleFiles } from '~/installer/role-filter/role-filter.js';
-import { printSuccess } from '~/installer/ui/ui.js';
-import { blue, dim, green } from '~/shared/ansi/index.js';
+} from '~/t/installer/manifest/manifest.js';
+import { copyRoleFiles } from '~/t/installer/role-filter/role-filter.js';
+import { printSuccess } from '~/t/installer/ui/ui.js';
+import { blue, dim, green } from '~/t/shared/ansi/index.js';
 
 import { loadClancyEnv } from '@chief-clancy/core';
 

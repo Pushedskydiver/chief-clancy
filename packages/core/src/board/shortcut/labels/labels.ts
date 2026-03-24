@@ -5,16 +5,16 @@
  * via {@link modifyLabelList}. Label list is cached per process via
  * {@link Cached}. Cache is invalidated when a new label is created.
  */
-import type { ShortcutLabelsResponse } from '~/schemas/index.js';
-import type { Cached } from '~/shared/cache/index.js';
+import type { ShortcutLabelsResponse } from '~/c/schemas/index.js';
+import type { Cached } from '~/c/shared/cache/index.js';
 
 import {
   shortcutLabelCreateResponseSchema,
   shortcutLabelsResponseSchema,
   shortcutStoryDetailResponseSchema,
-} from '~/schemas/index.js';
-import { fetchAndParse } from '~/shared/http/index.js';
-import { modifyLabelList, safeLabel } from '~/shared/label-helpers/index.js';
+} from '~/c/schemas/index.js';
+import { fetchAndParse } from '~/c/shared/http/index.js';
+import { modifyLabelList, safeLabel } from '~/c/shared/label-helpers/index.js';
 
 import { SHORTCUT_API, shortcutHeaders } from '../api/index.js';
 
