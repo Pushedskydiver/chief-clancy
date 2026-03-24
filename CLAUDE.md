@@ -53,6 +53,9 @@ Dependency direction: core ← terminal ← chief-clancy. No reverse imports. En
 - Hooks must be CommonJS — best-effort, must never crash
 - Runtime scripts are esbuild bundles — self-contained, zero npm dependency
 - Path aliases: `~/c/` → `core/src/*`, `~/t/` → `terminal/src/*`. Rewritten by `tsc-alias` at build time
+- Types/opts objects start non-exported — only export when consumed outside the file
+- Board modules: reuse header builders, schema-validate all responses, cache via `Cached<T>` class
+- See `docs/CONVENTIONS.md` for export hygiene and board implementation patterns
 
 ## Process directives
 

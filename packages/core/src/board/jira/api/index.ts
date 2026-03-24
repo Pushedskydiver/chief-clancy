@@ -10,9 +10,4 @@ export {
   pingJira,
   transitionIssue,
 } from './api.js';
-export type {
-  BuildJqlOpts,
-  FetchTicketsOpts,
-  JiraTicket,
-  TransitionOpts,
-} from './api.js';
+export type { JiraTicket } from './api.js';

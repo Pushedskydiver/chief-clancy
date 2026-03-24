@@ -45,10 +45,7 @@ async function writeLabels(
     `${ctx.baseUrl}/rest/api/3/issue/${encodeURIComponent(issueKey)}`,
     {
       method: 'PUT',
-      headers: {
-        Authorization: `Basic ${ctx.auth}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { ...jiraHeaders(ctx.auth), 'Content-Type': 'application/json' },
       body: JSON.stringify({ fields: { labels } }),
     },
   );

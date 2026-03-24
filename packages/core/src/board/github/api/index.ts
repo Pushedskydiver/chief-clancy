@@ -7,4 +7,4 @@ export {
   pingGitHub,
   resolveUsername,
 } from './api.js';
-export type { FetchIssuesOpts, GitHubTicket } from './api.js';
+export type { GitHubTicket } from './api.js';

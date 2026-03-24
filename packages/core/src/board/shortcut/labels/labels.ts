@@ -28,9 +28,10 @@ import { SHORTCUT_API, shortcutHeaders } from '../api/index.js';
 export async function fetchLabels(
   token: string,
   cache: Cached<ShortcutLabelsResponse>,
+  refresh?: boolean,
 ): Promise<ShortcutLabelsResponse> {
   const cached = cache.get();
-  if (cached?.length) return cached;
+  if (cached && !refresh) return cached;
 
   const data = await fetchAndParse(
     `${SHORTCUT_API}/labels`,
@@ -45,18 +46,13 @@ export async function fetchLabels(
 /**
  * Create a new label in Shortcut.
  *
- * Invalidates the label cache on success so the next `fetchLabels`
- * call picks up the new label.
- *
  * @param token - The Shortcut API token.
  * @param name - The label name to create.
- * @param cache - The label cache instance (invalidated on success).
  * @returns The created label's numeric ID, or `undefined` on failure.
  */
 export async function createLabel(
   token: string,
   name: string,
-  cache: Cached<ShortcutLabelsResponse>,
 ): Promise<number | undefined> {
   const data = await fetchAndParse(
     `${SHORTCUT_API}/labels`,
@@ -71,8 +67,7 @@ export async function createLabel(
     },
   );
 
-  // Invalidate cache so next fetchLabels re-fetches
-  if (data) cache.store([]);
+  // Cache is refreshed by the caller (ensureLabel passes refresh: true)
 
   return data?.id;
 }
@@ -147,7 +142,9 @@ export async function ensureLabel(opts: EnsureLabelOpts): Promise<void> {
     const labels = await fetchLabels(token, labelCache);
     const existing = labels.find((l) => l.name === label);
     if (existing) return;
-    await createLabel(token, label, labelCache);
+    await createLabel(token, label);
+    // Refresh cache so subsequent resolveLabelId finds the new label
+    await fetchLabels(token, labelCache, true);
   }, 'ensureLabel');
 }
 

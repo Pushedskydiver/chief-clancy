@@ -89,7 +89,7 @@ export async function pingJira(
 }
 
 /** Options for {@link buildJql}. */
-export type BuildJqlOpts = {
+type BuildJqlOpts = {
   readonly projectKey: string;
   readonly status: string;
   readonly sprint?: string;
@@ -154,7 +154,7 @@ export type JiraTicket = {
 };
 
 /** Options for {@link fetchTickets}. */
-export type FetchTicketsOpts = {
+type FetchTicketsOpts = {
   readonly baseUrl: string;
   readonly auth: string;
   readonly projectKey: string;
@@ -248,7 +248,7 @@ function mapIssueToTicket(issue: {
 }
 
 /** Options for {@link transitionIssue}. */
-export type TransitionOpts = {
+type TransitionOpts = {
   readonly baseUrl: string;
   readonly auth: string;
   readonly issueKey: string;

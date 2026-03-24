@@ -182,16 +182,11 @@ export {
   pingGitHub,
   resolveUsername,
 } from './board/github/index.js';
-export type { FetchIssuesOpts, GitHubTicket } from './board/github/index.js';
 export {
   fetchBlockerStatus as fetchGitHubBlockerStatus,
   fetchChildrenStatus as fetchGitHubChildrenStatus,
   parseBlockerRefs,
   parseEpicRef,
-} from './board/github/index.js';
-export type {
-  FetchBlockerOpts,
-  FetchChildrenOpts,
 } from './board/github/index.js';
 
 export { createJiraBoard } from './board/jira/index.js';
@@ -203,15 +198,9 @@ export {
   isSafeJqlValue,
   isValidIssueKey,
   jiraHeaders,
-  lookupTransitionId,
+  lookupTransitionId as lookupJiraTransitionId,
   pingJira,
-  transitionIssue,
-} from './board/jira/index.js';
-export type {
-  BuildJqlOpts,
-  FetchTicketsOpts as JiraFetchTicketsOpts,
-  JiraTicket,
-  TransitionOpts,
+  transitionIssue as transitionJiraIssue,
 } from './board/jira/index.js';
 export {
   fetchBlockerStatus as fetchJiraBlockerStatus,
@@ -249,11 +238,4 @@ export {
 export {
   fetchBlockerStatus as fetchShortcutBlockerStatus,
   fetchChildrenStatus as fetchShortcutChildrenStatus,
-} from './board/shortcut/index.js';
-export {
-  createLabel as createShortcutLabel,
-  fetchLabels as fetchShortcutLabels,
-  getStoryLabelIds,
-  parseStoryId,
-  updateStoryLabelIds,
 } from './board/shortcut/index.js';
