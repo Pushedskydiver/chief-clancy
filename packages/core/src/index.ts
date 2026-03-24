@@ -171,3 +171,25 @@ export {
 } from './schemas/index.js';
 
 export { detectBoard, sharedEnv } from './board/index.js';
+
+export { createGitHubBoard } from './board/github/index.js';
+export {
+  GITHUB_API,
+  closeIssue,
+  fetchIssues as fetchGitHubIssues,
+  githubHeaders,
+  isValidRepo,
+  pingGitHub,
+  resolveUsername,
+} from './board/github/index.js';
+export type { FetchIssuesOpts, GitHubTicket } from './board/github/index.js';
+export {
+  fetchBlockerStatus as fetchGitHubBlockerStatus,
+  fetchChildrenStatus as fetchGitHubChildrenStatus,
+  parseBlockerRefs,
+  parseEpicRef,
+} from './board/github/index.js';
+export type {
+  FetchBlockerOpts,
+  FetchChildrenOpts,
+} from './board/github/index.js';
