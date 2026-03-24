@@ -13,6 +13,6 @@ export default defineProject({
   },
   test: {
     name: 'terminal',
-    include: ['src/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'test/**/*.test.ts'],
   },
 });
