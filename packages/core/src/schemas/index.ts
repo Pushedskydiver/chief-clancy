@@ -71,3 +71,63 @@ export {
   jiraSearchResponseSchema,
   jiraTransitionsResponseSchema,
 } from './jira/jira.js';
+
+export type {
+  LinearIssueNode,
+  LinearIssueLabelSearchResponse,
+  LinearIssueRelationsResponse,
+  LinearIssueSearchResponse,
+  LinearIssueUpdateResponse,
+  LinearIssuesResponse,
+  LinearLabelCreateResponse,
+  LinearTeamLabelsResponse,
+  LinearViewerResponse,
+  LinearWorkflowStatesResponse,
+  LinearWorkspaceLabelsResponse,
+} from './linear/linear.js';
+export {
+  linearIssueLabelSearchResponseSchema,
+  linearIssueRelationsResponseSchema,
+  linearIssueSearchResponseSchema,
+  linearIssueUpdateResponseSchema,
+  linearIssuesResponseSchema,
+  linearLabelCreateResponseSchema,
+  linearTeamLabelsResponseSchema,
+  linearViewerResponseSchema,
+  linearWorkflowStatesResponseSchema,
+  linearWorkspaceLabelsResponseSchema,
+} from './linear/linear.js';
+
+export type {
+  NotionDatabaseQueryResponse,
+  NotionMultiSelectOption,
+  NotionPage,
+  NotionUserResponse,
+} from './notion/notion.js';
+export {
+  notionDatabaseQueryResponseSchema,
+  notionPageSchema,
+  notionUserResponseSchema,
+} from './notion/notion.js';
+
+export type {
+  ShortcutEpicStoriesResponse,
+  ShortcutLabelCreateResponse,
+  ShortcutLabelsResponse,
+  ShortcutMemberInfoResponse,
+  ShortcutStoryDetailResponse,
+  ShortcutStoryNode,
+  ShortcutStorySearchResponse,
+  ShortcutStoryUpdateResponse,
+  ShortcutWorkflowsResponse,
+} from './shortcut/shortcut.js';
+export {
+  shortcutEpicStoriesResponseSchema,
+  shortcutLabelCreateResponseSchema,
+  shortcutLabelsResponseSchema,
+  shortcutMemberInfoResponseSchema,
+  shortcutStoryDetailResponseSchema,
+  shortcutStorySearchResponseSchema,
+  shortcutStoryUpdateResponseSchema,
+  shortcutWorkflowsResponseSchema,
+} from './shortcut/shortcut.js';
