@@ -56,3 +56,5 @@ export {
   sharedEnvSchema,
   shortcutEnvSchema,
 } from './schemas/index.js';
+
+export { detectBoard, sharedEnv } from './board/index.js';

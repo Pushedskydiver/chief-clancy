@@ -1,0 +1,570 @@
+import type {
+  AzdoEnv,
+  GitHubEnv,
+  JiraEnv,
+  LinearEnv,
+  NotionEnv,
+  ShortcutEnv,
+} from '../schemas/env.js';
+
+import { describe, expect, it } from 'vitest';
+
+import { detectBoard, sharedEnv } from './detect-board.js';
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+function jiraEnv(
+  overrides: Record<string, string> = {},
+): Record<string, string> {
+  return {
+    JIRA_BASE_URL: 'https://example.atlassian.net',
+    JIRA_USER: 'user@example.com',
+    JIRA_API_TOKEN: 'fake-jira-token-abc123',
+    JIRA_PROJECT_KEY: 'PROJ',
+    ...overrides,
+  };
+}
+
+function githubEnv(
+  overrides: Record<string, string> = {},
+): Record<string, string> {
+  return {
+    GITHUB_TOKEN: 'fake-gh-token-abc123',
+    GITHUB_REPO: 'acme/app',
+    ...overrides,
+  };
+}
+
+function linearEnv(
+  overrides: Record<string, string> = {},
+): Record<string, string> {
+  return {
+    LINEAR_API_KEY: 'lin_api_abc123',
+    LINEAR_TEAM_ID: 'team-uuid-123',
+    ...overrides,
+  };
+}
+
+function shortcutEnv(
+  overrides: Record<string, string> = {},
+): Record<string, string> {
+  return {
+    SHORTCUT_API_TOKEN: 'sc_abc123',
+    ...overrides,
+  };
+}
+
+function notionEnv(
+  overrides: Record<string, string> = {},
+): Record<string, string> {
+  return {
+    NOTION_TOKEN: 'ntn_abc123',
+    NOTION_DATABASE_ID: 'db-uuid-1234',
+    ...overrides,
+  };
+}
+
+function azdoEnv(
+  overrides: Record<string, string> = {},
+): Record<string, string> {
+  return {
+    AZDO_ORG: 'myorg',
+    AZDO_PROJECT: 'MyProject',
+    AZDO_PAT: 'fake-azdo-pat-abc123',
+    ...overrides,
+  };
+}
+
+// ─── Tests ───────────────────────────────────────────────────────────────────
+
+describe('detectBoard', () => {
+  describe('jira', () => {
+    it('detects Jira from JIRA_BASE_URL', () => {
+      const result = detectBoard(jiraEnv());
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.provider).toBe('jira');
+      expect((result.env as JiraEnv).JIRA_BASE_URL).toBe(
+        'https://example.atlassian.net',
+      );
+      expect((result.env as JiraEnv).JIRA_PROJECT_KEY).toBe('PROJ');
+    });
+
+    it('returns error when required Jira field is missing', () => {
+      const raw = { JIRA_BASE_URL: 'https://example.atlassian.net' };
+      const result = detectBoard(raw);
+
+      expect(typeof result).toBe('string');
+      expect(result).toContain('Jira env validation failed');
+    });
+  });
+
+  describe('github', () => {
+    it('detects GitHub from GITHUB_TOKEN + GITHUB_REPO', () => {
+      const result = detectBoard(githubEnv());
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.provider).toBe('github');
+      expect((result.env as GitHubEnv).GITHUB_TOKEN).toBe(
+        'fake-gh-token-abc123',
+      );
+      expect((result.env as GitHubEnv).GITHUB_REPO).toBe('acme/app');
+    });
+
+    it('does not detect GitHub when GITHUB_REPO is missing', () => {
+      const result = detectBoard({ GITHUB_TOKEN: 'fake-gh-token-abc123' });
+
+      expect(typeof result).toBe('string');
+      expect(result).toContain('No board detected');
+    });
+
+    it('does not mis-detect Linear as GitHub when GITHUB_TOKEN is a shared git host token', () => {
+      const result = detectBoard({
+        LINEAR_API_KEY: 'lin_api_abc123',
+        LINEAR_TEAM_ID: 'team-uuid-123',
+        GITHUB_TOKEN: 'fake-gh-token-for-pr-creation',
+      });
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.provider).toBe('linear');
+    });
+  });
+
+  describe('linear', () => {
+    it('detects Linear from LINEAR_API_KEY', () => {
+      const result = detectBoard(linearEnv());
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.provider).toBe('linear');
+      expect((result.env as LinearEnv).LINEAR_API_KEY).toBe('lin_api_abc123');
+      expect((result.env as LinearEnv).LINEAR_TEAM_ID).toBe('team-uuid-123');
+    });
+
+    it('returns error when LINEAR_TEAM_ID is missing', () => {
+      const result = detectBoard({ LINEAR_API_KEY: 'lin_api_abc123' });
+
+      expect(typeof result).toBe('string');
+      expect(result).toContain('Linear env validation failed');
+    });
+  });
+
+  describe('shortcut', () => {
+    it('detects Shortcut from SHORTCUT_API_TOKEN', () => {
+      const result = detectBoard(shortcutEnv());
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.provider).toBe('shortcut');
+      expect((result.env as ShortcutEnv).SHORTCUT_API_TOKEN).toBe('sc_abc123');
+    });
+
+    it('includes optional SHORTCUT_WORKFLOW when present', () => {
+      const result = detectBoard(
+        shortcutEnv({ SHORTCUT_WORKFLOW: 'Engineering' }),
+      );
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect((result.env as ShortcutEnv).SHORTCUT_WORKFLOW).toBe('Engineering');
+    });
+  });
+
+  describe('notion', () => {
+    it('detects Notion from NOTION_DATABASE_ID', () => {
+      const result = detectBoard(notionEnv());
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.provider).toBe('notion');
+      expect((result.env as NotionEnv).NOTION_TOKEN).toBe('ntn_abc123');
+      expect((result.env as NotionEnv).NOTION_DATABASE_ID).toBe('db-uuid-1234');
+    });
+
+    it('returns error when NOTION_TOKEN is missing', () => {
+      const result = detectBoard({ NOTION_DATABASE_ID: 'db-uuid-1234' });
+
+      expect(typeof result).toBe('string');
+      expect(result).toContain('Notion env validation failed');
+    });
+
+    it('includes optional CLANCY_NOTION_* property overrides', () => {
+      const result = detectBoard(
+        notionEnv({
+          CLANCY_NOTION_STATUS: 'Task Status',
+          CLANCY_NOTION_ASSIGNEE: 'Owner',
+          CLANCY_NOTION_LABELS: 'Tags',
+          CLANCY_NOTION_PARENT: 'Parent Task',
+        }),
+      );
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect((result.env as NotionEnv).CLANCY_NOTION_STATUS).toBe(
+        'Task Status',
+      );
+      expect((result.env as NotionEnv).CLANCY_NOTION_ASSIGNEE).toBe('Owner');
+      expect((result.env as NotionEnv).CLANCY_NOTION_LABELS).toBe('Tags');
+      expect((result.env as NotionEnv).CLANCY_NOTION_PARENT).toBe(
+        'Parent Task',
+      );
+    });
+  });
+
+  describe('azdo', () => {
+    it('detects Azure DevOps from AZDO_ORG', () => {
+      const result = detectBoard(azdoEnv());
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.provider).toBe('azdo');
+      expect((result.env as AzdoEnv).AZDO_ORG).toBe('myorg');
+      expect((result.env as AzdoEnv).AZDO_PROJECT).toBe('MyProject');
+      expect((result.env as AzdoEnv).AZDO_PAT).toBe('fake-azdo-pat-abc123');
+    });
+
+    it('returns error when AZDO_PROJECT is missing', () => {
+      const result = detectBoard({
+        AZDO_ORG: 'myorg',
+        AZDO_PAT: 'fake-azdo-pat',
+      });
+
+      expect(typeof result).toBe('string');
+      expect(result).toContain('Azure DevOps env validation failed');
+    });
+
+    it('returns error when AZDO_PAT is missing', () => {
+      const result = detectBoard({
+        AZDO_ORG: 'myorg',
+        AZDO_PROJECT: 'MyProject',
+      });
+
+      expect(typeof result).toBe('string');
+      expect(result).toContain('Azure DevOps env validation failed');
+    });
+
+    it('includes optional CLANCY_AZDO_STATUS when present', () => {
+      const result = detectBoard(azdoEnv({ CLANCY_AZDO_STATUS: 'Active' }));
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect((result.env as AzdoEnv).CLANCY_AZDO_STATUS).toBe('Active');
+    });
+
+    it('includes optional CLANCY_AZDO_WIT when present', () => {
+      const result = detectBoard(azdoEnv({ CLANCY_AZDO_WIT: 'User Story' }));
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect((result.env as AzdoEnv).CLANCY_AZDO_WIT).toBe('User Story');
+    });
+  });
+
+  describe('priority', () => {
+    it('prefers Jira over GitHub when both present', () => {
+      const result = detectBoard({ ...jiraEnv(), ...githubEnv() });
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.provider).toBe('jira');
+    });
+
+    it('prefers GitHub over Linear when both present', () => {
+      const result = detectBoard({ ...githubEnv(), ...linearEnv() });
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.provider).toBe('github');
+    });
+
+    it('prefers Linear over Shortcut when both present', () => {
+      const result = detectBoard({ ...linearEnv(), ...shortcutEnv() });
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.provider).toBe('linear');
+    });
+
+    it('prefers Shortcut over Notion when both present', () => {
+      const result = detectBoard({ ...shortcutEnv(), ...notionEnv() });
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.provider).toBe('shortcut');
+    });
+
+    it('prefers Notion over Azure DevOps when both present', () => {
+      const result = detectBoard({ ...notionEnv(), ...azdoEnv() });
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.provider).toBe('notion');
+    });
+  });
+
+  describe('no board', () => {
+    it('returns error when no board keys present', () => {
+      const result = detectBoard({ CLANCY_LABEL: 'clancy' });
+
+      expect(typeof result).toBe('string');
+      expect(result).toContain('No board detected');
+    });
+
+    it('returns error for empty env', () => {
+      const result = detectBoard({});
+
+      expect(typeof result).toBe('string');
+      expect(result).toContain('No board detected');
+    });
+  });
+
+  describe('shared env vars', () => {
+    it('passes through shared optional vars', () => {
+      const result = detectBoard(
+        githubEnv({
+          CLANCY_BASE_BRANCH: 'develop',
+          CLANCY_NOTIFY_WEBHOOK: 'https://hooks.slack.com/xxx',
+          CLANCY_STATUS_IN_PROGRESS: 'In Progress',
+          CLANCY_STATUS_DONE: 'Done',
+          MAX_ITERATIONS: '10',
+          PLAYWRIGHT_ENABLED: 'true',
+          PLAYWRIGHT_DEV_PORT: '3000',
+        }),
+      );
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.env.CLANCY_BASE_BRANCH).toBe('develop');
+      expect(result.env.CLANCY_NOTIFY_WEBHOOK).toBe(
+        'https://hooks.slack.com/xxx',
+      );
+      expect(result.env.MAX_ITERATIONS).toBe('10');
+      expect(result.env.PLAYWRIGHT_ENABLED).toBe('true');
+    });
+
+    it('passes through planner env vars', () => {
+      const result = detectBoard(
+        jiraEnv({
+          CLANCY_ROLES: 'planner',
+          CLANCY_PLAN_STATUS: 'Backlog',
+          CLANCY_PLAN_LABEL: 'needs-refinement',
+          CLANCY_PLAN_STATE_TYPE: 'backlog',
+        }),
+      );
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.env.CLANCY_ROLES).toBe('planner');
+      expect(result.env.CLANCY_PLAN_STATUS).toBe('Backlog');
+      expect(result.env.CLANCY_PLAN_LABEL).toBe('needs-refinement');
+      expect(result.env.CLANCY_PLAN_STATE_TYPE).toBe('backlog');
+    });
+
+    it('passes through rework loop env vars', () => {
+      const result = detectBoard(githubEnv({ CLANCY_MAX_REWORK: '3' }));
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.env.CLANCY_MAX_REWORK).toBe('3');
+    });
+
+    it('passes through CLANCY_STATUS_PLANNED and CLANCY_SKIP_COMMENTS', () => {
+      const result = detectBoard(
+        jiraEnv({
+          CLANCY_STATUS_PLANNED: 'Planned',
+          CLANCY_SKIP_COMMENTS: 'true',
+        }),
+      );
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.env.CLANCY_STATUS_PLANNED).toBe('Planned');
+      expect(result.env.CLANCY_SKIP_COMMENTS).toBe('true');
+    });
+
+    it('passes through CLANCY_TDD when set', () => {
+      const result = detectBoard(githubEnv({ CLANCY_TDD: 'true' }));
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.env.CLANCY_TDD).toBe('true');
+    });
+
+    it('CLANCY_TDD is optional — config parses without it', () => {
+      const result = detectBoard(githubEnv());
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.env.CLANCY_TDD).toBeUndefined();
+    });
+
+    it.each([
+      ['jira', jiraEnv],
+      ['github', githubEnv],
+      ['linear', linearEnv],
+    ] as const)('passes through CLANCY_MODE for %s', (_label, env) => {
+      const result = detectBoard(env({ CLANCY_MODE: 'afk' }));
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.env.CLANCY_MODE).toBe('afk');
+    });
+
+    it('passes through strategist env vars', () => {
+      const result = detectBoard(
+        jiraEnv({
+          CLANCY_BRIEF_ISSUE_TYPE: 'Story',
+          CLANCY_BRIEF_EPIC: 'PROJ-50',
+          CLANCY_COMPONENT: 'backend',
+        }),
+      );
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.env.CLANCY_BRIEF_ISSUE_TYPE).toBe('Story');
+      expect(result.env.CLANCY_BRIEF_EPIC).toBe('PROJ-50');
+      expect(result.env.CLANCY_COMPONENT).toBe('backend');
+    });
+
+    it('strategist vars are optional — config parses without them', () => {
+      const result = detectBoard(githubEnv());
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.env.CLANCY_MODE).toBeUndefined();
+      expect(result.env.CLANCY_BRIEF_ISSUE_TYPE).toBeUndefined();
+      expect(result.env.CLANCY_BRIEF_EPIC).toBeUndefined();
+      expect(result.env.CLANCY_COMPONENT).toBeUndefined();
+    });
+
+    it('passes through reliable autonomous mode vars', () => {
+      const result = detectBoard(
+        jiraEnv({
+          CLANCY_FIX_RETRIES: '3',
+          CLANCY_VERIFY_COMMANDS: 'npm test,npm run lint',
+          CLANCY_TOKEN_RATE: '0.01',
+          CLANCY_TIME_LIMIT: '30',
+          CLANCY_BRANCH_GUARD: 'true',
+        }),
+      );
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.env.CLANCY_FIX_RETRIES).toBe('3');
+      expect(result.env.CLANCY_VERIFY_COMMANDS).toBe('npm test,npm run lint');
+      expect(result.env.CLANCY_TOKEN_RATE).toBe('0.01');
+      expect(result.env.CLANCY_TIME_LIMIT).toBe('30');
+      expect(result.env.CLANCY_BRANCH_GUARD).toBe('true');
+    });
+
+    it('reliable autonomous mode vars are optional', () => {
+      const result = detectBoard(githubEnv());
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.env.CLANCY_FIX_RETRIES).toBeUndefined();
+      expect(result.env.CLANCY_VERIFY_COMMANDS).toBeUndefined();
+      expect(result.env.CLANCY_TOKEN_RATE).toBeUndefined();
+      expect(result.env.CLANCY_TIME_LIMIT).toBeUndefined();
+      expect(result.env.CLANCY_BRANCH_GUARD).toBeUndefined();
+    });
+
+    it.each([
+      ['jira', jiraEnv],
+      ['github', githubEnv],
+      ['linear', linearEnv],
+      ['shortcut', shortcutEnv],
+      ['notion', notionEnv],
+      ['azdo', azdoEnv],
+    ] as const)('passes through pipeline label vars for %s', (_label, env) => {
+      const result = detectBoard(
+        env({
+          CLANCY_LABEL_BRIEF: 'clancy:brief',
+          CLANCY_LABEL_PLAN: 'clancy:plan',
+          CLANCY_LABEL_BUILD: 'clancy:build',
+        }),
+      );
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.env.CLANCY_LABEL_BRIEF).toBe('clancy:brief');
+      expect(result.env.CLANCY_LABEL_PLAN).toBe('clancy:plan');
+      expect(result.env.CLANCY_LABEL_BUILD).toBe('clancy:build');
+    });
+
+    it('pipeline label vars are optional', () => {
+      const result = detectBoard(githubEnv());
+
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
+
+      expect(result.env.CLANCY_LABEL_BRIEF).toBeUndefined();
+      expect(result.env.CLANCY_LABEL_PLAN).toBeUndefined();
+      expect(result.env.CLANCY_LABEL_BUILD).toBeUndefined();
+    });
+  });
+});
+
+describe('sharedEnv', () => {
+  it('returns the env object from a Jira config', () => {
+    const result = detectBoard(
+      jiraEnv({ CLANCY_LABEL: 'clancy', CLANCY_MODEL: 'opus' }),
+    );
+    if (typeof result === 'string') throw new Error(result);
+
+    const shared = sharedEnv(result);
+
+    expect(shared.CLANCY_LABEL).toBe('clancy');
+    expect(shared.CLANCY_MODEL).toBe('opus');
+  });
+
+  it('returns the env object from a GitHub config', () => {
+    const result = detectBoard(githubEnv({ CLANCY_BASE_BRANCH: 'develop' }));
+    if (typeof result === 'string') throw new Error(result);
+
+    const shared = sharedEnv(result);
+
+    expect(shared.CLANCY_BASE_BRANCH).toBe('develop');
+  });
+
+  it('returns undefined for unset optional vars', () => {
+    const result = detectBoard(githubEnv());
+    if (typeof result === 'string') throw new Error(result);
+
+    const shared = sharedEnv(result);
+
+    expect(shared.CLANCY_LABEL).toBeUndefined();
+    expect(shared.CLANCY_MODEL).toBeUndefined();
+  });
+});
