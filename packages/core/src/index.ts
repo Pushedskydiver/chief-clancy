@@ -264,3 +264,27 @@ export {
   fetchBlockerStatus as fetchAzdoBlockerStatus,
   fetchChildrenStatus as fetchAzdoChildrenStatus,
 } from './board/azdo/index.js';
+
+export { createNotionBoard } from './board/notion/index.js';
+export {
+  fetchPage as fetchNotionPage,
+  findPageByKey as findNotionPageByKey,
+  getArrayProperty as getNotionArrayProperty,
+  getDescriptionText as getNotionDescriptionText,
+  getPageStatus as getNotionPageStatus,
+  getPageTitle as getNotionPageTitle,
+  getStringProperty as getNotionStringProperty,
+  isCompleteStatus as isNotionCompleteStatus,
+  isPageIncomplete as isNotionPageIncomplete,
+  NOTION_API,
+  notionHeaders,
+  NOTION_VERSION,
+  pingNotion,
+  queryAllPages as queryAllNotionPages,
+  queryDatabase as queryNotionDatabase,
+  updatePage as updateNotionPage,
+} from './board/notion/index.js';
+export {
+  fetchBlockerStatus as fetchNotionBlockerStatus,
+  fetchChildrenStatus as fetchNotionChildrenStatus,
+} from './board/notion/index.js';
