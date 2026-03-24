@@ -4,14 +4,11 @@
  * Returns a plain object conforming to the Board type, delegating
  * to the Linear API, relations, and label functions.
  */
-import type { LinearEnv } from '../../schemas/index.js';
-import type {
-  Board,
-  FetchedTicket,
-  FetchTicketOpts,
-} from '../../types/index.js';
+import type { LinearEnv } from '~/schemas/index.js';
+import type { Board, FetchedTicket, FetchTicketOpts } from '~/types/index.js';
 
-import { CachedMap } from '../../shared/cache/index.js';
+import { CachedMap } from '~/shared/cache/index.js';
+
 import { fetchIssues, isValidTeamId, pingLinear } from './api/index.js';
 import { addLabel, ensureLabel, removeLabel } from './labels/index.js';
 import {

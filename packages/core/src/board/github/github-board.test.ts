@@ -1,4 +1,4 @@
-import type { GitHubEnv } from '../../schemas/index.js';
+import type { GitHubEnv } from '~/schemas/index.js';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 

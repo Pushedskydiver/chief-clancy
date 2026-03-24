@@ -1,6 +1,6 @@
+import { CachedMap } from '~/shared/cache/index.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { CachedMap } from '../../../shared/cache/index.js';
 import { addLabel, ensureLabel, removeLabel } from './labels.js';
 
 /** Build a fresh label cache for each test. */

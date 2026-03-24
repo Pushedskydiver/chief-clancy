@@ -8,14 +8,11 @@ import type {
   ShortcutEnv,
   ShortcutLabelsResponse,
   ShortcutWorkflowsResponse,
-} from '../../schemas/index.js';
-import type {
-  Board,
-  FetchedTicket,
-  FetchTicketOpts,
-} from '../../types/index.js';
+} from '~/schemas/index.js';
+import type { Board, FetchedTicket, FetchTicketOpts } from '~/types/index.js';
 
-import { Cached } from '../../shared/cache/index.js';
+import { Cached } from '~/shared/cache/index.js';
+
 import {
   fetchStories,
   pingShortcut,

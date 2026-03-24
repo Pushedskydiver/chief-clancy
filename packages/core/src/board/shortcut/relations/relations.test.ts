@@ -1,8 +1,8 @@
-import type { ShortcutWorkflowsResponse } from '../../../schemas/index.js';
+import type { ShortcutWorkflowsResponse } from '~/schemas/index.js';
 
+import { Cached } from '~/shared/cache/index.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { Cached } from '../../../shared/cache/index.js';
 import { fetchBlockerStatus, fetchChildrenStatus } from './relations.js';
 
 /** Build a workflow cache pre-loaded with standard workflows. */

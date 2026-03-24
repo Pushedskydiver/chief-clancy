@@ -4,9 +4,10 @@
  * Checks blocker status (via issue links) and children status
  * (via Epic: text convention + native parent JQL).
  */
-import type { ChildrenStatus } from '../../../types/index.js';
+import type { ChildrenStatus } from '~/types/index.js';
 
-import { jiraIssueLinksResponseSchema } from '../../../schemas/index.js';
+import { jiraIssueLinksResponseSchema } from '~/schemas/index.js';
+
 import { isValidIssueKey, jiraHeaders } from '../api/index.js';
 
 /**

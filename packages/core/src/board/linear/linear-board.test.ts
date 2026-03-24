@@ -1,4 +1,4 @@
-import type { LinearEnv } from '../../schemas/index.js';
+import type { LinearEnv } from '~/schemas/index.js';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
