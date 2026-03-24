@@ -215,6 +215,47 @@ export function validateSources(
 // Pipeline steps
 // ---------------------------------------------------------------------------
 
+/** Print a list of modified files the user should know about. */
+function printModifiedFiles(
+  modified: readonly { readonly rel: string }[],
+): void {
+  console.log(blue('  Modified files detected:'));
+  modified.forEach(({ rel }) => console.log(`    ${dim('•')} ${rel}`));
+  console.log('');
+  console.log(dim('  These will be backed up before overwriting.'));
+  console.log('');
+}
+
+/** Back up modified files and log the result. */
+function backupAndReport(
+  modified: readonly { readonly rel: string; readonly absPath: string }[],
+  patchesDir: string,
+): void {
+  const backedUp = backupModifiedFiles(modified, patchesDir);
+  const message = backedUp
+    ? green(`\n  ✓ ${modified.length} modified file(s) backed up`)
+    : dim('\n  No files needed backup (removed before copy).');
+
+  console.log(message);
+}
+
+/** Confirm overwrite — auto-accepts in non-interactive mode. */
+async function confirmOverwrite(
+  nonInteractive: boolean,
+  prompts: InstallerPrompts,
+): Promise<boolean> {
+  if (nonInteractive) {
+    console.log(dim('  Auto-overwriting (non-interactive mode).'));
+    return true;
+  }
+
+  const answer = await prompts.ask(
+    blue(`  Overwrite existing installation? [y/N] `),
+  );
+
+  return answer.trim().toLowerCase().startsWith('y');
+}
+
 /** Detect modified files, prompt for overwrite, and back up if needed. */
 async function handleExistingInstall(options: {
   readonly paths: InstallPaths;
@@ -237,33 +278,12 @@ async function handleExistingInstall(options: {
   );
   const allModified = [...cmdModified, ...wfModified];
 
-  if (allModified.length > 0) {
-    console.log(blue('  Modified files detected:'));
-    allModified.forEach(({ rel }) => console.log(`    ${dim('•')} ${rel}`));
-    console.log('');
-    console.log(dim('  These will be backed up before overwriting.'));
-    console.log('');
-  }
+  if (allModified.length > 0) printModifiedFiles(allModified);
 
-  if (nonInteractive) {
-    console.log(dim('  Auto-overwriting (non-interactive mode).'));
-  } else {
-    const answer = await prompts.ask(
-      blue(`  Overwrite existing installation? [y/N] `),
-    );
-    if (!answer.trim().toLowerCase().startsWith('y')) return false;
-  }
+  const confirmed = await confirmOverwrite(nonInteractive, prompts);
+  if (!confirmed) return false;
 
-  if (allModified.length > 0) {
-    const backedUp = backupModifiedFiles(allModified, paths.patchesDir);
-    if (backedUp) {
-      console.log(
-        green(`\n  ✓ ${allModified.length} modified file(s) backed up`),
-      );
-    } else {
-      console.log(dim('\n  No files needed backup (removed before copy).'));
-    }
-  }
+  if (allModified.length > 0) backupAndReport(allModified, paths.patchesDir);
 
   return true;
 }
