@@ -23,6 +23,7 @@ import {
   resolveInstallPaths,
   runInstall,
 } from '~/installer/install/install.js';
+import { hasErrorCode } from '~/installer/shared/fs-errors.js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------
@@ -48,15 +49,13 @@ const FIXED_TIME = '2026-01-01T00:00:00.000Z';
 
 /** Real InstallerFs backed by node:fs. */
 function createRealFs() {
-  // Node.js fs errors carry a code property
   const rejectSymlink = (path: string): void => {
     try {
       if (lstatSync(path).isSymbolicLink()) {
         throw new Error(`${path} is a symlink.`);
       }
     } catch (err: unknown) {
-      const code = (err as { readonly code?: string }).code;
-      if (code === 'ENOENT') return;
+      if (hasErrorCode(err, 'ENOENT')) return;
       throw err;
     }
   };
