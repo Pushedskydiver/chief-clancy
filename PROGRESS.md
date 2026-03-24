@@ -74,7 +74,7 @@ Adjusted after phase validation (2026-03-24). Split `detectBoard()` into separat
 | PR   | Description                                                                                      | Status  |
 | ---- | ------------------------------------------------------------------------------------------------ | ------- |
 | 4.0  | Prerequisites: add `zod` dependency to core                                                      | Done    |
-| 4.1  | Shared types: `BoardProvider`, `Ticket`, `FetchedTicket`, `Board`, `RemoteInfo`, etc. JSDoc all. | Pending |
+| 4.1  | Shared types: `BoardProvider`, `Ticket`, `FetchedTicket`, `Board`, `RemoteInfo`, etc. JSDoc all. | Done    |
 | 4.2  | Env schemas: `sharedEnvSchema` + 6 board env schemas. Carry over from old repo. TDD.             | Pending |
 | 4.3  | Board detection: `detectBoard()` + `sharedEnv()`. TDD + property-based tests.                    | Pending |
 | 4.4a | Board API schemas (batch 1): Jira, GitHub, Azure DevOps. TDD with fixture data.                  | Pending |
