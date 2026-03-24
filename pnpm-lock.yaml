@@ -81,7 +81,11 @@ importers:
         specifier: workspace:*
         version: link:../terminal
 
-  packages/core: {}
+  packages/core:
+    dependencies:
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
 
   packages/terminal:
     dependencies:
