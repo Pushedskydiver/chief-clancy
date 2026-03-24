@@ -105,7 +105,7 @@ Adjusted after phase validation (2026-03-24). Pulled HTTP utilities + label help
 
 | PR  | Description                                                                                                                                                | Status  |
 | --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| 5.0 | Prerequisites: `shared/http/` (fetchAndParse, retryFetch, pingEndpoint) + `shared/cache/` (Cached, CachedMap) + label helpers (safeLabel, modifyLabelList) | Done |
+| 5.0 | Prerequisites: `shared/http/` (fetchAndParse, retryFetch, pingEndpoint) + `shared/cache/` (Cached, CachedMap) + label helpers (safeLabel, modifyLabelList) | Done    |
 | 5.1 | GitHub board: `board/github/` — REST, simplest board, proves the pattern                                                                                   | Pending |
 | 5.2 | Jira board: `board/jira/` — REST, JQL, ADF extraction, transitions, introduces modifyLabelList                                                             | Pending |
 | 5.3 | Linear board: `board/linear/` — GraphQL, label ID cache (CachedMap), complex label management                                                              | Pending |
