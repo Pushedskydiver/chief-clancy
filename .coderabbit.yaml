@@ -1,0 +1,30 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: en-GB
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  collapse_walkthrough: true
+  path_instructions:
+    - path: 'packages/core/**'
+      instructions: |
+        This is the core package. It must never import from terminal, chat, or wrapper packages.
+        Uses zod/mini (not zod) for all runtime validation.
+        All exports go through src/index.ts barrel.
+    - path: 'packages/terminal/**'
+      instructions: |
+        Terminal package. May import from @chief-clancy/core only.
+        Hooks must be CommonJS and must never crash.
+    - path: '**/*.test.ts'
+      instructions: |
+        Test files are exempt from no-let, immutable-data, max-lines, and max-lines-per-function ESLint rules.
+        Tests should test behaviour through public interfaces, not implementation details.
+        All mocks/spies must be reset in afterEach.
+  tools:
+    eslint:
+      enabled: true
+    biome:
+      enabled: false
+chat:
+  auto_reply: true

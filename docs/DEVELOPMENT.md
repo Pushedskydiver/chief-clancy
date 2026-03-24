@@ -11,7 +11,7 @@ How the Clancy monorepo is developed. Covers the phase-based delivery lifecycle,
 1. **Read** — brief + PROGRESS.md
 2. **Validate** — phase validation protocol (if starting a new phase)
 3. **Build** — tracer bullet TDD: one test → implement → next test → repeat → refactor → lint
-4. **Review gate** — DA review → self-review → fix all findings → create PR → Copilot review → fix findings
+4. **Review gate** — DA review → self-review → fix all findings → create PR → CodeRabbit review → fix findings
 5. **Ship** — squash merge, update PROGRESS.md
 
 ---
@@ -24,7 +24,7 @@ Config files, tooling setup, docs. No feature branches needed. Commit directly t
 
 ### Phase 2+ (Application Code) — branches + PRs
 
-All code changes go through: branch → review gate → PR → Copilot review → squash merge. See [Review Gate](#review-gate--da--self-review--copilot) below.
+All code changes go through: branch → review gate → PR → CodeRabbit review → squash merge. See [Review Gate](#review-gate--da--self-review--coderabbit) below.
 
 ---
 
@@ -99,7 +99,7 @@ Every session follows this pattern:
 4. Pick up the next PR
 5. Tracer bullet TDD: one test → implement → next test → repeat → refactor → lint
 6. Review gate: DA review → self-review → fix findings (Phase 2+)
-7. Create PR, request Copilot review, fix findings (Phase 2+)
+7. Create PR, review CodeRabbit findings, fix issues (Phase 2+)
 8. Squash merge, mark PR complete in PROGRESS.md
 9. If handing off: update handoff doc with summary
 ```
@@ -149,9 +149,9 @@ The DA review agent runs as a subagent — it reviews code in a separate context
 
 ---
 
-## Review Gate — DA → Self-Review → Copilot
+## Review Gate — DA → Self-Review → CodeRabbit
 
-Three checks, in this strict order, before merging a PR. **DA always runs before self-review** — DA catches architectural issues that change what the self-review should focus on.
+Three checks before merging a PR, plus automated security scanning in CI.
 
 ### 1. DA Review (architecture-level)
 
@@ -159,40 +159,46 @@ Spin up a devil's advocate agent to read all changed files. For non-trivial chan
 
 **DA mindset: assume the code is wrong until proven otherwise.** The DA is not a polite colleague — it's a strict reviewer who actively looks for ways the code can break, be exploited, or surprise future callers. Err on the side of over-flagging. If uncertain, flag it as medium+.
 
-Run through the **[DA Review Checklist](DA-REVIEW.md)** — a structured, item-by-item checklist covering architecture, conventions, completeness, security, and cross-platform concerns. The checklist is a living document that grows from real Copilot catches.
+Run through the **[DA Review Checklist](DA-REVIEW.md)** — a structured, item-by-item checklist covering architecture, conventions, completeness, security, and cross-platform concerns. The checklist is a living document that grows from real review catches.
 
 ### 2. Self-Review (line-level)
 
 Run through the **[Self-Review Checklist](SELF-REVIEW.md)**. Read every changed file (`git diff main...HEAD`) and check for detail-level issues that DA misses — stale comments, wrong endpoints, fixture shapes, unused params, test isolation.
 
-### 3. Copilot Review (PR-level)
+### 3. CodeRabbit Review (PR-level, automated)
+
+CodeRabbit runs automatically on every PR. It posts line-level comments on the diff covering bugs, null checks, resource leaks, edge cases, and security basics. Configured via `.coderabbit.yaml` in the repo root.
 
 After DA and self-review are clean:
 
 1. Push branch and create PR — assign to Alex (`Pushedskydiver`) and add labels (`feature`/`fix`/`chore` + affected package e.g. `terminal`, `core`). See [GIT.md](GIT.md) for label conventions and merge strategy.
-2. Request Copilot review:
-   ```bash
-   gh api repos/{owner}/{repo}/pulls/{number}/requested_reviewers \
-     -X POST -f "reviewers[]=copilot-pull-request-reviewer[bot]"
-   ```
-3. For each Copilot comment:
-   - **Evaluate** — understand the underlying issue, not just the suggested code. Copilot identifies valid problems but its fix may not follow our conventions. Decide the best approach independently.
-   - **Fix or decline** — apply your own fix if it better follows conventions, apply Copilot's if it's the best option, or decline with reasoning. Always check fixes against CONVENTIONS.md (chaining limits, named booleans, type over interface, etc.).
-   - **Before declining, ask: "What would DA and self-review say?"** Think through whether the issue matters for exported functions, security, cross-platform, or future callers. Pushing back is fine, but only after genuinely stress-testing the reasoning — not as a default response.
-   - **Reply** — always reply to every comment explaining what was done and why. If diverging from Copilot's suggestion, explain the reasoning.
-4. If pushing additional commits, update the PR body to reflect all changes
+2. CodeRabbit will automatically review the PR within minutes.
+3. For each CodeRabbit comment:
+   - **Evaluate** — understand the underlying issue, not just the suggested code. CodeRabbit identifies valid problems but its fix may not follow our conventions. Decide the best approach independently.
+   - **Fix or decline** — apply your own fix if it better follows conventions, apply CodeRabbit's if it's the best option, or decline with reasoning. Always check fixes against CONVENTIONS.md (chaining limits, named booleans, type over interface, etc.).
+   - **Reply** — always reply to every comment explaining what was done and why. If diverging from CodeRabbit's suggestion, explain the reasoning.
+4. If pushing additional commits, update the PR body to reflect all changes.
+
+### Automated Security Scanning (CI)
+
+These run automatically in CI and do not require manual steps:
+
+- **CodeQL** — semantic security analysis for TypeScript (XSS, injection, dataflow vulnerabilities). Runs on every push and PR to main. See `.github/workflows/codeql.yml`.
+- **Socket.dev** — supply chain attack detection. Analyses dependency changes for malicious packages. Only runs when `pnpm-lock.yaml` or `package.json` files change. See `.github/workflows/socket.yml`.
+- **Dependabot** — known CVE alerts for dependencies (auto-enabled by GitHub).
+- **Secret scanning** — catches leaked API keys and tokens in commits (auto-enabled on public repos).
 
 ### When to skip reviews
 
 **What is non-trivial?** Code with logic (new functions, changed conditionals, refactored modules), changed type signatures, new env vars, test infrastructure changes. All non-trivial changes get the full review gate.
 
-**What is trivial?** Typos, badge updates, reformatting, adding test cases to proven structures. Trivial changes can skip DA but should still get a self-review pass.
+**What is trivial?** Typos, badge updates, reformatting, adding test cases to proven structures. Trivial changes can skip DA but should still get a self-review pass. CodeRabbit still runs automatically.
 
 ### Why this order matters
 
-DA may flag issues that change the code, which invalidates a self-review done earlier. Self-review may fix issues that change what Copilot sees. Running them out of order means repeating work or shipping with stale artifacts.
+DA may flag issues that change the code, which invalidates a self-review done earlier. Self-review may fix issues that change what CodeRabbit sees. Running them out of order means repeating work or shipping with stale artifacts.
 
-The self-review checklist is a **living document** — when Copilot catches something the self-review should have spotted, add the check to [SELF-REVIEW.md](SELF-REVIEW.md) immediately.
+The self-review checklist is a **living document** — when CodeRabbit catches something the self-review should have spotted, add the check to [SELF-REVIEW.md](SELF-REVIEW.md) immediately.
 
 ---
 
@@ -248,7 +254,7 @@ Every PR must pass before merging:
 - [ ] Quality tools pass (`pnpm knip && pnpm publint && pnpm attw`)
 - [ ] DA review completed (for non-trivial changes)
 - [ ] Self-review checklist completed
-- [ ] Copilot review findings addressed
+- [ ] CodeRabbit review findings addressed
 - [ ] PROGRESS.md updated
 
 ---
