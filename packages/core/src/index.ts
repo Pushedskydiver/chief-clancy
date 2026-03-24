@@ -38,6 +38,7 @@ export {
 } from './types/index.js';
 
 export type {
+  // Env types
   AzdoEnv,
   BoardConfig,
   GitHubEnv,
@@ -46,8 +47,31 @@ export type {
   NotionEnv,
   SharedEnv,
   ShortcutEnv,
+  // Jira API types
+  JiraIssueLabelsResponse,
+  JiraIssueLinksResponse,
+  JiraSearchResponse,
+  JiraTransitionsResponse,
+  // GitHub API types
+  GitHubComment,
+  GitHubCommentsResponse,
+  GitHubIssue,
+  GitHubIssuesResponse,
+  GitHubPr,
+  GitHubPrComment,
+  GitHubPrComments,
+  GitHubPrList,
+  GitHubReview,
+  GitHubReviewList,
+  // Azure DevOps API types
+  AzdoProjectResponse,
+  AzdoWiqlLinkResponse,
+  AzdoWiqlResponse,
+  AzdoWorkItem,
+  AzdoWorkItemsBatchResponse,
 } from './schemas/index.js';
 export {
+  // Env schemas
   azdoEnvSchema,
   githubEnvSchema,
   jiraEnvSchema,
@@ -55,6 +79,28 @@ export {
   notionEnvSchema,
   sharedEnvSchema,
   shortcutEnvSchema,
+  // Jira API schemas
+  jiraIssueLabelsResponseSchema,
+  jiraIssueLinksResponseSchema,
+  jiraSearchResponseSchema,
+  jiraTransitionsResponseSchema,
+  // GitHub API schemas
+  githubCommentSchema,
+  githubCommentsResponseSchema,
+  githubIssueSchema,
+  githubIssuesResponseSchema,
+  githubPrCommentSchema,
+  githubPrCommentsSchema,
+  githubPrListSchema,
+  githubPrSchema,
+  githubReviewListSchema,
+  githubReviewSchema,
+  // Azure DevOps API schemas
+  azdoProjectResponseSchema,
+  azdoWiqlLinkResponseSchema,
+  azdoWiqlResponseSchema,
+  azdoWorkItemSchema,
+  azdoWorkItemsBatchResponseSchema,
 } from './schemas/index.js';
 
 export { detectBoard, sharedEnv } from './board/index.js';
