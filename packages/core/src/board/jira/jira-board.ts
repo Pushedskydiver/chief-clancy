@@ -33,6 +33,7 @@ function toFetchedTicket(
     description: ticket.description,
     parentInfo: ticket.epicKey ?? 'none',
     blockers: blockerStr,
+    issueId: ticket.key,
     labels: ticket.labels ?? [],
     status: statusName,
   };

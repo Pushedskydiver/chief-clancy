@@ -96,6 +96,7 @@ describe('createJiraBoard', () => {
       description: '',
       parentInfo: 'PROJ-10',
       blockers: 'Blocked by: PROJ-99',
+      issueId: 'PROJ-42',
       labels: ['bug'],
       status: 'To Do',
     });

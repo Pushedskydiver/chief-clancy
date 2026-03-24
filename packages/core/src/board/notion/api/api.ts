@@ -11,9 +11,12 @@ import type { PingResult } from '~/c/types/index.js';
 import {
   notionDatabaseQueryResponseSchema,
   notionPageSchema,
-  notionUserResponseSchema,
 } from '~/c/schemas/index.js';
-import { fetchAndParse, retryFetch } from '~/c/shared/http/index.js';
+import {
+  fetchAndParse,
+  pingEndpoint,
+  retryFetch,
+} from '~/c/shared/http/index.js';
 
 import { NOTION_API, notionHeaders } from './helpers.js';
 
@@ -26,31 +29,15 @@ import { NOTION_API, notionHeaders } from './helpers.js';
  * @returns Ping result with `ok` and optional `error`.
  */
 export async function pingNotion(token: string): Promise<PingResult> {
-  const headers = notionHeaders(token);
-
-  const response = await retryFetch(`${NOTION_API}/users/me`, {
-    headers,
-  }).catch(() => undefined);
-
-  if (!response) {
-    return { ok: false, error: '✗ Could not reach Notion — check network' };
-  }
-
-  if (!response.ok) {
-    return response.status === 401 || response.status === 403
-      ? { ok: false, error: '✗ Notion auth failed — check NOTION_TOKEN' }
-      : { ok: false, error: `✗ Notion API returned HTTP ${response.status}` };
-  }
-
-  try {
-    const json: unknown = await response.json();
-    const parsed = notionUserResponseSchema.safeParse(json);
-    if (parsed.success && parsed.data.id) return { ok: true };
-  } catch {
-    // Invalid JSON — treat as auth issue
-  }
-
-  return { ok: false, error: '✗ Notion auth failed — check NOTION_TOKEN' };
+  return pingEndpoint({
+    url: `${NOTION_API}/users/me`,
+    headers: notionHeaders(token),
+    statusErrors: {
+      401: '✗ Notion auth failed — check NOTION_TOKEN',
+      403: '✗ Notion auth failed — check NOTION_TOKEN',
+    },
+    networkError: '✗ Could not reach Notion — check network',
+  });
 }
 
 // ─── Database query ──────────────────────────────────────────────────────────

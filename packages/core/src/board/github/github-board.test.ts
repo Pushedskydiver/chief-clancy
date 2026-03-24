@@ -121,6 +121,7 @@ describe('createGitHubBoard', () => {
       description: 'Epic: #10\nDescription',
       parentInfo: '#10',
       blockers: 'None',
+      issueId: '#42',
       labels: ['bug'],
       status: 'open',
     });

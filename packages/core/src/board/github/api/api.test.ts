@@ -149,7 +149,7 @@ describe('resolveUsername', () => {
     const result = await resolveUsername('bad_tok', cache);
 
     expect(result).toBe('@me');
-    expect(cache.store).not.toHaveBeenCalled();
+    expect(cache.store).toHaveBeenCalledWith('@me');
   });
 
   it('falls back to @me on network error', async () => {
