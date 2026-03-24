@@ -63,14 +63,14 @@ type InstallerFs = {
   readonly copyFile: (src: string, dest: string) => void;
 };
 
-/** Minimal prompt API needed by the orchestrator. */
+/**
+ * Prompt API used by the orchestrator.
+ *
+ * Only `ask` is called by {@link runInstall}. The caller owns the prompt
+ * lifecycle — create before calling `runInstall`, close after it returns.
+ */
 type InstallerPrompts = {
   readonly ask: (label: string) => Promise<string>;
-  readonly choose: (
-    question: string,
-    options: readonly string[],
-  ) => Promise<string>;
-  readonly close: () => void;
 };
 
 /** Options for {@link runInstall}. */
@@ -255,9 +255,14 @@ async function handleExistingInstall(options: {
   }
 
   if (allModified.length > 0) {
-    backupModifiedFiles(allModified, paths.patchesDir);
-    const count = allModified.length;
-    console.log(green(`\n  ✓ ${count} modified file(s) backed up`));
+    const backedUp = backupModifiedFiles(allModified, paths.patchesDir);
+    if (backedUp) {
+      console.log(
+        green(`\n  ✓ ${allModified.length} modified file(s) backed up`),
+      );
+    } else {
+      console.log(dim('\n  No files needed backup (removed before copy).'));
+    }
   }
 
   return true;
@@ -351,11 +356,17 @@ function registerHooks(options: {
     ? fs.readFile(gatePromptPath)
     : undefined;
 
-  installHooks({
+  const success = installHooks({
     claudeConfigDir: paths.claudeConfigDir,
     hooksSourceDir: sources.hooksDir,
     verificationGatePrompt,
   });
+
+  if (!success) {
+    console.log(
+      dim('  Warning: hooks could not be installed. Configure manually.'),
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------
