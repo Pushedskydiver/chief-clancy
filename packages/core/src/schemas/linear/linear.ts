@@ -173,24 +173,25 @@ export const linearLabelCreateResponseSchema = z.object({
   ),
 });
 
+/** A single search result node with label IDs (used by label management). */
+const linearLabelSearchNodeSchema = z.object({
+  id: z.string(),
+  labels: z.optional(
+    z.object({
+      nodes: z.array(
+        z.object({ id: z.string(), name: z.optional(z.string()) }),
+      ),
+    }),
+  ),
+});
+
 /** Response from `issueSearch` for label management (includes label IDs). */
 export const linearIssueLabelSearchResponseSchema = z.object({
   data: z.optional(
     z.object({
       issueSearch: z.optional(
         z.object({
-          nodes: z.array(
-            z.object({
-              id: z.string(),
-              labels: z.optional(
-                z.object({
-                  nodes: z.array(
-                    z.object({ id: z.string(), name: z.optional(z.string()) }),
-                  ),
-                }),
-              ),
-            }),
-          ),
+          nodes: z.array(linearLabelSearchNodeSchema),
         }),
       ),
     }),
