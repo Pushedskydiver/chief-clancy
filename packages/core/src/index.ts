@@ -193,3 +193,27 @@ export type {
   FetchBlockerOpts,
   FetchChildrenOpts,
 } from './board/github/index.js';
+
+export { createJiraBoard } from './board/jira/index.js';
+export {
+  buildAuthHeader,
+  buildJql,
+  extractAdfText,
+  fetchTickets as fetchJiraTickets,
+  isSafeJqlValue,
+  isValidIssueKey,
+  jiraHeaders,
+  lookupTransitionId,
+  pingJira,
+  transitionIssue,
+} from './board/jira/index.js';
+export type {
+  BuildJqlOpts,
+  FetchTicketsOpts as JiraFetchTicketsOpts,
+  JiraTicket,
+  TransitionOpts,
+} from './board/jira/index.js';
+export {
+  fetchBlockerStatus as fetchJiraBlockerStatus,
+  fetchChildrenStatus as fetchJiraChildrenStatus,
+} from './board/jira/index.js';
