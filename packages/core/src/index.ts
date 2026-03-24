@@ -217,3 +217,19 @@ export {
   fetchBlockerStatus as fetchJiraBlockerStatus,
   fetchChildrenStatus as fetchJiraChildrenStatus,
 } from './board/jira/index.js';
+
+export { createLinearBoard } from './board/linear/index.js';
+export {
+  fetchIssues as fetchLinearIssues,
+  isValidTeamId,
+  LINEAR_API,
+  linearGraphql,
+  linearHeaders,
+  pingLinear,
+} from './board/linear/index.js';
+export {
+  fetchBlockerStatus as fetchLinearBlockerStatus,
+  fetchChildrenStatus as fetchLinearChildrenStatus,
+  lookupWorkflowStateId,
+  transitionIssue as transitionLinearIssue,
+} from './board/linear/index.js';
