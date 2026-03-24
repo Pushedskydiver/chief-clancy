@@ -239,3 +239,28 @@ export {
   fetchBlockerStatus as fetchShortcutBlockerStatus,
   fetchChildrenStatus as fetchShortcutChildrenStatus,
 } from './board/shortcut/index.js';
+
+export { createAzdoBoard } from './board/azdo/index.js';
+export {
+  apiBase as azdoApiBase,
+  azdoHeaders,
+  azdoPatchHeaders,
+  AZDO_API_VERSION,
+  buildAzdoAuth,
+  buildTagsString as azdoBuildTagsString,
+  extractIdFromRelationUrl as azdoExtractIdFromRelationUrl,
+  fetchTickets as fetchAzdoTickets,
+  fetchWorkItem as fetchAzdoWorkItem,
+  fetchWorkItems as fetchAzdoWorkItems,
+  isSafeWiqlValue,
+  parseWorkItemId,
+  parseTags as azdoParseTags,
+  pingAzdo,
+  runWiql,
+  updateWorkItem as updateAzdoWorkItem,
+  workItemToTicket as azdoWorkItemToTicket,
+} from './board/azdo/index.js';
+export {
+  fetchBlockerStatus as fetchAzdoBlockerStatus,
+  fetchChildrenStatus as fetchAzdoChildrenStatus,
+} from './board/azdo/index.js';
