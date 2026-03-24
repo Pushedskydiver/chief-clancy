@@ -61,6 +61,8 @@ type InstallerFs = {
   /** Create a directory recursively (must not throw on existing dirs). */
   readonly mkdir: (path: string) => void;
   readonly copyFile: (src: string, dest: string) => void;
+  /** Throw if the given path is a symlink. Swallow ENOENT. */
+  readonly rejectSymlink: (path: string) => void;
 };
 
 /**
@@ -233,7 +235,7 @@ function backupAndReport(
 ): void {
   const backedUp = backupModifiedFiles(modified, patchesDir);
   const message = backedUp
-    ? green(`\n  ✓ ${modified.length} modified file(s) backed up`)
+    ? green('\n  ✓ Modified files backed up to local-patches/')
     : dim('\n  No files needed backup (removed before copy).');
 
   console.log(message);
@@ -343,6 +345,7 @@ function setupProjectRuntime(options: {
 }): void {
   const { paths, sources, version, fs } = options;
 
+  fs.rejectSymlink(paths.clancyProjectDir);
   fs.mkdir(paths.clancyProjectDir);
 
   BUNDLE_SCRIPTS.forEach((script) => {

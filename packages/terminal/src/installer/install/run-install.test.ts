@@ -58,6 +58,7 @@ const stubFs = {
   writeFile: vi.fn(),
   mkdir: vi.fn(),
   copyFile: vi.fn(),
+  rejectSymlink: vi.fn(),
 };
 
 const stubPrompts = {
@@ -135,6 +136,19 @@ describe('runInstall', () => {
       expect(stubFs.copyFile).toHaveBeenCalledWith(
         join(sources.bundleDir, 'clancy-afk.js'),
         join(paths.clancyProjectDir, 'clancy-afk.js'),
+      );
+    });
+
+    it('writes version.json with injected clock', async () => {
+      resetMocks();
+      const fixedTime = '2026-01-01T00:00:00.000Z';
+
+      await runInstall({ ...baseOptions, now: () => fixedTime });
+
+      expect(stubFs.writeFile).toHaveBeenCalledWith(
+        join(paths.clancyProjectDir, 'version.json'),
+        JSON.stringify({ version: '1.0.0', installedAt: fixedTime }, null, 2) +
+          '\n',
       );
     });
 
