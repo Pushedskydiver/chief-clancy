@@ -49,10 +49,12 @@ export type {
 } from './schemas/index.js';
 export {
   azdoEnvSchema,
+  detectBoard,
   githubEnvSchema,
   jiraEnvSchema,
   linearEnvSchema,
   notionEnvSchema,
+  sharedEnv,
   sharedEnvSchema,
   shortcutEnvSchema,
 } from './schemas/index.js';

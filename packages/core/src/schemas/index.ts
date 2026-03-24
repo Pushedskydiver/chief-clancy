@@ -18,3 +18,5 @@ export {
   sharedEnvSchema,
   shortcutEnvSchema,
 } from './env.js';
+
+export { detectBoard, sharedEnv } from './detect-board.js';
