@@ -5,7 +5,7 @@
  * board-specific schema. Returns a `BoardConfig` on success or
  * an error string on failure.
  */
-import type { BoardConfig, SharedEnv } from './env.js';
+import type { BoardConfig, SharedEnv } from '../schemas/env.js';
 
 import {
   azdoEnvSchema,
@@ -14,7 +14,7 @@ import {
   linearEnvSchema,
   notionEnvSchema,
   shortcutEnvSchema,
-} from './env.js';
+} from '../schemas/env.js';
 
 /**
  * Structural type for zod/mini schemas — intentional type erasure.
