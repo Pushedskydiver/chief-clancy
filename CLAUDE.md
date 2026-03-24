@@ -52,7 +52,7 @@ Dependency direction: core ← terminal ← chief-clancy. No reverse imports. En
 - `zod/mini` for all runtime validation — not `zod`
 - Hooks must be CommonJS — best-effort, must never crash
 - Runtime scripts are esbuild bundles — self-contained, zero npm dependency
-- `~/` path alias resolves to `./src/*` within each package
+- Path aliases: `~/c/` → `core/src/*`, `~/t/` → `terminal/src/*`. Rewritten by `tsc-alias` at build time
 
 ## Process directives
 
