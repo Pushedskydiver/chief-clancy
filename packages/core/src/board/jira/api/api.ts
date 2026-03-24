@@ -205,37 +205,44 @@ export async function fetchTickets(
   return data.issues.map((issue) => mapIssueToTicket(issue));
 }
 
-/** Map a Jira search result issue to a JiraTicket. */
-function mapIssueToTicket(issue: {
-  readonly key: string;
-  readonly fields: Record<string, unknown>;
-}): JiraTicket {
-  const fields = issue.fields as {
-    readonly summary: string;
-    readonly description?: unknown;
-    readonly issuelinks?: ReadonlyArray<{
-      readonly type?: { readonly name?: string };
-      readonly inwardIssue?: { readonly key?: string };
-    }>;
-    readonly parent?: { readonly key?: string };
-    readonly customfield_10014?: string;
-    readonly labels?: readonly string[];
-  };
+/** Shape of a Jira issue from the search response. */
+type JiraIssueFields = {
+  readonly summary: string;
+  readonly description?: unknown;
+  readonly issuelinks?: ReadonlyArray<{
+    readonly type?: { readonly name?: string };
+    readonly inwardIssue?: { readonly key?: string };
+  }>;
+  readonly parent?: { readonly key?: string };
+  readonly customfield_10014?: string | null;
+  readonly labels?: readonly string[];
+};
 
-  const blockers = (fields.issuelinks ?? [])
+/** Extract blocker issue keys from Jira issue links. */
+function extractBlockers(
+  links: JiraIssueFields['issuelinks'],
+): readonly string[] {
+  return (links ?? [])
     .filter((link) => link.type?.name === 'Blocks' && link.inwardIssue?.key)
     .map((link) => link.inwardIssue?.key)
     .filter((key): key is string => Boolean(key));
+}
 
-  const epicKey = fields.parent?.key ?? fields.customfield_10014 ?? undefined;
+/** Map a Jira search result issue to a JiraTicket. */
+function mapIssueToTicket(issue: {
+  readonly key: string;
+  // Safe cast: fields shape is validated by jiraSearchResponseSchema
+  readonly fields: JiraIssueFields;
+}): JiraTicket {
+  const { fields } = issue;
 
   return {
     key: issue.key,
     title: fields.summary,
     description: extractAdfText(fields.description),
     provider: 'jira',
-    epicKey,
-    blockers,
+    epicKey: fields.parent?.key ?? fields.customfield_10014 ?? undefined,
+    blockers: extractBlockers(fields.issuelinks),
     labels: fields.labels,
   };
 }
