@@ -94,12 +94,16 @@ export function createGitHubBoard(env: GitHubEnv): Board {
   const fetch = (opts: FetchTicketOpts) => fetchGitHubTickets(ctx, opts);
   return {
     ping: () => pingGitHub(ctx.token, ctx.repo),
+
     validateInputs: () =>
       isValidRepo(ctx.repo)
         ? undefined
         : '✗ GITHUB_REPO format is invalid — expected owner/repo',
+
     fetchTicket: async (opts) => (await fetch(opts))[0],
+
     fetchTickets: fetch,
+
     async fetchBlockerStatus(ticket) {
       const n = parseIssueNumber(ticket.key);
       const conn = { token: ctx.token, repo: ctx.repo };
@@ -111,6 +115,7 @@ export function createGitHubBoard(env: GitHubEnv): Board {
           })
         : false;
     },
+
     async fetchChildrenStatus(parentKey, _parentId?, currentTicketKey?) {
       const n = parseIssueNumber(parentKey);
       const conn = { token: ctx.token, repo: ctx.repo };
@@ -118,17 +123,22 @@ export function createGitHubBoard(env: GitHubEnv): Board {
         ? fetchChildrenStatus({ ...conn, parentNumber: n, currentTicketKey })
         : undefined;
     },
+
     transitionTicket: async () => false,
+
     ensureLabel: (label) => ensureLabel(ctx, label),
+
     async addLabel(issueKey, label) {
       await ensureLabel(ctx, label);
       const n = parseIssueNumber(issueKey);
       if (n) await addLabel(ctx, n, label);
     },
+
     async removeLabel(issueKey, label) {
       const n = parseIssueNumber(issueKey);
       if (n) await removeLabel(ctx, n, label);
     },
+
     sharedEnv: () => env,
   };
 }
