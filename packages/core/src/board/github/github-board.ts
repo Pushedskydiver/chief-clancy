@@ -10,7 +10,7 @@ import type {
   FetchedTicket,
   FetchTicketOpts,
 } from '../../types/index.js';
-import type { GitHubTicket } from './api.js';
+import type { GitHubTicket } from './api/index.js';
 
 import { Cached } from '../../shared/cache/index.js';
 import {
@@ -18,9 +18,9 @@ import {
   isValidRepo,
   pingGitHub,
   resolveUsername,
-} from './api.js';
-import { addLabel, ensureLabel, removeLabel } from './labels.js';
-import { fetchBlockerStatus, fetchChildrenStatus } from './relations.js';
+} from './api/index.js';
+import { addLabel, ensureLabel, removeLabel } from './labels/index.js';
+import { fetchBlockerStatus, fetchChildrenStatus } from './relations/index.js';
 
 /** Pattern matching `Epic: #N` or `Parent: #N` in issue descriptions. */
 const EPIC_REF_PATTERN = /^(?:Epic|Parent): (#\d+)/m;

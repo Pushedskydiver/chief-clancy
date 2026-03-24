@@ -5,7 +5,7 @@
  * read-modify-write via modifyLabelList). All operations are
  * best-effort — they log warnings but never throw.
  */
-import { GITHUB_API, githubHeaders } from './api.js';
+import { GITHUB_API, githubHeaders } from '../api/index.js';
 
 /** Context for GitHub label operations. */
 type GitHubLabelContext = {

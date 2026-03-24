@@ -4,9 +4,9 @@
  * Checks blocker status (via `Blocked by #N` in issue bodies) and
  * children status (via `Epic: #N` / `Parent: #N` text search).
  */
-import type { ChildrenStatus } from '../../types/index.js';
+import type { ChildrenStatus } from '../../../types/index.js';
 
-import { GITHUB_API, githubHeaders, isValidRepo } from './api.js';
+import { GITHUB_API, githubHeaders, isValidRepo } from '../api/index.js';
 
 /** Check if any blocker issue is still open (sequential, short-circuits). */
 async function checkAnyBlockerOpen(
