@@ -48,11 +48,17 @@ export type InstallPaths = {
   readonly clancyProjectDir: string;
 };
 
-/** File system operations the orchestrator performs directly. */
+/**
+ * File system operations the orchestrator performs directly.
+ *
+ * `mkdir` must be idempotent (recursive, ignoring EEXIST) — the pipeline
+ * calls it unconditionally on paths that may already exist during updates.
+ */
 type InstallerFs = {
   readonly exists: (path: string) => boolean;
   readonly readFile: (path: string) => string;
   readonly writeFile: (path: string, content: string) => void;
+  /** Create a directory recursively (must not throw on existing dirs). */
   readonly mkdir: (path: string) => void;
   readonly copyFile: (src: string, dest: string) => void;
 };

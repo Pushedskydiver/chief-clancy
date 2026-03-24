@@ -143,7 +143,7 @@ describe('runInstall', () => {
       const freshFs = {
         ...stubFs,
         exists: (p: string) =>
-          !p.includes('commands/clancy') && !p.includes('clancy/workflows'),
+          p !== paths.commandsDest && p !== paths.workflowsDest,
       };
 
       await runInstall({ ...baseOptions, fs: freshFs, nonInteractive: false });
