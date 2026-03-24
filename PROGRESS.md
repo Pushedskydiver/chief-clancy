@@ -69,13 +69,13 @@ Adjusted after phase validation (2026-03-23). Reordered to build leaves first, s
 
 ## Phase 4: Core — Types & Schemas
 
-Adjusted after phase validation (2026-03-24). Split `detectBoard()` into separate PR, split board API schemas into 2 batches, added prerequisites PR. Rewrite `z.check()` calls for `zod/mini` compatibility.
+Adjusted after phase validation (2026-03-24). Split `detectBoard()` into separate PR, split board API schemas into 2 batches, added prerequisites PR.
 
 | PR   | Description                                                                                      | Status  |
 | ---- | ------------------------------------------------------------------------------------------------ | ------- |
-| 4.0  | Prerequisites: add `zod` dependency to core                                                      | Pending |
+| 4.0  | Prerequisites: add `zod` dependency to core                                                      | Done    |
 | 4.1  | Shared types: `BoardProvider`, `Ticket`, `FetchedTicket`, `Board`, `RemoteInfo`, etc. JSDoc all. | Pending |
-| 4.2  | Env schemas: `sharedEnvSchema` + 6 board env schemas. Rewrite for `zod/mini`. TDD.               | Pending |
+| 4.2  | Env schemas: `sharedEnvSchema` + 6 board env schemas. Carry over from old repo. TDD.             | Pending |
 | 4.3  | Board detection: `detectBoard()` + `sharedEnv()`. TDD + property-based tests.                    | Pending |
 | 4.4a | Board API schemas (batch 1): Jira, GitHub, Azure DevOps. TDD with fixture data.                  | Pending |
 | 4.4b | Board API schemas (batch 2): Linear, Shortcut, Notion. TDD with fixture data.                    | Pending |
@@ -92,7 +92,7 @@ Adjusted after phase validation (2026-03-24). Split `detectBoard()` into separat
 
 **Key findings from breakdown validator + DA:**
 
-1. `z.check()` does not exist in `zod/mini` — all env schemas must be rewritten to use `.min()`, `.regex()`, `.refine()`.
+1. ~~`z.check()` does not exist in `zod/mini`~~ — **corrected:** `z.check()`, `z.minLength()`, `z.regex()` all work in `zod/mini`. Old repo env schemas can be carried over as-is. `.refine()` is not available on schema instances in mini.
 2. `detectBoard()` is 46 lines of detection logic with 30+ test cases — not schema definition. Split into own PR.
 3. Board API schemas are ~735 lines across 6 files. Too large for one PR without Copilot review. Split into 2 batches by size.
 4. GitLab MR and Bitbucket PR schemas exist in old repo but are git hosting platforms, not boards. Deferred to Phase 6 (`pull-request/`).
