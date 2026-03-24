@@ -171,6 +171,7 @@ export {
 } from './schemas/index.js';
 
 export { detectBoard, sharedEnv } from './board/index.js';
+export { createBoard } from './board/factory/index.js';
 
 export { createGitHubBoard } from './board/github/index.js';
 export {
