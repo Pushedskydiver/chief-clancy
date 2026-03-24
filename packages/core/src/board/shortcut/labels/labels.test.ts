@@ -95,8 +95,7 @@ describe('createLabel', () => {
       } as Response),
     );
 
-    const cache = makeLabelCacheWith([{ id: 1, name: 'bug' }]);
-    const id = await createLabel('tok', 'clancy:build', cache);
+    const id = await createLabel('tok', 'clancy:build');
     expect(id).toBe(99);
   });
 
@@ -110,8 +109,7 @@ describe('createLabel', () => {
       } as Response),
     );
 
-    const cache = makeLabelCache();
-    const id = await createLabel('tok', 'test', cache);
+    const id = await createLabel('tok', 'test');
     expect(id).toBeUndefined();
   });
 });
@@ -218,7 +216,8 @@ describe('ensureLabel', () => {
       labelCache: cache,
       label: 'clancy:build',
     });
-    expect(mockFetch).toHaveBeenCalledTimes(1);
+    // 1 call to create + 1 call to refresh cache
+    expect(mockFetch).toHaveBeenCalledTimes(2);
   });
 
   it('does not throw on failure', async () => {

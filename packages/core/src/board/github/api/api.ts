@@ -129,7 +129,7 @@ export type GitHubTicket = {
 };
 
 /** Options for {@link fetchIssues}. */
-export type FetchIssuesOpts = {
+type FetchIssuesOpts = {
   readonly token: string;
   readonly repo: string;
   readonly label?: string;

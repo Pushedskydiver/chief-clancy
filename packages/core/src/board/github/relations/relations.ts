@@ -36,7 +36,7 @@ async function checkAnyBlockerOpen(
 }
 
 /** Options for {@link fetchBlockerStatus}. */
-export type FetchBlockerOpts = {
+type FetchBlockerOpts = {
   readonly token: string;
   readonly repo: string;
   readonly issueNumber: number;
@@ -90,7 +90,7 @@ export function parseBlockerRefs(
 }
 
 /** Options for {@link fetchChildrenStatus}. */
-export type FetchChildrenOpts = {
+type FetchChildrenOpts = {
   readonly token: string;
   readonly repo: string;
   readonly parentNumber: number;
