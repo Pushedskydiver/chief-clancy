@@ -8,6 +8,33 @@ import type { ChildrenStatus } from '../../types/index.js';
 
 import { GITHUB_API, githubHeaders, isValidRepo } from './api.js';
 
+/** Check if any blocker issue is still open (sequential, short-circuits). */
+async function checkAnyBlockerOpen(
+  headers: Record<string, string>,
+  repo: string,
+  blockerNumbers: readonly number[],
+): Promise<boolean> {
+  // Sequential check — must short-circuit on first open blocker
+  const results = await blockerNumbers.reduce(
+    async (accPromise, blockerNum) => {
+      const found = await accPromise;
+      if (found) return true;
+
+      const response = await fetch(
+        `${GITHUB_API}/repos/${repo}/issues/${blockerNum}`,
+        { headers },
+      );
+      if (!response.ok) return false;
+
+      // Safe cast: response validated by .ok, only reading one optional field
+      const json = (await response.json()) as { state?: string };
+      return json.state !== 'closed';
+    },
+    Promise.resolve(false),
+  );
+  return results;
+}
+
 /** Options for {@link fetchBlockerStatus}. */
 export type FetchBlockerOpts = {
   readonly token: string;
@@ -36,21 +63,8 @@ export async function fetchBlockerStatus(
 
   try {
     const headers = githubHeaders(token);
-
-    for (const blockerNum of blockerNumbers) {
-      const response = await fetch(
-        `${GITHUB_API}/repos/${repo}/issues/${blockerNum}`,
-        { headers },
-      );
-
-      if (!response.ok) continue;
-
-      // Safe cast: response validated by .ok check, only reading one optional field
-      const json = (await response.json()) as { state?: string };
-      if (json.state !== 'closed') return true;
-    }
-
-    return false;
+    const isOpen = await checkAnyBlockerOpen(headers, repo, blockerNumbers);
+    return isOpen;
   } catch (err) {
     console.warn(
       `⚠ fetchBlockerStatus failed: ${err instanceof Error ? err.message : String(err)}`,
