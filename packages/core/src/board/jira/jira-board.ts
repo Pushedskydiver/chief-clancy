@@ -64,7 +64,7 @@ type JiraCtx = {
   readonly statusName: string;
 };
 
-/** Fetch and normalise Jira tickets. */
+/** Fetch and normalise Jira tickets into FetchedTickets. */
 async function fetchJiraTickets(
   ctx: JiraCtx,
   opts: FetchTicketOpts,
@@ -82,6 +82,22 @@ async function fetchJiraTickets(
   return tickets.map((t) => toFetchedTicket(t, ctx.statusName));
 }
 
+/** Transition a Jira issue and log on success. */
+async function doTransition(
+  ctx: JiraCtx,
+  ticket: FetchedTicket,
+  status: string,
+): Promise<boolean> {
+  const ok = await transitionIssue({
+    baseUrl: ctx.baseUrl,
+    auth: ctx.auth,
+    issueKey: ticket.key,
+    statusName: status,
+  });
+  if (ok) console.log(`  → Transitioned to ${status}`);
+  return ok;
+}
+
 /**
  * Create a Board implementation for Jira.
  *
@@ -96,31 +112,30 @@ export function createJiraBoard(env: JiraEnv): Board {
     statusName: env.CLANCY_JQL_STATUS ?? 'To Do',
   };
   const labelCtx = { baseUrl: ctx.baseUrl, auth: ctx.auth };
+  const fetch = (opts: FetchTicketOpts) => fetchJiraTickets(ctx, opts, env);
 
   return {
     ping: () => pingJira(ctx.baseUrl, ctx.projectKey, ctx.auth),
     validateInputs: () => validateJqlInputs(env),
-    fetchTicket: async (opts) => (await fetchJiraTickets(ctx, opts, env))[0],
-    fetchTickets: (opts) => fetchJiraTickets(ctx, opts, env),
+
+    fetchTicket: async (opts) => (await fetch(opts))[0],
+    fetchTickets: fetch,
+
     fetchBlockerStatus: (ticket) =>
       fetchBlockerStatus(ctx.baseUrl, ctx.auth, ticket.key),
+
     fetchChildrenStatus: (parentKey) =>
       fetchChildrenStatus(ctx.baseUrl, ctx.auth, parentKey),
-    async transitionTicket(ticket, status) {
-      const ok = await transitionIssue({
-        baseUrl: ctx.baseUrl,
-        auth: ctx.auth,
-        issueKey: ticket.key,
-        statusName: status,
-      });
-      if (ok) console.log(`  → Transitioned to ${status}`);
-      return ok;
-    },
+
+    transitionTicket: (ticket, status) => doTransition(ctx, ticket, status),
+
     ensureLabel: async () => {
       // No-op — Jira auto-creates labels on use.
     },
+
     addLabel: (issueKey, label) => addLabel(labelCtx, issueKey, label),
     removeLabel: (issueKey, label) => removeLabel(labelCtx, issueKey, label),
+
     sharedEnv: () => env,
   };
 }
