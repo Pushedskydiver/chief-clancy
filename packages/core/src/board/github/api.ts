@@ -55,6 +55,10 @@ export async function pingGitHub(
   token: string,
   repo: string,
 ): Promise<PingResult> {
+  if (!isValidRepo(repo)) {
+    return { ok: false, error: '✗ GITHUB_REPO format is invalid' };
+  }
+
   return pingEndpoint({
     url: `${GITHUB_API}/repos/${repo}`,
     headers: githubHeaders(token),
@@ -148,6 +152,7 @@ export async function fetchIssues(
   opts: FetchIssuesOpts,
 ): Promise<readonly GitHubTicket[]> {
   const { token, repo, label, username, excludeHitl, limit = 5 } = opts;
+  if (!isValidRepo(repo)) return [];
 
   const params = new URLSearchParams({
     state: 'open',

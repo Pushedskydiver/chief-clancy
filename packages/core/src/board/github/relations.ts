@@ -45,12 +45,16 @@ export async function fetchBlockerStatus(
 
       if (!response.ok) continue;
 
+      // Safe cast: response validated by .ok check, only reading one optional field
       const json = (await response.json()) as { state?: string };
       if (json.state !== 'closed') return true;
     }
 
     return false;
-  } catch {
+  } catch (err) {
+    console.warn(
+      `⚠ fetchBlockerStatus failed: ${err instanceof Error ? err.message : String(err)}`,
+    );
     return false;
   }
 }
@@ -137,7 +141,10 @@ export async function fetchChildrenStatus(
     if (currentTicketKey) return { total: 1, incomplete: 1 };
 
     return epic ?? parent ?? { total: 0, incomplete: 0 };
-  } catch {
+  } catch (err) {
+    console.warn(
+      `⚠ fetchChildrenStatus failed: ${err instanceof Error ? err.message : String(err)}`,
+    );
     return undefined;
   }
 }
@@ -164,6 +171,7 @@ async function fetchChildrenByBodyRef(
   });
   if (!allResponse.ok) return undefined;
 
+  // Safe cast: only reading total_count from GitHub Search API response
   const allJson = (await allResponse.json()) as { total_count?: number };
   const total = allJson.total_count ?? 0;
 
@@ -182,9 +190,8 @@ async function fetchChildrenByBodyRef(
   // Assume all open on failure
   if (!openResponse.ok) return { total, incomplete: total };
 
-  const openJson = (await openResponse.json()) as {
-    total_count?: number;
-  };
+  // Safe cast: only reading total_count from GitHub Search API response
+  const openJson = (await openResponse.json()) as { total_count?: number };
 
   return { total, incomplete: openJson.total_count ?? 0 };
 }
