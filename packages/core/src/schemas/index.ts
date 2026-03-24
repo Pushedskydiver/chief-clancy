@@ -7,7 +7,7 @@ export type {
   NotionEnv,
   SharedEnv,
   ShortcutEnv,
-} from './env.js';
+} from './env/env.js';
 
 export {
   azdoEnvSchema,
@@ -17,7 +17,7 @@ export {
   notionEnvSchema,
   sharedEnvSchema,
   shortcutEnvSchema,
-} from './env.js';
+} from './env/env.js';
 
 export type {
   AzdoProjectResponse,
@@ -25,14 +25,14 @@ export type {
   AzdoWiqlResponse,
   AzdoWorkItem,
   AzdoWorkItemsBatchResponse,
-} from './azdo.js';
+} from './azdo/azdo.js';
 export {
   azdoProjectResponseSchema,
   azdoWiqlLinkResponseSchema,
   azdoWiqlResponseSchema,
   azdoWorkItemSchema,
   azdoWorkItemsBatchResponseSchema,
-} from './azdo.js';
+} from './azdo/azdo.js';
 
 export type {
   GitHubComment,
@@ -45,7 +45,7 @@ export type {
   GitHubPrList,
   GitHubReview,
   GitHubReviewList,
-} from './github.js';
+} from './github/github.js';
 export {
   githubCommentSchema,
   githubCommentsResponseSchema,
@@ -57,17 +57,17 @@ export {
   githubPrSchema,
   githubReviewListSchema,
   githubReviewSchema,
-} from './github.js';
+} from './github/github.js';
 
 export type {
   JiraIssueLabelsResponse,
   JiraIssueLinksResponse,
   JiraSearchResponse,
   JiraTransitionsResponse,
-} from './jira.js';
+} from './jira/jira.js';
 export {
   jiraIssueLabelsResponseSchema,
   jiraIssueLinksResponseSchema,
   jiraSearchResponseSchema,
   jiraTransitionsResponseSchema,
-} from './jira.js';
+} from './jira/jira.js';
