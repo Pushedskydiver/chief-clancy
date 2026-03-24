@@ -9,6 +9,22 @@ export const PACKAGE_NAME = '@chief-clancy/core' as const;
 export type { EnvFileSystem } from './shared/env-parser/index.js';
 export { loadClancyEnv, parseEnvContent } from './shared/env-parser/index.js';
 
+export { Cached, CachedMap } from './shared/cache/index.js';
+
+export {
+  fetchAndParse,
+  pingEndpoint,
+  retryFetch,
+} from './shared/http/index.js';
+export type {
+  FetchAndParseOptions,
+  PingEndpointOpts,
+  RetryOptions,
+} from './shared/http/index.js';
+
+export { modifyLabelList, safeLabel } from './shared/label-helpers/index.js';
+export type { ModifyLabelListOpts } from './shared/label-helpers/index.js';
+
 export type {
   BitbucketRemote,
   BitbucketServerRemote,

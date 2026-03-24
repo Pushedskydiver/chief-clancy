@@ -2,7 +2,7 @@
 
 Structured checklist for the devil's advocate review agent. Walk every item against every changed file. Assume the code is wrong until proven otherwise.
 
-This is a **living document** — when Copilot catches something the DA should have spotted, add the specific check here immediately.
+This is a **living document** — when CodeRabbit catches something the DA should have spotted, add the specific check here immediately.
 
 **Last reviewed:** 2026-03-23
 
@@ -78,5 +78,5 @@ This is a **living document** — when Copilot catches something the DA should h
 - **Medium+ findings:** must be fixed before proceeding
 - **Low findings:** can be acknowledged and deferred with explicit justification
 - If you disagree with a finding, articulate why — don't silently skip it
-- Deferring a DA finding to see if Copilot catches it is not acceptable — fix it now
-- When in doubt, flag it. A false positive costs a minute to evaluate; a missed finding costs a round-trip with Copilot
+- Deferring a DA finding to see if CodeRabbit catches it is not acceptable — fix it now
+- When in doubt, flag it. A false positive costs a minute to evaluate; a missed finding costs a round-trip with CodeRabbit
