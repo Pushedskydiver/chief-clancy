@@ -98,3 +98,61 @@ Adjusted after phase validation (2026-03-24). Split `detectBoard()` into separat
 4. GitLab MR and Bitbucket PR schemas exist in old repo but are git hosting platforms, not boards. Deferred to Phase 6 (`pull-request/`).
 5. Missing types from brief: `PrReviewState`, `Ticket` (base type), `FetchTicketOpts`, `Board` — all added to PR 4.1.
 6. env-parser (Phase 2) outputs `Record<string, string>` which feeds into `detectBoard()` — no conflict.
+
+## Phase 5: Core — Board Implementations
+
+Adjusted after phase validation (2026-03-24). Pulled HTTP utilities + label helpers into prerequisites PR, moved factory to last, reordered boards by complexity (simplest first).
+
+| PR  | Description                                                                                                                                                | Status  |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| 5.0 | Prerequisites: `shared/http/` (fetchAndParse, retryFetch, pingEndpoint) + `shared/cache/` (Cached, CachedMap) + label helpers (safeLabel, modifyLabelList) | Pending |
+| 5.1 | GitHub board: `board/github/` — REST, simplest board, proves the pattern                                                                                   | Pending |
+| 5.2 | Jira board: `board/jira/` — REST, JQL, ADF extraction, transitions, introduces modifyLabelList                                                             | Pending |
+| 5.3 | Linear board: `board/linear/` — GraphQL, label ID cache (CachedMap), complex label management                                                              | Pending |
+| 5.4 | Shortcut board: `board/shortcut/` — workflow/label caches, dual response shapes                                                                            | Pending |
+| 5.5 | Azure DevOps board: `board/azdo/` — WIQL, JSON Patch, batch fetch, tag parsing                                                                             | Pending |
+| 5.6 | Notion board: `board/notion/` — retryFetch for rate limits, pagination, dynamic properties                                                                 | Pending |
+| 5.7 | Board factory: `board/factory/` — createBoard() dispatch, depends on all 6 boards                                                                          | Pending |
+
+### Dependencies
+
+- 5.0 is prerequisite for all
+- 5.1–5.6 all depend on 5.0 but are independent of each other
+- 5.7 depends on 5.1–5.6
+
+### File decomposition convention
+
+Each board splits into 2-4 files to stay under the 300-line limit:
+
+- `{board}/api.ts` — fetch, query, ping functions
+- `{board}/relations.ts` — blockers, children, transitions
+- `{board}/labels.ts` (where needed) — label CRUD
+- `{board}/{board}-board.ts` — Board adapter factory
+
+### Cross-cutting decisions (2026-03-24)
+
+1. **Cache strategy** — `Cached<T>` and `CachedMap<K,V>` classes with `#private` fields. `ignoreClasses: true` in ESLint makes this lint-clean. Write method named `store()` (not `set()`) to avoid `immutable-data` pattern-matching.
+2. **Param bundling** — Per-board context types (e.g. `JiraContext = { baseUrl, auth }`), constructed from env in the board factory.
+3. **`console.warn`** — Accepted as-is. No `no-console` rule. CLI tool context.
+4. **Test mocking** — `vi.fn()` on global fetch. No MSW.
+5. **Header builders** — Live in respective board modules, not shared.
+6. **Export surface** — Export pure functions (validators, builders, parsers) for direct testing. Keep stateful/side-effectful helpers private.
+
+### Phase validation notes (2026-03-24)
+
+**Key findings from breakdown validator + DA:**
+
+1. HTTP utilities (`fetchAndParse`, `retryFetch`, `pingEndpoint`) are a hard blocker — every board depends on them. Pulled forward from Phase 6 as PR 5.0.
+2. Label helpers (`safeLabel`, `modifyLabelList`) used by 4 of 6 boards — bundled with 5.0.
+3. All 6 board API files exceed 300 lines (range: 395–685). Each needs 2-4 file decomposition.
+4. Nearly every API function exceeds max-params: 3. Systematic options-object refactoring needed.
+5. Functions exceeding 50 lines: Shortcut `fetchStories` (88), Linear `ensureLabel` (75), Notion `fetchBlockerStatus` (71), Shortcut `fetchBlockerStatus` (63), Jira `fetchTickets` (60).
+6. Mutable caches in GitHub, Shortcut, Linear violate `no-let`/`immutable-data` — solved with class-based `Cached<T>`/`CachedMap<K,V>`.
+7. Factory must be last PR (depends on all 6 boards).
+8. Board order by complexity: GitHub (simplest REST) → Jira (modifyLabelList, JQL) → Linear (GraphQL) → Shortcut (caches, dual responses) → AzDo (WIQL, batch) → Notion (rate limits, pagination).
+
+**Rewrite assessments:**
+
+- Carry over: factory (~0%), label helpers (~0%), board adapters (~10-15%)
+- Moderate rewrite: HTTP utilities (~30%), GitHub (~40%), Jira (~40%), AzDo (~40%), Notion (~40%)
+- Major rewrite: Linear board adapter (~50%), Shortcut API (~55%)
