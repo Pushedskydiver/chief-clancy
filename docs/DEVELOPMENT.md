@@ -184,7 +184,6 @@ After DA and self-review are clean:
 These run automatically in CI and do not require manual steps:
 
 - **CodeQL** — semantic security analysis for TypeScript (XSS, injection, dataflow vulnerabilities). Runs on every push and PR to main. See `.github/workflows/codeql.yml`.
-- **Socket.dev** — supply chain attack detection. Analyses dependency changes for malicious packages. Only runs when `pnpm-lock.yaml` or `package.json` files change. See `.github/workflows/socket.yml`.
 - **Dependabot** — known CVE alerts for dependencies (auto-enabled by GitHub).
 - **Secret scanning** — catches leaked API keys and tokens in commits (auto-enabled on public repos).
 
