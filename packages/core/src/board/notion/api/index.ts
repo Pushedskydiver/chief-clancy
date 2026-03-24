@@ -13,11 +13,7 @@ export {
   getDescriptionText,
   getPageStatus,
   getPageTitle,
-  getStringProperty,
   isCompleteStatus,
   isPageIncomplete,
-  NOTION_API,
-  notionHeaders,
-  NOTION_VERSION,
 } from './helpers.js';
 export type { NotionCtx } from './helpers.js';

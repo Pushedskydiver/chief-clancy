@@ -1,6 +1,5 @@
 export {
   fetchStories,
-  fetchWorkflows,
   pingShortcut,
   resolveDoneStateIds,
   resolveWorkflowStateId,

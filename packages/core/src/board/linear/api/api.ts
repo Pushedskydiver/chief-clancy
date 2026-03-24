@@ -13,7 +13,7 @@ import {
 } from '~/c/schemas/index.js';
 
 /** Linear GraphQL API endpoint. */
-export const LINEAR_API = 'https://api.linear.app/graphql';
+const LINEAR_API = 'https://api.linear.app/graphql';
 
 const SAFE_ID_PATTERN = /^[a-zA-Z0-9_-]+$/;
 
