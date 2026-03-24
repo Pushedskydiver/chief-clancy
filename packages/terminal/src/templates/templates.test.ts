@@ -37,10 +37,13 @@ describe('CLAUDE.md template', () => {
   it('contains required sections', () => {
     const requiredSections = [
       '### Version check',
+      '### Stale brief check',
       '### Docs',
       '### Executability check',
       '### Git workflow',
       '### Progress',
+      '### Design context',
+      '### Visual checks',
     ];
 
     requiredSections.forEach((section) => {
