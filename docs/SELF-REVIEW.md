@@ -1,17 +1,17 @@
 # Self-Review Checklist
 
-Line-level accuracy check performed after DA review but before creating a PR. Read every changed file (`git diff main...HEAD`) and check for detail-level issues that DA and Copilot miss.
+Line-level accuracy check performed after DA review but before creating a PR. Read every changed file (`git diff main...HEAD`) and check for detail-level issues that DA and CodeRabbit miss.
 
 This checklist complements DA-REVIEW.md — DA owns architectural checks (imports, guards, patterns). Self-review owns line-level accuracy (stale values, wrong strings, test isolation, copy-paste errors).
 
-This is a **living document** — when Copilot catches something the self-review should have spotted, add the specific check here immediately. The checklist grows from real mistakes, not hypotheticals.
+This is a **living document** — when CodeRabbit catches something the self-review should have spotted, add the specific check here immediately. The checklist grows from real mistakes, not hypotheticals.
 
 ---
 
 ## Code accuracy
 
 - Do comments/JSDoc match what the code actually does? (stale comments are the #1 review catch)
-- After renaming a type field, did all JSDoc and comments referencing the old name get updated? (Copilot caught `"optional"` in JSDoc after the field was renamed to `roleKey`)
+- After renaming a type field, did all JSDoc and comments referencing the old name get updated? (CodeRabbit caught `"optional"` in JSDoc after the field was renamed to `roleKey`)
 - Do comments hardcode counts, versions, or phase numbers that will go stale? Use generic language instead
 - Are all function parameters used? Remove unused params or use `_prefixed` naming if keeping for API stability
 - Do mock/test URLs match the actual production endpoints? (read the production code to verify)
@@ -30,12 +30,12 @@ This is a **living document** — when Copilot catches something the self-review
 - Do test assertions use exact expected values, not ambiguous substrings? (`.toEqual({ id: '1' })` not `.toContain('1')`)
 - Do any imported modules cache global state that could leak between tests? (reset caches in `afterEach`)
 - Are `describe`/`it` blocks accidentally duplicated from copy-paste?
-- Do test names accurately describe what is being tested? (Copilot caught a test name that didn't match the narrowed assertion)
+- Do test names accurately describe what is being tested? (CodeRabbit caught a test name that didn't match the narrowed assertion)
 
 ## Carried-over content
 
-- When bringing files from the old repo, do hardcoded version numbers match the new repo's config? (Copilot caught Node 22+ in role docs when `engines.node` requires >=24.0.0)
-- Do markdown code fences open and close with the same number of backticks? (Copilot caught ``` opening with ```` closing — breaks rendering)
+- When bringing files from the old repo, do hardcoded version numbers match the new repo's config? (CodeRabbit caught Node 22+ in role docs when `engines.node` requires >=24.0.0)
+- Do markdown code fences open and close with the same number of backticks? (CodeRabbit caught ``` opening with ```` closing — breaks rendering)
 
 ## Consistency
 
