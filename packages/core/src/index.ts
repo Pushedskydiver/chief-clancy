@@ -233,3 +233,27 @@ export {
   lookupWorkflowStateId,
   transitionIssue as transitionLinearIssue,
 } from './board/linear/index.js';
+
+export { createShortcutBoard } from './board/shortcut/index.js';
+export {
+  fetchStories as fetchShortcutStories,
+  fetchWorkflows,
+  pingShortcut,
+  resolveDoneStateIds,
+  resolveWorkflowStateId,
+  resolveWorkflowStateIdsByType,
+  SHORTCUT_API,
+  shortcutHeaders,
+  transitionStory,
+} from './board/shortcut/index.js';
+export {
+  fetchBlockerStatus as fetchShortcutBlockerStatus,
+  fetchChildrenStatus as fetchShortcutChildrenStatus,
+} from './board/shortcut/index.js';
+export {
+  createLabel as createShortcutLabel,
+  fetchLabels as fetchShortcutLabels,
+  getStoryLabelIds,
+  parseStoryId,
+  updateStoryLabelIds,
+} from './board/shortcut/index.js';

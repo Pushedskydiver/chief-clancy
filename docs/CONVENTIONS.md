@@ -52,9 +52,9 @@ Imports are sorted into 5 groups, separated by blank lines:
 | 2. Node built-ins     | `node:*`                            | `import { resolve } from 'node:path'`              |
 | 3. Third-party        | npm packages                        | `import { z } from 'zod/mini'`                     |
 | 4. Workspace packages | `@chief-clancy/*`                   | `import { createBoard } from '@chief-clancy/core'` |
-| 5. Local              | `~/`, `./`, `../`                   | `import { parse } from '~/branch/branch.js'`       |
+| 5. Local              | `~/c/`, `~/t/`, `./`, `../`         | `import { parse } from '~/c/branch/branch.js'`     |
 
-The `~/` path alias resolves to `./src/*` within each package (configured per-package in `tsconfig.json`). Prefer `~/` for imports that would otherwise need deep relative paths (`../../`). Short relative paths (`./`, `../`) are fine.
+Each package has a unique path alias: `~/c/` for core, `~/t/` for terminal (configured in each `tsconfig.json`, rewritten by `tsc-alias` at build time). Use the alias for imports that would otherwise need deep relative paths (`../../` or deeper). Short relative paths (`./`, `../`) within the same module are fine.
 
 Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 

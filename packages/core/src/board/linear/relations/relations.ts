@@ -5,14 +5,15 @@
  * (via Epic: text convention + native children API), and issue
  * state transitions via GraphQL mutations.
  */
-import type { ChildrenStatus } from '../../../types/index.js';
+import type { ChildrenStatus } from '~/c/types/index.js';
 
 import {
   linearIssueRelationsResponseSchema,
   linearIssueSearchResponseSchema,
   linearIssueUpdateResponseSchema,
   linearWorkflowStatesResponseSchema,
-} from '../../../schemas/index.js';
+} from '~/c/schemas/index.js';
+
 import { linearGraphql } from '../api/index.js';
 
 /** Set of Linear state types that indicate a resolved issue. */

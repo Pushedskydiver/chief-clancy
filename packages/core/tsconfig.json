@@ -5,7 +5,7 @@
     "rootDir": "src",
     "composite": true,
     "paths": {
-      "~/*": ["./src/*"]
+      "~/c/*": ["./src/*"]
     }
   },
   "include": ["src"]

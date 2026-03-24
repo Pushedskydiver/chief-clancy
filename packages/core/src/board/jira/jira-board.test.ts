@@ -1,4 +1,4 @@
-import type { JiraEnv } from '../../schemas/index.js';
+import type { JiraEnv } from '~/c/schemas/index.js';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 

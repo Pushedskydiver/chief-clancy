@@ -5,7 +5,7 @@ import {
   parseInstallFlag,
   resolveInstallPaths,
   validateSources,
-} from '~/installer/install/install.js';
+} from '~/t/installer/install/install.js';
 import { describe, expect, it } from 'vitest';
 
 describe('parseInstallFlag', () => {

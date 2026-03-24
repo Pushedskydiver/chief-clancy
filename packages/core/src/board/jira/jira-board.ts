@@ -4,13 +4,9 @@
  * Returns a plain object conforming to the Board type, delegating
  * to the Jira API, relations, and label functions.
  */
-import type { JiraEnv } from '../../schemas/index.js';
-import type {
-  Board,
-  FetchedTicket,
-  FetchTicketOpts,
-} from '../../types/index.js';
 import type { JiraTicket } from './api/index.js';
+import type { JiraEnv } from '~/c/schemas/index.js';
+import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/index.js';
 
 import {
   buildAuthHeader,

@@ -5,7 +5,7 @@ import type {
   LinearEnv,
   NotionEnv,
   ShortcutEnv,
-} from '../schemas/env/env.js';
+} from '~/c/schemas/env/env.js';
 
 import { describe, expect, it } from 'vitest';
 

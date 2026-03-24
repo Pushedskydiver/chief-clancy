@@ -5,11 +5,9 @@
  * label API requires reading the current labels and writing the full
  * list back. Wrapped in {@link safeLabel} for best-effort error handling.
  */
-import { jiraIssueLabelsResponseSchema } from '../../../schemas/index.js';
-import {
-  modifyLabelList,
-  safeLabel,
-} from '../../../shared/label-helpers/index.js';
+import { jiraIssueLabelsResponseSchema } from '~/c/schemas/index.js';
+import { modifyLabelList, safeLabel } from '~/c/shared/label-helpers/index.js';
+
 import { isValidIssueKey, jiraHeaders } from '../api/index.js';
 
 /** Context for Jira label operations. */
