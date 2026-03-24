@@ -71,14 +71,14 @@ Adjusted after phase validation (2026-03-23). Reordered to build leaves first, s
 
 Adjusted after phase validation (2026-03-24). Split `detectBoard()` into separate PR, split board API schemas into 2 batches, added prerequisites PR.
 
-| PR   | Description                                                                                      | Status  |
-| ---- | ------------------------------------------------------------------------------------------------ | ------- |
-| 4.0  | Prerequisites: add `zod` dependency to core                                                      | Done    |
-| 4.1  | Shared types: `BoardProvider`, `Ticket`, `FetchedTicket`, `Board`, `RemoteInfo`, etc. JSDoc all. | Done    |
-| 4.2  | Env schemas: `sharedEnvSchema` + 6 board env schemas. Carry over from old repo. TDD.             | Done    |
-| 4.3  | Board detection: `detectBoard()` + `sharedEnv()`. TDD + property-based tests.                    | Done    |
-| 4.4a | Board API schemas (batch 1): Jira, GitHub, Azure DevOps. TDD with fixture data.                  | Done    |
-| 4.4b | Board API schemas (batch 2): Linear, Shortcut, Notion. TDD with fixture data.                    | Done    |
+| PR   | Description                                                                                      | Status |
+| ---- | ------------------------------------------------------------------------------------------------ | ------ |
+| 4.0  | Prerequisites: add `zod` dependency to core                                                      | Done   |
+| 4.1  | Shared types: `BoardProvider`, `Ticket`, `FetchedTicket`, `Board`, `RemoteInfo`, etc. JSDoc all. | Done   |
+| 4.2  | Env schemas: `sharedEnvSchema` + 6 board env schemas. Carry over from old repo. TDD.             | Done   |
+| 4.3  | Board detection: `detectBoard()` + `sharedEnv()`. TDD + property-based tests.                    | Done   |
+| 4.4a | Board API schemas (batch 1): Jira, GitHub, Azure DevOps. TDD with fixture data.                  | Done   |
+| 4.4b | Board API schemas (batch 2): Linear, Shortcut, Notion. TDD with fixture data.                    | Done   |
 
 ### Dependencies
 
