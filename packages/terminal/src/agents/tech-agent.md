@@ -62,7 +62,7 @@ Also document:
 
 ## Storybook stories location
 
-{glob pattern for story files, e.g. src/components/**/*.stories.tsx}
+{glob pattern for story files, e.g. src/components/\*_/_.stories.tsx}
 ```
 
 **Environment** — Note which env vars are used (read `.env.example` or `env.d.ts` if present). Do not include actual secret values.
