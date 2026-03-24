@@ -36,3 +36,23 @@ export {
   DELIVERED_STATUSES,
   FAILED_STATUSES,
 } from './types/index.js';
+
+export type {
+  AzdoEnv,
+  BoardConfig,
+  GitHubEnv,
+  JiraEnv,
+  LinearEnv,
+  NotionEnv,
+  SharedEnv,
+  ShortcutEnv,
+} from './schemas/index.js';
+export {
+  azdoEnvSchema,
+  githubEnvSchema,
+  jiraEnvSchema,
+  linearEnvSchema,
+  notionEnvSchema,
+  sharedEnvSchema,
+  shortcutEnvSchema,
+} from './schemas/index.js';
