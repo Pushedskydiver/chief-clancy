@@ -54,7 +54,7 @@ Read the actual config files for port numbers — never guess. If Storybook is n
 
 Also document:
 
-```markdown
+```
 ## Route structure
 
 {list key routes with file paths}
@@ -62,7 +62,7 @@ Also document:
 
 ## Storybook stories location
 
-{glob pattern for story files, e.g. src/components/\*_/_.stories.tsx}
+{glob pattern for story files, e.g. src/components/**/*.stories.tsx}
 ```
 
 **Environment** — Note which env vars are used (read `.env.example` or `env.d.ts` if present). Do not include actual secret values.
