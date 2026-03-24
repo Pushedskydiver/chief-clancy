@@ -27,7 +27,7 @@ describe('agents directory structure', () => {
       .filter((f) => f.endsWith('.md'))
       .sort();
 
-    expect(agents).toEqual(EXPECTED_AGENTS);
+    expect(agents).toEqual([...EXPECTED_AGENTS].sort());
   });
 
   it('all agent files start with a heading', () => {
@@ -45,7 +45,7 @@ describe('agents directory structure', () => {
     expect(issues).toEqual([]);
   });
 
-  it('verification-gate.md contains the decision JSON schema', () => {
+  it('verification-gate.md contains decision response markers', () => {
     const content = readFileSync(
       new URL('verification-gate.md', import.meta.url),
       'utf8',
