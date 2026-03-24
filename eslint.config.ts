@@ -109,6 +109,7 @@ export default defineConfig(
     rules: {
       'functional/immutable-data': 'off',
       'functional/no-let': 'off',
+      'max-lines': 'off',
       'max-lines-per-function': 'off',
       'sonarjs/no-duplicate-string': 'off',
     },
