@@ -1,6 +1,7 @@
 /** Single-value process-lifetime cache. */
 export class Cached<T> {
-  readonly #value: T | undefined;
+  // eslint-disable-next-line functional/prefer-readonly-type -- intentionally mutable cache
+  #value: T | undefined;
 
   get(): T | undefined {
     return this.#value;
