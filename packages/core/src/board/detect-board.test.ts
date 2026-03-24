@@ -423,15 +423,17 @@ describe('detectBoard', () => {
       expect(result.env.CLANCY_TDD).toBeUndefined();
     });
 
-    it('passes through CLANCY_MODE across boards', () => {
-      for (const env of [jiraEnv, githubEnv, linearEnv]) {
-        const result = detectBoard(env({ CLANCY_MODE: 'afk' }));
+    it.each([
+      ['jira', jiraEnv],
+      ['github', githubEnv],
+      ['linear', linearEnv],
+    ] as const)('passes through CLANCY_MODE for %s', (_label, env) => {
+      const result = detectBoard(env({ CLANCY_MODE: 'afk' }));
 
-        expect(typeof result).not.toBe('string');
-        if (typeof result === 'string') return;
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
 
-        expect(result.env.CLANCY_MODE).toBe('afk');
-      }
+      expect(result.env.CLANCY_MODE).toBe('afk');
     });
 
     it('passes through strategist env vars', () => {
@@ -497,30 +499,28 @@ describe('detectBoard', () => {
       expect(result.env.CLANCY_BRANCH_GUARD).toBeUndefined();
     });
 
-    it('passes through pipeline label vars across boards', () => {
-      for (const env of [
-        jiraEnv,
-        githubEnv,
-        linearEnv,
-        shortcutEnv,
-        notionEnv,
-        azdoEnv,
-      ]) {
-        const result = detectBoard(
-          env({
-            CLANCY_LABEL_BRIEF: 'clancy:brief',
-            CLANCY_LABEL_PLAN: 'clancy:plan',
-            CLANCY_LABEL_BUILD: 'clancy:build',
-          }),
-        );
+    it.each([
+      ['jira', jiraEnv],
+      ['github', githubEnv],
+      ['linear', linearEnv],
+      ['shortcut', shortcutEnv],
+      ['notion', notionEnv],
+      ['azdo', azdoEnv],
+    ] as const)('passes through pipeline label vars for %s', (_label, env) => {
+      const result = detectBoard(
+        env({
+          CLANCY_LABEL_BRIEF: 'clancy:brief',
+          CLANCY_LABEL_PLAN: 'clancy:plan',
+          CLANCY_LABEL_BUILD: 'clancy:build',
+        }),
+      );
 
-        expect(typeof result).not.toBe('string');
-        if (typeof result === 'string') return;
+      expect(typeof result).not.toBe('string');
+      if (typeof result === 'string') return;
 
-        expect(result.env.CLANCY_LABEL_BRIEF).toBe('clancy:brief');
-        expect(result.env.CLANCY_LABEL_PLAN).toBe('clancy:plan');
-        expect(result.env.CLANCY_LABEL_BUILD).toBe('clancy:build');
-      }
+      expect(result.env.CLANCY_LABEL_BRIEF).toBe('clancy:brief');
+      expect(result.env.CLANCY_LABEL_PLAN).toBe('clancy:plan');
+      expect(result.env.CLANCY_LABEL_BUILD).toBe('clancy:build');
     });
 
     it('pipeline label vars are optional', () => {
