@@ -8,6 +8,7 @@
 import type { ChildrenStatus } from '~/c/types/index.js';
 
 import {
+  linearIssueChildrenResponseSchema,
   linearIssueRelationsResponseSchema,
   linearIssueSearchResponseSchema,
   linearIssueUpdateResponseSchema,
@@ -143,25 +144,10 @@ async function fetchChildrenByNativeApi(
   `;
 
   const raw = await linearGraphql(apiKey, query, { issueId: parentId });
+  const parsed = linearIssueChildrenResponseSchema.safeParse(raw);
+  if (!parsed.success) return undefined;
 
-  if (!raw || typeof raw !== 'object') return undefined;
-
-  // Children nodes have the same shape as search nodes — reuse the
-  // search schema for state-type extraction. The schema is permissive
-  // enough (optional fields) to handle both response shapes.
-  const data = raw as {
-    data?: {
-      issue?: {
-        children?: {
-          nodes?: ReadonlyArray<{ state?: { type?: string } }>;
-        };
-      };
-    };
-  };
-
-  const nodes = data.data?.issue?.children?.nodes;
-  if (!nodes) return undefined;
-
+  const nodes = parsed.data.data?.issue?.children?.nodes ?? [];
   return countChildrenStatus(nodes);
 }
 

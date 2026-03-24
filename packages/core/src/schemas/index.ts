@@ -73,6 +73,7 @@ export {
 } from './jira/jira.js';
 
 export type {
+  LinearIssueChildrenResponse,
   LinearIssueNode,
   LinearIssueLabelSearchResponse,
   LinearIssueRelationsResponse,
@@ -86,6 +87,7 @@ export type {
   LinearWorkspaceLabelsResponse,
 } from './linear/linear.js';
 export {
+  linearIssueChildrenResponseSchema,
   linearIssueLabelSearchResponseSchema,
   linearIssueRelationsResponseSchema,
   linearIssueSearchResponseSchema,
