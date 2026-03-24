@@ -32,7 +32,7 @@ Test each required binary:
 
 | Binary | Check             | Fix hint                |
 | ------ | ----------------- | ----------------------- |
-| `node` | `command -v node` | Install Node.js 22+     |
+| `node` | `command -v node` | Install Node.js 24+     |
 | `git`  | `command -v git`  | Install git for your OS |
 
 Print `✅` or `❌` for each.

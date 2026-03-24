@@ -40,7 +40,7 @@ Before proceeding, silently run `command -v` for each required binary:
 
 | Binary   | Install hint                               |
 | -------- | ------------------------------------------ |
-| `node`   | Install Node.js 22+ (nodejs.org)           |
+| `node`   | Install Node.js 24+ (nodejs.org)           |
 | `git`    | `brew install git` / `apt install git`     |
 | `claude` | `npm install -g @anthropic-ai/claude-code` |
 
@@ -51,7 +51,7 @@ If any are missing, output:
 ```
 ⚠️ Missing prerequisites:
 
-  ❌ node — Install Node.js 22+ (nodejs.org)
+  ❌ node — Install Node.js 24+ (nodejs.org)
 
 Clancy requires these binaries to run. Install them, then re-run /clancy:init.
 ```
