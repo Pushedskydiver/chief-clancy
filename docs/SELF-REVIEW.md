@@ -32,6 +32,11 @@ This is a **living document** — when Copilot catches something the self-review
 - Are `describe`/`it` blocks accidentally duplicated from copy-paste?
 - Do test names accurately describe what is being tested? (Copilot caught a test name that didn't match the narrowed assertion)
 
+## Carried-over content
+
+- When bringing files from the old repo, do hardcoded version numbers match the new repo's config? (Copilot caught Node 22+ in role docs when `engines.node` requires >=24.0.0)
+- Do markdown code fences open and close with the same number of backticks? (Copilot caught ``` opening with ```` closing — breaks rendering)
+
 ## Consistency
 
 - Are constants duplicated across files? (single source of truth — `grep` for the value)
