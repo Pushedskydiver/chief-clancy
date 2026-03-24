@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-const ROLES_DIR = join(fileURLToPath(import.meta.url), '..');
+const ROLES_DIR = fileURLToPath(new URL('.', import.meta.url));
 
 const CORE_ROLES = ['implementer', 'reviewer', 'setup'];
 const OPTIONAL_ROLES = ['planner', 'strategist'];
@@ -38,6 +38,30 @@ describe('roles directory structure', () => {
           expect(files.length).toBeGreaterThan(0);
         });
       });
+    });
+  });
+
+  SUBDIRS.forEach((subdir) => {
+    it(`has no duplicate filenames across roles in ${subdir}/`, () => {
+      const seen = new Map<string, string>();
+      const duplicates: string[] = [];
+
+      ALL_ROLES.forEach((role) => {
+        const dir = join(ROLES_DIR, role, subdir);
+        const files = readdirSync(dir).filter((f) => f.endsWith('.md'));
+
+        files.forEach((file) => {
+          const existing = seen.get(file);
+
+          if (existing) {
+            duplicates.push(`${file} in both ${existing} and ${role}`);
+          } else {
+            seen.set(file, role);
+          }
+        });
+      });
+
+      expect(duplicates).toEqual([]);
     });
   });
 

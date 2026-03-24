@@ -261,8 +261,6 @@ lsof -ti:{PLAYWRIGHT_DEV_PORT} | xargs kill -9 2>/dev/null || true
 ```
 ````
 
-```
-
 ---
 
 ## CLAUDE.md merge logic
@@ -274,6 +272,7 @@ Write the full template as `CLAUDE.md` (see `src/templates/CLAUDE.md`).
 ### If CLAUDE.md already exists
 
 Check for existing `<!-- clancy:start -->` marker:
+
 - Found: Replace everything between `<!-- clancy:start -->` and `<!-- clancy:end -->` with updated content
 - Not found: Append the Clancy section to the end of the file
 
@@ -284,6 +283,7 @@ Never overwrite the entire file. Always preserve existing content.
 ## .gitignore check
 
 Read the project's `.gitignore`. If `.clancy/.env` is not present, append:
+
 ```
 
 # Clancy credentials
@@ -293,6 +293,7 @@ Read the project's `.gitignore`. If `.clancy/.env` is not present, append:
 ```
 
 If no `.gitignore` exists, create one with:
+
 ```
 
 # Clancy credentials
@@ -316,6 +317,7 @@ node_modules/
 Check whether a `.prettierignore` file exists in the project root.
 
 **If it exists:** read it. If it does not already contain `.clancy/`, append:
+
 ```
 
 # Clancy generated files
@@ -323,7 +325,7 @@ Check whether a `.prettierignore` file exists in the project root.
 .clancy/
 .claude/commands/clancy/
 
-````
+```
 
 **If it does not exist:** skip — do not create it. Clancy only adds entries to an existing `.prettierignore` so it does not impose Prettier on projects that don't use it.
 
@@ -336,9 +338,10 @@ The installer copies bundled runtime scripts (`clancy-once.js` and `clancy-afk.j
 **Do NOT write or modify these files during init.** They are managed by the installer and updated automatically via `/clancy:update`.
 
 If the scripts are missing (e.g. upgrading from an older version), tell the user to run:
+
 ```bash
 npx -y chief-clancy@latest
-````
+```
 
 ---
 
