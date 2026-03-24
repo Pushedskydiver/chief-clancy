@@ -19,16 +19,16 @@
 
 Adjusted after phase validation (2026-03-23). Reordered to build leaves first, split orchestrator from integration test, added prerequisites. See validation notes below.
 
-| PR  | Description                                                                   | Status      |
-| --- | ----------------------------------------------------------------------------- | ----------- |
-| 2.0 | Prerequisites: `terminal/src/shared/ansi/` + `core/src/shared/env-parser/`    | Done        |
-| 2.1 | File operations: `file-ops/` — fileHash, copyDir, inlineWorkflows             | Done        |
-| 2.2 | Prompts + UI: `prompts/` (DI readline) + `ui/` (banner, success)              | Done        |
-| 2.3 | Manifest: `manifest/` — buildManifest, detectModified, backup (immutable)     | Done        |
-| 2.4 | Hook installer: `hook-installer/` — register hooks immutably in settings.json | Done        |
-| 2.5 | Role filter: `role-filter/` — determineRoles, copyRoleFiles, cleanDisabled    | Done        |
-| 2.6 | Orchestrator: `install.ts` — decomposed main(), runInstall(config) pipeline   | Done        |
-| 2.7 | Integration test: E2E against temp directory, fresh + update paths            | Done        |
+| PR  | Description                                                                   | Status |
+| --- | ----------------------------------------------------------------------------- | ------ |
+| 2.0 | Prerequisites: `terminal/src/shared/ansi/` + `core/src/shared/env-parser/`    | Done   |
+| 2.1 | File operations: `file-ops/` — fileHash, copyDir, inlineWorkflows             | Done   |
+| 2.2 | Prompts + UI: `prompts/` (DI readline) + `ui/` (banner, success)              | Done   |
+| 2.3 | Manifest: `manifest/` — buildManifest, detectModified, backup (immutable)     | Done   |
+| 2.4 | Hook installer: `hook-installer/` — register hooks immutably in settings.json | Done   |
+| 2.5 | Role filter: `role-filter/` — determineRoles, copyRoleFiles, cleanDisabled    | Done   |
+| 2.6 | Orchestrator: `install.ts` — decomposed main(), runInstall(config) pipeline   | Done   |
+| 2.7 | Integration test: E2E against temp directory, fresh + update paths            | Done   |
 
 ### Dependencies
 
@@ -58,3 +58,11 @@ Adjusted after phase validation (2026-03-23). Reordered to build leaves first, s
 - Simplify: prompts (DI instead of module-scoped side effect)
 - Minor rewrite: manifest (immutable), role-filter (options object, split concerns)
 - Major rewrite: hook-installer (immutable, decomposed), ui (data-driven), install.ts (pipeline)
+
+## Phase 3: Terminal — Roles & Agents
+
+| PR  | Description                                                                                            | Status      |
+| --- | ------------------------------------------------------------------------------------------------------ | ----------- |
+| 3.1 | Role markdown files: 5 roles (35 `.md` files), reviewed for clarity/accuracy, Prettier-formatted       | In Progress |
+| 3.2 | Agent prompts: 7 agent `.md` files, reviewed for clarity and path references                           | Pending     |
+| 3.3 | Templates: `CLAUDE.md` template, updated references for monorepo context                               | Pending     |
