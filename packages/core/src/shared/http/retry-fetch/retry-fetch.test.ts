@@ -303,4 +303,28 @@ describe('retryFetch', () => {
     expect(result).toBe(err500);
     expect(fetch).toHaveBeenCalledTimes(1);
   });
+
+  it('caps Retry-After at maxDelayMs to prevent indefinite stalls', async () => {
+    // Server says wait 1 hour, but maxDelayMs is 5s
+    const rateLimited = mockResponse(429, { 'Retry-After': '3600' });
+    const success = mockResponse(200);
+
+    vi.mocked(fetch)
+      .mockResolvedValueOnce(rateLimited)
+      .mockResolvedValueOnce(success);
+
+    const promise = retryFetch('https://api.test.com/data', undefined, {
+      maxRetries: 1,
+      baseDelayMs: 100,
+      maxDelayMs: 5000,
+    });
+
+    // If Retry-After were honoured uncapped, this would need 3600s.
+    // With the cap at maxDelayMs (5000ms), flushTimers resolves it.
+    await flushTimers();
+    const result = await promise;
+
+    expect(result).toBe(success);
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
 });

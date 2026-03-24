@@ -35,6 +35,9 @@ export async function pingEndpoint(
       signal: AbortSignal.timeout(10_000),
     });
 
+    // Drain body to release the connection back to the pool
+    await response.arrayBuffer().catch(() => {});
+
     if (response.ok) return { ok: true };
 
     const mapped = statusErrors[response.status];

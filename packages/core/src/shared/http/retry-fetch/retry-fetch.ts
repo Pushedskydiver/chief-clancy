@@ -68,9 +68,12 @@ function retryDelay(
 ): number {
   if (response.status === 429) {
     const after = parseRetryAfter(response.headers.get('Retry-After'));
-    return (
-      after ?? backoffDelay(attempt, config.baseDelayMs, config.maxDelayMs)
+    const fallback = backoffDelay(
+      attempt,
+      config.baseDelayMs,
+      config.maxDelayMs,
     );
+    return Math.min(after ?? fallback, config.maxDelayMs);
   }
   return backoffDelay(attempt, config.baseDelayMs, config.maxDelayMs);
 }

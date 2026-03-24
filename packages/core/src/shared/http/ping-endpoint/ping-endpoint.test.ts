@@ -2,13 +2,22 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { pingEndpoint } from './ping-endpoint.js';
 
+/** Create a minimal Response-like object for mocking. */
+function mockResponse(status: number): Response {
+  return {
+    status,
+    ok: status >= 200 && status < 300,
+    arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
+  } as Response;
+}
+
 describe('pingEndpoint', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
   it('returns ok true on successful response', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true }));
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(mockResponse(200)));
 
     const result = await pingEndpoint({
       url: 'https://api.example.com',
@@ -21,10 +30,7 @@ describe('pingEndpoint', () => {
   });
 
   it('returns mapped error message for known status codes', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({ ok: false, status: 401 }),
-    );
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(mockResponse(401)));
 
     const result = await pingEndpoint({
       url: 'https://api.example.com',
@@ -37,10 +43,7 @@ describe('pingEndpoint', () => {
   });
 
   it('returns generic HTTP status for unmapped status codes', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({ ok: false, status: 500 }),
-    );
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(mockResponse(500)));
 
     const result = await pingEndpoint({
       url: 'https://api.example.com',
@@ -69,7 +72,7 @@ describe('pingEndpoint', () => {
   });
 
   it('passes an AbortSignal to fetch', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({ ok: true });
+    const mockFetch = vi.fn().mockResolvedValue(mockResponse(200));
     vi.stubGlobal('fetch', mockFetch);
 
     await pingEndpoint({
