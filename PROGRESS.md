@@ -341,3 +341,40 @@ Completed PR 7.5a. Codebase clean.
 - `buildApiBaseUrl` returns `'https://dev.azure.com'` for Azure (azdo.ts hardcodes its own base URL, but the guard in `resolvePlatformHandlers` requires a truthy apiBase)
 - Platform builders extracted to `rework-builders.ts` to keep `rework-handlers.ts` under 300-line limit
 - Legacy `visualstudio.com` URL format not supported — different path structure (org in hostname). Low priority since Microsoft redirects to `dev.azure.com` since 2018
+
+## Phase 7 Cleanup
+
+Post-merge audit found 3 HIGH, 12 MEDIUM, 9 LOW across 13 modules. Audit run 2026-03-25.
+
+| PR  | Description                                                                              | Status  |
+| --- | ---------------------------------------------------------------------------------------- | ------- |
+| C10 | Lock stale + quality validation (H1, H2, M1)                                            | Pending |
+| C11 | Rework handler invocation tests + pr-creation result assertions (H3, M6, M9)             | Pending |
+| C12 | Shared types extraction: `ExecGit`, `FetchFn` (M2, M3)                                  | Pending |
+| C13 | JSDoc `@param` sweep + property-based tests (M4, L1, M8)                                | Pending |
+| C14 | Test coverage gaps: deliver, rework, fetch-ticket, epic, cost, commit-type (M5-M12)     | Pending |
+
+### HIGH findings
+
+1. **H1** — `isLockStale` returns `false` for invalid timestamps (`NaN > 24h` → `false`). JSDoc says invalid should be stale. Corrupt `startedAt` with alive PID permanently blocks all runs.
+2. **H2** — `readQualityData` casts `raw.tickets as Record<string, QualityEntry>` after only checking it's an object — individual entry shapes unvalidated. Malformed entries produce `NaN` averages.
+3. **H3** — `rework-handlers` handler methods never actually invoked in tests. All 5 platforms' wiring is effectively untested — tests only check `typeof` on methods.
+
+### MEDIUM findings
+
+- **M1** — `quality/` uses `.reduce()` — convention says "No reduce()"
+- **M2** — `ExecGit` type duplicated in 4 production files (git-ops, resume, epic, deliver). Crossed extraction threshold.
+- **M3** — `FetchFn` type duplicated in 3 production files (pr-creation, rework-handlers, deliver)
+- **M4** — Missing `@param` tags on ~17 exported functions across lock, cost, quality, rework, fetch-ticket, outcome
+- **M5** — `rework/` — MAX_CANDIDATES limit untested; PUSHED/PUSH_FAILED statuses untested; `checkReviewState` throwing untested
+- **M6** — `pr-creation/` — no test for API error responses (non-201); result shape never asserted beyond `toBeDefined()`
+- **M7** — `deliver/` — no test for PR creation failure outcome; `singleChildParent` untested; only GitHub remote mocked
+- **M8** — `commit-type/` — property-based test missing; false-positive substring matches ("debugging" → fix)
+- **M9** — `rework-handlers` — `CLANCY_GIT_API_URL` override untested; missing credential tests for non-GitHub platforms
+- **M10** — `cost/` — no test for `mkdir` failure propagation
+- **M11** — `fetch-ticket/` — `fetchTickets` throwing untested; `fetchBlockerStatus` throwing untested
+- **M12** — `epic/` — mixed sibling statuses untested in `buildEpicContext`
+
+### Deferred
+
+- L1-L9: Style/minor items (property-based tests for URL builders, `.clancy` constant duplication, FS type naming, `Ctx` naming, semantic mismatch in push failure outcome). Address opportunistically.
