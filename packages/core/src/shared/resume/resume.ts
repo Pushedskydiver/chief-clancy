@@ -5,6 +5,7 @@
  * locally with uncommitted or unpushed work. If so, the caller can
  * resume by committing, pushing, and optionally creating a PR.
  */
+import type { ExecGit } from '~/c/shared/git-ops/git-ops.js';
 import type { LockData } from '~/c/shared/lock/lock.js';
 import type { ProgressFs } from '~/c/shared/progress/progress.js';
 import type { PrCreationResult } from '~/c/types/remote.js';
@@ -20,9 +21,6 @@ import { appendProgress, findLastEntry } from '~/c/shared/progress/progress.js';
 import { DELIVERED_STATUSES } from '~/c/types/progress.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-
-/** Git executor signature (injected). */
-type ExecGit = (args: readonly string[]) => string;
 
 /** Detection result for a resumable stale lock. */
 type ResumeInfo = {

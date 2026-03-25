@@ -5,7 +5,7 @@
  * {@link PlatformReworkHandlers} interface. Called exclusively by
  * `resolvePlatformHandlers` in `rework-handlers.ts`.
  */
-import type { Ctx, PlatformReworkHandlers } from './rework-handlers.js';
+import type { PlatformReworkHandlers, ReworkCtx } from './rework-handlers.js';
 import type {
   AzdoRemote,
   BitbucketRemote,
@@ -47,7 +47,7 @@ const noopReRequest = async (): Promise<boolean> => false;
 
 /** Build rework handlers for GitHub. */
 export function githubHandlers(
-  ctx: Ctx,
+  ctx: ReworkCtx,
   remote: GitHubRemote,
 ): PlatformReworkHandlers {
   const { fetchFn, token, apiBase } = ctx;
@@ -97,7 +97,7 @@ export function githubHandlers(
 
 /** Build rework handlers for GitLab. */
 export function gitlabHandlers(
-  ctx: Ctx,
+  ctx: ReworkCtx,
   remote: GitLabRemote,
 ): PlatformReworkHandlers {
   const { fetchFn, token, apiBase } = ctx;
@@ -144,7 +144,7 @@ export function gitlabHandlers(
 
 /** Build rework handlers for Bitbucket Cloud. */
 export function bbCloudHandlers(
-  ctx: Ctx,
+  ctx: ReworkCtx,
   remote: BitbucketRemote,
 ): PlatformReworkHandlers {
   const { fetchFn, token } = ctx;
@@ -189,7 +189,7 @@ export function bbCloudHandlers(
 
 /** Build rework handlers for Bitbucket Server. */
 export function bbServerHandlers(
-  ctx: Ctx,
+  ctx: ReworkCtx,
   remote: BitbucketServerRemote,
 ): PlatformReworkHandlers {
   const { fetchFn, token, apiBase } = ctx;
@@ -232,7 +232,7 @@ export function bbServerHandlers(
 
 /** Build rework handlers for Azure DevOps. */
 export function azdoHandlers(
-  ctx: Ctx,
+  ctx: ReworkCtx,
   remote: AzdoRemote,
 ): PlatformReworkHandlers {
   const { fetchFn, token } = ctx;

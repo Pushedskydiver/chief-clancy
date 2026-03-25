@@ -11,7 +11,7 @@ import type { GitPlatform, RemoteInfo } from '~/c/types/index.js';
 import { parseRemote } from '~/c/shared/remote/remote.js';
 
 /** Execute a git sub-command and return stdout. Throws on non-zero exit. */
-type ExecGit = (args: readonly string[]) => string;
+export type ExecGit = (args: readonly string[]) => string;
 
 /**
  * Check whether a branch name is safe for use in git ref paths.

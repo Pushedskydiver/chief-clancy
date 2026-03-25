@@ -7,6 +7,7 @@
  * of switching on `remote.host`.
  */
 import type { SharedEnv } from '~/c/schemas/env/env.js';
+import type { FetchFn } from '~/c/shared/pr-creation/pr-creation.js';
 import type { PrReviewState, RemoteInfo } from '~/c/types/remote.js';
 
 import { resolveGitToken } from '~/c/shared/git-token/git-token.js';
@@ -21,9 +22,6 @@ import {
 } from './rework-builders.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-
-/** Minimal fetch signature for platform API calls. */
-type FetchFn = (url: string, init: RequestInit) => Promise<Response>;
 
 /** Uniform interface for platform-specific rework operations. */
 export type PlatformReworkHandlers = {
@@ -59,7 +57,7 @@ export type PlatformReworkHandlers = {
 };
 
 /** Shared context passed to every platform builder. */
-export type Ctx = {
+export type ReworkCtx = {
   readonly fetchFn: FetchFn;
   readonly token: string;
   readonly apiBase: string;
@@ -92,7 +90,7 @@ export function resolvePlatformHandlers(
   const apiBase = buildApiBaseUrl(remote, env.CLANCY_GIT_API_URL);
   if (!apiBase) return undefined;
 
-  const ctx: Ctx = {
+  const ctx: ReworkCtx = {
     fetchFn,
     token: creds.token,
     apiBase,
