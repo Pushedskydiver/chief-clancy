@@ -229,7 +229,7 @@ describe('deliverEpicToBase', () => {
     expect(body.body).toContain('PROJ-102');
   });
 
-  it('uses feat commit type in PR title', async () => {
+  it('defaults to feat commit type when no ticketType provided', async () => {
     const fetchFn = successFetch();
 
     await deliverEpicToBase({
@@ -247,6 +247,27 @@ describe('deliverEpicToBase', () => {
     const call = fetchFn.mock.calls[0] as [string, RequestInit];
     const body = JSON.parse(call[1].body as string) as { title: string };
     expect(body.title).toBe('feat(PROJ-100): Epic title');
+  });
+
+  it('resolves commit type from ticketType when provided', async () => {
+    const fetchFn = successFetch();
+
+    await deliverEpicToBase({
+      exec,
+      fetchFn,
+      progressFs,
+      projectRoot: '/repo',
+      config: mockConfig,
+      epicKey: 'PROJ-100',
+      epicTitle: 'Epic title',
+      epicBranch: 'epic/proj-100',
+      baseBranch: 'main',
+      ticketType: 'Bug',
+    });
+
+    const call = fetchFn.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(call[1].body as string) as { title: string };
+    expect(body.title).toBe('fix(PROJ-100): Epic title');
   });
 
   it('appends PUSHED progress on failed outcome', async () => {

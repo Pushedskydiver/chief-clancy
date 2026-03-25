@@ -12,6 +12,7 @@ import type { FetchFn } from '~/c/shared/pr-creation/index.js';
 import type { ProgressFs } from '~/c/shared/progress/index.js';
 import type { PrCreationResult, RemoteInfo } from '~/c/types/remote.js';
 
+import { resolveCommitType } from '~/c/shared/commit-type/index.js';
 import { gatherChildEntries } from '~/c/shared/epic/index.js';
 import { detectRemote } from '~/c/shared/git-ops/index.js';
 import {
@@ -35,6 +36,7 @@ type DeliverEpicOpts = {
   readonly epicTitle: string;
   readonly epicBranch: string;
   readonly baseBranch: string;
+  readonly ticketType?: string;
 };
 
 /** Result of an epic delivery attempt. */
@@ -90,8 +92,8 @@ async function createEpicPr(
 ): Promise<PrCreationResult | undefined> {
   const { fetchFn, config, epicKey, epicTitle, epicBranch, baseBranch } = opts;
 
-  // Epics are always 'feat' — they deliver a feature set, not a fix
-  const prTitle = `feat(${epicKey}): ${epicTitle}`;
+  const commitType = resolveCommitType(opts.ticketType);
+  const prTitle = `${commitType}(${epicKey}): ${epicTitle}`;
   const prBody = buildEpicPrBody({
     epicKey,
     epicTitle,
