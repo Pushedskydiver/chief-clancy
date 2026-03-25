@@ -10,6 +10,7 @@ import {
   ensureBranch,
   fetchRemoteBranch,
   hasUncommittedChanges,
+  isSafeBranchName,
   pushBranch,
   remoteBranchExists,
   squashMerge,
@@ -77,6 +78,43 @@ describe('branchExists', () => {
     });
 
     expect(branchExists(exec, 'nonexistent')).toBe(false);
+  });
+
+  it('returns false for branch names with path traversal', () => {
+    const exec = vi.fn();
+
+    expect(branchExists(exec, '../../tags/v1.0')).toBe(false);
+    expect(exec).not.toHaveBeenCalled();
+  });
+
+  it('returns false for empty branch name', () => {
+    const exec = vi.fn();
+
+    expect(branchExists(exec, '')).toBe(false);
+    expect(exec).not.toHaveBeenCalled();
+  });
+});
+
+// ─── isSafeBranchName ─────────────────────────────────────────────────
+
+describe('isSafeBranchName', () => {
+  it('returns true for valid branch names', () => {
+    expect(isSafeBranchName('main')).toBe(true);
+    expect(isSafeBranchName('feature/add-login')).toBe(true);
+    expect(isSafeBranchName('epic/PROJ-100')).toBe(true);
+  });
+
+  it('returns false for names with path traversal', () => {
+    expect(isSafeBranchName('../../tags/v1.0')).toBe(false);
+    expect(isSafeBranchName('feature/../main')).toBe(false);
+  });
+
+  it('returns false for names starting with /', () => {
+    expect(isSafeBranchName('/absolute')).toBe(false);
+  });
+
+  it('returns false for empty string', () => {
+    expect(isSafeBranchName('')).toBe(false);
   });
 });
 

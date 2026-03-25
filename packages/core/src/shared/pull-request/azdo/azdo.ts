@@ -145,7 +145,8 @@ export async function postPrComment(opts: PostCommentOpts): Promise<boolean> {
  *
  * Inline threads (with `threadContext`) always trigger rework.
  * General threads only trigger when the first comment is prefixed with `Rework:`.
- * System threads and deleted threads are excluded.
+ * System threads and deleted threads are excluded. Does not check reviewer
+ * vote state — only GitHub checks formal reviews (CHANGES_REQUESTED).
  *
  * @param opts - AzDO review state options.
  * @returns The review state, or `undefined` if no open PR or on error.
