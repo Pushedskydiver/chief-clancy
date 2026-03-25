@@ -50,6 +50,25 @@ const PROGRESS_PATH = '.clancy/progress.txt';
 /** Brief-style statuses that use slug-based format. */
 const SLUG_STATUSES = new Set<ProgressStatus>(['BRIEF', 'APPROVE_BRIEF']);
 
+/** All valid progress statuses — used to validate parsed segments. Includes legacy 'APPROVE'. */
+const VALID_STATUSES: ReadonlySet<string> = new Set([
+  'DONE',
+  'SKIPPED',
+  'PR_CREATED',
+  'PUSHED',
+  'PUSH_FAILED',
+  'LOCAL',
+  'PLAN',
+  'APPROVE_PLAN',
+  'APPROVE',
+  'REWORK',
+  'EPIC_PR_CREATED',
+  'BRIEF',
+  'APPROVE_BRIEF',
+  'TIME_LIMIT',
+  'RESUMED',
+]);
+
 /**
  * Append a progress entry to `.clancy/progress.txt`.
  *
@@ -118,7 +137,7 @@ export function parseProgressFile(
   if (!content) return [];
 
   return content
-    .split('\n')
+    .split(/\r?\n/)
     .filter((line) => line.trim().length > 0)
     .map((line) => parseLine(line.trim()))
     .filter((entry): entry is ProgressEntry => entry !== undefined);
@@ -210,7 +229,7 @@ function extractTailFields(tail: readonly string[]): TailFields {
   );
 
   return {
-    // Safe cast: isStatusSegment validates ALL_CAPS format matching ProgressStatus convention
+    // Safe cast: isStatusSegment validates against VALID_STATUSES set
     status: statusSegment as ProgressStatus | undefined,
     summary: summaryParts.join(' | '),
     prNumber,
@@ -218,9 +237,9 @@ function extractTailFields(tail: readonly string[]): TailFields {
   };
 }
 
-/** Check if a segment looks like a status (ALL_CAPS, 2+ chars). */
+/** Check if a segment is a known progress status. */
 function isStatusSegment(segment: string): boolean {
-  return segment.length > 1 && segment === segment.toUpperCase();
+  return VALID_STATUSES.has(segment);
 }
 
 /**
