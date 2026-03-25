@@ -3,7 +3,7 @@ import type { FetchedTicket } from '~/c/types/board.js';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { deliverViaPullRequest } from './deliver.js';
+import { deliverViaPullRequest } from './deliver-ticket.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
