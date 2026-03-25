@@ -190,7 +190,7 @@ Adjusted after phase validation (2026-03-25). Brief PRs 6.1-6.3 already done in 
 | 6.8  | `shared/pull-request/github/`: PR creation, review state, comments. Depends on 6.7                            | Done (#39)               |
 | 6.9  | `shared/pull-request/gitlab/`: MR creation, review state, discussions. Depends on 6.7                         | Done (#40)               |
 | 6.10 | `shared/pull-request/bitbucket/`: Cloud + Server PR creation, review state. Depends on 6.7                    | Done (#41)               |
-| 6.11 | `shared/pull-request/azdo/`: Azure DevOps PR creation, review state. Net-new (no old ref)                     | Pending                  |
+| 6.11 | `shared/pull-request/azdo/`: Azure DevOps PR creation, review state. Net-new (no old ref)                     | Done (#42)               |
 
 ### Dependencies
 

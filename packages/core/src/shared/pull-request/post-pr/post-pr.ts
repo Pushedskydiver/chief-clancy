@@ -1,8 +1,8 @@
 /**
  * Shared pull request creation utility.
  *
- * Wraps the common POST + error-handling pattern used by all three
- * git host PR creation functions (GitHub, GitLab, Bitbucket).
+ * Wraps the common POST + error-handling pattern used by all
+ * git host PR creation functions (GitHub, GitLab, Bitbucket, Azure DevOps).
  * Fetch is dependency-injected for testability.
  */
 import type { PrCreationResult } from '~/c/types/index.js';
