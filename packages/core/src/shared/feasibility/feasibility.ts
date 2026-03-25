@@ -28,30 +28,28 @@ type FeasibilityResult = {
  * @returns The prompt string for Claude.
  */
 export function buildFeasibilityPrompt(ticket: FeasibilityTicket): string {
-  return [
-    'You are evaluating whether a ticket can be implemented as pure code changes in a repository.',
-    '',
-    `Ticket: [${ticket.key}] ${ticket.title}`,
-    'Description:',
-    ticket.description,
-    '',
-    'Can this ticket be completed entirely through code changes committed to a git repository?',
-    '',
-    'Answer INFEASIBLE if the ticket requires ANY of:',
-    '- Manual testing or configuration in external tools or admin panels',
-    '- Access to external services, APIs, or platforms not available in the codebase',
-    '- Physical, hardware, or infrastructure changes',
-    '- Design assets that do not yet exist',
-    '- Deployment or infrastructure changes outside the repository',
-    '- Human judgment calls that require stakeholder input',
-    '',
-    'Answer with exactly one line in this format:',
-    'FEASIBLE',
-    'or',
-    'INFEASIBLE: one-line reason',
-    '',
-    'Do not include any other text.',
-  ].join('\n');
+  return `You are evaluating whether a ticket can be implemented as pure code changes in a repository.
+
+Ticket: [${ticket.key}] ${ticket.title}
+Description:
+${ticket.description}
+
+Can this ticket be completed entirely through code changes committed to a git repository?
+
+Answer INFEASIBLE if the ticket requires ANY of:
+- Manual testing or configuration in external tools or admin panels
+- Access to external services, APIs, or platforms not available in the codebase
+- Physical, hardware, or infrastructure changes
+- Design assets that do not yet exist
+- Deployment or infrastructure changes outside the repository
+- Human judgment calls that require stakeholder input
+
+Answer with exactly one line in this format:
+FEASIBLE
+or
+INFEASIBLE: one-line reason
+
+Do not include any other text.`;
 }
 
 /**
