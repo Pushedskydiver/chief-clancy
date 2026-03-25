@@ -2,7 +2,13 @@ import type { LockData, LockFs } from './lock.js';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { deleteLock, isLockStale, readLock, writeLock } from './lock.js';
+import {
+  deleteLock,
+  deleteVerifyAttempt,
+  isLockStale,
+  readLock,
+  writeLock,
+} from './lock.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -182,5 +188,24 @@ describe('isLockStale', () => {
     const lock = makeLockData();
 
     expect(isLockStale(lock)).toBe(false);
+  });
+});
+
+// ─── deleteVerifyAttempt ─────────────────────────────────────────────────────
+
+describe('deleteVerifyAttempt', () => {
+  it('deletes the verify-attempt.txt file', () => {
+    const fs = memoryFs();
+    fs.seed('/project/.clancy/verify-attempt.txt', '1');
+
+    deleteVerifyAttempt(fs, '/project');
+
+    expect(fs.has('/project/.clancy/verify-attempt.txt')).toBe(false);
+  });
+
+  it('does not throw when file does not exist', () => {
+    const fs = memoryFs();
+
+    expect(() => deleteVerifyAttempt(fs, '/project')).not.toThrow();
   });
 });

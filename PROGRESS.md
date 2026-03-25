@@ -393,7 +393,7 @@ Adjusted after phase validation + DA review (2026-03-25). Orchestration layer ty
 
 | PR   | Description                                                                                                  | Status  |
 | ---- | ------------------------------------------------------------------------------------------------------------ | ------- |
-| 8.0  | Prerequisites: `preflight/` (binary checks, env, git state, DI exec) + `deleteVerifyAttempt` in lock module  | Pending |
+| 8.0  | Prerequisites: `preflight/` (binary checks, env, git state, DI exec) + `deleteVerifyAttempt` in lock module  | Done    |
 | 8.1  | Pipeline context: `RunContext` class (mutation-safe), `Phase` type, `createContext()` factory. TDD           | Pending |
 | 8.2a | Phases batch 1a: `lock-check` (105 → decompose), `preflight-phase` (69). Wires to existing `resume/`. TDD    | Pending |
 | 8.2b | `deliverEpicToBase`: shared module for epic PR delivery to base branch (122 lines → decompose). TDD          | Pending |

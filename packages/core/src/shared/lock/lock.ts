@@ -39,6 +39,7 @@ export type LockData = z.infer<typeof lockDataSchema>;
 const CLANCY_DIR = '.clancy';
 const LOCK_FILE = 'lock.json';
 const LOCK_PATH = `${CLANCY_DIR}/${LOCK_FILE}`;
+const VERIFY_ATTEMPT_PATH = `${CLANCY_DIR}/verify-attempt.txt`;
 const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
 
 // ─── Public API ──────────────────────────────────────────────────────────────
@@ -106,6 +107,21 @@ function isPidAlive(pid: number): boolean {
       return true;
     }
     return false;
+  }
+}
+
+/**
+ * Delete `.clancy/verify-attempt.txt`. No-op if the file does not exist.
+ *
+ * @param fs - Injected filesystem operations.
+ * @param projectRoot - The root directory of the project.
+ * @returns Nothing.
+ */
+export function deleteVerifyAttempt(fs: LockFs, projectRoot: string): void {
+  try {
+    fs.deleteFile(join(projectRoot, VERIFY_ATTEMPT_PATH));
+  } catch {
+    // File may not exist — that's fine
   }
 }
 
