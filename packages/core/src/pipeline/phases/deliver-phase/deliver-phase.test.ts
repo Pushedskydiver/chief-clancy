@@ -171,6 +171,20 @@ describe('deliverPhase — fresh delivery', () => {
     expect(deps.recordDelivery).not.toHaveBeenCalled();
   });
 
+  it('logs PUSH_FAILED progress when fresh push fails', async () => {
+    const ctx = setupCtx({ isRework: false });
+    const deps = makeDeps({
+      deliverViaPullRequest: vi
+        .fn()
+        .mockResolvedValue({ pushed: false, outcome: { type: 'local' } }),
+    });
+    await deliverPhase(ctx, deps);
+
+    expect(deps.appendProgress).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'PUSH_FAILED', key: 'PROJ-1' }),
+    );
+  });
+
   it('sets no parent when hasParent is false', async () => {
     const ctx = setupCtx({ hasParent: false });
     const deps = makeDeps();
@@ -274,5 +288,16 @@ describe('deliverPhase — rework delivery', () => {
 
     expect(result.ok).toBe(false);
     expect(deps.recordRework).not.toHaveBeenCalled();
+  });
+
+  it('returns ok: true when postReworkActions throws', async () => {
+    const ctx = setupCtx({ isRework: true, reworkPrNumber: 42 });
+    const deps = makeDeps({
+      postReworkActions: vi.fn().mockRejectedValue(new Error('network error')),
+    });
+    const result = await deliverPhase(ctx, deps);
+
+    expect(result.ok).toBe(true);
+    expect(deps.recordRework).toHaveBeenCalledOnce();
   });
 });

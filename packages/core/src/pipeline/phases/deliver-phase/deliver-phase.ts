@@ -123,12 +123,16 @@ async function deliverRework(
   deps.recordRework();
 
   if (ctx.reworkPrNumber != null) {
-    await deps.postReworkActions({
-      prNumber: ctx.reworkPrNumber,
-      feedback: ctx.prFeedback ?? [],
-      discussionIds: ctx.reworkDiscussionIds,
-      reviewers: ctx.reworkReviewers,
-    });
+    try {
+      await deps.postReworkActions({
+        prNumber: ctx.reworkPrNumber,
+        feedback: ctx.prFeedback ?? [],
+        discussionIds: ctx.reworkDiscussionIds,
+        reviewers: ctx.reworkReviewers,
+      });
+    } catch {
+      // Best-effort — post-rework actions failure never blocks delivery
+    }
   }
 
   return { ok: true };
@@ -140,6 +144,7 @@ async function deliverFresh(
   deps: DeliverPhaseDeps,
 ): Promise<DeliverPhaseResult> {
   // Safe: pipeline ordering guarantees these fields are populated
+  const ticket = ctx.ticket!;
   const ticketBranch = ctx.ticketBranch!;
   const effectiveTarget = ctx.effectiveTarget!;
   const { parentKey, singleChildParent } = computeParentKeys(ctx);
@@ -151,7 +156,15 @@ async function deliverFresh(
     singleChildParent,
   });
 
-  if (!result.pushed) return { ok: false };
+  if (!result.pushed) {
+    deps.appendProgress({
+      key: ticket.key,
+      summary: ticket.title,
+      status: 'PUSH_FAILED',
+      parent: parentKey,
+    });
+    return { ok: false };
+  }
 
   deps.recordDelivery();
 

@@ -409,7 +409,7 @@ Post-merge audit found 3 HIGH, 10 MEDIUM, 14 LOW across 15 pipeline modules. Aud
 
 | PR  | Description                                                                                        | Status  |
 | --- | -------------------------------------------------------------------------------------------------- | ------- |
-| C15 | Bugs: deliver fresh progress log + pr-retry prNumber + postReworkActions try/catch (H1, M1, M6)    | Pending |
+| C15 | Bugs: deliver fresh progress log + pr-retry prNumber doc + postReworkActions try/catch (H1, M1, M6) | Done    |
 | C16 | Time DI + orchestrator error resilience tests (H2, H3, M7, M8)                                     | Pending |
 | C17 | Comment hygiene: strip phase numbers, add Safety comments, rename cleanup file (M2, M3, L3, L6)    | Pending |
 | C18 | Dead code + type cleanup: remove Phase type, invoke structured result, setter overlap (M4, M5, L7) | Pending |
