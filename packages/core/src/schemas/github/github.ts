@@ -49,6 +49,12 @@ export const githubPrSchema = z.object({
 /** Response from `GET /repos/{owner}/{repo}/pulls` (array of PRs). */
 export const githubPrListSchema = z.array(githubPrSchema);
 
+/** Minimal fields from a PR creation response. */
+export const githubPrCreatedSchema = z.object({
+  html_url: z.optional(z.string()),
+  number: z.optional(z.number()),
+});
+
 /** A single review on a PR. */
 export const githubReviewSchema = z.object({
   state: z.string(),

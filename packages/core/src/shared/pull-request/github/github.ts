@@ -11,6 +11,7 @@ import { GITHUB_API, githubHeaders } from '~/c/board/github/api/index.js';
 import {
   githubCommentsResponseSchema,
   githubPrCommentsSchema,
+  githubPrCreatedSchema,
   githubPrListSchema,
   githubReviewListSchema,
 } from '~/c/schemas/github/github.js';
@@ -266,8 +267,7 @@ export async function createPullRequest(
     headers: githubHeaders(token),
     body: { title, head, base, body },
     parseSuccess: (json) => {
-      // Safe: GitHub REST API response shape — optional fields default via ??
-      const data = json as { html_url?: string; number?: number };
+      const data = githubPrCreatedSchema.parse(json);
       return { url: data.html_url ?? '', number: data.number ?? 0 };
     },
     isAlreadyExists: (status, text) =>

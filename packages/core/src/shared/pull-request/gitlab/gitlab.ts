@@ -15,6 +15,7 @@ import type { PrCreationResult, PrReviewState } from '~/c/types/index.js';
 
 import {
   gitlabDiscussionsSchema,
+  gitlabMrCreatedSchema,
   gitlabMrListSchema,
 } from '~/c/schemas/gitlab/gitlab.js';
 
@@ -107,8 +108,7 @@ export async function createMergeRequest(
       remove_source_branch: true,
     },
     parseSuccess: (json) => {
-      // Safe: GitLab REST API response shape — optional fields default via ??
-      const data = json as { web_url?: string; iid?: number };
+      const data = gitlabMrCreatedSchema.parse(json);
       return { url: data.web_url ?? '', number: data.iid ?? 0 };
     },
     isAlreadyExists: (status, text) =>
