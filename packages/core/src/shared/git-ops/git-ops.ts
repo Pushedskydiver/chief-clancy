@@ -181,10 +181,9 @@ export function diffAgainstBranch(
   try {
     const output = exec(['diff', `${targetBranch}...HEAD`, '--stat']).trim();
     if (!output) return undefined;
+    if (output.length <= maxLength) return output;
 
-    return output.length > maxLength
-      ? output.slice(0, maxLength) + '\n... (truncated)'
-      : output;
+    return output.slice(0, maxLength) + '\n... (truncated)';
   } catch {
     return undefined;
   }
