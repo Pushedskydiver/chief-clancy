@@ -98,6 +98,22 @@ describe('RunContext', () => {
     expect(ctx.lockOwner).toBe(true);
   });
 
+  it('populates ticket branch fields via setTicketBranches', () => {
+    const ctx = createContext(DEFAULTS);
+
+    ctx.setTicketBranches({
+      ticketBranch: 'feature/proj-42',
+      targetBranch: 'epic/proj-100',
+      baseBranch: 'main',
+      hasParent: true,
+    });
+
+    expect(ctx.ticketBranch).toBe('feature/proj-42');
+    expect(ctx.targetBranch).toBe('epic/proj-100');
+    expect(ctx.baseBranch).toBe('main');
+    expect(ctx.hasParent).toBe(true);
+  });
+
   it('starts with undefined phase-populated fields', () => {
     const ctx = createContext(DEFAULTS);
 

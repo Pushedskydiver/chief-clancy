@@ -398,7 +398,7 @@ Adjusted after phase validation + DA review (2026-03-25). Orchestration layer ty
 | 8.2a | Phases batch 1a: `lock-check` (105 → decompose), `preflight-phase` (69). Wires to existing `resume/`. TDD    | Done    |
 | 8.2b | `deliverEpicToBase`: shared module for epic PR delivery to base branch (122 lines → decompose). TDD          | Done    |
 | 8.2c | Phases batch 1c: `epic-completion` (72, consumes deliverEpicToBase), `pr-retry` (142 → decompose). TDD       | Done    |
-| 8.3  | Phases batch 2: `rework-detection` (34), `ticket-fetch` (79 → decompose), `dry-run` (38), `feasibility` (39) | Pending |
+| 8.3  | Phases batch 2: `rework-detection` (34), `ticket-fetch` (79 → decompose), `dry-run` (38), `feasibility` (39) | Done    |
 | 8.4a | Phases batch 3a: `branch-setup` (115 → major decompose), `transition` (19). TDD                              | Pending |
 | 8.4b | Phases batch 3b: `deliver-phase` (105 → decompose), `cost-phase` (31), `cleanup` (33, notify callback). TDD  | Pending |
 | 8.5  | Pipeline orchestrator: `runPipeline()` — wire all phases, invoke callback injection. TDD                     | Pending |
@@ -507,6 +507,29 @@ The `functional/immutable-data` rule's `ignoreClasses: true` option ONLY allows 
 - `PreflightPhaseDeps.runPreflight` takes only `projectRoot` (single arg) — the `exec`/`envFs` deps are pre-wired by the terminal layer, not passed through the phase
 - Lock-check `LockCheckDeps` defines resume function types explicitly (not `typeof import`) to avoid value imports that lint flags as type-only
 - Phases return structured result types (`LockCheckResult`, `PreflightPhaseResult`) — no `console.log` in core
+
+### Session 25 handoff (2026-03-25)
+
+Completed PR 8.3. Phase 8 pipeline phases 3-6 in place. 85 pipeline tests. Codebase clean.
+
+**What was completed:**
+
+- **8.3** (#TBD) — 4 lighter phases: `rework-detection` (detect PR rework via DI, best-effort), `ticket-fetch` (fresh fetch or rework, max rework guard, branch computation), `dry-run` (structured ticket info for display, no I/O), `feasibility` (async Claude feasibility check via DI). Added `setTicketBranches` setter to RunContext. Shared `test-helpers.ts` for board mock deduplication. 36 new tests
+
+**What's next:**
+
+- Start 8.4a (branch-setup + transition — major decomposition)
+- Then 8.4b (deliver-phase + cost-phase + cleanup)
+
+**Key decisions:**
+
+- `setTicketBranches` added to RunContext — ticket-fetch computes branch names, branch-setup (8.4a) later overwrites with `setBranchSetup` adding `effectiveTarget`/`originalBranch`
+- `parseMaxRework` accepts `>= 0` (not `> 0`) — `CLANCY_MAX_REWORK=0` means "no rework allowed". Higher standard than old code which silently treated 0 as default 3
+- `feasibilityPhase` and its `checkFeasibility` dep are async — Claude invocation spawns a subprocess, making the dep async-ready avoids a breaking change later
+- `applyMaxReworkGuard` takes `BoardConfig` (not widened `Record<string, string | undefined>`) — preserves type safety for env key access
+- Non-null assertion comments added per DA review — `// Safe: pipeline ordering guarantees ...`
+- Shared `test-helpers.ts` with `makeCtx()` + internal `makeBoard()` — prevents Board mock drift across 4+ test files
+- `ctx.isRework === true` used consistently (not truthy check) — clear handling of `boolean | undefined`
 
 ### Session 24 handoff (2026-03-25)
 
