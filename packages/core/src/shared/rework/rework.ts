@@ -6,14 +6,11 @@
  * re-requests. All operations are best-effort.
  */
 import type { PlatformReworkHandlers } from './rework-handlers.js';
-import type {
-  ProgressEntry,
-  ProgressFs,
-} from '~/c/shared/progress/progress.js';
+import type { ProgressEntry, ProgressFs } from '~/c/shared/progress/index.js';
 import type { BoardProvider, FetchedTicket } from '~/c/types/board.js';
 
-import { computeTicketBranch } from '~/c/shared/branch/branch.js';
-import { findEntriesWithStatus } from '~/c/shared/progress/progress.js';
+import { computeTicketBranch } from '~/c/shared/branch/index.js';
+import { findEntriesWithStatus } from '~/c/shared/progress/index.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

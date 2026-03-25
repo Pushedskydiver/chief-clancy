@@ -5,9 +5,9 @@
  * locally with uncommitted or unpushed work. If so, the caller can
  * resume by committing, pushing, and optionally creating a PR.
  */
-import type { ExecGit } from '~/c/shared/git-ops/git-ops.js';
-import type { LockData } from '~/c/shared/lock/lock.js';
-import type { ProgressFs } from '~/c/shared/progress/progress.js';
+import type { ExecGit } from '~/c/shared/git-ops/index.js';
+import type { LockData } from '~/c/shared/lock/index.js';
+import type { ProgressFs } from '~/c/shared/progress/index.js';
 import type { PrCreationResult } from '~/c/types/remote.js';
 
 import {
@@ -16,8 +16,8 @@ import {
   currentBranch,
   hasUncommittedChanges,
   pushBranch,
-} from '~/c/shared/git-ops/git-ops.js';
-import { appendProgress, findLastEntry } from '~/c/shared/progress/progress.js';
+} from '~/c/shared/git-ops/index.js';
+import { appendProgress, findLastEntry } from '~/c/shared/progress/index.js';
 import { DELIVERED_STATUSES } from '~/c/types/progress.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────

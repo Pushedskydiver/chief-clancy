@@ -6,27 +6,27 @@
  * terminal layer to display.
  */
 import type { BoardConfig } from '~/c/schemas/env/env.js';
-import type { ExecGit } from '~/c/shared/git-ops/git-ops.js';
-import type { FetchFn } from '~/c/shared/pr-creation/pr-creation.js';
-import type { ProgressFs } from '~/c/shared/progress/progress.js';
-import type { EpicContext } from '~/c/shared/pull-request/pr-body/pr-body.js';
+import type { ExecGit } from '~/c/shared/git-ops/index.js';
+import type { FetchFn } from '~/c/shared/pr-creation/index.js';
+import type { ProgressFs } from '~/c/shared/progress/index.js';
+import type { EpicContext } from '~/c/shared/pull-request/pr-body/index.js';
 import type { FetchedTicket } from '~/c/types/board.js';
 import type { PrCreationResult, RemoteInfo } from '~/c/types/remote.js';
 
-import { resolveCommitType } from '~/c/shared/commit-type/commit-type.js';
-import { buildEpicContext } from '~/c/shared/epic/epic.js';
+import { resolveCommitType } from '~/c/shared/commit-type/index.js';
+import { buildEpicContext } from '~/c/shared/epic/index.js';
 import {
   checkout,
   detectRemote,
   pushBranch,
-} from '~/c/shared/git-ops/git-ops.js';
+} from '~/c/shared/git-ops/index.js';
 import {
   computeDeliveryOutcome,
   progressForOutcome,
-} from '~/c/shared/outcome/outcome.js';
-import { attemptPrCreation } from '~/c/shared/pr-creation/pr-creation.js';
-import { appendProgress } from '~/c/shared/progress/progress.js';
-import { buildPrBody } from '~/c/shared/pull-request/pr-body/pr-body.js';
+} from '~/c/shared/outcome/index.js';
+import { attemptPrCreation } from '~/c/shared/pr-creation/index.js';
+import { appendProgress } from '~/c/shared/progress/index.js';
+import { buildPrBody } from '~/c/shared/pull-request/pr-body/index.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

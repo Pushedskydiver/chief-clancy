@@ -1,5 +1,5 @@
-import type { LockData } from '~/c/shared/lock/lock.js';
-import type { ProgressEntry } from '~/c/shared/progress/progress.js';
+import type { LockData } from '~/c/shared/lock/index.js';
+import type { ProgressEntry } from '~/c/shared/progress/index.js';
 
 import { describe, expect, it, vi } from 'vitest';
 

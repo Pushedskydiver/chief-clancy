@@ -1,4 +1,4 @@
-import type { ProgressEntry } from '~/c/shared/progress/progress.js';
+import type { ProgressEntry } from '~/c/shared/progress/index.js';
 
 import { describe, expect, it, vi } from 'vitest';
 

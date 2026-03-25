@@ -13,7 +13,7 @@ This is a **living document** — when CodeRabbit catches something the DA shoul
 - [ ] No cross-package imports violating dependency direction (core ← terminal ← wrapper)
 - [ ] No boundary violations (core importing from terminal or chat)
 - [ ] Should this be exported? Who calls it? Are internal modules leaking through the package barrel?
-- [ ] Barrel export completeness — or correctly NOT exported (knip will flag unused barrels)
+- [ ] Barrel export completeness: every module with external consumers has an `index.ts` barrel. New exports consumed outside the module must be added to the barrel. Unused barrel exports are flagged by knip
 
 ## Conventions & code patterns
 
