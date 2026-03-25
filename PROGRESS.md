@@ -215,3 +215,46 @@ Adjusted after phase validation (2026-03-25). Brief PRs 6.1-6.3 already done in 
 
 - Carry over: format (~10%), branch (~15%)
 - Moderate rewrite: remote (~40%), git-ops (~40%), progress (~35%), feasibility (~40%), pull-request (~35%)
+
+## Phase 7: Core — Lifecycle
+
+Adjusted after phase validation (2026-03-25). Added `git-token/` prerequisite (missing from brief, hard blocker). Split `deliver/` into prereqs + main. Added AzDO support to rework-handlers, pr-creation, and outcome. Reordered by dependency.
+
+| PR  | Description                                                                                                    | Status  |
+| --- | -------------------------------------------------------------------------------------------------------------- | ------- |
+| 7.0 | Prerequisites: `git-token/` — resolve platform credentials from BoardConfig + RemoteInfo                       | Pending |
+| 7.1 | `lock/`: acquire, release, stale detection (PID + 24h). DI filesystem                                          | Pending |
+| 7.2 | `cost/`: duration-based token cost estimation + costs.log writer. DI filesystem                                | Pending |
+| 7.3 | `quality/`: quality metric tracking (rework cycles, verification retries, delivery duration). DI filesystem    | Pending |
+| 7.4 | `fetch-ticket/`: label resolution, blocker checking, AFK filtering. Consumes Board interface                   | Pending |
+| 7.5 | `rework/`: rework detection — `rework-handlers` (platform dispatch incl. AzDO) + orchestrator. Depends on 7.0  | Pending |
+| 7.6 | `resume/`: crash recovery — detect resumable state, execute resume. Depends on 7.0, 7.1                        | Pending |
+| 7.7 | `deliver/` prereqs: `outcome/` (pure) + `pr-creation/` (platform dispatch incl. AzDO). Depends on 7.0          | Pending |
+| 7.8 | `deliver/`: epic branch management + PR delivery orchestration. Split `deliver.ts` + `epic.ts`. Depends on 7.7 | Pending |
+
+### Dependencies
+
+- 7.0 is prerequisite for 7.5, 7.6, 7.7, 7.8
+- 7.1–7.4 are independent of each other and 7.0 (can parallel)
+- 7.5 depends on 7.0
+- 7.6 depends on 7.0 + 7.1 (lock types)
+- 7.7 depends on 7.0
+- 7.8 depends on 7.7
+
+### Phase validation notes (2026-03-25)
+
+**Key findings from validation:**
+
+1. `git-token/` module missing from brief — both `pr-creation` and `rework-handlers` depend on `resolveGitToken(config, remote)` for platform credential resolution. Added as PR 7.0.
+2. AzDO support missing in old code (`rework-handlers`, `pr-creation`, `outcome` all treat Azure as unsupported). Now that AzDO PR module exists (#42), all three must dispatch to it.
+3. `deliver.ts` is 467 lines — exceeds 300-line limit. Split into `deliver.ts` (PR delivery) + `epic.ts` (epic branch management).
+4. `resume/` has 2 functions >50 lines: `detectResume()` (89) and `executeResume()` (123). Both need decomposition.
+5. `quality/` uses mutable accumulation (`let` + `+=` in for loop) — refactor to `.reduce()`.
+6. `rework-handlers.ts` (224 lines) + `rework.ts` (161 lines) — tightly coupled, keep as 2 files.
+7. `outcome.ts` (102 lines) is a pure helper for `deliver/` — bundle with `pr-creation/` in PR 7.7.
+
+**Rewrite assessments:**
+
+- Carry over (~15-20%): lock, cost — small modules, minor DI refactoring
+- Moderate rewrite (~30-40%): git-token, quality, fetch-ticket, pr-creation, outcome
+- Major rewrite (~45-50%): resume, deliver, rework-handlers — decompose large functions, add AzDO
