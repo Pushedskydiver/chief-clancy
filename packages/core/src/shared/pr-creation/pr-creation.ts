@@ -27,7 +27,7 @@ import { buildApiBaseUrl } from '~/c/shared/remote/remote.js';
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 /** Minimal fetch signature for platform API calls. */
-type FetchFn = (url: string, init: RequestInit) => Promise<Response>;
+export type FetchFn = (url: string, init: RequestInit) => Promise<Response>;
 
 /** Options for {@link attemptPrCreation}. */
 type AttemptPrOpts = {

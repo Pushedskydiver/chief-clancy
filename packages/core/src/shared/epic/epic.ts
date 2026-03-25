@@ -4,6 +4,7 @@
  * Ensures epic branches exist, builds epic context for child PRs,
  * and gathers child entries for the final epic PR.
  */
+import type { ExecGit } from '~/c/shared/git-ops/git-ops.js';
 import type {
   ProgressEntry,
   ProgressFs,
@@ -21,9 +22,6 @@ import { isEpicBranch } from '~/c/shared/pull-request/pr-body/pr-body.js';
 import { DELIVERED_STATUSES } from '~/c/types/progress.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-
-/** Git executor signature (injected). */
-type ExecGit = (args: readonly string[]) => string;
 
 /** Result of ensuring an epic branch. */
 type EnsureEpicResult = {

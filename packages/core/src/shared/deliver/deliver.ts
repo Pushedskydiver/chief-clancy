@@ -6,6 +6,8 @@
  * terminal layer to display.
  */
 import type { BoardConfig } from '~/c/schemas/env/env.js';
+import type { ExecGit } from '~/c/shared/git-ops/git-ops.js';
+import type { FetchFn } from '~/c/shared/pr-creation/pr-creation.js';
 import type { ProgressFs } from '~/c/shared/progress/progress.js';
 import type { EpicContext } from '~/c/shared/pull-request/pr-body/pr-body.js';
 import type { FetchedTicket } from '~/c/types/board.js';
@@ -27,12 +29,6 @@ import { appendProgress } from '~/c/shared/progress/progress.js';
 import { buildPrBody } from '~/c/shared/pull-request/pr-body/pr-body.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-
-/** Git executor signature (injected). */
-type ExecGit = (args: readonly string[]) => string;
-
-/** Minimal fetch signature for platform API calls. */
-type FetchFn = (url: string, init: RequestInit) => Promise<Response>;
 
 /** Filesystem for reading verification attempt counter. */
 type DeliverFs = {
