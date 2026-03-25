@@ -254,6 +254,34 @@ describe('parseProgressFile', () => {
     expect(entries[0]?.status).toBe('BRIEF');
     expect(entries[1]?.status).toBe('DONE');
   });
+
+  it('does not misidentify ALL_CAPS summary words as status', () => {
+    const fs = readerFs('2024-01-15 14:30 | PROJ-1 | Set up CI | DONE\n');
+
+    const entries = parseProgressFile(fs, '/root');
+    expect(entries[0]?.status).toBe('DONE');
+    expect(entries[0]?.summary).toBe('Set up CI');
+  });
+
+  it('skips entries with no valid status segment', () => {
+    const fs = readerFs(
+      '2024-01-15 14:30 | PROJ-1 | Set up CI | CD pipeline\n',
+    );
+
+    expect(parseProgressFile(fs, '/root')).toEqual([]);
+  });
+
+  it('handles \\r\\n line endings', () => {
+    const fs = readerFs(
+      '2024-01-15 14:30 | PROJ-1 | Add login | DONE\r\n' +
+        '2024-01-15 14:35 | PROJ-2 | Fix bug | PR_CREATED\r\n',
+    );
+
+    const entries = parseProgressFile(fs, '/root');
+    expect(entries).toHaveLength(2);
+    expect(entries[0]?.status).toBe('DONE');
+    expect(entries[1]?.status).toBe('PR_CREATED');
+  });
 });
 
 // ─── findLastEntry ────────────────────────────────────────────────────
