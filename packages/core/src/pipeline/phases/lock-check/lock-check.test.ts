@@ -178,6 +178,29 @@ describe('lockCheck', () => {
     expect(executeResume).not.toHaveBeenCalled();
   });
 
+  it('continues gracefully when executeResume rejects in AFK mode', async () => {
+    const lock = makeLockData({ pid: 99999 });
+    const lockFs = makeLockFs({
+      readFile: vi.fn(() => JSON.stringify(lock)),
+    });
+    const detectResume = vi.fn(() => ({
+      branch: 'feat/proj-42',
+      hasUncommitted: true,
+      hasUnpushed: false,
+      alreadyDelivered: false,
+    }));
+    const executeResume = vi.fn(async () => {
+      throw new Error('resume crashed');
+    });
+
+    const result = await lockCheck(
+      makeCtx({ isAfk: true }),
+      makeDeps({ lockFs, detectResume, executeResume }),
+    );
+
+    expect(result.action).toBe('continue');
+  });
+
   it('continues gracefully when resume detection throws', async () => {
     const lock = makeLockData({ pid: 99999 });
     const lockFs = makeLockFs({

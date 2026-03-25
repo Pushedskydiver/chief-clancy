@@ -94,6 +94,24 @@ describe('costPhase', () => {
     );
   });
 
+  it('falls back to 6600 when CLANCY_TOKEN_RATE is negative', () => {
+    const ctx = makeCtx({ configEnv: { CLANCY_TOKEN_RATE: '-100' } });
+    ctx.setTicket({
+      key: 'PROJ-NEG',
+      title: 'Negative rate',
+      description: '',
+      parentInfo: 'none',
+      blockers: 'None',
+    });
+
+    const deps = makeDeps();
+    costPhase(ctx, deps);
+
+    expect(deps.appendCostEntry).toHaveBeenCalledWith(
+      expect.objectContaining({ tokenRate: 6600 }),
+    );
+  });
+
   it('returns ok: true without appending when lock is missing', () => {
     const ctx = makeCtx();
     ctx.setTicket({

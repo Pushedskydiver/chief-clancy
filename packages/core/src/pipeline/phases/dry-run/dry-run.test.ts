@@ -1,3 +1,5 @@
+import type { BoardConfig } from '~/c/schemas/env/env.js';
+
 import { describe, expect, it } from 'vitest';
 
 import { makeCtx } from '../test-helpers.js';
@@ -6,7 +8,10 @@ import { dryRun } from './dry-run.js';
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function makePopulatedCtx(
-  opts: { readonly dryRun?: boolean; readonly provider?: string } = {},
+  opts: {
+    readonly dryRun?: boolean;
+    readonly provider?: BoardConfig['provider'];
+  } = {},
 ) {
   const ctx = makeCtx({
     argv: opts.dryRun ? ['--dry-run'] : [],

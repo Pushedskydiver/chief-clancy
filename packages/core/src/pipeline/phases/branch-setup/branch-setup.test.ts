@@ -113,6 +113,18 @@ describe('branchSetup', () => {
     expect(fetchChildrenStatus).toHaveBeenCalledWith(TICKET);
   });
 
+  it('does not skip epic branch when fetchChildrenStatus returns undefined', async () => {
+    const ctx = setupCtx();
+    const deps = makeDeps({
+      fetchChildrenStatus: vi.fn(() => Promise.resolve(undefined)),
+    });
+
+    await branchSetup(ctx, deps);
+
+    expect(ctx.skipEpicBranch).toBe(false);
+    expect(ctx.effectiveTarget).toBe('epic/proj-100');
+  });
+
   it('skips single-child check for rework tickets', async () => {
     const ctx = setupCtx({ isRework: true });
     const deps = makeDeps();
@@ -268,6 +280,21 @@ describe('branchSetup', () => {
       }),
     );
     expect(ctx.lockOwner).toBe(true);
+  });
+
+  it('writes description as undefined when ticket description is undefined', async () => {
+    const undefinedDescTicket: FetchedTicket = {
+      ...NO_PARENT_TICKET,
+      description: undefined as unknown as string,
+    };
+    const ctx = setupCtx({ ticket: undefinedDescTicket });
+    const deps = makeDeps();
+
+    await branchSetup(ctx, deps);
+
+    expect(vi.mocked(deps.writeLock)).toHaveBeenCalledWith(
+      expect.objectContaining({ description: undefined }),
+    );
   });
 
   it('continues without lockOwner when writeLock throws', async () => {
