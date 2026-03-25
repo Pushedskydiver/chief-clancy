@@ -397,7 +397,7 @@ Adjusted after phase validation + DA review (2026-03-25). Orchestration layer ty
 | 8.1  | Pipeline context: `RunContext` class (mutation-safe), `Phase` type, `createContext()` factory. TDD           | Done    |
 | 8.2a | Phases batch 1a: `lock-check` (105 → decompose), `preflight-phase` (69). Wires to existing `resume/`. TDD    | Done    |
 | 8.2b | `deliverEpicToBase`: shared module for epic PR delivery to base branch (122 lines → decompose). TDD          | Done    |
-| 8.2c | Phases batch 1c: `epic-completion` (72, consumes deliverEpicToBase), `pr-retry` (142 → decompose). TDD       | Pending |
+| 8.2c | Phases batch 1c: `epic-completion` (72, consumes deliverEpicToBase), `pr-retry` (142 → decompose). TDD       | Done    |
 | 8.3  | Phases batch 2: `rework-detection` (34), `ticket-fetch` (79 → decompose), `dry-run` (38), `feasibility` (39) | Pending |
 | 8.4a | Phases batch 3a: `branch-setup` (115 → major decompose), `transition` (19). TDD                              | Pending |
 | 8.4b | Phases batch 3b: `deliver-phase` (105 → decompose), `cost-phase` (31), `cleanup` (33, notify callback). TDD  | Pending |
