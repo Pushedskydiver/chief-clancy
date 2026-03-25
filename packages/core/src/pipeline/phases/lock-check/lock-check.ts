@@ -4,7 +4,7 @@
  * Returns structured results — no console output. The terminal layer
  * handles display. Decomposed into helpers to stay under 50-line limit.
  */
-import type { RunContext } from '../context.js';
+import type { RunContext } from '../../context.js';
 import type { ExecGit } from '~/c/shared/git-ops/index.js';
 import type { LockData, LockFs } from '~/c/shared/lock/lock.js';
 import type { ProgressFs } from '~/c/shared/progress/index.js';

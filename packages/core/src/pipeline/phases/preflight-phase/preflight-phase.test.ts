@@ -4,7 +4,7 @@ import type { Board } from '~/c/types/board.js';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { createContext } from '../context.js';
+import { createContext } from '../../context.js';
 import { preflightPhase } from './preflight-phase.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

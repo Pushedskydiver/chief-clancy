@@ -4,7 +4,7 @@
  * Sets `ctx.config` and `ctx.board` on success. Returns structured results
  * — no console output. The terminal layer handles display.
  */
-import type { RunContext } from '../context.js';
+import type { RunContext } from '../../context.js';
 import type { BoardConfig } from '~/c/schemas/env/env.js';
 import type { Board } from '~/c/types/board.js';
 

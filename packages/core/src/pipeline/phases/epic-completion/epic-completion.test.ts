@@ -3,7 +3,7 @@ import type { BoardConfig } from '~/c/schemas/env/env.js';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { RunContext } from '../context.js';
+import { RunContext } from '../../context.js';
 import { epicCompletion } from './epic-completion.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

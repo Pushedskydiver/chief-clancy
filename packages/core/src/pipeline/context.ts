@@ -60,7 +60,7 @@ export class RunContext {
   reworkDiscussionIds: readonly string[] | undefined;
   reworkReviewers: readonly string[] | undefined;
 
-  // ── Populated by branch-setup phase ────────────────────────────────
+  // ── Populated by ticket-fetch / branch-setup phases ─────────────────
 
   ticketBranch: string | undefined;
   targetBranch: string | undefined;
@@ -102,6 +102,19 @@ export class RunContext {
   /** Set ticket from ticket-fetch phase. */
   setTicket(ticket: FetchedTicket): void {
     this.ticket = ticket;
+  }
+
+  /** Set computed branch names from ticket-fetch phase. */
+  setTicketBranches(opts: {
+    readonly ticketBranch: string;
+    readonly targetBranch: string;
+    readonly baseBranch: string;
+    readonly hasParent: boolean;
+  }): void {
+    this.ticketBranch = opts.ticketBranch;
+    this.targetBranch = opts.targetBranch;
+    this.baseBranch = opts.baseBranch;
+    this.hasParent = opts.hasParent;
   }
 
   /** Set branch-setup fields. */

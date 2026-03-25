@@ -3,7 +3,7 @@ import type { LockData, LockFs } from '~/c/shared/lock/lock.js';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { createContext } from '../context.js';
+import { createContext } from '../../context.js';
 import { lockCheck } from './lock-check.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
