@@ -19,21 +19,32 @@ function makeLockData(overrides: Partial<LockData> = {}): LockData {
   };
 }
 
-function memoryFs(): LockFs & { readonly files: ReadonlyMap<string, string> } {
-  const files = new Map<string, string>();
+type MemoryFs = LockFs & {
+  /** Seed a file into the in-memory store (test arrangement). */
+  readonly seed: (path: string, content: string) => void;
+  /** Read the last content written to a path, or `undefined`. */
+  readonly lastWritten: (path: string) => string | undefined;
+  /** Whether a path exists in the store. */
+  readonly has: (path: string) => boolean;
+};
+
+function memoryFs(): MemoryFs {
+  const store = new Map<string, string>();
   return {
-    files,
+    seed: (path, content) => store.set(path, content),
+    lastWritten: (path) => store.get(path),
+    has: (path) => store.has(path),
     readFile: vi.fn((path: string) => {
-      const content = files.get(path);
+      const content = store.get(path);
       if (content === undefined) throw new Error('ENOENT');
       return content;
     }),
     writeFile: vi.fn((path: string, content: string) => {
-      files.set(path, content);
+      store.set(path, content);
     }),
     deleteFile: vi.fn((path: string) => {
-      if (!files.has(path)) throw new Error('ENOENT');
-      files.delete(path);
+      if (!store.has(path)) throw new Error('ENOENT');
+      store.delete(path);
     }),
     mkdir: vi.fn(),
   };
@@ -48,7 +59,7 @@ describe('writeLock', () => {
 
     writeLock(fs, '/project', data);
 
-    const written = JSON.parse(fs.files.get('/project/.clancy/lock.json')!);
+    const written = JSON.parse(fs.lastWritten('/project/.clancy/lock.json')!);
     expect(written).toEqual(data);
   });
 
@@ -67,7 +78,7 @@ describe('readLock', () => {
   it('reads and parses valid lock data', () => {
     const fs = memoryFs();
     const data = makeLockData();
-    fs.files.set('/project/.clancy/lock.json', JSON.stringify(data));
+    fs.seed('/project/.clancy/lock.json', JSON.stringify(data));
 
     const result = readLock(fs, '/project');
 
@@ -82,14 +93,14 @@ describe('readLock', () => {
 
   it('returns undefined for corrupt JSON', () => {
     const fs = memoryFs();
-    fs.files.set('/project/.clancy/lock.json', '{ bad json');
+    fs.seed('/project/.clancy/lock.json', '{ bad json');
 
     expect(readLock(fs, '/project')).toBeUndefined();
   });
 
   it('returns undefined for JSON missing required fields', () => {
     const fs = memoryFs();
-    fs.files.set('/project/.clancy/lock.json', JSON.stringify({ pid: 123 }));
+    fs.seed('/project/.clancy/lock.json', JSON.stringify({ pid: 123 }));
 
     expect(readLock(fs, '/project')).toBeUndefined();
   });
@@ -97,7 +108,7 @@ describe('readLock', () => {
   it('returns undefined for empty startedAt', () => {
     const fs = memoryFs();
     const data = { ...makeLockData(), startedAt: '' };
-    fs.files.set('/project/.clancy/lock.json', JSON.stringify(data));
+    fs.seed('/project/.clancy/lock.json', JSON.stringify(data));
 
     expect(readLock(fs, '/project')).toBeUndefined();
   });
@@ -105,7 +116,7 @@ describe('readLock', () => {
   it('preserves optional description field', () => {
     const fs = memoryFs();
     const data = makeLockData({ description: 'Some ticket context' });
-    fs.files.set('/project/.clancy/lock.json', JSON.stringify(data));
+    fs.seed('/project/.clancy/lock.json', JSON.stringify(data));
 
     const result = readLock(fs, '/project');
 
@@ -115,7 +126,7 @@ describe('readLock', () => {
   it('strips unknown fields', () => {
     const fs = memoryFs();
     const data = { ...makeLockData(), extra: 'should-be-stripped' };
-    fs.files.set('/project/.clancy/lock.json', JSON.stringify(data));
+    fs.seed('/project/.clancy/lock.json', JSON.stringify(data));
 
     const result = readLock(fs, '/project');
 
@@ -129,11 +140,11 @@ describe('readLock', () => {
 describe('deleteLock', () => {
   it('removes the lock file', () => {
     const fs = memoryFs();
-    fs.files.set('/project/.clancy/lock.json', '{}');
+    fs.seed('/project/.clancy/lock.json', '{}');
 
     deleteLock(fs, '/project');
 
-    expect(fs.files.has('/project/.clancy/lock.json')).toBe(false);
+    expect(fs.has('/project/.clancy/lock.json')).toBe(false);
   });
 
   it('does not throw when file does not exist', () => {
