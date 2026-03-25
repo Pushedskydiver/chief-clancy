@@ -90,7 +90,7 @@ function formatStandardLine(ts: string, opts: AppendProgressOpts): string {
 }
 
 /** A single parsed entry from the progress log. */
-type ProgressEntry = {
+export type ProgressEntry = {
   readonly timestamp: string;
   readonly key: string;
   readonly summary: string;
