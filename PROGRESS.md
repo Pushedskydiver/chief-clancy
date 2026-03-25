@@ -407,13 +407,13 @@ Adjusted after phase validation + DA review (2026-03-25). Orchestration layer ty
 
 Post-merge audit found 3 HIGH, 10 MEDIUM, 14 LOW across 15 pipeline modules. Audit run 2026-03-25.
 
-| PR  | Description                                                                                        | Status  |
-| --- | -------------------------------------------------------------------------------------------------- | ------- |
+| PR  | Description                                                                                         | Status  |
+| --- | --------------------------------------------------------------------------------------------------- | ------- |
 | C15 | Bugs: deliver fresh progress log + pr-retry prNumber doc + postReworkActions try/catch (H1, M1, M6) | Done    |
-| C16 | Time DI + orchestrator error resilience tests (H2, H3, M7, M8)                                     | Pending |
-| C17 | Comment hygiene: strip phase numbers, add Safety comments, rename cleanup file (M2, M3, L3, L6)    | Pending |
-| C18 | Dead code + type cleanup: remove Phase type, invoke structured result, setter overlap (M4, M5, L7) | Pending |
-| C19 | Test coverage gaps: parentInfo edge, BoardConfig cast, remaining LOW test gaps (M9, M10, L9-L14)   | Pending |
+| C16 | Time DI + orchestrator error resilience tests (H2, H3, M7, M8)                                      | Pending |
+| C17 | Comment hygiene: strip phase numbers, add Safety comments, rename cleanup file (M2, M3, L3, L6)     | Pending |
+| C18 | Dead code + type cleanup: remove Phase type, invoke structured result, setter overlap (M4, M5, L7)  | Pending |
+| C19 | Test coverage gaps: parentInfo edge, BoardConfig cast, remaining LOW test gaps (M9, M10, L9-L14)    | Pending |
 
 ### HIGH findings
 
