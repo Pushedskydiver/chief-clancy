@@ -403,6 +403,62 @@ Adjusted after phase validation + DA review (2026-03-25). Orchestration layer ty
 | 8.4b | Phases batch 3b: `deliver-phase` (105 → decompose), `cost-phase` (31), `cleanup` (33, notify callback). TDD  | Done   |
 | 8.5  | Pipeline orchestrator: `runPipeline()` — wire all phases, invoke callback injection. TDD                     | Done   |
 
+## Phase 8 Cleanup
+
+Post-merge audit found 3 HIGH, 10 MEDIUM, 14 LOW across 15 pipeline modules. Audit run 2026-03-25.
+
+| PR  | Description                                                                                        | Status  |
+| --- | -------------------------------------------------------------------------------------------------- | ------- |
+| C15 | Bugs: deliver fresh progress log + pr-retry prNumber + postReworkActions try/catch (H1, M1, M6)    | Pending |
+| C16 | Time DI + orchestrator error resilience tests (H2, H3, M7, M8)                                     | Pending |
+| C17 | Comment hygiene: strip phase numbers, add Safety comments, rename cleanup file (M2, M3, L3, L6)    | Pending |
+| C18 | Dead code + type cleanup: remove Phase type, invoke structured result, setter overlap (M4, M5, L7) | Pending |
+| C19 | Test coverage gaps: parentInfo edge, BoardConfig cast, remaining LOW test gaps (M9, M10, L9-L14)   | Pending |
+
+### HIGH findings
+
+1. **H1** — `deliver-phase.ts:deliverFresh` does not log `PUSH_FAILED` progress on push failure (rework path does). Silent failure leaves no trace in progress file.
+2. **H2** — `run-pipeline.ts:restoreBranch` + `cleanupLock` catch blocks untested. If `deleteLock` throws, `deleteVerifyAttempt` must still be called — this guarantee is unverified.
+3. **H3** — `Date.now()` hardcoded in `RunContext` constructor and `new Date().toISOString()` in `branch-setup:writeLockSafe`. Not injectable — prevents deterministic time testing.
+
+### MEDIUM findings
+
+- **M1** — `pr-retry.ts` records `prNumber: undefined` for "exists" status. `pr.ok` is `false` for `alreadyExists`, so `pr?.ok ? pr.number : undefined` always yields `undefined`.
+- **M2** — Hardcoded `Phase N:` numbers in all module JSDoc (15 files) and `run-pipeline.ts` inline comments. Will stale if phases are reordered.
+- **M3** — Missing `// Safe: pipeline ordering guarantees...` comments on non-null assertions in 5 `branch-setup.ts` helper functions.
+- **M4** — `Phase` type (`(ctx) => boolean`) is dead code — no phase conforms to it. All use `(ctx, deps) => Result`.
+- **M5** — `PipelineDeps.invoke` returns raw `Promise<boolean>` — only phase not returning structured `{ ok }` result.
+- **M6** — `deliver-phase.ts:deliverRework` — `postReworkActions` rejection propagates unhandled (no try/catch). Could crash pipeline.
+- **M7** — `preflight-phase.ts` — `preflight.env` undefined guard (`ok: true` but no env) not tested.
+- **M8** — `feasibility.ts` — default reason fallback `'not implementable as code changes'` not tested.
+- **M9** — `ticket-fetch.ts` — `parentInfo: ''` treated as `hasParent: true` (empty string edge case untested).
+- **M10** — `test-helpers.ts` — `as BoardConfig` cast suppresses type safety for all phase tests.
+
+### LOW findings
+
+- **L1** — `ticket-fetch.ts` — `isRework` remains `undefined` not `false` for non-rework. Safe today (`=== true` convention).
+- **L2** — `branch-setup.ts:141` — `ensureBranch(main, main)` in rework standalone. Harmless but odd.
+- **L3** — `cleanup-phase/cleanup.ts` — file doesn't match folder name (should be `cleanup-phase.ts`).
+- **L4** — Inconsistent `-phase` suffix: 4 folders have it, 9 don't. Function name split similarly.
+- **L5** — `pr-retry.ts:110`, `epic-completion.ts:76` — inner arrow functions (20/13 lines) exceed inline callback convention.
+- **L6** — `run-pipeline.ts:49-51` — Phase 5 gap in `PipelineDeps` numbering without explanation comment.
+- **L7** — `setTicketBranches` and `setBranchSetup` overlap — 4 fields written by both setters silently.
+- **L8** — `appendProgress` opts type duplicated across 3 phases (similar but not identical shapes).
+- **L9** — `run-pipeline.ts:105` — non-Error thrown value branch not tested.
+- **L10** — `run-pipeline.test.ts` — phase execution order not verified (only call count).
+- **L11** — `lock-check.ts:94` — `executeResume` rejection in AFK mode not tested.
+- **L12** — `branch-setup.ts:207` — `writeLockSafe` with `ticket.description: undefined` not tested.
+- **L13** — `branch-setup.ts:125` — `fetchChildrenStatus` returning `undefined` for parented non-rework not explicitly tested.
+- **L14** — `cost-phase.ts` — negative token rate not tested.
+
+### Deferred
+
+- `PipelineDeps`/`PipelineResult` exported from core barrel without terminal consumer — Phase 9 will consume
+- RunContext at 18 mutable fields — manageable, flag for future growth
+- L4 (inconsistent `-phase` suffix) — cosmetic, defer unless renaming happens for other reasons
+- L5 (inner arrow functions) — within nesting limit, defer unless surrounding code is modified
+- L8 (`appendProgress` type duplication) — shapes aren't identical, defer until a 4th consumer appears
+
 ### Dependencies
 
 - 8.0 is prerequisite for 8.2a (preflight module needed by lock-check AFK resume + preflight phase)
