@@ -80,9 +80,21 @@ function round2(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
-/** Sum a numeric property across an array of items. */
-function sumBy<T>(items: readonly T[], fn: (item: T) => number): number {
-  return items.map(fn).reduce((a, b) => a + b, 0);
+/** Sum a numeric property across an array of items (recursive — safe for bounded ticket counts). */
+function sumBy<T>(items: readonly T[], fn: (item: T) => number, i = 0): number {
+  return i >= items.length ? 0 : fn(items[i]!) + sumBy(items, fn, i + 1);
+}
+
+/** Whether an entry has valid numeric reworkCycles and verificationRetries. */
+function isValidEntry(entry: unknown): entry is QualityEntry {
+  return (
+    entry !== null &&
+    typeof entry === 'object' &&
+    'reworkCycles' in entry &&
+    'verificationRetries' in entry &&
+    Number.isFinite((entry as QualityEntry).reworkCycles) &&
+    Number.isFinite((entry as QualityEntry).verificationRetries)
+  );
 }
 
 /** Whether `value` looks like a `{ tickets: Record<…> }` object. */
@@ -175,8 +187,10 @@ export function readQualityData(
     );
 
     if (hasTicketsRecord(raw)) {
-      // Safe: structure validated by guard; entry shapes are best-effort (unvalidated JSON)
-      const tickets = raw.tickets as Record<string, QualityEntry>;
+      const rawTickets = raw.tickets as Record<string, unknown>;
+      const tickets: Record<string, QualityEntry> = Object.fromEntries(
+        Object.entries(rawTickets).filter(([, v]) => isValidEntry(v)),
+      ) as Record<string, QualityEntry>;
       return { tickets, summary: recomputeSummary(tickets) };
     }
   } catch {
@@ -266,7 +280,7 @@ export function recordDelivery(
       [opts.ticketKey]: {
         ...entry,
         deliveredAt: new Date(opts.now).toISOString(),
-        duration: opts.duration,
+        duration: Math.max(0, opts.duration),
       },
     };
     writeQualityData(fs, projectRoot, {

@@ -142,6 +142,31 @@ describe('readQualityData', () => {
     expect(result.summary.avgDuration).toBe(60_000);
   });
 
+  it('skips entries with non-finite reworkCycles or verificationRetries', () => {
+    const fs = memoryFs();
+    const data = {
+      tickets: {
+        'PROJ-1': { reworkCycles: 2, verificationRetries: 1 },
+        'PROJ-2': { reworkCycles: 'bad', verificationRetries: 0 },
+        'PROJ-3': {},
+      },
+      summary: {
+        totalTickets: 0,
+        avgReworkCycles: 0,
+        avgVerificationRetries: 0,
+        avgDuration: 0,
+      },
+    };
+    fs.seed('/project/.clancy/quality.json', JSON.stringify(data));
+
+    const result = readQualityData(fs, '/project');
+
+    expect(result.summary.totalTickets).toBe(1);
+    expect(result.summary.avgReworkCycles).toBe(2);
+    expect(result.summary.avgVerificationRetries).toBe(1);
+    expect(Number.isNaN(result.summary.avgDuration)).toBe(false);
+  });
+
   it('averages duration only across delivered tickets', () => {
     const fs = memoryFs();
     const data = {
@@ -470,6 +495,21 @@ describe('recordDelivery', () => {
       fs.lastWritten('/project/.clancy/quality.json')!,
     );
     expect(written.summary.avgDuration).toBe(150_000);
+  });
+
+  it('clamps negative duration to zero', () => {
+    const fs = memoryFs();
+
+    recordDelivery(fs, '/project', {
+      ticketKey: 'PROJ-1',
+      duration: -500,
+      now: Date.now(),
+    });
+
+    const written = JSON.parse(
+      fs.lastWritten('/project/.clancy/quality.json')!,
+    );
+    expect(written.tickets['PROJ-1'].duration).toBe(0);
   });
 
   it('does not throw when filesystem errors occur', () => {
