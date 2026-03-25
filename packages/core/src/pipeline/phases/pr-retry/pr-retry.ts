@@ -113,6 +113,9 @@ async function retryAll(
     const parent = normaliseParent(entry.parent);
 
     if (status === 'created' || status === 'exists') {
+      // Note: prNumber is undefined for 'exists' — PrCreationFailure
+      // doesn't carry the PR number. The progress entry still logs
+      // PR_CREATED to prevent infinite retry loops.
       deps.appendProgress({
         key: entry.key,
         summary: entry.summary,
