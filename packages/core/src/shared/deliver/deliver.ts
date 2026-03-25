@@ -11,6 +11,7 @@ import type { EpicContext } from '~/c/shared/pull-request/pr-body/pr-body.js';
 import type { FetchedTicket } from '~/c/types/board.js';
 import type { PrCreationResult, RemoteInfo } from '~/c/types/remote.js';
 
+import { buildEpicContext } from '~/c/shared/epic/epic.js';
 import {
   checkout,
   detectRemote,
@@ -23,8 +24,6 @@ import {
 import { attemptPrCreation } from '~/c/shared/pr-creation/pr-creation.js';
 import { appendProgress } from '~/c/shared/progress/progress.js';
 import { buildPrBody } from '~/c/shared/pull-request/pr-body/pr-body.js';
-
-import { buildEpicContext } from './epic.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
