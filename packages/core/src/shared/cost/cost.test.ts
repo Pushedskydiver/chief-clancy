@@ -89,18 +89,30 @@ describe('appendCostEntry', () => {
 
     appendCostEntry(fs, '/project', {
       ticketKey: 'PROJ-A',
-      startedAt: new Date().toISOString(),
-      now: Date.now(),
+      startedAt: new Date(500).toISOString(),
+      now: 1000,
     });
     appendCostEntry(fs, '/project', {
       ticketKey: 'PROJ-B',
-      startedAt: new Date().toISOString(),
-      now: Date.now(),
+      startedAt: new Date(1500).toISOString(),
+      now: 2000,
     });
 
     expect(fs.appended()).toHaveLength(2);
     expect(fs.appended()[0]).toContain('PROJ-A');
     expect(fs.appended()[1]).toContain('PROJ-B');
+  });
+
+  it('produces 0min when startedAt is after now', () => {
+    const fs = memoryFs();
+
+    appendCostEntry(fs, '/project', {
+      ticketKey: 'FUTURE-1',
+      startedAt: new Date(5000).toISOString(),
+      now: 1000,
+    });
+
+    expect(fs.appended()[0]).toContain('0min');
   });
 
   it('produces 0min duration for invalid startedAt', () => {
