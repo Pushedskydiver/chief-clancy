@@ -13,8 +13,14 @@ const gitlabMrSchema = z.object({
 /** Response from `GET /projects/:id/merge_requests` (array of MRs). */
 export const gitlabMrListSchema = z.array(gitlabMrSchema);
 
+/** Minimal fields from an MR creation response. */
+export const gitlabMrCreatedSchema = z.object({
+  iid: z.optional(z.number()),
+  web_url: z.optional(z.string()),
+});
+
 /** A single note within an MR discussion. */
-export const gitlabNoteSchema = z.object({
+const gitlabNoteSchema = z.object({
   body: z.string(),
   resolvable: z.boolean(),
   resolved: z.optional(z.boolean()),
@@ -30,7 +36,7 @@ export const gitlabNoteSchema = z.object({
 });
 
 /** A single MR discussion (contains one or more notes). */
-export const gitlabDiscussionSchema = z.object({
+const gitlabDiscussionSchema = z.object({
   id: z.optional(z.string()),
   notes: z.array(gitlabNoteSchema),
 });

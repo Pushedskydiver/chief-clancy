@@ -18,6 +18,11 @@ const azdoPrSchema = z.object({
   ),
 });
 
+/** Minimal fields from a PR creation response. */
+export const azdoPrCreatedSchema = z.object({
+  pullRequestId: z.optional(z.number()),
+});
+
 /** Response from `GET .../pullrequests?searchCriteria.sourceRefName=...`. */
 export const azdoPrListSchema = z.object({
   value: z.array(azdoPrSchema),

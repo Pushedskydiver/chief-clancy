@@ -24,8 +24,16 @@ export const bitbucketPrListSchema = z.object({
   values: z.array(bitbucketPrSchema),
 });
 
+/** Minimal fields from a Cloud PR creation response. */
+export const bitbucketPrCreatedSchema = z.object({
+  id: z.optional(z.number()),
+  links: z.optional(
+    z.object({ html: z.optional(z.object({ href: z.optional(z.string()) })) }),
+  ),
+});
+
 /** A single comment on a Cloud PR. */
-export const bitbucketCommentSchema = z.object({
+const bitbucketCommentSchema = z.object({
   content: z.object({ raw: z.string() }),
   inline: z.optional(z.object({ path: z.optional(z.string()) })),
   created_on: z.string(),
@@ -53,8 +61,18 @@ export const bitbucketServerPrListSchema = z.object({
   values: z.array(bitbucketServerPrSchema),
 });
 
+/** Minimal fields from a Server PR creation response. */
+export const bitbucketServerPrCreatedSchema = z.object({
+  id: z.optional(z.number()),
+  links: z.optional(
+    z.object({
+      self: z.optional(z.array(z.object({ href: z.optional(z.string()) }))),
+    }),
+  ),
+});
+
 /** A comment nested inside a Server activity. */
-export const bitbucketServerCommentSchema = z.object({
+const bitbucketServerCommentSchema = z.object({
   text: z.string(),
   anchor: z.optional(z.object({ path: z.optional(z.string()) })),
   createdDate: z.number(),

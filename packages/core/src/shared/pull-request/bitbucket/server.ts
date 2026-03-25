@@ -8,6 +8,7 @@ import type { PrCreationResult, PrReviewState } from '~/c/types/index.js';
 
 import {
   bitbucketServerActivitiesSchema,
+  bitbucketServerPrCreatedSchema,
   bitbucketServerPrListSchema,
 } from '~/c/schemas/bitbucket/bitbucket.js';
 
@@ -96,11 +97,7 @@ export async function createServerPullRequest(
       },
     },
     parseSuccess: (json) => {
-      // Safe: Bitbucket Server response shape — optional fields default via ??
-      const data = json as {
-        id?: number;
-        links?: { self?: { href?: string }[] };
-      };
+      const data = bitbucketServerPrCreatedSchema.parse(json);
       return { url: data.links?.self?.[0]?.href ?? '', number: data.id ?? 0 };
     },
     isAlreadyExists: (status, text) =>

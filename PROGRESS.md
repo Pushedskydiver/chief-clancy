@@ -220,20 +220,20 @@ Adjusted after phase validation (2026-03-25). Brief PRs 6.1-6.3 already done in 
 
 Post-merge audit found 4 HIGH, 15 MEDIUM, 16 LOW across all Phase 6 modules. Audit run 2026-03-25.
 
-| PR  | Description                                                                                | Status  |
-| --- | ------------------------------------------------------------------------------------------ | ------- |
-| C5  | Progress parser hardening: validate status against union Set, handle `\r\n` (H1, M4, M5)   | Pending |
-| C6  | `[clancy]` comment filtering on GitLab, Bitbucket Cloud/Server, AzDO (H2)                  | Pending |
-| C7  | Schema barrel exports + PR response schemas + schema tests (H3, H4, M11, M13)              | Pending |
-| C8  | URL encoding + small fixes: branch/since params, empty Closes section, JSDoc (M7-M10, M15) | Pending |
-| C9  | Git-ops ref validation + formal review parity documentation (M3, M14)                      | Pending |
+| PR  | Description                                                                                | Status     |
+| --- | ------------------------------------------------------------------------------------------ | ---------- |
+| C5  | Progress parser hardening: validate status against union Set, handle `\r\n` (H1, M4, M5)   | Done (#43) |
+| C6  | `[clancy]` comment filtering on GitLab, Bitbucket Cloud/Server, AzDO (H2)                  | Done (#44) |
+| C7  | Schema validation + PR response schemas + schema tests (H3, M11, M13)                      | Done (#45) |
+| C8  | URL encoding + small fixes: branch/since params, empty Closes section, JSDoc (M7-M10, M15) | Pending    |
+| C9  | Git-ops ref validation + formal review parity documentation (M3, M14)                      | Pending    |
 
 ### HIGH findings
 
 1. **H1** — `progress/isStatusSegment` matches any ALL_CAPS word ("CI", "API") instead of validating against the `ProgressStatus` union. Could silently misparse progress entries.
 2. **H2** — `[clancy]` comment filtering missing from GitLab, Bitbucket Cloud/Server, AzDO. Clancy's own posted comments could trigger false-positive rework loops.
 3. **H3** — `parseSuccess` callback in all PR modules uses raw `as` cast on API response data instead of schema validation. Inconsistent with the same files' pattern.
-4. **H4** — `azdo-pr.ts`, `bitbucket.ts`, `gitlab.ts` PR schemas not re-exported from `schemas/index.ts` barrel. All other schema files are in the barrel.
+4. **H4** — ~~`azdo-pr.ts`, `bitbucket.ts`, `gitlab.ts` PR schemas not in `schemas/index.ts` barrel.~~ Downgraded — PR schemas consumed via path aliases, adding to barrel causes knip violations. _No fix needed._
 
 ### MEDIUM findings
 

@@ -7,6 +7,7 @@ import type { AzdoThread } from '~/c/schemas/azdo/azdo-pr.js';
 import type { PrCreationResult, PrReviewState } from '~/c/types/index.js';
 
 import {
+  azdoPrCreatedSchema,
   azdoPrListSchema,
   azdoThreadListSchema,
 } from '~/c/schemas/azdo/azdo-pr.js';
@@ -96,8 +97,7 @@ export async function createPullRequest(
       description,
     },
     parseSuccess: (json) => {
-      // Safe: AzDO response shape — pullRequestId is always present on success
-      const data = json as { pullRequestId?: number };
+      const data = azdoPrCreatedSchema.parse(json);
       const prId = data.pullRequestId ?? 0;
       return {
         url: `${AZDO_API}/${org}/${project}/_git/${repo}/pullrequest/${prId}`,

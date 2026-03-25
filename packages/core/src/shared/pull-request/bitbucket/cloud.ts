@@ -8,6 +8,7 @@ import type { PrCreationResult, PrReviewState } from '~/c/types/index.js';
 
 import {
   bitbucketCommentsSchema,
+  bitbucketPrCreatedSchema,
   bitbucketPrListSchema,
 } from '~/c/schemas/bitbucket/bitbucket.js';
 
@@ -94,11 +95,7 @@ export async function createPullRequest(
       close_source_branch: true,
     },
     parseSuccess: (json) => {
-      // Safe: Bitbucket Cloud response shape — optional fields default via ??
-      const data = json as {
-        id?: number;
-        links?: { html?: { href?: string } };
-      };
+      const data = bitbucketPrCreatedSchema.parse(json);
       return { url: data.links?.html?.href ?? '', number: data.id ?? 0 };
     },
     isAlreadyExists: (status, text) =>
