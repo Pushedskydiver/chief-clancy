@@ -399,7 +399,7 @@ Adjusted after phase validation + DA review (2026-03-25). Orchestration layer ty
 | 8.2b | `deliverEpicToBase`: shared module for epic PR delivery to base branch (122 lines → decompose). TDD          | Done    |
 | 8.2c | Phases batch 1c: `epic-completion` (72, consumes deliverEpicToBase), `pr-retry` (142 → decompose). TDD       | Done    |
 | 8.3  | Phases batch 2: `rework-detection` (34), `ticket-fetch` (79 → decompose), `dry-run` (38), `feasibility` (39) | Done    |
-| 8.4a | Phases batch 3a: `branch-setup` (115 → major decompose), `transition` (19). TDD                              | Pending |
+| 8.4a | Phases batch 3a: `branch-setup` (115 → major decompose), `transition` (19). TDD                              | Done    |
 | 8.4b | Phases batch 3b: `deliver-phase` (105 → decompose), `cost-phase` (31), `cleanup` (33, notify callback). TDD  | Pending |
 | 8.5  | Pipeline orchestrator: `runPipeline()` — wire all phases, invoke callback injection. TDD                     | Pending |
 
@@ -510,16 +510,17 @@ The `functional/immutable-data` rule's `ignoreClasses: true` option ONLY allows 
 
 ### Session 25 handoff (2026-03-25)
 
-Completed PR 8.3. Phase 8 pipeline phases 3-6 in place. 85 pipeline tests. Codebase clean.
+Completed PRs 8.3-8.4a. Phase 8 pipeline phases 3-8 in place. 108 pipeline tests. Codebase clean.
 
 **What was completed:**
 
-- **8.3** (#TBD) — 4 lighter phases: `rework-detection` (detect PR rework via DI, best-effort), `ticket-fetch` (fresh fetch or rework, max rework guard, branch computation), `dry-run` (structured ticket info for display, no I/O), `feasibility` (async Claude feasibility check via DI). Added `setTicketBranches` setter to RunContext. Shared `test-helpers.ts` for board mock deduplication. Restructured all 8 phases into individual directories (`phases/lock-check/`, `phases/dry-run/`, etc.) to match the one-module-per-directory convention. Barrel exports deferred to 8.5. 36 new tests
+- **8.3** (#68) — 4 lighter phases: `rework-detection` (detect PR rework via DI, best-effort), `ticket-fetch` (fresh fetch or rework, max rework guard, branch computation), `dry-run` (structured ticket info for display, no I/O), `feasibility` (async Claude feasibility check via DI). Added `setTicketBranches` setter to RunContext. Shared `test-helpers.ts` for board mock deduplication. Restructured all 8 phases into individual directories (`phases/lock-check/`, `phases/dry-run/`, etc.) to match the one-module-per-directory convention. Barrel exports deferred to 8.5. 36 new tests
+- **8.4a** (#TBD) — `branch-setup` phase (decomposed into `checkSingleChild`, `setupReworkBranch`, `setupFreshBranch`, `setupEpicBranch`, `setupStandalone`, `writeLockSafe` — all ≤3 params via ctx-reading pattern). `transition` phase (best-effort ticket status update). `fetchChildrenStatus` dep takes `FetchedTicket` (higher-level callback, not raw Board params). 23 new tests
 
 **What's next:**
 
-- Start 8.4a (branch-setup + transition — major decomposition)
-- Then 8.4b (deliver-phase + cost-phase + cleanup)
+- Start 8.4b (deliver-phase + cost-phase + cleanup)
+- Then 8.5 (pipeline orchestrator)
 
 **Key decisions:**
 
@@ -531,6 +532,7 @@ Completed PR 8.3. Phase 8 pipeline phases 3-6 in place. 85 pipeline tests. Codeb
 - Shared `test-helpers.ts` with `makeCtx()` + internal `makeBoard()` — prevents Board mock drift across 4+ test files
 - `ctx.isRework === true` used consistently (not truthy check) — clear handling of `boolean | undefined`
 - Phases restructured into individual directories (`phases/<name>/<name>.ts`) — matches `shared/` one-module-per-directory convention. Barrel `index.ts` files deferred to 8.5 per export hygiene (no consumers yet). `test-helpers.ts` stays at `phases/` level as shared test utility
+- `fetchChildrenStatus` dep takes `FetchedTicket` not raw `(parentKey, parentId?, currentTicketKey?)` — higher-level callback pattern per DI convention. Terminal layer extracts the board-specific fields
 
 ### Session 24 handoff (2026-03-25)
 
