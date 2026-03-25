@@ -583,6 +583,41 @@ describe('fetchPrReviewComments', () => {
     expect(result).toEqual([]);
   });
 
+  it('excludes [clancy] threads', async () => {
+    const mockFetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          value: [
+            {
+              id: 1,
+              comments: [
+                {
+                  content: '[clancy] Rework pushed.',
+                  commentType: 'text',
+                },
+              ],
+              publishedDate: '2026-01-01T00:00:00Z',
+            },
+            {
+              id: 2,
+              comments: [{ content: 'Fix this', commentType: 'text' }],
+              threadContext: { filePath: '/src/a.ts' },
+              publishedDate: '2026-01-01T00:00:00Z',
+            },
+          ],
+        }),
+    });
+
+    const result = await fetchPrReviewComments({
+      fetchFn: mockFetch as never,
+      ...AZDO_OPTS,
+      prId: 42,
+    });
+
+    expect(result).toEqual(['[/src/a.ts] Fix this']);
+  });
+
   it('returns empty on error', async () => {
     const mockFetch = vi.fn(() => Promise.reject(new Error('Network error')));
 

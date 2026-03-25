@@ -18,6 +18,7 @@ import {
 import { postPullRequest } from '../post-pr/post-pr.js';
 import {
   extractReworkContent,
+  isClancyComment,
   isReworkComment,
 } from '../rework-comment/rework-comment.js';
 
@@ -276,11 +277,6 @@ export async function createPullRequest(
 
 // ─── private helpers ────────────────────────────────────────────────────────
 
-/** Check whether a comment was posted by Clancy's automation. */
-function isClancyComment(body?: string | null): boolean {
-  return body?.trimStart().startsWith('[clancy]') ?? false;
-}
-
 /** Minimal PR info needed from the list endpoint. */
 type OpenPr = { readonly number: number; readonly url: string };
 
@@ -357,8 +353,8 @@ async function fetchFilteredComments(
   const rawConvo = githubCommentsResponseSchema.parse(await convoRes.json());
 
   return {
-    inline: rawInline.filter((c) => !isClancyComment(c.body)),
-    convo: rawConvo.filter((c) => !isClancyComment(c.body)),
+    inline: rawInline.filter((c) => !c.body || !isClancyComment(c.body)),
+    convo: rawConvo.filter((c) => !c.body || !isClancyComment(c.body)),
   };
 }
 

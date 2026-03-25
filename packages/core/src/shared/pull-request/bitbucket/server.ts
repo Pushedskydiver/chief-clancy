@@ -14,6 +14,7 @@ import {
 import { postPullRequest } from '../post-pr/post-pr.js';
 import {
   extractReworkContent,
+  isClancyComment,
   isReworkComment,
 } from '../rework-comment/rework-comment.js';
 
@@ -176,7 +177,9 @@ export async function checkServerPrReviewState(
     });
     if (!activities) return undefined;
 
-    const relevant = filterBySince(activities, since);
+    const relevant = filterBySince(activities, since).filter(
+      (c) => !isClancyComment(c.text),
+    );
     const hasInline = relevant.some((c) => c.anchor != null);
     const hasReworkConvo = relevant.some(
       (c) => c.anchor == null && isReworkComment(c.text),
@@ -218,7 +221,9 @@ export async function fetchServerPrReviewComments(
     });
     if (!activities) return [];
 
-    return filterBySince(activities, since).flatMap((c) => formatComment(c));
+    return filterBySince(activities, since)
+      .filter((c) => !isClancyComment(c.text))
+      .flatMap((c) => formatComment(c));
   } catch {
     return [];
   }

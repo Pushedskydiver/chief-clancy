@@ -21,6 +21,7 @@ import {
 import { postPullRequest } from '../post-pr/post-pr.js';
 import {
   extractReworkContent,
+  isClancyComment,
   isReworkComment,
 } from '../rework-comment/rework-comment.js';
 
@@ -313,6 +314,7 @@ async function fetchDiscussions(
 /** Check if a note is an unresolved DiffNote or a Rework: comment. */
 function isActionableNote(note: GitLabNote, since?: string): boolean {
   if (note.system) return false;
+  if (isClancyComment(note.body)) return false;
   if (since && note.created_at && note.created_at <= since) return false;
 
   const isUnresolvedDiff =
@@ -333,7 +335,7 @@ function extractFeedback(
 } {
   const pairs = discussions.map((d) => {
     const feedback = d.notes
-      .filter((n) => !n.system)
+      .filter((n) => !n.system && !isClancyComment(n.body))
       .filter((n) => !since || !n.created_at || n.created_at > since)
       .flatMap((n) => formatNote(n))
       .filter((s) => s !== undefined);

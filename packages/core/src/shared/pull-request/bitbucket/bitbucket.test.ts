@@ -453,6 +453,34 @@ describe('fetchPrReviewComments', () => {
     expect(result).toEqual(['[src/a.ts] Fix this', 'validation broken']);
   });
 
+  it('excludes [clancy] comments', async () => {
+    const mockFetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          values: [
+            {
+              content: { raw: '[clancy] Rework pushed.' },
+              created_on: '2026-01-01T00:00:00Z',
+            },
+            {
+              content: { raw: 'Fix this' },
+              inline: { path: 'src/a.ts' },
+              created_on: '2026-01-01T00:00:00Z',
+            },
+          ],
+        }),
+    });
+
+    const result = await fetchPrReviewComments({
+      fetchFn: mockFetch as never,
+      ...CLOUD_OPTS,
+      prId: 10,
+    });
+
+    expect(result).toEqual(['[src/a.ts] Fix this']);
+  });
+
   it('returns empty on error', async () => {
     const mockFetch = vi.fn(() => Promise.reject(new Error('Network error')));
 
@@ -608,6 +636,40 @@ describe('fetchServerPrReviewComments', () => {
     });
 
     expect(result).toEqual(['[src/a.ts] Fix this', 'broken']);
+  });
+
+  it('excludes [clancy] comments', async () => {
+    const mockFetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          values: [
+            {
+              action: 'COMMENTED',
+              comment: {
+                text: '[clancy] Rework pushed.',
+                createdDate: Date.now(),
+              },
+            },
+            {
+              action: 'COMMENTED',
+              comment: {
+                text: 'Fix this',
+                anchor: { path: 'src/a.ts' },
+                createdDate: Date.now(),
+              },
+            },
+          ],
+        }),
+    });
+
+    const result = await fetchServerPrReviewComments({
+      fetchFn: mockFetch as never,
+      ...SERVER_OPTS,
+      prId: 10,
+    });
+
+    expect(result).toEqual(['[src/a.ts] Fix this']);
   });
 
   it('returns empty on error', async () => {

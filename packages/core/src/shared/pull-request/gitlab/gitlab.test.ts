@@ -622,6 +622,47 @@ describe('fetchMrReviewComments', () => {
     expect(result.comments).toEqual([]);
   });
 
+  it('excludes [clancy] comments', async () => {
+    const mockFetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve([
+          {
+            id: 'd1',
+            notes: [
+              {
+                body: '[clancy] Rework pushed.',
+                type: 'DiffNote',
+                resolvable: true,
+                system: false,
+                position: { new_path: 'src/a.ts' },
+              },
+            ],
+          },
+          {
+            id: 'd2',
+            notes: [
+              {
+                body: 'Fix this',
+                type: 'DiffNote',
+                resolvable: true,
+                system: false,
+                position: { new_path: 'src/b.ts' },
+              },
+            ],
+          },
+        ]),
+    });
+
+    const result = await fetchMrReviewComments({
+      fetchFn: mockFetch as never,
+      ...BASE_OPTS,
+      mrIid: 5,
+    });
+
+    expect(result.comments).toEqual(['[src/b.ts] Fix this']);
+  });
+
   it('returns empty on error', async () => {
     const mockFetch = vi.fn(() => Promise.reject(new Error('Network error')));
 
