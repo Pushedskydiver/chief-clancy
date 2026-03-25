@@ -1,4 +1,3 @@
-import type { Phase } from './context.js';
 import type { BoardConfig } from '~/c/schemas/env/env.js';
 import type { Board } from '~/c/types/board.js';
 
@@ -187,23 +186,5 @@ describe('createContext', () => {
 
     expect(ctx.dryRun).toBe(false);
     expect(ctx.skipFeasibility).toBe(false);
-  });
-});
-
-// ─── Phase type ──────────────────────────────────────────────────────────────
-
-describe('Phase type', () => {
-  it('accepts a sync phase returning boolean', () => {
-    const phase: Phase = (_ctx) => true;
-    const ctx = createContext(DEFAULTS);
-
-    expect(phase(ctx)).toBe(true);
-  });
-
-  it('accepts an async phase returning boolean', async () => {
-    const phase: Phase = async (_ctx) => false;
-    const ctx = createContext(DEFAULTS);
-
-    expect(await phase(ctx)).toBe(false);
   });
 });

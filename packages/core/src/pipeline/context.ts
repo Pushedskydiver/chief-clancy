@@ -13,9 +13,6 @@ import type { Board, FetchedTicket } from '~/c/types/board.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-/** A pipeline phase: mutates context, returns `true` to continue or `false` to exit. */
-export type Phase = (ctx: RunContext) => Promise<boolean> | boolean;
-
 /** Options for creating a new {@link RunContext}. */
 type CreateContextOpts = {
   /** Absolute path to the project root directory. */
@@ -106,7 +103,14 @@ export class RunContext {
     this.ticket = ticket;
   }
 
-  /** Set computed branch names from ticket-fetch phase. */
+  /**
+   * Set computed branch names from ticket-fetch phase.
+   *
+   * Note: `setBranchSetup` intentionally overwrites the 4 shared fields
+   * (`ticketBranch`, `targetBranch`, `baseBranch`, `hasParent`) set here,
+   * as branch-setup may compute different values (e.g. adjusted effective
+   * target after single-child detection).
+   */
   setTicketBranches(opts: {
     readonly ticketBranch: string;
     readonly targetBranch: string;

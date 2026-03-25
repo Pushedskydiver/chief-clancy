@@ -22,7 +22,7 @@ function makeDeps(overrides: Partial<PipelineDeps> = {}): PipelineDeps {
     feasibility: vi.fn().mockResolvedValue({ ok: true }),
     branchSetup: vi.fn().mockResolvedValue({ ok: true }),
     transition: vi.fn().mockResolvedValue({ ok: true }),
-    invoke: vi.fn().mockResolvedValue(true),
+    invoke: vi.fn().mockResolvedValue({ ok: true }),
     deliver: vi.fn().mockResolvedValue({ ok: true }),
     cost: vi.fn().mockReturnValue({ ok: true }),
     cleanup: vi.fn().mockResolvedValue({
@@ -159,7 +159,7 @@ describe('runPipeline — early exits', () => {
 
   it('stops after invoke failure', async () => {
     const deps = makeDeps({
-      invoke: vi.fn().mockResolvedValue(false),
+      invoke: vi.fn().mockResolvedValue({ ok: false }),
     });
     const result = await runPipeline(makeCtx(), deps);
 
