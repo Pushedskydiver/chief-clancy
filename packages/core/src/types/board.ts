@@ -34,6 +34,8 @@ export type FetchedTicket = {
   readonly labels?: readonly string[];
   /** Board status at fetch time — used for claim detection (e.g., "To Do", "unstarted"). */
   readonly status?: string;
+  /** Board-specific work type — mapped to commit type for PR titles (e.g., "Bug", "feature", "Task"). */
+  readonly ticketType?: string;
 };
 
 /** Options for ticket fetching behaviour. */
