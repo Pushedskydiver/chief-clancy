@@ -179,10 +179,10 @@ Adjusted after phase validation (2026-03-25). Brief PRs 6.1-6.3 already done in 
 
 | PR   | Description                                                                                                   | Status  |
 | ---- | ------------------------------------------------------------------------------------------------------------- | ------- |
-| 6.0  | Prerequisites: add `fast-check` dev dependency                                                                | Pending |
-| 6.1  | `shared/format/`: `formatDuration(ms)` — pure, tiny module                                                    | Pending |
-| 6.2  | `shared/branch/`: `computeTicketBranch`, `computeTargetBranch` — pure, property-based tests                   | Pending |
-| 6.3  | `shared/remote/`: `parseRemote`, `detectPlatformFromHostname`, `buildApiBaseUrl` — pure, property-based tests | Pending |
+| 6.0  | Prerequisites: add `fast-check` dev dependency                                                                | Done (already installed) |
+| 6.1  | `shared/format/`: `formatDuration(ms)` — pure, tiny module                                                    | Done (#32) |
+| 6.2  | `shared/branch/`: `computeTicketBranch`, `computeTargetBranch` — pure, property-based tests                   | Done (#33) |
+| 6.3  | `shared/remote/`: `parseRemote`, `detectPlatformFromHostname`, `buildApiBaseUrl` — pure, property-based tests | Done (#34) |
 | 6.4  | `shared/git-ops/`: git command wrappers + `detectRemote` (DI exec). Depends on 6.3                            | Pending |
 | 6.5  | `shared/progress/`: progress file reader/writer (DI filesystem)                                               | Pending |
 | 6.6  | `shared/feasibility/`: prompt builder + response parser + check (DI invoke)                                   | Pending |
