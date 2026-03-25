@@ -270,7 +270,7 @@ Adjusted after phase validation (2026-03-25). Added `git-token/` prerequisite (m
 | 7.4  | `fetch-ticket/`: label resolution, blocker checking, AFK filtering. Consumes Board interface                   | Done (#52) |
 | 7.5  | `rework/`: rework detection — `rework-handlers` (platform dispatch) + orchestrator. Depends on 7.0             | Done (#53) |
 | 7.5a | Azure DevOps rework: `AzdoRemote` type + `parseRemote`/`buildApiBaseUrl` + rework-handler case. Depends on 7.5 | Done (#54) |
-| 7.6  | `resume/`: crash recovery — detect resumable state, execute resume. Depends on 7.0, 7.1                        | Pending    |
+| 7.6  | `resume/`: crash recovery — detect resumable state, execute resume. Depends on 7.0, 7.1                        | Done (#55) |
 | 7.7  | `deliver/` prereqs: `outcome/` (pure) + `pr-creation/` (platform dispatch incl. AzDO). Depends on 7.0          | Pending    |
 | 7.8  | `deliver/`: epic branch management + PR delivery orchestration. Split `deliver.ts` + `epic.ts`. Depends on 7.7 | Pending    |
 
