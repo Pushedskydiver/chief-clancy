@@ -20,6 +20,12 @@ import {
   queryDatabase,
 } from '../api/index.js';
 
+/** Check whether a page has an active (non-complete) status. */
+function hasActiveStatus(page: NotionPage, statusProp: string): boolean {
+  const status = getPageStatus(page, statusProp);
+  return status !== undefined && !isCompleteStatus(status);
+}
+
 // ─── Blocker status ──────────────────────────────────────────────────────────
 
 /** Options for {@link fetchBlockerStatus}. */
@@ -76,11 +82,9 @@ async function checkRelationBlockers(
     relations.map((rel) => fetchPage(token, rel.id)),
   );
 
-  return blockerPages.some((blockerPage) => {
-    if (!blockerPage) return false;
-    const status = getPageStatus(blockerPage, statusProp);
-    return status !== undefined && !isCompleteStatus(status);
-  });
+  return blockerPages.some(
+    (blockerPage) => !!blockerPage && hasActiveStatus(blockerPage, statusProp),
+  );
 }
 
 /** Options for description-based blocker check. */
@@ -115,8 +119,7 @@ async function checkDescriptionBlockers(
     );
     if (!candidate) return false;
 
-    const status = getPageStatus(candidate, statusProp);
-    return status !== undefined && !isCompleteStatus(status);
+    return hasActiveStatus(candidate, statusProp);
   });
 }
 

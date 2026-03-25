@@ -31,8 +31,9 @@ async function fetchLabels(
     return undefined;
   }
 
-  const json = jiraIssueLabelsResponseSchema.parse(await res.json());
-  return json.fields?.labels ?? [];
+  const parsed = jiraIssueLabelsResponseSchema.safeParse(await res.json());
+  if (!parsed.success) return undefined;
+  return parsed.data.fields?.labels ?? [];
 }
 
 /** Write updated labels to a Jira issue. */

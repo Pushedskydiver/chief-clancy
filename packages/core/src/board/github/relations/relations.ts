@@ -6,33 +6,32 @@
  */
 import type { ChildrenStatus } from '~/c/types/index.js';
 
+import { z } from 'zod/mini';
+
 import { GITHUB_API, githubHeaders, isValidRepo } from '../api/index.js';
 
-/** Check if any blocker issue is still open (sequential, short-circuits). */
+const issueStateSchema = z.object({ state: z.optional(z.string()) });
+const searchCountSchema = z.object({ total_count: z.optional(z.number()) });
+
+/** Check if any blocker issue is still open (parallel fetch + short-circuit). */
 async function checkAnyBlockerOpen(
   headers: Record<string, string>,
   repo: string,
   blockerNumbers: readonly number[],
 ): Promise<boolean> {
-  // Sequential check — must short-circuit on first open blocker
-  const results = await blockerNumbers.reduce(
-    async (accPromise, blockerNum) => {
-      const found = await accPromise;
-      if (found) return true;
-
+  const responses = await Promise.all(
+    blockerNumbers.map(async (num) => {
       const response = await fetch(
-        `${GITHUB_API}/repos/${repo}/issues/${blockerNum}`,
+        `${GITHUB_API}/repos/${repo}/issues/${num}`,
         { headers },
       );
       if (!response.ok) return false;
 
-      // Safe cast: response validated by .ok, only reading one optional field
-      const json = (await response.json()) as { state?: string };
-      return json.state !== 'closed';
-    },
-    Promise.resolve(false),
+      const parsed = issueStateSchema.safeParse(await response.json());
+      return parsed.success && parsed.data.state !== 'closed';
+    }),
   );
-  return results;
+  return responses.some(Boolean);
 }
 
 /** Options for {@link fetchBlockerStatus}. */
@@ -185,9 +184,9 @@ async function fetchChildrenByBodyRef(
   });
   if (!allResponse.ok) return undefined;
 
-  // Safe cast: only reading total_count from GitHub Search API response
-  const allJson = (await allResponse.json()) as { total_count?: number };
-  const total = allJson.total_count ?? 0;
+  const allParsed = searchCountSchema.safeParse(await allResponse.json());
+  if (!allParsed.success) return undefined;
+  const total = allParsed.data.total_count ?? 0;
 
   if (total === 0) return { total: 0, incomplete: 0 };
 
@@ -201,11 +200,11 @@ async function fetchChildrenByBodyRef(
     { headers },
   );
 
-  // Assume all open on failure
   if (!openResponse.ok) return { total, incomplete: total };
 
-  // Safe cast: only reading total_count from GitHub Search API response
-  const openJson = (await openResponse.json()) as { total_count?: number };
-
-  return { total, incomplete: openJson.total_count ?? 0 };
+  const openParsed = searchCountSchema.safeParse(await openResponse.json());
+  return {
+    total,
+    incomplete: openParsed.success ? (openParsed.data.total_count ?? 0) : total,
+  };
 }

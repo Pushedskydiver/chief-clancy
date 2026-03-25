@@ -7,8 +7,11 @@
 import type { ChildrenStatus } from '~/c/types/index.js';
 
 import { jiraIssueLinksResponseSchema } from '~/c/schemas/index.js';
+import { z } from 'zod/mini';
 
 import { isValidIssueKey, jiraHeaders } from '../api/index.js';
+
+const jiraSearchCountSchema = z.object({ total: z.optional(z.number()) });
 
 /**
  * Check whether a Jira issue is blocked by unresolved blockers.
@@ -112,9 +115,11 @@ async function fetchChildrenByJql(
 
   if (!totalResponse.ok) return undefined;
 
-  // Safe cast: only reading total from Jira search response
-  const totalJson = (await totalResponse.json()) as { total?: number };
-  const total = totalJson.total ?? 0;
+  const totalParsed = jiraSearchCountSchema.safeParse(
+    await totalResponse.json(),
+  );
+  if (!totalParsed.success) return undefined;
+  const total = totalParsed.data.total ?? 0;
 
   if (total === 0) return { total: 0, incomplete: 0 };
 
@@ -129,8 +134,12 @@ async function fetchChildrenByJql(
 
   if (!incompleteResponse.ok) return undefined;
 
-  // Safe cast: only reading total from Jira search response
-  const incJson = (await incompleteResponse.json()) as { total?: number };
+  const incParsed = jiraSearchCountSchema.safeParse(
+    await incompleteResponse.json(),
+  );
 
-  return { total, incomplete: incJson.total ?? 0 };
+  return {
+    total,
+    incomplete: incParsed.success ? (incParsed.data.total ?? 0) : total,
+  };
 }

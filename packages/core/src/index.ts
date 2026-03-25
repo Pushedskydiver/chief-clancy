@@ -86,6 +86,7 @@ export type {
   AzdoWorkItem,
   AzdoWorkItemsBatchResponse,
   // Linear API types
+  LinearIssueChildrenResponse,
   LinearIssueNode,
   LinearIssueLabelSearchResponse,
   LinearIssueRelationsResponse,
@@ -145,6 +146,7 @@ export {
   azdoWorkItemSchema,
   azdoWorkItemsBatchResponseSchema,
   // Linear API schemas
+  linearIssueChildrenResponseSchema,
   linearIssueLabelSearchResponseSchema,
   linearIssueRelationsResponseSchema,
   linearIssueSearchResponseSchema,

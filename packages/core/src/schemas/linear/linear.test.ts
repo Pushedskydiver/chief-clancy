@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  linearIssueChildrenResponseSchema,
   linearIssueLabelSearchResponseSchema,
   linearIssueRelationsResponseSchema,
   linearIssueSearchResponseSchema,
@@ -313,6 +314,38 @@ describe('linearIssueSearchResponseSchema', () => {
 
     expect(result.data.data!.issueSearch!.nodes).toHaveLength(2);
     expect(result.data.data!.issueSearch!.nodes[0].state?.type).toBe('started');
+  });
+});
+
+describe('linearIssueChildrenResponseSchema', () => {
+  it('validates a children response with state info', () => {
+    const result = linearIssueChildrenResponseSchema.safeParse({
+      data: {
+        issue: {
+          children: {
+            nodes: [
+              { state: { type: 'completed' } },
+              { state: { type: 'unstarted' } },
+            ],
+          },
+        },
+      },
+    });
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+
+    const nodes = result.data.data!.issue!.children!.nodes;
+    expect(nodes).toHaveLength(2);
+    expect(nodes[0].state?.type).toBe('completed');
+  });
+
+  it('accepts empty children nodes', () => {
+    const result = linearIssueChildrenResponseSchema.safeParse({
+      data: { issue: { children: { nodes: [] } } },
+    });
+
+    expect(result.success).toBe(true);
   });
 });
 

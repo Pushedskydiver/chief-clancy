@@ -129,6 +129,23 @@ export const linearIssueSearchResponseSchema = z.object({
   ),
 });
 
+/** Response from the `issue(id) { children { ... } }` query. */
+export const linearIssueChildrenResponseSchema = z.object({
+  data: z.optional(
+    z.object({
+      issue: z.optional(
+        z.object({
+          children: z.optional(
+            z.object({
+              nodes: z.array(linearSearchNodeSchema),
+            }),
+          ),
+        }),
+      ),
+    }),
+  ),
+});
+
 /** Response from the `team.labels` query for label management. */
 export const linearTeamLabelsResponseSchema = z.object({
   data: z.optional(
@@ -214,6 +231,9 @@ export type LinearIssueRelationsResponse = z.infer<
 >;
 export type LinearIssueSearchResponse = z.infer<
   typeof linearIssueSearchResponseSchema
+>;
+export type LinearIssueChildrenResponse = z.infer<
+  typeof linearIssueChildrenResponseSchema
 >;
 export type LinearTeamLabelsResponse = z.infer<
   typeof linearTeamLabelsResponseSchema
