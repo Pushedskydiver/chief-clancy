@@ -216,6 +216,47 @@ Adjusted after phase validation (2026-03-25). Brief PRs 6.1-6.3 already done in 
 - Carry over: format (~10%), branch (~15%)
 - Moderate rewrite: remote (~40%), git-ops (~40%), progress (~35%), feasibility (~40%), pull-request (~35%)
 
+## Phase 6 Cleanup
+
+Post-merge audit found 4 HIGH, 15 MEDIUM, 16 LOW across all Phase 6 modules. Audit run 2026-03-25.
+
+| PR  | Description                                                                                | Status  |
+| --- | ------------------------------------------------------------------------------------------ | ------- |
+| C5  | Progress parser hardening: validate status against union Set, handle `\r\n` (H1, M4, M5)   | Pending |
+| C6  | `[clancy]` comment filtering on GitLab, Bitbucket Cloud/Server, AzDO (H2)                  | Pending |
+| C7  | Schema barrel exports + PR response schemas + schema tests (H3, H4, M11, M13)              | Pending |
+| C8  | URL encoding + small fixes: branch/since params, empty Closes section, JSDoc (M7-M10, M15) | Pending |
+| C9  | Git-ops ref validation + formal review parity documentation (M3, M14)                      | Pending |
+
+### HIGH findings
+
+1. **H1** — `progress/isStatusSegment` matches any ALL_CAPS word ("CI", "API") instead of validating against the `ProgressStatus` union. Could silently misparse progress entries.
+2. **H2** — `[clancy]` comment filtering missing from GitLab, Bitbucket Cloud/Server, AzDO. Clancy's own posted comments could trigger false-positive rework loops.
+3. **H3** — `parseSuccess` callback in all PR modules uses raw `as` cast on API response data instead of schema validation. Inconsistent with the same files' pattern.
+4. **H4** — `azdo-pr.ts`, `bitbucket.ts`, `gitlab.ts` PR schemas not re-exported from `schemas/index.ts` barrel. All other schema files are in the barrel.
+
+### MEDIUM findings
+
+- **M1** — `remote/` exports (`detectPlatformFromHostname`, `buildApiBaseUrl`) with no external consumers. _Deferred — Phase 7 will consume._
+- **M2** — `git-ops/ExecGit` type non-exported but needed by consumers. _Deferred — export when consumed._
+- **M3** — `git-ops/branchExists` interpolates branch into `refs/heads/${branch}` — semantic ref injection with `../`. → C9
+- **M4** — `progress/parseProgressFile` splits on `\n` only — `\r` retained on last segment on Windows. → C5
+- **M5** — `as ProgressStatus` cast in `extractTailFields` relies on format check, not union membership. Tied to H1. → C5
+- **M6** — `ProgressFs`, `FeasibilityTicket`, `InvokeClaude` types non-exported. _Deferred — export when consumed._
+- **M7** — `pr-body/githubClosesLines` emits empty "### Closes" heading when no `#`-prefixed keys exist. → C8
+- **M8** — `github/` `since`, `branch`, `owner` params interpolated into URLs without encoding. → C8
+- **M9** — Branch name not URL-encoded in query params across all PR platforms. → C8
+- **M10** — `gitlab/` `d.id!` non-null assertion avoidable with type narrowing. → C8
+- **M11** — No test files for GitLab, Bitbucket, AzDO PR schemas. → C7
+- **M12** — No barrel `index.ts` for PR sub-modules. _Deferred — wire when consumers exist._
+- **M13** — Bitbucket/GitLab individual comment schemas exported but only consumed internally. → C7
+- **M14** — GitHub checks formal reviews (`CHANGES_REQUESTED`); other platforms only check comments. → C9 (document)
+- **M15** — `post-pr/basicAuth` JSDoc missing `@param`/`@returns`. → C8
+
+### Deferred
+
+- M1, M2, M6, M12: Export hygiene items deferred until consumers exist (convention: types start non-exported).
+
 ## Phase 7: Core — Lifecycle
 
 Adjusted after phase validation (2026-03-25). Added `git-token/` prerequisite (missing from brief, hard blocker). Split `deliver/` into prereqs + main. Added AzDO support to rework-handlers, pr-creation, and outcome. Reordered by dependency.
