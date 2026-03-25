@@ -156,3 +156,19 @@ Each board splits into 2-4 files to stay under the 300-line limit:
 - Carry over: factory (~0%), label helpers (~0%), board adapters (~10-15%)
 - Moderate rewrite: HTTP utilities (~30%), GitHub (~40%), Jira (~40%), AzDo (~40%), Notion (~40%)
 - Major rewrite: Linear board adapter (~50%), Shortcut API (~55%)
+
+## Phase 5 Cleanup
+
+Post-merge audit found 4 HIGH, 8 MEDIUM code, 2 MEDIUM export, 6 test gaps. All resolved.
+
+| PR  | Description                                           | Status |
+| --- | ----------------------------------------------------- | ------ |
+| C1  | Factory exhaustiveness + export hygiene (H4, M9, M10) | Done   |
+| C2  | Schema validation + code quality (H1, H2, M1, M2, M7) | Done   |
+| C3  | Bug fixes + consistency (M3, M4, M5, M6)              | Done   |
+| C4  | Test coverage + JSDoc (T1-T6, M11)                    | Done   |
+
+### Deferred
+
+- H3: Notion findPageByKey full DB scan — needs cache layer, post-Phase 6
+- M8: DI on pingEndpoint/retryFetch — touches every test, defer
