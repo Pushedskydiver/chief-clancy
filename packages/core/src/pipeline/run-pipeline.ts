@@ -28,39 +28,40 @@ export type PipelineResult = {
  * board, etc.) so the orchestrator only passes the context.
  */
 export type PipelineDeps = {
-  /** Phase 0: Lock check + resume detection. */
+  /** Lock check + resume detection. */
   readonly lockCheck: (
     ctx: RunContext,
   ) => Promise<{ readonly action: 'continue' | 'abort' | 'resumed' }>;
-  /** Phase 1: Preflight — binary checks, env, board detection. */
+  /** Preflight — binary checks, env, board detection. */
   readonly preflight: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
-  /** Phase 2: Epic completion — check for completed epics. */
+  /** Epic completion — check for completed epics. */
   readonly epicCompletion: (
     ctx: RunContext,
   ) => Promise<{ readonly results: readonly unknown[] }>;
-  /** Phase 2a: PR retry — retry PUSHED tickets. */
+  /** PR retry — retry PUSHED tickets. */
   readonly prRetry: (
     ctx: RunContext,
   ) => Promise<{ readonly results: readonly unknown[] }>;
-  /** Phase 3: Rework detection — check for PR review feedback. */
+  /** Rework detection — check for PR review feedback. */
   readonly reworkDetection: (
     ctx: RunContext,
   ) => Promise<{ readonly detected: boolean }>;
-  /** Phase 4: Ticket fetch — fetch ticket + compute branches. */
+  /** Ticket fetch — fetch ticket + compute branches. */
   readonly ticketFetch: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
-  /** Phase 6: Feasibility — Claude feasibility check. */
+  // Dry-run (phase 5) is an inline ctx.dryRun check — no dependency needed.
+  /** Feasibility — Claude feasibility check. */
   readonly feasibility: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
-  /** Phase 7: Branch setup — git branch operations + lock write. */
+  /** Branch setup — git branch operations + lock write. */
   readonly branchSetup: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
-  /** Phase 8: Transition — move ticket to In Progress. */
+  /** Transition — move ticket to In Progress. */
   readonly transition: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
-  /** Phase 9: Invoke — run Claude session. Returns true if successful. */
+  /** Invoke — run Claude session. Returns true if successful. */
   readonly invoke: (ctx: RunContext) => Promise<boolean>;
-  /** Phase 10: Deliver — push + PR creation. */
+  /** Deliver — push + PR creation. */
   readonly deliver: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
-  /** Phase 11: Cost — log estimated token cost. */
+  /** Cost — log estimated token cost. */
   readonly cost: (ctx: RunContext) => { readonly ok: boolean };
-  /** Phase 12: Cleanup — completion data + notification. */
+  /** Cleanup — completion data + notification. */
   readonly cleanup: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
   /** Restore a git branch (best-effort, for error recovery). */
   readonly checkout: (branch: string) => void;
@@ -87,7 +88,7 @@ export async function runPipeline(
   ctx: RunContext,
   deps: PipelineDeps,
 ): Promise<PipelineResult> {
-  // Phase 0: Lock check + resume
+  // Lock check + resume
   const lockResult = await deps.lockCheck(ctx);
 
   if (lockResult.action === 'abort') {
@@ -111,54 +112,54 @@ export async function runPipeline(
 
 // ─── Internal helpers ────────────────────────────────────────────────────────
 
-/** Run phases 1-12. Separated from lock-check for clean error boundaries. */
+/** Run all phases after lock-check. Separated for clean error boundaries. */
 async function runPhases(
   ctx: RunContext,
   deps: PipelineDeps,
 ): Promise<PipelineResult> {
-  // Phase 1: Preflight
+  // Preflight
   const preflight = await deps.preflight(ctx);
   if (!preflight.ok) return { status: 'aborted', phase: 'preflight' };
 
-  // Phase 2: Epic completion (informational — never aborts)
+  // Epic completion (informational — never aborts)
   await deps.epicCompletion(ctx);
 
-  // Phase 2a: PR retry (informational — never aborts)
+  // PR retry (informational — never aborts)
   await deps.prRetry(ctx);
 
-  // Phase 3: Rework detection (sets ctx.isRework — never aborts)
+  // Rework detection (sets ctx.isRework — never aborts)
   await deps.reworkDetection(ctx);
 
-  // Phase 4: Ticket fetch
+  // Ticket fetch
   const ticket = await deps.ticketFetch(ctx);
   if (!ticket.ok) return { status: 'aborted', phase: 'ticket-fetch' };
 
-  // Phase 5: Dry-run gate
+  // Dry-run gate
   if (ctx.dryRun) return { status: 'dry-run' };
 
-  // Phase 6: Feasibility
+  // Feasibility
   const feasibility = await deps.feasibility(ctx);
   if (!feasibility.ok) return { status: 'aborted', phase: 'feasibility' };
 
-  // Phase 7: Branch setup
+  // Branch setup
   const branch = await deps.branchSetup(ctx);
   if (!branch.ok) return { status: 'aborted', phase: 'branch-setup' };
 
-  // Phase 8: Transition (best-effort — never aborts)
+  // Transition (best-effort — never aborts)
   await deps.transition(ctx);
 
-  // Phase 9: Invoke Claude session
+  // Invoke Claude session
   const invokeOk = await deps.invoke(ctx);
   if (!invokeOk) return { status: 'aborted', phase: 'invoke' };
 
-  // Phase 10: Deliver
+  // Deliver
   const deliver = await deps.deliver(ctx);
   if (!deliver.ok) return { status: 'aborted', phase: 'deliver' };
 
-  // Phase 11: Cost (best-effort — never aborts)
+  // Cost (best-effort — never aborts)
   deps.cost(ctx);
 
-  // Phase 12: Cleanup (best-effort — never aborts)
+  // Cleanup (best-effort — never aborts)
   await deps.cleanup(ctx);
 
   return { status: 'completed' };

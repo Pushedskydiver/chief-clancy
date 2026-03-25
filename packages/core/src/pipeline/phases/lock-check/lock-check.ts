@@ -1,5 +1,5 @@
 /**
- * Phase 0: Lock check — startup lock detection, stale cleanup, and resume.
+ * Lock check — startup lock detection, stale cleanup, and resume.
  *
  * Returns structured results — no console output. The terminal layer
  * handles display. Decomposed into helpers to stay under 50-line limit.

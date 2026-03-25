@@ -1,5 +1,5 @@
 /**
- * Phase 1: Preflight — env checks, board detection, validation, and ping.
+ * Preflight — env checks, board detection, validation, and ping.
  *
  * Sets `ctx.config` and `ctx.board` on success. Returns structured results
  * — no console output. The terminal layer handles display.

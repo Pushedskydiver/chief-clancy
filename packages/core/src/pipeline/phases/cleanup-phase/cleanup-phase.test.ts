@@ -1,9 +1,9 @@
-import type { CleanupDeps } from './cleanup.js';
+import type { CleanupDeps } from './cleanup-phase.js';
 
 import { describe, expect, it, vi } from 'vitest';
 
 import { makeCtx } from '../test-helpers.js';
-import { cleanupPhase } from './cleanup.js';
+import { cleanupPhase } from './cleanup-phase.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

@@ -1,5 +1,5 @@
 /**
- * Phase 4: Ticket fetch — fresh ticket fetch (or use rework ticket),
+ * Ticket fetch — fresh ticket fetch (or use rework ticket),
  * max rework guard, and branch name computation.
  *
  * Sets `ctx.ticket` and computed branch names on the context.

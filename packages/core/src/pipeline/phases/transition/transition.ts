@@ -1,5 +1,5 @@
 /**
- * Phase 8: Transition — move ticket to "In Progress" status.
+ * Transition — move ticket to "In Progress" status.
  *
  * Best-effort: never blocks the pipeline.
  * Returns structured results — no console output.

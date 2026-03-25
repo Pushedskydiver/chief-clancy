@@ -1,5 +1,5 @@
 /**
- * Phase 10: Deliver — PR creation and delivery (rework and fresh paths).
+ * Deliver — PR creation and delivery (rework and fresh paths).
  *
  * Reads ticket, branch, and rework state from context. Delegates push + PR
  * creation to pre-wired `deliverViaPullRequest`, then logs progress and

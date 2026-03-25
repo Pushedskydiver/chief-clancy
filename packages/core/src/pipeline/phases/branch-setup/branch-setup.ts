@@ -1,5 +1,5 @@
 /**
- * Phase 7: Branch setup — git branch operations (epic, standalone, rework)
+ * Branch setup — git branch operations (epic, standalone, rework)
  * and lock file creation.
  *
  * Populates `effectiveTarget`, `originalBranch`, `skipEpicBranch`, and
@@ -115,6 +115,7 @@ export async function branchSetup(
 
 // ─── Internal helpers ────────────────────────────────────────────────────────
 
+// Safe: called only from branchSetup after fields are populated
 /** Check if the parent has exactly 1 child, meaning we skip the epic branch. */
 async function checkSingleChild(
   ctx: RunContext,
@@ -127,6 +128,7 @@ async function checkSingleChild(
   return status?.total === 1;
 }
 
+// Safe: called only from branchSetup after setBranchSetup populates fields
 /** Set up branches for a rework ticket. */
 function setupReworkBranch(
   ctx: RunContext,
@@ -155,6 +157,7 @@ function setupReworkBranch(
   return { ok: true };
 }
 
+// Safe: called only from branchSetup after setBranchSetup populates fields
 /** Set up branches for a fresh (non-rework) ticket. */
 function setupFreshBranch(
   ctx: RunContext,
@@ -167,6 +170,7 @@ function setupFreshBranch(
   return setupStandalone(ctx, deps);
 }
 
+// Safe: called only from setupFreshBranch after setBranchSetup populates fields
 /** Set up epic branch flow: ensure epic, create feature from it. */
 function setupEpicBranch(
   ctx: RunContext,
@@ -181,6 +185,7 @@ function setupEpicBranch(
   return { ok: true };
 }
 
+// Safe: called only from setupFreshBranch after setBranchSetup populates fields
 /** Set up standalone flow: branch from base. */
 function setupStandalone(
   ctx: RunContext,
