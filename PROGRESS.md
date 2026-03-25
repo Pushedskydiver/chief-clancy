@@ -225,7 +225,7 @@ Post-merge audit found 4 HIGH, 15 MEDIUM, 16 LOW across all Phase 6 modules. Aud
 | C5  | Progress parser hardening: validate status against union Set, handle `\r\n` (H1, M4, M5)   | Done (#43) |
 | C6  | `[clancy]` comment filtering on GitLab, Bitbucket Cloud/Server, AzDO (H2)                  | Done (#44) |
 | C7  | Schema validation + PR response schemas + schema tests (H3, M11, M13)                      | Done (#45) |
-| C8  | URL encoding + small fixes: branch/since params, empty Closes section, JSDoc (M7-M10, M15) | Pending    |
+| C8  | URL encoding + small fixes: branch/since params, empty Closes section, JSDoc (M7-M10, M15) | Done (#46) |
 | C9  | Git-ops ref validation + formal review parity documentation (M3, M14)                      | Pending    |
 
 ### HIGH findings
