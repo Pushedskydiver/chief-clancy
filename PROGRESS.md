@@ -264,7 +264,7 @@ Adjusted after phase validation (2026-03-25). Added `git-token/` prerequisite (m
 | PR  | Description                                                                                                    | Status  |
 | --- | -------------------------------------------------------------------------------------------------------------- | ------- |
 | 7.0 | Prerequisites: `git-token/` — resolve platform credentials from SharedEnv + RemoteInfo                         | Done    |
-| 7.1 | `lock/`: acquire, release, stale detection (PID + 24h). DI filesystem                                          | Pending |
+| 7.1 | `lock/`: acquire, release, stale detection (PID + 24h). DI filesystem                                          | Done    |
 | 7.2 | `cost/`: duration-based token cost estimation + costs.log writer. DI filesystem                                | Pending |
 | 7.3 | `quality/`: quality metric tracking (rework cycles, verification retries, delivery duration). DI filesystem    | Pending |
 | 7.4 | `fetch-ticket/`: label resolution, blocker checking, AFK filtering. Consumes Board interface                   | Pending |
