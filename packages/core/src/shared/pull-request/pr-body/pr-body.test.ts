@@ -566,6 +566,24 @@ describe('buildEpicPrBody', () => {
     expect(body).not.toContain('Closes');
   });
 
+  it('omits Closes section when no keys start with #', () => {
+    const body = buildEpicPrBody({
+      epicKey: 'PROJ-100',
+      epicTitle: 'Portal',
+      childEntries: [
+        {
+          timestamp: '2024-01-15 14:30',
+          key: 'PROJ-101',
+          summary: 'Setup',
+          status: 'DONE',
+        },
+      ],
+      provider: 'github',
+    });
+
+    expect(body).not.toContain('### Closes');
+  });
+
   it('does not include Closes keywords when provider is not specified', () => {
     const body = buildEpicPrBody({
       epicKey: 'PROJ-100',

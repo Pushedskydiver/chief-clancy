@@ -295,7 +295,7 @@ async function findOpenPr(opts: FindOpenPrOpts): Promise<OpenPr | undefined> {
   const { fetchFn, apiBase, repo, owner, branch, token } = opts;
 
   const res = await fetchFn(
-    `${apiBase}/repos/${repo}/pulls?head=${owner}:${branch}&state=open`,
+    `${apiBase}/repos/${repo}/pulls?head=${encodeURIComponent(`${owner}:${branch}`)}&state=open`,
     { headers: githubHeaders(token) },
   );
   if (!res.ok) return undefined;
@@ -332,7 +332,7 @@ async function fetchFilteredComments(
 ): Promise<FilteredComments> {
   const { fetchFn, apiBase, repo, prNumber, token, since } = opts;
   const headers = githubHeaders(token);
-  const sinceParam = since ? `&since=${since}` : '';
+  const sinceParam = since ? `&since=${encodeURIComponent(since)}` : '';
 
   const [inlineRes, convoRes] = await Promise.all([
     fetchFn(

@@ -151,7 +151,7 @@ export async function checkPrReviewState(
 
   try {
     const prRes = await fetchFn(
-      `${CLOUD_API}/repositories/${workspace}/${repoSlug}/pullrequests?q=source.branch.name="${branch}"&state=OPEN`,
+      `${CLOUD_API}/repositories/${workspace}/${repoSlug}/pullrequests?q=source.branch.name="${encodeURIComponent(branch)}"&state=OPEN`,
       { headers: { Authorization: auth } },
     );
     if (!prRes.ok) return undefined;

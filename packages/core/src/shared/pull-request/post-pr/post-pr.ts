@@ -85,7 +85,11 @@ export async function postPullRequest(
 /**
  * Build a Basic Auth header value from username and token.
  *
- * Used by Bitbucket Cloud which requires HTTP Basic Auth.
+ * Used by Bitbucket Cloud and Azure DevOps for HTTP Basic Auth.
+ *
+ * @param username - The username (empty string for AzDO PAT auth).
+ * @param token - The token or app password.
+ * @returns The `Basic {base64}` header value.
  */
 export function basicAuth(username: string, token: string): string {
   return `Basic ${Buffer.from(`${username}:${token}`).toString('base64')}`;

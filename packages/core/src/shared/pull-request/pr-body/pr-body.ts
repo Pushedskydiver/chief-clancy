@@ -212,6 +212,6 @@ function githubClosesLines(
   const epicPrefix = epicKey.startsWith('#') ? [epicKey] : [];
   const issueKeys = [...epicPrefix, ...childKeys];
 
-  if (issueKeys.length === 0) return ['', '### Closes', ''];
+  if (issueKeys.length === 0) return [];
   return ['', '### Closes', '', issueKeys.map((k) => `Closes ${k}`).join(', ')];
 }
