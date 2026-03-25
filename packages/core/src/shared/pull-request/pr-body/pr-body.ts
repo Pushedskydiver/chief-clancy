@@ -5,7 +5,7 @@
  * board ticket and a Clancy footer.
  */
 import type { BoardConfig } from '~/c/schemas/env/env.js';
-import type { ProgressEntry } from '~/c/shared/progress/progress.js';
+import type { ProgressEntry } from '~/c/shared/progress/index.js';
 import type { Ticket } from '~/c/types/index.js';
 
 /** Epic context for child PRs targeting an epic/milestone branch. */

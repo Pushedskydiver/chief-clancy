@@ -16,13 +16,15 @@ import type {
   RemoteInfo,
 } from '~/c/types/remote.js';
 
-import { resolveGitToken } from '~/c/shared/git-token/git-token.js';
-import { createPullRequest as createAzdoPr } from '~/c/shared/pull-request/azdo/azdo.js';
-import { createPullRequest as createBbCloudPr } from '~/c/shared/pull-request/bitbucket/cloud.js';
-import { createServerPullRequest as createBbServerPr } from '~/c/shared/pull-request/bitbucket/server.js';
-import { createPullRequest as createGitHubPr } from '~/c/shared/pull-request/github/github.js';
-import { createMergeRequest as createGitLabMr } from '~/c/shared/pull-request/gitlab/gitlab.js';
-import { buildApiBaseUrl } from '~/c/shared/remote/remote.js';
+import { resolveGitToken } from '~/c/shared/git-token/index.js';
+import { createPullRequest as createAzdoPr } from '~/c/shared/pull-request/azdo/index.js';
+import {
+  createPullRequest as createBbCloudPr,
+  createServerPullRequest as createBbServerPr,
+} from '~/c/shared/pull-request/bitbucket/index.js';
+import { createPullRequest as createGitHubPr } from '~/c/shared/pull-request/github/index.js';
+import { createMergeRequest as createGitLabMr } from '~/c/shared/pull-request/gitlab/index.js';
+import { buildApiBaseUrl } from '~/c/shared/remote/index.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

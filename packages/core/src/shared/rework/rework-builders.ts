@@ -18,29 +18,27 @@ import {
   checkPrReviewState as checkAzdoReviewState,
   fetchPrReviewComments as fetchAzdoComments,
   postPrComment as postAzdoComment,
-} from '~/c/shared/pull-request/azdo/azdo.js';
+} from '~/c/shared/pull-request/azdo/index.js';
 import {
   checkPrReviewState as checkBbCloudReviewState,
-  fetchPrReviewComments as fetchBbCloudComments,
-  postCloudPrComment,
-} from '~/c/shared/pull-request/bitbucket/cloud.js';
-import {
   checkServerPrReviewState,
+  fetchPrReviewComments as fetchBbCloudComments,
   fetchServerPrReviewComments,
+  postCloudPrComment,
   postServerPrComment,
-} from '~/c/shared/pull-request/bitbucket/server.js';
+} from '~/c/shared/pull-request/bitbucket/index.js';
 import {
   checkPrReviewState as checkGitHubReviewState,
   fetchPrReviewComments as fetchGitHubComments,
   postPrComment as postGitHubComment,
   requestReview as requestGitHubReview,
-} from '~/c/shared/pull-request/github/github.js';
+} from '~/c/shared/pull-request/github/index.js';
 import {
   checkMrReviewState,
   fetchMrReviewComments,
   postMrNote,
   resolveDiscussions,
-} from '~/c/shared/pull-request/gitlab/gitlab.js';
+} from '~/c/shared/pull-request/gitlab/index.js';
 
 const noopResolve = async (): Promise<number> => 0;
 const noopReRequest = async (): Promise<boolean> => false;

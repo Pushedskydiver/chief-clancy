@@ -7,11 +7,11 @@
  * of switching on `remote.host`.
  */
 import type { SharedEnv } from '~/c/schemas/env/env.js';
-import type { FetchFn } from '~/c/shared/pr-creation/pr-creation.js';
+import type { FetchFn } from '~/c/shared/pr-creation/index.js';
 import type { PrReviewState, RemoteInfo } from '~/c/types/remote.js';
 
-import { resolveGitToken } from '~/c/shared/git-token/git-token.js';
-import { buildApiBaseUrl } from '~/c/shared/remote/remote.js';
+import { resolveGitToken } from '~/c/shared/git-token/index.js';
+import { buildApiBaseUrl } from '~/c/shared/remote/index.js';
 
 import {
   azdoHandlers,

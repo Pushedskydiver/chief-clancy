@@ -65,6 +65,7 @@ This is a **living document** — when CodeRabbit catches something the self-rev
 - Are options types (`FetchOpts`, `TransitionOpts`) exported? They should stay internal unless consumed outside the file
 - Are board-internal label helpers (`createLabel`, `fetchLabels`, `getStoryLabelIds`) leaking through the barrel? (audit caught Shortcut exporting these)
 - Does core `index.ts` alias colliding names? (e.g. `transitionIssue` needs `transitionJiraIssue` alias)
+- Does a new module with external consumers have a barrel `index.ts`? Do external imports use the barrel path (`/index.js`) not the direct file path? (Phase 8 audit found 11 modules missing barrels)
 
 ## Board patterns
 
