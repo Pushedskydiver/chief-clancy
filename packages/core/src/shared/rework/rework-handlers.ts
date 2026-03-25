@@ -292,14 +292,6 @@ export function resolvePlatformHandlers(
 ): PlatformReworkHandlers | undefined {
   const { fetchFn, env, remote } = opts;
 
-  if (
-    remote.host === 'none' ||
-    remote.host === 'unknown' ||
-    remote.host === 'azure'
-  ) {
-    return undefined;
-  }
-
   const creds = resolveGitToken(env, remote);
   if (!creds) return undefined;
 
@@ -322,5 +314,7 @@ export function resolvePlatformHandlers(
       return bbCloudHandlers(ctx, remote);
     case 'bitbucket-server':
       return bbServerHandlers(ctx, remote);
+    default:
+      return undefined;
   }
 }
