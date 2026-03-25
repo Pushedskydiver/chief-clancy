@@ -348,11 +348,11 @@ Post-merge audit found 3 HIGH, 12 MEDIUM, 9 LOW across 13 modules. Audit run 202
 
 | PR  | Description                                                                              | Status  |
 | --- | ---------------------------------------------------------------------------------------- | ------- |
-| C10 | Lock stale + quality validation (H1, H2, M1)                                            | Pending |
+| C10 | Lock stale bug + quality validation + quality reduce + negative duration guard (H1, H2, M1, L7) | Pending |
 | C11 | Rework handler invocation tests + pr-creation result assertions (H3, M6, M9)             | Pending |
-| C12 | Shared types extraction: `ExecGit`, `FetchFn` (M2, M3)                                  | Pending |
-| C13 | JSDoc `@param` sweep + property-based tests (M4, L1, M8)                                | Pending |
-| C14 | Test coverage gaps: deliver, rework, fetch-ticket, epic, cost, commit-type (M5-M12)     | Pending |
+| C12 | Shared types extraction: `ExecGit`, `FetchFn` + rename `Ctx` → `ReworkCtx` (M2, M3, L4) | Pending |
+| C13 | JSDoc `@param` sweep + property-based tests for URL builders/string transformers (M4, M8, L1) | Pending |
+| C14 | Test coverage gaps: deliver, rework, fetch-ticket, epic, cost, commit-type (M5-M7, M10-M12) | Pending |
 
 ### HIGH findings
 
@@ -377,4 +377,9 @@ Post-merge audit found 3 HIGH, 12 MEDIUM, 9 LOW across 13 modules. Audit run 202
 
 ### Deferred
 
-- L1-L9: Style/minor items (property-based tests for URL builders, `.clancy` constant duplication, FS type naming, `Ctx` naming, semantic mismatch in push failure outcome). Address opportunistically.
+- L2: `.clancy` constant duplicated across lock, cost, quality — extract when the value changes
+- L3: FS type naming inconsistent (`LockFs`, `CostFs`, etc.) — intentionally varied, correct DI pattern
+- L5: `fetchReworkFromPrReview` reconstructs `FetchedTicket` with hardcoded `blockers: 'None'` — documented, acceptable
+- L6: `handlePushFailure` returns `{ type: 'local' }` for push failures — semantic mismatch but progress correctly logs `PUSH_FAILED`
+- L8: `LockFs`, `CostFs`, `QualityFs` exported for test consumption only — justified when terminal consumes them
+- L9: `isLockStale` strict `>` at 24h boundary — documented behaviour, not a bug
