@@ -121,5 +121,6 @@ export function isLockStale(lock: LockData): boolean {
   if (!isPidAlive(lock.pid)) return true;
 
   const lockAge = Date.now() - new Date(lock.startedAt).getTime();
+  if (Number.isNaN(lockAge)) return true;
   return lockAge > TWENTY_FOUR_HOURS;
 }

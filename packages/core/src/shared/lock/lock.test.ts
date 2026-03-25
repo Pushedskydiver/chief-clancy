@@ -172,6 +172,12 @@ describe('isLockStale', () => {
     expect(isLockStale(lock)).toBe(true);
   });
 
+  it('returns true when startedAt is an invalid timestamp', () => {
+    const lock = makeLockData({ startedAt: 'not-a-date' });
+
+    expect(isLockStale(lock)).toBe(true);
+  });
+
   it('returns false when PID is alive and lock is recent', () => {
     const lock = makeLockData();
 
