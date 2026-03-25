@@ -80,6 +80,25 @@ function round2(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
+/** Sum a numeric property across an array of items. */
+function sumBy<T>(items: readonly T[], fn: (item: T) => number): number {
+  return items.map(fn).reduce((a, b) => a + b, 0);
+}
+
+/** Whether `value` looks like a `{ tickets: Record<…> }` object. */
+function hasTicketsRecord(
+  value: unknown,
+): value is { readonly tickets: object } {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    'tickets' in value &&
+    typeof value.tickets === 'object' &&
+    value.tickets !== null &&
+    !Array.isArray(value.tickets)
+  );
+}
+
 /** Recompute aggregate summary from ticket entries. */
 function recomputeSummary(
   tickets: Record<string, QualityEntry>,
@@ -92,21 +111,17 @@ function recomputeSummary(
   const delivered = entries.filter(
     (e): e is QualityEntry & { duration: number } => e.duration != null,
   );
-  const reworkSum = entries.map((e) => e.reworkCycles).reduce((a, b) => a + b);
-  const retriesSum = entries
-    .map((e) => e.verificationRetries)
-    .reduce((a, b) => a + b);
-  const durationSum =
-    delivered.length > 0
-      ? delivered.map((e) => e.duration).reduce((a, b) => a + b)
-      : 0;
 
   return {
     totalTickets: total,
-    avgReworkCycles: round2(reworkSum / total),
-    avgVerificationRetries: round2(retriesSum / total),
+    avgReworkCycles: round2(sumBy(entries, (e) => e.reworkCycles) / total),
+    avgVerificationRetries: round2(
+      sumBy(entries, (e) => e.verificationRetries) / total,
+    ),
     avgDuration:
-      delivered.length > 0 ? round2(durationSum / delivered.length) : 0,
+      delivered.length > 0
+        ? round2(sumBy(delivered, (e) => e.duration) / delivered.length)
+        : 0,
   };
 }
 
@@ -159,15 +174,8 @@ export function readQualityData(
       fs.readFile(join(projectRoot, QUALITY_PATH)),
     );
 
-    if (
-      raw !== null &&
-      typeof raw === 'object' &&
-      'tickets' in raw &&
-      typeof raw.tickets === 'object' &&
-      raw.tickets !== null &&
-      !Array.isArray(raw.tickets)
-    ) {
-      // Safe: structure validated above; entry shapes are best-effort (unvalidated JSON)
+    if (hasTicketsRecord(raw)) {
+      // Safe: structure validated by guard; entry shapes are best-effort (unvalidated JSON)
       const tickets = raw.tickets as Record<string, QualityEntry>;
       return { tickets, summary: recomputeSummary(tickets) };
     }
