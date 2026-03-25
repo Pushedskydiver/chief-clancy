@@ -1,4 +1,5 @@
 import type { DeliverPhaseDeps } from './deliver-phase.js';
+import type { BoardConfig } from '~/c/schemas/env/env.js';
 
 import { describe, expect, it, vi } from 'vitest';
 
@@ -32,7 +33,7 @@ type SetupOpts = {
   readonly isRework?: boolean;
   readonly hasParent?: boolean;
   readonly skipEpicBranch?: boolean;
-  readonly provider?: string;
+  readonly provider?: BoardConfig['provider'];
   readonly parentInfo?: string;
   readonly reworkPrNumber?: number | null;
 };

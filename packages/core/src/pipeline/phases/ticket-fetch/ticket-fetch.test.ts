@@ -188,6 +188,21 @@ describe('ticketFetch', () => {
     expect(ctx.hasParent).toBe(false);
   });
 
+  it('treats empty parentInfo as hasParent: true', async () => {
+    const emptyParent: FetchedTicket = {
+      ...TICKET,
+      parentInfo: '',
+    };
+    const ctx = makeCtx();
+    const deps = makeDeps({
+      fetchTicket: vi.fn(() => Promise.resolve(emptyParent)),
+    });
+
+    await ticketFetch(ctx, deps);
+
+    expect(ctx.hasParent).toBe(true);
+  });
+
   it('passes parent to computeTargetBranch only when present', async () => {
     const ctx = makeCtx();
     const computeTargetBranch = vi.fn(() => 'main');

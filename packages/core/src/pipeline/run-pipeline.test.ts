@@ -69,6 +69,82 @@ describe('runPipeline — happy path', () => {
     expect(deps.cleanup).toHaveBeenCalledOnce();
   });
 
+  it('executes phases in the correct order', async () => {
+    const order: string[] = [];
+    const deps = makeDeps({
+      lockCheck: vi.fn(async () => {
+        order.push('lockCheck');
+        return { action: 'continue' as const };
+      }),
+      preflight: vi.fn(async () => {
+        order.push('preflight');
+        return { ok: true };
+      }),
+      epicCompletion: vi.fn(async () => {
+        order.push('epicCompletion');
+        return { results: [] };
+      }),
+      prRetry: vi.fn(async () => {
+        order.push('prRetry');
+        return { results: [] };
+      }),
+      reworkDetection: vi.fn(async () => {
+        order.push('reworkDetection');
+        return { detected: false };
+      }),
+      ticketFetch: vi.fn(async () => {
+        order.push('ticketFetch');
+        return { ok: true };
+      }),
+      feasibility: vi.fn(async () => {
+        order.push('feasibility');
+        return { ok: true };
+      }),
+      branchSetup: vi.fn(async () => {
+        order.push('branchSetup');
+        return { ok: true };
+      }),
+      transition: vi.fn(async () => {
+        order.push('transition');
+        return { ok: true };
+      }),
+      invoke: vi.fn(async () => {
+        order.push('invoke');
+        return { ok: true };
+      }),
+      deliver: vi.fn(async () => {
+        order.push('deliver');
+        return { ok: true };
+      }),
+      cost: vi.fn(() => {
+        order.push('cost');
+        return { ok: true };
+      }),
+      cleanup: vi.fn(async () => {
+        order.push('cleanup');
+        return { ok: true };
+      }),
+    });
+
+    await runPipeline(makeCtx(), deps);
+
+    expect(order).toEqual([
+      'lockCheck',
+      'preflight',
+      'epicCompletion',
+      'prRetry',
+      'reworkDetection',
+      'ticketFetch',
+      'feasibility',
+      'branchSetup',
+      'transition',
+      'invoke',
+      'deliver',
+      'cost',
+      'cleanup',
+    ]);
+  });
+
   it('passes ctx to every phase', async () => {
     const ctx = makeCtx();
     const deps = makeDeps();
