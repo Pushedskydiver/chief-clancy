@@ -270,6 +270,99 @@ describe('fetchReworkFromPrReview', () => {
 
     expect(result!.ticket.parentInfo).toBe('none');
   });
+
+  it('includes PUSHED status candidates', async () => {
+    const fs = makeProgressFs(
+      '2026-03-20 10:00 | PROJ-42 | Fix login | PUSHED | pr:5',
+    );
+    const handlers = makeHandlers({
+      checkReviewState: vi.fn(() =>
+        Promise.resolve({
+          changesRequested: true,
+          prNumber: 5,
+          prUrl: 'https://github.com/acme/app/pull/5',
+        }),
+      ),
+      fetchComments: vi.fn(() =>
+        Promise.resolve({ comments: ['Needs fix'], discussionIds: undefined }),
+      ),
+    });
+
+    const result = await fetchReworkFromPrReview({
+      progressFs: fs,
+      projectRoot: '/project',
+      provider: 'github',
+      handlers,
+    });
+
+    expect(result).toBeDefined();
+    expect(result!.ticket.key).toBe('PROJ-42');
+  });
+
+  it('includes PUSH_FAILED status candidates', async () => {
+    const fs = makeProgressFs(
+      '2026-03-20 10:00 | PROJ-42 | Fix login | PUSH_FAILED | pr:5',
+    );
+    const handlers = makeHandlers({
+      checkReviewState: vi.fn(() =>
+        Promise.resolve({
+          changesRequested: true,
+          prNumber: 5,
+          prUrl: 'https://github.com/acme/app/pull/5',
+        }),
+      ),
+      fetchComments: vi.fn(() =>
+        Promise.resolve({ comments: [], discussionIds: undefined }),
+      ),
+    });
+
+    const result = await fetchReworkFromPrReview({
+      progressFs: fs,
+      projectRoot: '/project',
+      provider: 'github',
+      handlers,
+    });
+
+    expect(result).toBeDefined();
+    expect(result!.ticket.key).toBe('PROJ-42');
+  });
+
+  it('checks at most MAX_CANDIDATES (5) entries', async () => {
+    const lines = Array.from(
+      { length: 7 },
+      (_, i) =>
+        `2026-03-20 10:0${i} | PROJ-${i} | Ticket ${i} | PR_CREATED | pr:${i}`,
+    ).join('\n');
+    const fs = makeProgressFs(lines);
+    const handlers = makeHandlers();
+
+    await fetchReworkFromPrReview({
+      progressFs: fs,
+      projectRoot: '/project',
+      provider: 'github',
+      handlers,
+    });
+
+    expect(handlers.checkReviewState).toHaveBeenCalledTimes(5);
+  });
+
+  it('propagates error when checkReviewState throws', async () => {
+    const fs = makeProgressFs(
+      '2026-03-20 10:00 | PROJ-42 | Fix login | PR_CREATED | pr:5',
+    );
+    const handlers = makeHandlers({
+      checkReviewState: vi.fn(() => Promise.reject(new Error('network error'))),
+    });
+
+    await expect(
+      fetchReworkFromPrReview({
+        progressFs: fs,
+        projectRoot: '/project',
+        provider: 'github',
+        handlers,
+      }),
+    ).rejects.toThrow('network error');
+  });
 });
 
 // ─── postReworkActions ──────────────────────────────────────────────────────

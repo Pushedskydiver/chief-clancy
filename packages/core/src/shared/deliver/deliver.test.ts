@@ -193,4 +193,50 @@ describe('deliverViaPullRequest', () => {
     const fetchBody = mockFetchFn.mock.calls[0]![1]?.body as string;
     expect(fetchBody).toContain('feat(PROJ-42)');
   });
+
+  it('computes non-created outcome when PR creation fails', async () => {
+    const failFetchFn = vi.fn(() =>
+      Promise.resolve(new Response('Server Error', { status: 500 })),
+    );
+    const opts = {
+      ...makeOpts(),
+      fetchFn: failFetchFn,
+    };
+
+    const result = await deliverViaPullRequest(opts);
+
+    expect(result.pushed).toBe(true);
+    expect(result.outcome.type).toBe('failed');
+  });
+
+  it('threads singleChildParent through to PR body', async () => {
+    const opts = {
+      ...makeOpts(),
+      singleChildParent: 'EPIC-100',
+    };
+    await deliverViaPullRequest(opts);
+
+    const fetchBody = mockFetchFn.mock.calls[0]![1]?.body as string;
+    expect(fetchBody).toContain('EPIC-100');
+  });
+
+  it('computes not_attempted outcome when remote has no matching credentials', async () => {
+    const gitlabExec = (args: readonly string[]): string => {
+      const cmd = args[0];
+      if (cmd === 'push') return '';
+      if (cmd === 'remote') return 'git@gitlab.com:acme/app.git';
+      if (cmd === 'checkout') return '';
+      if (cmd === 'show-ref') throw new Error('not found');
+      return '';
+    };
+
+    const opts = {
+      ...makeOpts(),
+      exec: gitlabExec,
+    };
+    const result = await deliverViaPullRequest(opts);
+
+    expect(result.pushed).toBe(true);
+    expect(result.outcome.type).toBe('not_attempted');
+  });
 });

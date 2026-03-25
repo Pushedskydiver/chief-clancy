@@ -355,7 +355,7 @@ Post-merge audit found 3 HIGH, 12 MEDIUM, 9 LOW across 13 modules. Audit run 202
 | C11 | Rework handler invocation tests + pr-creation result assertions (H3, M6, M9)                    | Done (#59) |
 | C12 | Shared types extraction: `ExecGit`, `FetchFn` + rename `Ctx` → `ReworkCtx` (M2, M3, L4)         | Done (#60) |
 | C13 | JSDoc `@param` sweep + property-based tests for URL builders/string transformers (M4, M8, L1)   | Done (#61) |
-| C14 | Test coverage gaps: deliver, rework, fetch-ticket, epic, cost, commit-type (M5-M7, M10-M12)     | Pending    |
+| C14 | Test coverage gaps: deliver, rework, fetch-ticket, epic, cost, commit-type (M5-M7, M10-M12)     | Done (#62) |
 
 ### HIGH findings
 

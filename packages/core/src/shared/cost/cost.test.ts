@@ -154,4 +154,19 @@ describe('appendCostEntry', () => {
       expect.any(String),
     );
   });
+
+  it('propagates mkdir failure', () => {
+    const fs = memoryFs();
+    vi.mocked(fs.mkdir).mockImplementation(() => {
+      throw new Error('EACCES');
+    });
+
+    expect(() =>
+      appendCostEntry(fs, '/project', {
+        ticketKey: 'PROJ-1',
+        startedAt: new Date().toISOString(),
+        now: Date.now(),
+      }),
+    ).toThrow('EACCES');
+  });
 });

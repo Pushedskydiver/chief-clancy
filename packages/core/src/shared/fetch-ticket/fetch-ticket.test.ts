@@ -347,4 +347,24 @@ describe('fetchTicket — AFK mode', () => {
       expect.objectContaining({ excludeHitl: false }),
     );
   });
+
+  it('propagates error when fetchTickets throws', async () => {
+    const board = makeBoard({
+      fetchTickets: vi.fn(() => Promise.reject(new Error('network error'))),
+    });
+
+    await expect(fetchTicket(board)).rejects.toThrow('network error');
+  });
+
+  it('propagates error when fetchBlockerStatus throws', async () => {
+    const t1 = makeTicket({ key: 'PROJ-10' });
+    const board = makeBoard({
+      fetchTickets: vi.fn(() => Promise.resolve([t1])),
+      fetchBlockerStatus: vi.fn(() =>
+        Promise.reject(new Error('auth failure')),
+      ),
+    });
+
+    await expect(fetchTicket(board)).rejects.toThrow('auth failure');
+  });
 });
