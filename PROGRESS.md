@@ -515,7 +515,7 @@ Completed PRs 8.3-8.4a. Phase 8 pipeline phases 3-8 in place. 108 pipeline tests
 **What was completed:**
 
 - **8.3** (#68) — 4 lighter phases: `rework-detection` (detect PR rework via DI, best-effort), `ticket-fetch` (fresh fetch or rework, max rework guard, branch computation), `dry-run` (structured ticket info for display, no I/O), `feasibility` (async Claude feasibility check via DI). Added `setTicketBranches` setter to RunContext. Shared `test-helpers.ts` for board mock deduplication. Restructured all 8 phases into individual directories (`phases/lock-check/`, `phases/dry-run/`, etc.) to match the one-module-per-directory convention. Barrel exports deferred to 8.5. 36 new tests
-- **8.4a** (#TBD) — `branch-setup` phase (decomposed into `checkSingleChild`, `setupReworkBranch`, `setupFreshBranch`, `setupEpicBranch`, `setupStandalone`, `writeLockSafe` — all ≤3 params via ctx-reading pattern). `transition` phase (best-effort ticket status update). `fetchChildrenStatus` dep takes `FetchedTicket` (higher-level callback, not raw Board params). 23 new tests
+- **8.4a** (#69) — `branch-setup` phase (decomposed into `checkSingleChild`, `setupReworkBranch`, `setupFreshBranch`, `setupEpicBranch`, `setupStandalone`, `writeLockSafe` — all ≤3 params via ctx-reading pattern). `transition` phase (best-effort ticket status update). `fetchChildrenStatus` dep takes `FetchedTicket` (higher-level callback, not raw Board params). 23 new tests
 
 **What's next:**
 
