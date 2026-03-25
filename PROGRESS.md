@@ -172,3 +172,45 @@ Post-merge audit found 4 HIGH, 8 MEDIUM code, 2 MEDIUM export, 6 test gaps. All 
 
 - H3: Notion findPageByKey full DB scan — needs cache layer, post-Phase 6
 - M8: DI on pingEndpoint/retryFetch — touches every test, defer
+
+## Phase 6: Core — Shared Utilities
+
+Adjusted after phase validation (2026-03-25). Brief PRs 6.1-6.3 already done in earlier phases (http/ in 5.0, env-parser/ in 2.0, env-schema/ in 4.2-4.3). Renumbered remaining PRs. Split pull-request/ into 4 PRs (prereqs + 3 platforms). Added fast-check for property-based tests.
+
+| PR   | Description                                                                                                   | Status  |
+| ---- | ------------------------------------------------------------------------------------------------------------- | ------- |
+| 6.0  | Prerequisites: add `fast-check` dev dependency                                                                | Pending |
+| 6.1  | `shared/format/`: `formatDuration(ms)` — pure, tiny module                                                    | Pending |
+| 6.2  | `shared/branch/`: `computeTicketBranch`, `computeTargetBranch` — pure, property-based tests                   | Pending |
+| 6.3  | `shared/remote/`: `parseRemote`, `detectPlatformFromHostname`, `buildApiBaseUrl` — pure, property-based tests | Pending |
+| 6.4  | `shared/git-ops/`: git command wrappers + `detectRemote` (DI exec). Depends on 6.3                            | Pending |
+| 6.5  | `shared/progress/`: progress file reader/writer (DI filesystem)                                               | Pending |
+| 6.6  | `shared/feasibility/`: prompt builder + response parser + check (DI invoke)                                   | Pending |
+| 6.7  | `shared/pull-request/` prereqs: `post-pr/` + `rework-comment/` + `pr-body/`. Depends on 6.3                   | Pending |
+| 6.8  | `shared/pull-request/github/`: PR creation, review state, comments. Depends on 6.7                            | Pending |
+| 6.9  | `shared/pull-request/gitlab/`: MR creation, review state, discussions. Depends on 6.7                         | Pending |
+| 6.10 | `shared/pull-request/bitbucket/`: Cloud + Server PR creation, review state. Depends on 6.7                    | Pending |
+
+### Dependencies
+
+- 6.0 is prerequisite for all PRs with property-based tests
+- 6.1, 6.2, 6.5, 6.6 are independent of each other
+- 6.3 must complete before 6.4 and 6.7
+- 6.8, 6.9, 6.10 all depend on 6.7 but are independent of each other
+
+### Phase validation notes (2026-03-25)
+
+**Key findings from validation:**
+
+1. Brief PRs 6.1-6.3 (http, env-parser, env-schema) already implemented in Phases 2, 4, 5. Removed from Phase 6 scope.
+2. Types already exist from Phase 4: `RemoteInfo` (7 variants), `PrCreationResult`, `PrReviewState`, `ProgressStatus` + status sets. Phase 6 modules consume these, don't redefine them.
+3. Pull-request module is ~1,337 lines across 6 sub-modules. Split into 4 PRs: prereqs (shared helpers) + GitHub + GitLab + Bitbucket.
+4. `detectRemote()` placed in `git-ops/` (git shell-out pattern) not `remote/` (stays pure).
+5. Property-based tests via `fast-check` (dev dep, 1.4 MB, 1 transitive dep). High value for URL parsing + branch naming. Skip `@fast-check/vitest` — use `fc.assert(fc.property(...))` in normal `it()` blocks.
+6. DI boundaries: `git-ops/` injects exec, `progress/` injects filesystem, `feasibility/` injects Claude invoke, `remote/detectRemote` moved to git-ops.
+7. GitLab MR + Bitbucket PR schemas (deferred from Phase 4) are now part of PR 6.9 and 6.10.
+
+**Rewrite assessments:**
+
+- Carry over: format (~10%), branch (~15%)
+- Moderate rewrite: remote (~40%), git-ops (~40%), progress (~35%), feasibility (~40%), pull-request (~35%)
