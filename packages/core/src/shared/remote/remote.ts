@@ -69,19 +69,14 @@ function parseBitbucketPath(
   const parts = opts.path.split('/');
   if (parts.length < 2) return { host: 'unknown', url: opts.rawUrl };
 
-  return host === 'bitbucket'
-    ? {
-        host: 'bitbucket',
-        workspace: parts[0],
-        repoSlug: parts[1],
-        hostname: opts.hostname,
-      }
-    : {
-        host: 'bitbucket-server',
-        projectKey: parts[0],
-        repoSlug: parts[1],
-        hostname: opts.hostname,
-      };
+  const [owner, repoSlug] = parts;
+  const { hostname } = opts;
+
+  if (host === 'bitbucket') {
+    return { host: 'bitbucket', workspace: owner, repoSlug, hostname };
+  }
+
+  return { host: 'bitbucket-server', projectKey: owner, repoSlug, hostname };
 }
 
 /**
