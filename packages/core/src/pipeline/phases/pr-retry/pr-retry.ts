@@ -1,5 +1,5 @@
 /**
- * Phase 2a: PR retry — retry PR creation for tickets that were pushed
+ * PR retry — retry PR creation for tickets that were pushed
  * but failed to create a PR.
  *
  * Handles network hiccups during PR creation. The branch is already

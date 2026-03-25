@@ -1,5 +1,5 @@
 /**
- * Phase 6: Feasibility check — evaluate whether a ticket can be
+ * Feasibility check — evaluate whether a ticket can be
  * implemented as pure code changes.
  *
  * Skipped for rework tickets and when `--skip-feasibility` flag is set.

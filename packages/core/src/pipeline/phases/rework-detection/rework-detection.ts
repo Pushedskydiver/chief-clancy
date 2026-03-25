@@ -1,5 +1,5 @@
 /**
- * Phase 3: Rework detection — detect PR-based rework from reviewer feedback.
+ * Rework detection — detect PR-based rework from reviewer feedback.
  *
  * Best-effort: wrapped in try/catch. Never blocks the pipeline.
  * Returns structured results — no console output.

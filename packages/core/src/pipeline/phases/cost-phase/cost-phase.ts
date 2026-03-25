@@ -1,5 +1,5 @@
 /**
- * Phase 11: Cost logging — record duration + estimated tokens.
+ * Cost logging — record duration + estimated tokens.
  *
  * Reads lock file for `startedAt`, uses `CLANCY_TOKEN_RATE` from config.
  * Best-effort — cost logging failure never blocks completion.

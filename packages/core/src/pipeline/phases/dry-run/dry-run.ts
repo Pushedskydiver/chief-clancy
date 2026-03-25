@@ -1,5 +1,5 @@
 /**
- * Phase 5: Dry-run gate — returns ticket info for display and signals
+ * Dry-run gate — returns ticket info for display and signals
  * early exit when `--dry-run` is active.
  *
  * No dependencies — all data comes from context. No console output.

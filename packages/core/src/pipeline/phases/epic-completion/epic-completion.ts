@@ -1,5 +1,5 @@
 /**
- * Phase 2: Epic completion — scan progress for completed epics and
+ * Epic completion — scan progress for completed epics and
  * auto-create epic PRs.
  *
  * Best-effort: wrapped in try/catch. Never blocks the pipeline.

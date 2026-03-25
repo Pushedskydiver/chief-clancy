@@ -1,5 +1,5 @@
 /**
- * Phase 12: Cleanup — completion result + notification.
+ * Cleanup — completion result + notification.
  *
  * Returns structured completion data (ticket key, title, elapsed time)
  * for the terminal layer to display. Sends a webhook notification
