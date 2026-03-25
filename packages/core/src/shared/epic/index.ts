@@ -1,1 +1,1 @@
-export { buildEpicContext } from './epic.js';
+export { buildEpicContext, gatherChildEntries } from './epic.js';
