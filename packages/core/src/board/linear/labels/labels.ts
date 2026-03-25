@@ -99,6 +99,7 @@ async function createTeamLabel(
  * 4. Create a new team-scoped label.
  *
  * @param opts - API key, team ID, cache, and label name.
+ * @returns Resolves when complete (best-effort — never throws).
  */
 export async function ensureLabel(opts: EnsureLabelOpts): Promise<void> {
   const { apiKey, teamId, labelCache, label } = opts;
@@ -135,6 +136,7 @@ type AddLabelOpts = {
  * Add a label to a Linear issue (best-effort).
  *
  * @param opts - API key, label cache, issue key, and label name.
+ * @returns Resolves when complete (best-effort — never throws).
  */
 export async function addLabel(opts: AddLabelOpts): Promise<void> {
   const { apiKey, labelCache, issueKey, label } = opts;
@@ -165,6 +167,7 @@ type RemoveLabelOpts = {
  * Remove a label from a Linear issue (best-effort).
  *
  * @param opts - API key, label cache, issue key, and label name.
+ * @returns Resolves when complete (best-effort — never throws).
  */
 export async function removeLabel(opts: RemoveLabelOpts): Promise<void> {
   const { apiKey, labelCache, issueKey, label } = opts;

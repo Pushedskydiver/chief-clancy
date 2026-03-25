@@ -180,6 +180,83 @@ describe('createGitHubBoard', () => {
     expect(ticket?.key).toBe('#1');
   });
 
+  it('fetchTicket returns undefined when no issues', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ login: 'user' }), { status: 200 }),
+        )
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify([]), { status: 200 }),
+        ),
+    );
+
+    const board = createGitHubBoard(baseEnv);
+    const ticket = await board.fetchTicket({});
+
+    expect(ticket).toBeUndefined();
+  });
+
+  it('fetchBlockerStatus returns false for invalid key', async () => {
+    const board = createGitHubBoard(baseEnv);
+    const result = await board.fetchBlockerStatus({
+      key: 'invalid',
+      title: '',
+      description: 'Blocked by #10',
+      parentInfo: 'none',
+      blockers: 'None',
+    });
+    expect(result).toBe(false);
+  });
+
+  it('fetchBlockerStatus delegates to relations module', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(JSON.stringify({ state: 'open' }), { status: 200 }),
+        ),
+    );
+
+    const board = createGitHubBoard(baseEnv);
+    const result = await board.fetchBlockerStatus({
+      key: '#42',
+      title: '',
+      description: 'Blocked by #10',
+      parentInfo: 'none',
+      blockers: 'None',
+    });
+    expect(result).toBe(true);
+  });
+
+  it('fetchChildrenStatus returns undefined for invalid key', async () => {
+    const board = createGitHubBoard(baseEnv);
+    const result = await board.fetchChildrenStatus('invalid');
+    expect(result).toBeUndefined();
+  });
+
+  it('fetchChildrenStatus delegates to relations module', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ total_count: 3 }), { status: 200 }),
+        )
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ total_count: 1 }), { status: 200 }),
+        ),
+    );
+
+    const board = createGitHubBoard(baseEnv);
+    const result = await board.fetchChildrenStatus('#5');
+
+    expect(result).toEqual({ total: 3, incomplete: 1 });
+  });
+
   it('ensureLabel creates the label if it does not exist', async () => {
     const mockFetch = vi
       .fn()

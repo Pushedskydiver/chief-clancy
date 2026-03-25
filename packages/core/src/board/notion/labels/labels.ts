@@ -38,6 +38,7 @@ async function writeLabels(
  * Add a label to a Notion page (best-effort).
  *
  * @param opts - Connection context, issue key, label, and property name.
+ * @returns Resolves when complete (best-effort — never throws).
  */
 export async function addLabel(opts: LabelOpts): Promise<void> {
   const { ctx, issueKey, label, labelsProp } = opts;
@@ -63,6 +64,7 @@ export async function addLabel(opts: LabelOpts): Promise<void> {
  * Remove a label from a Notion page (best-effort).
  *
  * @param opts - Connection context, issue key, label, and property name.
+ * @returns Resolves when complete (best-effort — never throws).
  */
 export async function removeLabel(opts: LabelOpts): Promise<void> {
   const { ctx, issueKey, label, labelsProp } = opts;
