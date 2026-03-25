@@ -410,10 +410,10 @@ Post-merge audit found 3 HIGH, 10 MEDIUM, 14 LOW across 15 pipeline modules. Aud
 | PR  | Description                                                                                         | Status  |
 | --- | --------------------------------------------------------------------------------------------------- | ------- |
 | C15 | Bugs: deliver fresh progress log + pr-retry prNumber doc + postReworkActions try/catch (H1, M1, M6) | Done    |
-| C16 | Time DI + orchestrator error resilience tests (H2, H3, M7, M8)                                      | Pending |
-| C17 | Comment hygiene: strip phase numbers, add Safety comments, rename cleanup file (M2, M3, L3, L6)     | Pending |
-| C18 | Dead code + type cleanup: remove Phase type, invoke structured result, setter overlap (M4, M5, L7)  | Pending |
-| C19 | Test coverage gaps: parentInfo edge, BoardConfig cast, remaining LOW test gaps (M9, M10, L9-L14)    | Pending |
+| C16 | Time DI + orchestrator error resilience tests (H2, H3, M7, M8)                                      | Done (#73) |
+| C17 | Comment hygiene: strip phase numbers, add Safety comments, rename cleanup file (M2, M3, L3, L6)     | Done (#74) |
+| C18 | Dead code + type cleanup: remove Phase type, invoke structured result, setter overlap (M4, M5, L7)  | Done (#75) |
+| C19 | Test coverage gaps: parentInfo edge, BoardConfig cast, remaining LOW test gaps (M9, M10, L9-L14)    | Done (#76) |
 
 ### HIGH findings
 
@@ -617,6 +617,28 @@ Completed PRs 8.4b, 8.5, C15, and Phase 8 audit. Phase 8 complete + first cleanu
 - `singleChildParent` GitHub validation: only valid `#N` refs pass through — milestone titles like "Sprint 3" would produce invalid "Closes Sprint 3" lines
 - `cleanup-phase` returns `CleanupResult` with `ticketKey`, `ticketTitle`, `elapsedMs` — terminal formats the display
 - `PipelineDeps` uses minimal return type shapes (not full phase result types) — keeps orchestrator decoupled from phase internals
+
+### Session 27 handoff (2026-03-25)
+
+Completed Phase 8 cleanup PRs C16-C19. All audit findings resolved. 174 pipeline tests. Codebase clean.
+
+**What was completed:**
+
+- **C16** (#73) — Time DI: optional `now` in `CreateContextOpts` (epoch ms) + `BranchSetupDeps.now` (ISO factory). 4 orchestrator error resilience tests (checkout/deleteLock/deleteVerifyAttempt throws, non-Error thrown). preflight env-undefined guard test. Feasibility default reason fallback test. 9 new tests
+- **C17** (#74) — Comment hygiene: stripped `Phase N:` prefixes from 13 module JSDoc headers + `run-pipeline.ts` inline/JSDoc comments. Added `// Safe:` comments to 5 branch-setup helpers. Renamed `cleanup.ts` → `cleanup-phase.ts`. Added dry-run dependency comment in `PipelineDeps`
+- **C18** (#75) — Dead code removal: deleted `Phase` type (no phase conforms to `(ctx) => boolean`). Changed `PipelineDeps.invoke` from `Promise<boolean>` to `Promise<{ readonly ok: boolean }>`. Documented `setTicketBranches`/`setBranchSetup` overlap
+- **C19** (#76) — Test coverage: `parentInfo: ''` edge case, typed `makeBoardConfig()` builder replacing `as BoardConfig` cast, phase execution order verification, `executeResume` rejection, `writeLockSafe` with `description: undefined`, `fetchChildrenStatus` returning undefined, negative token rate. 6 new tests
+
+**What's next:**
+
+- Phase 9: Terminal wiring — connect pipeline phases to terminal layer
+
+**Key decisions:**
+
+- Time DI uses two shapes: `CreateContextOpts.now` is a plain `number` (eager snapshot at context creation), `BranchSetupDeps.now` is `() => string` (lazy ISO factory because `writeLockSafe` runs later). Both documented
+- `makeBoardConfig()` in test-helpers supports all 6 providers with valid required env fields — eliminates all `as BoardConfig` casts in phase tests
+- `Phase` type removed entirely — all phases use `(ctx, deps) => StructuredResult` pattern, not `(ctx) => boolean`
+- `PipelineDeps.invoke` now returns `{ ok: boolean }` like all other phases — consistency over backwards compatibility (no consumers yet)
 - Lock-check runs outside try/catch — if it aborts, no lock was acquired so no cleanup needed
 - `restoreBranch` in catch block, `cleanupLock` in finally block — guarantees cleanup on all paths
 - Dry-run gate uses `ctx.dryRun` directly, not a phase dep — the `dryRun` phase module is a standalone utility for ticket info display
