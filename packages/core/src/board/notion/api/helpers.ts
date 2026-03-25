@@ -10,7 +10,7 @@ import type { NotionPage } from '~/c/schemas/index.js';
 export const NOTION_API = 'https://api.notion.com/v1';
 
 /** Notion API version for all requests. */
-export const NOTION_VERSION = '2022-06-28';
+const NOTION_VERSION = '2022-06-28';
 
 /** Notion connection context. */
 export type NotionCtx = {

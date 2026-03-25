@@ -34,5 +34,9 @@ export function createBoard(config: BoardConfig): Board {
       return createNotionBoard(config.env);
     case 'azdo':
       return createAzdoBoard(config.env);
+    default: {
+      const _exhaustive: never = config;
+      return _exhaustive;
+    }
   }
 }

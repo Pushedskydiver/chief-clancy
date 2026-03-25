@@ -1,5 +1,4 @@
 export {
-  closeIssue,
   fetchIssues,
   GITHUB_API,
   githubHeaders,

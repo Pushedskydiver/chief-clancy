@@ -173,119 +173,38 @@ export {
 export { detectBoard, sharedEnv } from './board/index.js';
 export { createBoard } from './board/factory/index.js';
 
-export { createGitHubBoard } from './board/github/index.js';
 export {
-  GITHUB_API,
-  closeIssue,
-  fetchIssues as fetchGitHubIssues,
-  githubHeaders,
-  isValidRepo,
-  pingGitHub,
-  resolveUsername,
-} from './board/github/index.js';
-export {
+  createGitHubBoard,
   fetchBlockerStatus as fetchGitHubBlockerStatus,
   fetchChildrenStatus as fetchGitHubChildrenStatus,
-  parseBlockerRefs,
-  parseEpicRef,
 } from './board/github/index.js';
 
-export { createJiraBoard } from './board/jira/index.js';
 export {
-  buildAuthHeader,
-  buildJql,
-  extractAdfText,
-  fetchTickets as fetchJiraTickets,
-  isSafeJqlValue,
-  isValidIssueKey,
-  jiraHeaders,
-  lookupTransitionId as lookupJiraTransitionId,
-  pingJira,
-  transitionIssue as transitionJiraIssue,
-} from './board/jira/index.js';
-export {
+  createJiraBoard,
   fetchBlockerStatus as fetchJiraBlockerStatus,
   fetchChildrenStatus as fetchJiraChildrenStatus,
 } from './board/jira/index.js';
 
-export { createLinearBoard } from './board/linear/index.js';
 export {
-  fetchIssues as fetchLinearIssues,
-  isValidTeamId,
-  LINEAR_API,
-  linearGraphql,
-  linearHeaders,
-  pingLinear,
-} from './board/linear/index.js';
-export {
+  createLinearBoard,
   fetchBlockerStatus as fetchLinearBlockerStatus,
   fetchChildrenStatus as fetchLinearChildrenStatus,
-  lookupWorkflowStateId,
-  transitionIssue as transitionLinearIssue,
 } from './board/linear/index.js';
 
-export { createShortcutBoard } from './board/shortcut/index.js';
 export {
-  fetchStories as fetchShortcutStories,
-  fetchWorkflows,
-  pingShortcut,
-  resolveDoneStateIds,
-  resolveWorkflowStateId,
-  resolveWorkflowStateIdsByType,
-  SHORTCUT_API,
-  shortcutHeaders,
-  transitionStory,
-} from './board/shortcut/index.js';
-export {
+  createShortcutBoard,
   fetchBlockerStatus as fetchShortcutBlockerStatus,
   fetchChildrenStatus as fetchShortcutChildrenStatus,
 } from './board/shortcut/index.js';
 
-export { createAzdoBoard } from './board/azdo/index.js';
 export {
-  apiBase as azdoApiBase,
-  azdoHeaders,
-  azdoPatchHeaders,
-  AZDO_API_VERSION,
-  buildAzdoAuth,
-  buildTagsString as azdoBuildTagsString,
-  extractIdFromRelationUrl as azdoExtractIdFromRelationUrl,
-  fetchTickets as fetchAzdoTickets,
-  fetchWorkItem as fetchAzdoWorkItem,
-  fetchWorkItems as fetchAzdoWorkItems,
-  isSafeWiqlValue,
-  parseWorkItemId,
-  parseTags as azdoParseTags,
-  pingAzdo,
-  runWiql,
-  updateWorkItem as updateAzdoWorkItem,
-  workItemToTicket as azdoWorkItemToTicket,
-} from './board/azdo/index.js';
-export {
+  createAzdoBoard,
   fetchBlockerStatus as fetchAzdoBlockerStatus,
   fetchChildrenStatus as fetchAzdoChildrenStatus,
 } from './board/azdo/index.js';
 
-export { createNotionBoard } from './board/notion/index.js';
 export {
-  fetchPage as fetchNotionPage,
-  findPageByKey as findNotionPageByKey,
-  getArrayProperty as getNotionArrayProperty,
-  getDescriptionText as getNotionDescriptionText,
-  getPageStatus as getNotionPageStatus,
-  getPageTitle as getNotionPageTitle,
-  getStringProperty as getNotionStringProperty,
-  isCompleteStatus as isNotionCompleteStatus,
-  isPageIncomplete as isNotionPageIncomplete,
-  NOTION_API,
-  notionHeaders,
-  NOTION_VERSION,
-  pingNotion,
-  queryAllPages as queryAllNotionPages,
-  queryDatabase as queryNotionDatabase,
-  updatePage as updateNotionPage,
-} from './board/notion/index.js';
-export {
+  createNotionBoard,
   fetchBlockerStatus as fetchNotionBlockerStatus,
   fetchChildrenStatus as fetchNotionChildrenStatus,
 } from './board/notion/index.js';
