@@ -143,6 +143,8 @@ export async function postServerPrComment(
  *
  * Inline comments (with `anchor` property) always trigger rework.
  * Conversation comments only trigger when prefixed with `Rework:`.
+ * Does not check formal approval state — only GitHub checks formal
+ * reviews (CHANGES_REQUESTED) via the reviews API.
  *
  * @param opts - Server review state options.
  * @returns The review state, or `undefined` if no open PR or on error.

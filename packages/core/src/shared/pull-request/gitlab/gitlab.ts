@@ -180,7 +180,8 @@ export async function resolveDiscussions(opts: ResolveOpts): Promise<number> {
  *
  * Finds the open MR, fetches discussions. Inline notes (DiffNote)
  * always trigger rework. Conversation notes only trigger when prefixed
- * with `Rework:`.
+ * with `Rework:`. Does not check formal approval state — only GitHub
+ * checks formal reviews (CHANGES_REQUESTED) via the reviews API.
  *
  * @param opts - Options including fetch, token, apiBase, projectPath, branch, and since.
  * @returns The review state, or `undefined` if no open MR or on error.

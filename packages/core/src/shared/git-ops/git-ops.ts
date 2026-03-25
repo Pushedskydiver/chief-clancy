@@ -13,6 +13,19 @@ import { parseRemote } from '~/c/shared/remote/remote.js';
 /** Execute a git sub-command and return stdout. Throws on non-zero exit. */
 type ExecGit = (args: readonly string[]) => string;
 
+/**
+ * Check whether a branch name is safe for use in git ref paths.
+ *
+ * Rejects path traversal (`..`) and absolute paths (`/` prefix) that
+ * could resolve to unexpected refs when interpolated into `refs/heads/`.
+ *
+ * @param branch - The branch name to validate.
+ * @returns `true` if the branch name is safe.
+ */
+export function isSafeBranchName(branch: string): boolean {
+  return branch.length > 0 && !branch.includes('..') && !branch.startsWith('/');
+}
+
 /** Valid values for the `CLANCY_GIT_PLATFORM` env var override. Must stay in sync with {@link GitPlatform}. */
 const VALID_PLATFORMS = new Set<string>([
   'github',
@@ -56,6 +69,8 @@ export function hasUncommittedChanges(exec: ExecGit): boolean {
  * @returns `true` if the branch exists locally.
  */
 export function branchExists(exec: ExecGit, branch: string): boolean {
+  if (!isSafeBranchName(branch)) return false;
+
   try {
     exec(['show-ref', '--verify', '--quiet', `refs/heads/${branch}`]);
     return true;
