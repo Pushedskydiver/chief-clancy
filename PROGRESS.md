@@ -541,7 +541,7 @@ Completed PRs 8.4b-8.5. Phase 8 complete. 159 pipeline tests. Codebase clean.
 **What was completed:**
 
 - **8.4b** (#70) — 3 phases: `deliver-phase` (decomposed into `deliverRework`, `deliverFresh`, `computeParentKeys`, `resolveSingleChildParent`), `cost-phase` (thin wrapper with `parseTokenRate` helper), `cleanup-phase` (completion data + notify callback). All best-effort error handling. 27 new tests
-- **8.5** (#TBD) — Pipeline orchestrator: `runPipeline(ctx, deps)` with `PipelineDeps` type aggregating all phase deps. Pipeline barrel + core barrel re-exports. `PipelineResult` discriminated union (`completed | aborted | resumed | dry-run | error`). try/catch/finally for lock cleanup. 22 orchestrator tests. Phase barrel `index.ts` files deferred to Phase 9 (terminal layer is the actual consumer — orchestrator uses DI callbacks)
+- **8.5** (#71) — Pipeline orchestrator: `runPipeline(ctx, deps)` with `PipelineDeps` type aggregating all phase deps. Pipeline barrel + core barrel re-exports. `PipelineResult` discriminated union (`completed | aborted | resumed | dry-run | error`). try/catch/finally for lock cleanup. 22 orchestrator tests. Phase barrel `index.ts` files deferred to Phase 9 (terminal layer is the actual consumer — orchestrator uses DI callbacks)
 
 **What's next:**
 
