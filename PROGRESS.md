@@ -186,7 +186,7 @@ Adjusted after phase validation (2026-03-25). Brief PRs 6.1-6.3 already done in 
 | 6.4  | `shared/git-ops/`: git command wrappers + `detectRemote` (DI exec). Depends on 6.3                            | Done (#35)               |
 | 6.5  | `shared/progress/`: progress file reader/writer (DI filesystem)                                               | Done (#36)               |
 | 6.6  | `shared/feasibility/`: prompt builder + response parser + check (DI invoke)                                   | Done (#37)               |
-| 6.7  | `shared/pull-request/` prereqs: `post-pr/` + `rework-comment/` + `pr-body/`. Depends on 6.3                   | Pending                  |
+| 6.7  | `shared/pull-request/` prereqs: `post-pr/` + `rework-comment/` + `pr-body/`. Depends on 6.3                   | Done (#38)               |
 | 6.8  | `shared/pull-request/github/`: PR creation, review state, comments. Depends on 6.7                            | Pending                  |
 | 6.9  | `shared/pull-request/gitlab/`: MR creation, review state, discussions. Depends on 6.7                         | Pending                  |
 | 6.10 | `shared/pull-request/bitbucket/`: Cloud + Server PR creation, review state. Depends on 6.7                    | Pending                  |
