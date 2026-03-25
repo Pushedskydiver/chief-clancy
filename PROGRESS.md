@@ -592,16 +592,21 @@ Completed PRs 8.3-8.4a. Phase 8 pipeline phases 3-8 in place. 108 pipeline tests
 
 ### Session 26 handoff (2026-03-25)
 
-Completed PRs 8.4b-8.5. Phase 8 complete. 159 pipeline tests. Codebase clean.
+Completed PRs 8.4b, 8.5, C15, and Phase 8 audit. Phase 8 complete + first cleanup PR merged. 161 pipeline tests. Codebase clean.
 
 **What was completed:**
 
 - **8.4b** (#70) — 3 phases: `deliver-phase` (decomposed into `deliverRework`, `deliverFresh`, `computeParentKeys`, `resolveSingleChildParent`), `cost-phase` (thin wrapper with `parseTokenRate` helper), `cleanup-phase` (completion data + notify callback). All best-effort error handling. 27 new tests
 - **8.5** (#71) — Pipeline orchestrator: `runPipeline(ctx, deps)` with `PipelineDeps` type aggregating all phase deps. Pipeline barrel + core barrel re-exports. `PipelineResult` discriminated union (`completed | aborted | resumed | dry-run | error`). try/catch/finally for lock cleanup. 22 orchestrator tests. Phase barrel `index.ts` files deferred to Phase 9 (terminal layer is the actual consumer — orchestrator uses DI callbacks)
+- **Phase 8 audit** — 4 parallel agents (bugs, conventions, test coverage, architecture). 3 HIGH, 10 MEDIUM, 14 LOW. 5 cleanup PRs planned (C15-C19)
+- **C15** (#72) — H1 (`deliverFresh` now logs `PUSH_FAILED` progress), M6 (`postReworkActions` try/catch), M1 (documented pr-retry prNumber limitation). 2 new tests
 
 **What's next:**
 
-- Phase 8 audit
+- C16 (Time DI + orchestrator error resilience tests — H2, H3, M7, M8)
+- C17 (Comment hygiene — M2, M3, L3, L6)
+- C18 (Dead code + type cleanup — M4, M5, L7)
+- C19 (Test coverage gaps — M9, M10, L9-L14)
 - Then Phase 9 (terminal wiring)
 
 **Key decisions:**
@@ -616,6 +621,7 @@ Completed PRs 8.4b-8.5. Phase 8 complete. 159 pipeline tests. Codebase clean.
 - `restoreBranch` in catch block, `cleanupLock` in finally block — guarantees cleanup on all paths
 - Dry-run gate uses `ctx.dryRun` directly, not a phase dep — the `dryRun` phase module is a standalone utility for ticket info display
 - Phase barrel `index.ts` files deferred again — orchestrator uses DI callbacks (not direct imports), terminal layer (Phase 9) is the actual consumer per export hygiene convention
+- M1 (pr-retry prNumber for "exists") documented as limitation — `PrCreationFailure` type doesn't carry the PR number, fix belongs in PR creation layer not pipeline
 
 ### Session 24 handoff (2026-03-25)
 
