@@ -261,25 +261,27 @@ Post-merge audit found 4 HIGH, 15 MEDIUM, 16 LOW across all Phase 6 modules. Aud
 
 Adjusted after phase validation (2026-03-25). Added `git-token/` prerequisite (missing from brief, hard blocker). Split `deliver/` into prereqs + main. Added AzDO support to rework-handlers, pr-creation, and outcome. Reordered by dependency.
 
-| PR  | Description                                                                                                    | Status     |
-| --- | -------------------------------------------------------------------------------------------------------------- | ---------- |
-| 7.0 | Prerequisites: `git-token/` — resolve platform credentials from SharedEnv + RemoteInfo                         | Done (#48) |
-| 7.1 | `lock/`: acquire, release, stale detection (PID + 24h). DI filesystem                                          | Done (#49) |
-| 7.2 | `cost/`: duration-based token cost estimation + costs.log writer. DI filesystem                                | Done (#50) |
-| 7.3 | `quality/`: quality metric tracking (rework cycles, verification retries, delivery duration). DI filesystem    | Done (#51) |
-| 7.4 | `fetch-ticket/`: label resolution, blocker checking, AFK filtering. Consumes Board interface                   | Done (#52) |
-| 7.5 | `rework/`: rework detection — `rework-handlers` (platform dispatch) + orchestrator. Depends on 7.0             | Open (#53) |
-| 7.6 | `resume/`: crash recovery — detect resumable state, execute resume. Depends on 7.0, 7.1                        | Pending    |
-| 7.7 | `deliver/` prereqs: `outcome/` (pure) + `pr-creation/` (platform dispatch incl. AzDO). Depends on 7.0          | Pending    |
-| 7.8 | `deliver/`: epic branch management + PR delivery orchestration. Split `deliver.ts` + `epic.ts`. Depends on 7.7 | Pending    |
+| PR   | Description                                                                                                    | Status     |
+| ---- | -------------------------------------------------------------------------------------------------------------- | ---------- |
+| 7.0  | Prerequisites: `git-token/` — resolve platform credentials from SharedEnv + RemoteInfo                         | Done (#48) |
+| 7.1  | `lock/`: acquire, release, stale detection (PID + 24h). DI filesystem                                          | Done (#49) |
+| 7.2  | `cost/`: duration-based token cost estimation + costs.log writer. DI filesystem                                | Done (#50) |
+| 7.3  | `quality/`: quality metric tracking (rework cycles, verification retries, delivery duration). DI filesystem    | Done (#51) |
+| 7.4  | `fetch-ticket/`: label resolution, blocker checking, AFK filtering. Consumes Board interface                   | Done (#52) |
+| 7.5  | `rework/`: rework detection — `rework-handlers` (platform dispatch) + orchestrator. Depends on 7.0             | Done (#53) |
+| 7.5a | Azure DevOps rework: `AzdoRemote` type + `parseRemote`/`buildApiBaseUrl` + rework-handler case. Depends on 7.5 | Pending    |
+| 7.6  | `resume/`: crash recovery — detect resumable state, execute resume. Depends on 7.0, 7.1                        | Pending    |
+| 7.7  | `deliver/` prereqs: `outcome/` (pure) + `pr-creation/` (platform dispatch incl. AzDO). Depends on 7.0          | Pending    |
+| 7.8  | `deliver/`: epic branch management + PR delivery orchestration. Split `deliver.ts` + `epic.ts`. Depends on 7.7 | Pending    |
 
 ### Dependencies
 
 - 7.0 is prerequisite for 7.5, 7.6, 7.7, 7.8
 - 7.1–7.4 are independent of each other and 7.0 (can parallel)
 - 7.5 depends on 7.0
-- 7.6 depends on 7.0 + 7.1 (lock types)
-- 7.7 depends on 7.0
+- 7.5a depends on 7.5 (adds Azure case to rework-handlers + remote.ts changes)
+- 7.6 depends on 7.0 + 7.1 (lock types). Independent of 7.5a
+- 7.7 depends on 7.0. Benefits from 7.5a (`AzdoRemote` for pr-creation dispatch)
 - 7.8 depends on 7.7
 
 ### Phase validation notes (2026-03-25)
