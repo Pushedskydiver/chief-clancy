@@ -76,6 +76,58 @@ export class RunContext {
 
   /* eslint-enable functional/prefer-readonly-type */
 
+  // ── Setter methods ─────────────────────────────────────────────────
+
+  /** Set preflight-phase fields. */
+  setPreflight(config: BoardConfig, board: Board): void {
+    this.config = config;
+    this.board = board;
+  }
+
+  /** Set rework-detection fields. */
+  setRework(opts: {
+    readonly isRework: boolean;
+    readonly prFeedback?: readonly string[];
+    readonly reworkPrNumber?: number;
+    readonly reworkDiscussionIds?: readonly string[];
+    readonly reworkReviewers?: readonly string[];
+  }): void {
+    this.isRework = opts.isRework;
+    this.prFeedback = opts.prFeedback;
+    this.reworkPrNumber = opts.reworkPrNumber;
+    this.reworkDiscussionIds = opts.reworkDiscussionIds;
+    this.reworkReviewers = opts.reworkReviewers;
+  }
+
+  /** Set ticket from ticket-fetch phase. */
+  setTicket(ticket: FetchedTicket): void {
+    this.ticket = ticket;
+  }
+
+  /** Set branch-setup fields. */
+  setBranchSetup(opts: {
+    readonly ticketBranch: string;
+    readonly targetBranch: string;
+    readonly effectiveTarget: string;
+    readonly baseBranch?: string;
+    readonly originalBranch?: string;
+    readonly skipEpicBranch?: boolean;
+    readonly hasParent?: boolean;
+  }): void {
+    this.ticketBranch = opts.ticketBranch;
+    this.targetBranch = opts.targetBranch;
+    this.effectiveTarget = opts.effectiveTarget;
+    this.baseBranch = opts.baseBranch;
+    this.originalBranch = opts.originalBranch;
+    this.skipEpicBranch = opts.skipEpicBranch;
+    this.hasParent = opts.hasParent;
+  }
+
+  /** Set lock ownership flag. */
+  setLockOwner(value: boolean): void {
+    this.lockOwner = value;
+  }
+
   constructor(opts: CreateContextOpts) {
     this.projectRoot = opts.projectRoot;
     this.argv = opts.argv;

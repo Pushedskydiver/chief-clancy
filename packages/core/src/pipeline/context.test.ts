@@ -1,4 +1,5 @@
 import type { Phase } from './context.js';
+import type { BoardConfig } from '~/c/schemas/env/env.js';
 import type { Board } from '~/c/types/board.js';
 
 import { describe, expect, it } from 'vitest';
@@ -65,17 +66,34 @@ describe('RunContext', () => {
     expect(ctx.skipFeasibility).toBe(false);
   });
 
-  it('allows mutation of phase-populated fields via setters', () => {
+  it('populates fields via setter methods', () => {
     const ctx = createContext(DEFAULTS);
     const board = makeBoard();
+    const config = { provider: 'github' as const, env: {} } as BoardConfig;
 
-    ctx.board = board;
-    ctx.isRework = true;
-    ctx.ticketBranch = 'feat/proj-42';
-    ctx.lockOwner = true;
+    const ticket = {
+      key: 'PROJ-42',
+      title: 'Add login',
+      description: '',
+      parentInfo: '',
+      blockers: 'None',
+    };
 
+    ctx.setPreflight(config, board);
+    ctx.setRework({ isRework: true, prFeedback: ['fix the bug'] });
+    ctx.setTicket(ticket);
+    ctx.setBranchSetup({
+      ticketBranch: 'feat/proj-42',
+      targetBranch: 'main',
+      effectiveTarget: 'main',
+    });
+    ctx.setLockOwner(true);
+
+    expect(ctx.config).toBe(config);
     expect(ctx.board).toBe(board);
     expect(ctx.isRework).toBe(true);
+    expect(ctx.prFeedback).toEqual(['fix the bug']);
+    expect(ctx.ticket).toBe(ticket);
     expect(ctx.ticketBranch).toBe('feat/proj-42');
     expect(ctx.lockOwner).toBe(true);
   });
