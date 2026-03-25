@@ -57,6 +57,7 @@ const MAX_FEEDBACK_LENGTH = 80;
  * Prefixed with `[clancy]` (not `Rework:`) so it does NOT trigger
  * rework detection on the next cycle.
  *
+ * @param feedback - Review feedback items to include in the comment.
  * @returns The formatted comment body.
  */
 export function buildReworkComment(feedback: readonly string[]): string {
@@ -81,6 +82,7 @@ export function buildReworkComment(feedback: readonly string[]): string {
  * or PUSH_FAILED, then checks the corresponding PR's review state on
  * the detected remote platform. Best-effort — errors are swallowed.
  *
+ * @param opts - Rework detection options (progress filesystem, handlers, project root).
  * @returns The rework result, or `undefined` if no rework is needed.
  */
 export async function fetchReworkFromPrReview(

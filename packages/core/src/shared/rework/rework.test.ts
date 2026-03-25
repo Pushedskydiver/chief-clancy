@@ -1,6 +1,7 @@
 import type { PlatformReworkHandlers } from './rework-handlers.js';
 import type { ProgressFs } from '~/c/shared/progress/progress.js';
 
+import fc from 'fast-check';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -87,6 +88,24 @@ describe('buildReworkComment', () => {
     const result = buildReworkComment(['Fix something']);
 
     expect(result).toMatch(/^\[clancy\]/);
+  });
+
+  it('always starts with [clancy] for any feedback array', () => {
+    fc.assert(
+      fc.property(fc.array(fc.string(), { maxLength: 10 }), (feedback) => {
+        const result = buildReworkComment(feedback);
+        expect(result).toMatch(/^\[clancy\]/);
+      }),
+    );
+  });
+
+  it('always returns a non-empty string', () => {
+    fc.assert(
+      fc.property(fc.array(fc.string(), { maxLength: 10 }), (feedback) => {
+        const result = buildReworkComment(feedback);
+        expect(result.length).toBeGreaterThan(0);
+      }),
+    );
   });
 });
 

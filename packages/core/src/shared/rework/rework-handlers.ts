@@ -76,6 +76,7 @@ type ResolveHandlersOpts = {
 /**
  * Resolve platform handlers for the given remote.
  *
+ * @param opts - Resolution options (fetch function, shared env, remote info).
  * @returns A handler object, or `undefined` if the platform is unsupported
  *   or credentials/API base are missing.
  */

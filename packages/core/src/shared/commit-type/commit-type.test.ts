@@ -1,3 +1,4 @@
+import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 
 import { resolveCommitType } from './commit-type.js';
@@ -92,5 +93,30 @@ describe('resolveCommitType', () => {
 
   it('matches task within compound types', () => {
     expect(resolveCommitType('Development Task')).toBe('chore');
+  });
+
+  // ── False-positive prevention ──────────────────────────────────────
+
+  it('does not match "debugging" as fix', () => {
+    expect(resolveCommitType('debugging')).toBe('feat');
+  });
+
+  it('does not match "tasking" as chore', () => {
+    expect(resolveCommitType('tasking')).toBe('feat');
+  });
+
+  // ── Property-based ────────────────────────────────────────────────
+
+  it('always returns feat, fix, or chore for any string', () => {
+    fc.assert(
+      fc.property(fc.string(), (s) => {
+        const result = resolveCommitType(s);
+        expect(['feat', 'fix', 'chore']).toContain(result);
+      }),
+    );
+  });
+
+  it('always returns feat for undefined', () => {
+    expect(resolveCommitType(undefined)).toBe('feat');
   });
 });
