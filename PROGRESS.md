@@ -386,3 +386,67 @@ Post-merge audit found 3 HIGH, 12 MEDIUM, 9 LOW across 13 modules. Audit run 202
 - L6: `handlePushFailure` returns `{ type: 'local' }` for push failures — semantic mismatch but progress correctly logs `PUSH_FAILED`
 - L8: `LockFs`, `CostFs`, `QualityFs` exported for test consumption only — justified when terminal consumes them
 - L9: `isLockStale` strict `>` at 24h boundary — documented behaviour, not a bug
+
+## Phase 8: Core — Pipeline
+
+Validated 2026-03-25. Orchestration layer that ties together Phases 5-7 lifecycle modules into a sequential pipeline. 13 phases + context + orchestrator. Unblocks Phase 9 (Terminal orchestrator).
+
+| PR  | Description                                                                                         | Status  |
+| --- | --------------------------------------------------------------------------------------------------- | ------- |
+| 8.0 | Prerequisites: `notify/` (webhook POST) + `prompt/` (buildPrompt, buildReworkPrompt) — pure modules | Pending |
+| 8.1 | Pipeline context: `RunContext` type, `Phase` type, `createContext()` factory. TDD                   | Pending |
+| 8.2 | Phases batch 1: `lock-check`, `preflight`, `epic-completion`, `pr-retry`. TDD                       | Pending |
+| 8.3 | Phases batch 2: `rework-detection`, `ticket-fetch`, `dry-run`, `feasibility`. TDD                   | Pending |
+| 8.4 | Phases batch 3: `branch-setup`, `transition`, `deliver`, `cost`, `cleanup`. TDD                     | Pending |
+| 8.5 | Pipeline orchestrator: `runPipeline()` — wire all phases, invoke callback injection. TDD            | Pending |
+
+### Dependencies
+
+- 8.0 is prerequisite for 8.4 (cleanup uses notify) and 8.5 (invoke uses prompt)
+- 8.1 is prerequisite for all phase PRs (8.2-8.4)
+- 8.2-8.4 are independent of each other but all depend on 8.1
+- 8.5 depends on 8.2-8.4
+
+### Phase validation notes (2026-03-25)
+
+**Key findings from validation:**
+
+1. Brief says 5 PRs but old codebase has 13 phases (~880 lines) + context (59 lines) + orchestrator (113 lines). Added PR 8.0 for missing prerequisites.
+2. `notify/` (webhook POST on completion) and `prompt/` (buildPrompt, buildReworkPrompt for Claude invocation) do not exist in core yet. Both are pure and needed by cleanup/invoke phases.
+3. `invoke` phase is a thin callback injection point — core defines the signature, terminal provides the implementation. Core's version is `(prompt: string) => boolean`.
+4. `RunContext` is mutable by design — phases progressively populate fields. Will need per-line `no-let` disable or a builder pattern. Old code uses `let` for optional fields populated across phases.
+5. Several phases are thin wrappers: `transition` (19 lines), `rework-detection` (34 lines), `cost` (31 lines), `cleanup` (33 lines). These batch well.
+6. Largest phases: `pr-retry` (142 lines — needs decomposition), `branch-setup` (115 lines — needs decomposition), `lock-check` (105 lines).
+7. All phases in old repo mix console output with logic. New versions must return structured data — no `console.log` in core.
+8. Phase ordering is critical — each phase assumes prior phases populated context fields. Type safety via conditional narrowing or runtime guards.
+
+**Rewrite assessments:**
+
+- Carry over (~10-15%): transition, cost, cleanup — thin wrappers around Phase 7 modules
+- Moderate rewrite (~35-45%): rework-detection, ticket-fetch, preflight, feasibility, dry-run — strip console output, adapt to new module APIs
+- Major rewrite (~50-60%): lock-check, branch-setup, pr-retry, orchestrator — decompose large functions, remove I/O, add DI
+
+### Session 22 handoff (2026-03-25)
+
+Completed Phase 7 cleanup PRs C10-C14 + Phase 8 validation. All phases 1-7 complete. Codebase clean.
+
+**What was completed:**
+
+- **C10** (#58) — `isLockStale` NaN guard, `readQualityData` entry validation, `sumBy` recursive refactor, negative duration clamp
+- **C11** (#59) — 7 handler invocation tests across 5 platforms, PR creation result shape assertions, non-201 error test, API URL override + credential tests
+- **C12** (#60) — `ExecGit` exported from git-ops (3 dups removed), `FetchFn` exported from pr-creation (2 dups removed), `Ctx` → `ReworkCtx` rename
+- **C13** (#61) — `resolveCommitType` word-boundary fix, 6 property-based tests (fast-check), `@param` JSDoc on 12 exported functions
+- **C14** (#62) — 11 coverage gap tests across rework, deliver, cost, fetch-ticket, epic
+- **Phase 8 validation** — Validated brief against old codebase, identified missing prerequisites, assessed rewrite scope
+
+**What's next:**
+
+- Start Phase 8 with PR 8.0 (prerequisites: `notify/` + `prompt/`)
+- Then 8.1 (RunContext + Phase types)
+
+**Key decisions:**
+
+- Added PR 8.0 for `notify/` and `prompt/` modules — both are pure, needed by pipeline phases
+- `invoke` phase stays in core as a callback type — terminal injects the actual Claude session logic
+- `RunContext` mutable fields are acceptable — pipeline phases progressively populate, this is the documented pattern
+- No console.log in core pipeline — phases return structured results, terminal handles display
