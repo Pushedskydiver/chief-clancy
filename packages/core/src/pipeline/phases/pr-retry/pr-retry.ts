@@ -8,7 +8,7 @@
  * Best-effort: never blocks the pipeline. Returns structured results
  * — no console output.
  */
-import type { RunContext } from '../context.js';
+import type { RunContext } from '../../context.js';
 import type { ProgressEntry } from '~/c/shared/progress/index.js';
 import type { PrCreationResult, RemoteInfo } from '~/c/types/remote.js';
 

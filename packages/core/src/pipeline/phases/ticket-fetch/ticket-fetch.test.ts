@@ -3,7 +3,7 @@ import type { FetchedTicket } from '~/c/types/board.js';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { makeCtx } from './test-helpers.js';
+import { makeCtx } from '../test-helpers.js';
 import { ticketFetch } from './ticket-fetch.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

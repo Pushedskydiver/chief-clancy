@@ -3,8 +3,8 @@ import type { FetchedTicket } from '~/c/types/board.js';
 
 import { describe, expect, it, vi } from 'vitest';
 
+import { makeCtx } from '../test-helpers.js';
 import { reworkDetection } from './rework-detection.js';
-import { makeCtx } from './test-helpers.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

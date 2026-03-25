@@ -5,7 +5,7 @@ import type { PrCreationResult, RemoteInfo } from '~/c/types/remote.js';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { RunContext } from '../context.js';
+import { RunContext } from '../../context.js';
 import { prRetry } from './pr-retry.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────

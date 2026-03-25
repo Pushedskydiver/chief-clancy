@@ -5,7 +5,7 @@
  * Sets `ctx.ticket` and computed branch names on the context.
  * Returns structured results — no console output.
  */
-import type { RunContext } from '../context.js';
+import type { RunContext } from '../../context.js';
 import type { BoardConfig } from '~/c/schemas/env/env.js';
 import type { Board, BoardProvider, FetchedTicket } from '~/c/types/board.js';
 

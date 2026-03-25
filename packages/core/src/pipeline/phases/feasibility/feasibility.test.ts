@@ -2,8 +2,8 @@ import type { FeasibilityPhaseDeps } from './feasibility.js';
 
 import { describe, expect, it, vi } from 'vitest';
 
+import { makeCtx } from '../test-helpers.js';
 import { feasibilityPhase } from './feasibility.js';
-import { makeCtx } from './test-helpers.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

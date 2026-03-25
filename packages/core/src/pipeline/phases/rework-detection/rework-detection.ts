@@ -4,7 +4,7 @@
  * Best-effort: wrapped in try/catch. Never blocks the pipeline.
  * Returns structured results — no console output.
  */
-import type { RunContext } from '../context.js';
+import type { RunContext } from '../../context.js';
 import type { BoardConfig } from '~/c/schemas/env/env.js';
 import type { FetchedTicket } from '~/c/types/board.js';
 

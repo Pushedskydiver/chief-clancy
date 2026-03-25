@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { makeCtx } from '../test-helpers.js';
 import { dryRun } from './dry-run.js';
-import { makeCtx } from './test-helpers.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 

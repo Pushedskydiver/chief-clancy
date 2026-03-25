@@ -5,7 +5,7 @@
  * Skipped for rework tickets and when `--skip-feasibility` flag is set.
  * Returns structured results — no console output.
  */
-import type { RunContext } from '../context.js';
+import type { RunContext } from '../../context.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
