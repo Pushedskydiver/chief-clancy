@@ -130,6 +130,119 @@ describe('createJiraBoard', () => {
     expect(ticket?.key).toBe('PROJ-1');
   });
 
+  it('fetchTicket returns undefined when no issues', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValue(
+          new Response(JSON.stringify({ issues: [] }), { status: 200 }),
+        ),
+    );
+
+    const board = createJiraBoard(baseEnv);
+    const ticket = await board.fetchTicket({});
+
+    expect(ticket).toBeUndefined();
+  });
+
+  it('fetchBlockerStatus delegates to relations module', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            fields: {
+              issuelinks: [
+                {
+                  type: { name: 'Blocks' },
+                  inwardIssue: {
+                    key: 'PROJ-99',
+                    fields: {
+                      status: { statusCategory: { key: 'indeterminate' } },
+                    },
+                  },
+                },
+              ],
+            },
+          }),
+          { status: 200 },
+        ),
+      ),
+    );
+
+    const board = createJiraBoard(baseEnv);
+    const result = await board.fetchBlockerStatus({
+      key: 'PROJ-42',
+      title: '',
+      description: '',
+      parentInfo: 'none',
+      blockers: 'None',
+    });
+    expect(result).toBe(true);
+  });
+
+  it('fetchChildrenStatus delegates to relations module', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ total: 2 }), { status: 200 }),
+        )
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ total: 1 }), { status: 200 }),
+        ),
+    );
+
+    const board = createJiraBoard(baseEnv);
+    const result = await board.fetchChildrenStatus('PROJ-10');
+
+    expect(result).toEqual({ total: 2, incomplete: 1 });
+  });
+
+  it('addLabel delegates to label module', async () => {
+    const mockFetch = vi
+      .fn()
+      // GET labels
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ fields: { labels: ['existing'] } }), {
+          status: 200,
+        }),
+      )
+      // PUT labels
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    vi.stubGlobal('fetch', mockFetch);
+
+    const board = createJiraBoard(baseEnv);
+    await board.addLabel('PROJ-42', 'new-label');
+
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(mockFetch.mock.calls[1][1]).toEqual(
+      expect.objectContaining({ method: 'PUT' }),
+    );
+  });
+
+  it('removeLabel delegates to label module', async () => {
+    const mockFetch = vi
+      .fn()
+      // GET labels
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ fields: { labels: ['bug', 'remove-me'] } }),
+          { status: 200 },
+        ),
+      )
+      // PUT labels
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
+    vi.stubGlobal('fetch', mockFetch);
+
+    const board = createJiraBoard(baseEnv);
+    await board.removeLabel('PROJ-42', 'remove-me');
+
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+  });
+
   it('uses custom CLANCY_JQL_STATUS for status field', async () => {
     const response = {
       issues: [

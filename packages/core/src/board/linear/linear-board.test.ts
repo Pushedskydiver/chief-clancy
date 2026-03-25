@@ -216,6 +216,68 @@ describe('createLinearBoard', () => {
     expect(result).toBe(false);
   });
 
+  it('fetchChildrenStatus delegates to relations module', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            data: {
+              issue: {
+                children: {
+                  nodes: [
+                    { state: { type: 'completed' } },
+                    { state: { type: 'started' } },
+                  ],
+                },
+              },
+            },
+          }),
+      } as Response),
+    );
+
+    const board = createLinearBoard(makeEnv());
+    const result = await board.fetchChildrenStatus('ENG-42', 'parent-uuid');
+
+    expect(result).toEqual({ total: 2, incomplete: 1 });
+  });
+
+  it('transitionTicket succeeds with linearIssueId', async () => {
+    const mockFetch = vi
+      .fn()
+      // lookupWorkflowStateId
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            data: { workflowStates: { nodes: [{ id: 'state-uuid' }] } },
+          }),
+      } as Response)
+      // issueUpdate mutation
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve({ data: { issueUpdate: { success: true } } }),
+      } as Response);
+    vi.stubGlobal('fetch', mockFetch);
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const board = createLinearBoard(makeEnv());
+    const result = await board.transitionTicket(
+      {
+        key: 'ENG-42',
+        title: 'Test',
+        description: '',
+        parentInfo: 'none',
+        blockers: 'None',
+        linearIssueId: 'issue-uuid',
+      },
+      'In Progress',
+    );
+    expect(result).toBe(true);
+  });
+
   it('uses CLANCY_LABEL for default label filter', async () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,

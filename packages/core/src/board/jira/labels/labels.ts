@@ -62,6 +62,7 @@ async function writeLabels(
  * @param ctx - Jira connection context.
  * @param issueKey - The Jira issue key.
  * @param label - The label to add.
+ * @returns Resolves when complete (best-effort — never throws).
  */
 export async function addLabel(
   ctx: JiraLabelContext,
@@ -86,6 +87,7 @@ export async function addLabel(
  * @param ctx - Jira connection context.
  * @param issueKey - The Jira issue key.
  * @param label - The label to remove.
+ * @returns Resolves when complete (best-effort — never throws).
  */
 export async function removeLabel(
   ctx: JiraLabelContext,

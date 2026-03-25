@@ -98,6 +98,7 @@ export async function getStoryLabelIds(
  * @param token - The Shortcut API token.
  * @param storyId - The story numeric ID.
  * @param labelIds - The new label IDs array.
+ * @returns Resolves when complete (best-effort — never throws).
  */
 export async function updateStoryLabelIds(
   token: string,
@@ -134,6 +135,7 @@ type EnsureLabelOpts = {
  * Ensure a label exists in Shortcut. Creates it if missing.
  *
  * @param opts - Token, cache, and label name.
+ * @returns Resolves when complete (best-effort — never throws).
  */
 export async function ensureLabel(opts: EnsureLabelOpts): Promise<void> {
   const { token, labelCache, label } = opts;
@@ -176,6 +178,7 @@ type ModifyLabelOpts = {
  * Add a label to a Shortcut story (best-effort).
  *
  * @param opts - Token, cache, issue key, and label name.
+ * @returns Resolves when complete (best-effort — never throws).
  */
 export async function addLabel(opts: ModifyLabelOpts): Promise<void> {
   const { token, labelCache, issueKey, label } = opts;
@@ -200,6 +203,7 @@ export async function addLabel(opts: ModifyLabelOpts): Promise<void> {
  * Remove a label from a Shortcut story (best-effort).
  *
  * @param opts - Token, cache, issue key, and label name.
+ * @returns Resolves when complete (best-effort — never throws).
  */
 export async function removeLabel(opts: ModifyLabelOpts): Promise<void> {
   const { token, labelCache, issueKey, label } = opts;

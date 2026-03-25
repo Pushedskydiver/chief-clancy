@@ -126,6 +126,46 @@ describe('notion relations', () => {
       expect(result).toBe(false);
     });
 
+    it('falls back to description blockers when no relation property', async () => {
+      const blockerId = 'bbbbbbbb-1111-2222-3333-444444444444';
+      const blockerShortId = blockerId.replace(/-/g, '').slice(0, 8);
+
+      const page = makePage({
+        id: PAGE_ID,
+        title: 'Blocked task',
+        extra: {
+          Description: {
+            type: 'rich_text',
+            rich_text: [{ plain_text: `Blocked by notion-${blockerShortId}` }],
+          },
+        },
+      });
+      const blockerPage = makePage({
+        id: blockerId,
+        title: 'Blocker',
+        statusName: 'In Progress',
+      });
+
+      vi.mocked(retryFetch)
+        // fetchPage (the blocked page)
+        .mockResolvedValueOnce(mockResponse(page))
+        // queryAllPages (to find blockers)
+        .mockResolvedValueOnce(
+          mockResponse({
+            results: [page, blockerPage],
+            has_more: false,
+            next_cursor: null,
+          }),
+        );
+
+      const result = await fetchBlockerStatus({
+        ctx,
+        pageId: PAGE_ID,
+        statusProp: 'Status',
+      });
+      expect(result).toBe(true);
+    });
+
     it('returns false on network failure', async () => {
       vi.mocked(retryFetch).mockRejectedValue(new Error('network'));
 
@@ -176,6 +216,49 @@ describe('notion relations', () => {
       });
 
       expect(result).toEqual({ total: 2, incomplete: 1 });
+    });
+
+    it('falls back to relation property when description returns 0', async () => {
+      const parentId = 'ab12cd34-0000-0000-0000-000000000000';
+      const childPage = makePage({
+        id: 'child-1-uuid-0000-0000-000000000000',
+        title: 'Child 1',
+      });
+
+      vi.mocked(retryFetch)
+        // queryAllPages for description search (no matches)
+        .mockResolvedValueOnce(
+          mockResponse({
+            results: [],
+            has_more: false,
+            next_cursor: null,
+          }),
+        )
+        // findPageByKey → queryAllPages (parent must match shortId)
+        .mockResolvedValueOnce(
+          mockResponse({
+            results: [makePage({ id: parentId, title: 'Parent' })],
+            has_more: false,
+            next_cursor: null,
+          }),
+        )
+        // queryDatabase with relation filter
+        .mockResolvedValueOnce(
+          mockResponse({
+            results: [childPage],
+            has_more: false,
+            next_cursor: null,
+          }),
+        );
+
+      const result = await fetchChildrenStatus({
+        ctx,
+        parentKey: 'notion-ab12cd34',
+        parentProp: 'Epic',
+        statusProp: 'Status',
+      });
+
+      expect(result).toEqual({ total: 1, incomplete: 1 });
     });
 
     it('returns undefined on failure', async () => {

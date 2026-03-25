@@ -200,6 +200,114 @@ describe('createNotionBoard', () => {
     });
   });
 
+  // ─── fetchChildrenStatus ───────────────────────────────────────────────
+
+  describe('fetchChildrenStatus', () => {
+    it('delegates to relations module', async () => {
+      const epicExtra = {
+        Description: {
+          type: 'rich_text',
+          rich_text: [{ plain_text: 'Epic: notion-ab12cd34' }],
+        },
+      };
+      const childPage = {
+        id: 'child1-uuid-5678-9abc-def0-123456789abc',
+        properties: {
+          Name: { type: 'title', title: [{ plain_text: 'Child 1' }] },
+          Status: { type: 'status', status: { name: 'In Progress' } },
+          Description: epicExtra.Description,
+        },
+      };
+
+      vi.mocked(retryFetch).mockResolvedValue(
+        mockResponse({
+          results: [childPage],
+          has_more: false,
+          next_cursor: null,
+        }),
+      );
+
+      const board = createNotionBoard(baseEnv);
+      const result = await board.fetchChildrenStatus('notion-ab12cd34');
+
+      expect(result).toEqual({ total: 1, incomplete: 1 });
+    });
+  });
+
+  // ─── addLabel / removeLabel ───────────────────────────────────────────
+
+  describe('addLabel', () => {
+    it('delegates to label module', async () => {
+      const page = {
+        ...makeFullPage('ab12cd34-5678-9abc-def0-123456789abc', 'Test'),
+        properties: {
+          ...makeFullPage('ab12cd34-5678-9abc-def0-123456789abc', 'Test')
+            .properties,
+          Labels: {
+            type: 'multi_select',
+            multi_select: [{ name: 'existing' }],
+          },
+        },
+      };
+
+      vi.mocked(retryFetch)
+        // findPageByKey → queryAllPages
+        .mockResolvedValueOnce(
+          mockResponse({
+            results: [page],
+            has_more: false,
+            next_cursor: null,
+          }),
+        )
+        // updatePage PATCH
+        .mockResolvedValueOnce(mockResponse({}));
+
+      const board = createNotionBoard(baseEnv);
+      await board.addLabel('notion-ab12cd34', 'new-label');
+
+      expect(retryFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/pages/'),
+        expect.objectContaining({ method: 'PATCH' }),
+      );
+    });
+  });
+
+  describe('removeLabel', () => {
+    it('delegates to label module', async () => {
+      const page = {
+        ...makeFullPage('ab12cd34-5678-9abc-def0-123456789abc', 'Test'),
+        properties: {
+          ...makeFullPage('ab12cd34-5678-9abc-def0-123456789abc', 'Test')
+            .properties,
+          Labels: {
+            type: 'multi_select',
+            multi_select: [{ name: 'old-label' }, { name: 'keep' }],
+          },
+        },
+      };
+
+      vi.mocked(retryFetch)
+        // findPageByKey → queryAllPages
+        .mockResolvedValueOnce(
+          mockResponse({
+            results: [page],
+            has_more: false,
+            next_cursor: null,
+          }),
+        )
+        // updatePage PATCH
+        .mockResolvedValueOnce(mockResponse({}));
+
+      const board = createNotionBoard(baseEnv);
+      await board.removeLabel('notion-ab12cd34', 'old-label');
+
+      expect(retryFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/pages/'),
+        expect.objectContaining({ method: 'PATCH' }),
+      );
+    });
+  });
+
   // ─── transitionTicket ───────────────────────────────────────────────────
 
   describe('transitionTicket', () => {

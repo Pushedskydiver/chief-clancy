@@ -14,6 +14,7 @@
  *
  * @param fn - The async label operation to execute.
  * @param operation - Human-readable name for error messages (e.g., `'addLabel'`).
+ * @returns Resolves when complete — never rejects.
  */
 export async function safeLabel(
   fn: () => Promise<void>,
@@ -48,6 +49,7 @@ export type ModifyLabelListOpts<T extends string | number> = {
  * change is needed. Works with string labels and numeric IDs.
  *
  * @param opts - Fetch/write callbacks, target label, and add/remove mode.
+ * @returns Resolves when the write completes (no-op if unchanged).
  */
 export async function modifyLabelList<T extends string | number>(
   opts: ModifyLabelListOpts<T>,

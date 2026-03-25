@@ -23,6 +23,7 @@ function formatError(err: unknown): string {
  *
  * @param ctx - Token and repo context.
  * @param label - The label name to ensure.
+ * @returns Resolves when complete (best-effort — never throws).
  */
 export async function ensureLabel(
   ctx: GitHubLabelContext,
@@ -69,6 +70,7 @@ async function createLabel(
  * @param ctx - Token and repo context.
  * @param issueNumber - The issue number.
  * @param label - The label name to add.
+ * @returns Resolves when complete (best-effort — never throws).
  */
 export async function addLabel(
   ctx: GitHubLabelContext,
@@ -100,6 +102,7 @@ export async function addLabel(
  * @param ctx - Token and repo context.
  * @param issueNumber - The issue number.
  * @param label - The label name to remove.
+ * @returns Resolves when complete (best-effort — never throws).
  */
 export async function removeLabel(
   ctx: GitHubLabelContext,

@@ -164,6 +164,73 @@ describe('createShortcutBoard', () => {
     expect(result).toBe(false);
   });
 
+  it('fetchChildrenStatus returns undefined for invalid parentKey', async () => {
+    const board = createShortcutBoard(makeEnv());
+    const result = await board.fetchChildrenStatus('invalid');
+    expect(result).toBeUndefined();
+  });
+
+  it('fetchChildrenStatus delegates to relations module', async () => {
+    const mockFetch = stubWorkflowsAndStories([{ id: 1, name: 'Warm' }]);
+    // fetchChildrenByDescription (search stories — needs workflow state IDs)
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: [
+            { id: 10, name: 'Child', workflow_state_id: 100 },
+            { id: 11, name: 'Done Child', workflow_state_id: 102 },
+          ],
+        }),
+    } as Response);
+    vi.stubGlobal('fetch', mockFetch);
+
+    const board = createShortcutBoard(makeEnv());
+    // First call warms the workflow cache
+    await board.fetchTickets({});
+
+    const result = await board.fetchChildrenStatus('sc-10');
+
+    expect(result).toEqual({ total: 2, incomplete: 1 });
+  });
+
+  it('transitionTicket succeeds with valid key', async () => {
+    const mockFetch = vi
+      .fn()
+      // fetchWorkflows
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =>
+          Promise.resolve([
+            {
+              id: 1,
+              name: 'Eng',
+              states: [
+                { id: 100, name: 'Backlog', type: 'unstarted' },
+                { id: 101, name: 'In Progress', type: 'started' },
+              ],
+            },
+          ]),
+      } as Response)
+      // transitionStory PUT
+      .mockResolvedValueOnce({ ok: true } as Response);
+    vi.stubGlobal('fetch', mockFetch);
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+
+    const board = createShortcutBoard(makeEnv());
+    const result = await board.transitionTicket(
+      {
+        key: 'sc-42',
+        title: 'Test',
+        description: '',
+        parentInfo: 'none',
+        blockers: 'None',
+      },
+      'In Progress',
+    );
+    expect(result).toBe(true);
+  });
+
   it('uses CLANCY_LABEL for default label filter', async () => {
     const mockFetch = stubWorkflowsAndStories([]);
     vi.stubGlobal('fetch', mockFetch);

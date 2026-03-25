@@ -51,6 +51,7 @@ async function writeTags(
  * @param ctx - Azure DevOps connection context.
  * @param issueKey - The work item key (e.g., `'azdo-42'`).
  * @param label - The tag to add.
+ * @returns Resolves when complete (best-effort — never throws).
  */
 export async function addLabel(
   ctx: AzdoCtx,
@@ -76,6 +77,7 @@ export async function addLabel(
  * @param ctx - Azure DevOps connection context.
  * @param issueKey - The work item key (e.g., `'azdo-42'`).
  * @param label - The tag to remove.
+ * @returns Resolves when complete (best-effort — never throws).
  */
 export async function removeLabel(
   ctx: AzdoCtx,
