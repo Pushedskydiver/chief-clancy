@@ -226,6 +226,45 @@ describe('buildEpicContext', () => {
 
     expect(result?.siblingsDelivered).toBe(0);
   });
+
+  it('counts siblings across mixed delivered statuses', () => {
+    const entries: readonly ProgressEntry[] = [
+      {
+        timestamp: '2026-03-25 10:00',
+        key: 'PROJ-41',
+        summary: 'Created',
+        status: 'PR_CREATED',
+        prNumber: 5,
+        parent: 'PROJ-100',
+      },
+      {
+        timestamp: '2026-03-25 11:00',
+        key: 'PROJ-43',
+        summary: 'Pushed',
+        status: 'PUSHED',
+        prNumber: 6,
+        parent: 'PROJ-100',
+      },
+      {
+        timestamp: '2026-03-25 12:00',
+        key: 'PROJ-44',
+        summary: 'Reworked',
+        status: 'REWORK',
+        prNumber: 7,
+        parent: 'PROJ-100',
+      },
+    ];
+
+    const result = buildEpicContext({
+      progressFs: makeProgressFs(entries),
+      projectRoot: '/tmp',
+      parent: 'PROJ-100',
+      targetBranch: 'epic/proj-100',
+      ticketKey: 'PROJ-42',
+    });
+
+    expect(result?.siblingsDelivered).toBe(3);
+  });
 });
 
 // ─── gatherChildEntries ──────────────────────────────────────────────────────
