@@ -323,24 +323,27 @@ Completed PRs 7.3–7.5. 1,381 tests passing. Codebase clean.
 
 ### Session 21 handoff (2026-03-25)
 
-Completed PR 7.5a. Codebase clean.
+Completed PRs 7.5a-7.8 + Phase 7 audit. Phase 7 complete. Codebase clean.
 
 **What was completed:**
 
-- **7.5a Azure DevOps rework** (#54) — `AzdoRemote` type with `org`/`project`/`repo`/`hostname` fields, replaces `GenericRemote` for Azure in `RemoteInfo` union. Parses `dev.azure.com` HTTPS and `ssh.dev.azure.com` SSH URLs. Wires existing azdo PR APIs into `resolvePlatformHandlers`. Extracted all platform builders into `rework-builders.ts` (line limit).
+- **7.5a Azure DevOps rework** (#54) — `AzdoRemote` type, URL parsing, rework-handler case. Extracted platform builders to `rework-builders.ts`
+- **7.6 `resume/`** (#55) — `detectResume` + `executeResume`. Full DI (exec, progressFs). Optional `createPr` callback. Decomposed helpers under 50-line limit
+- **7.7 `outcome/` + `pr-creation/`** (#56) — `DispatchCtx` pattern for platform dispatch. `buildManualPrUrl` for all 5 platforms incl. Azure. `DeliveryOutcome` discriminated union
+- **7.8 `deliver/` + `epic/` + `commit-type/`** (#57) — `deliverViaPullRequest` returns structured `DeliveryResult` (no console.log). `epic/` extracted to `shared/epic/` for independent reuse. `resolveCommitType` maps board ticket types to feat/fix/chore
+- **Phase 7 audit** — 3 HIGH, 12 MEDIUM, 9 LOW. Cleanup PRs C10-C14 planned
 
 **What's next:**
 
-- 7.6 (`resume/`, depends on 7.0 + 7.1, independent of 7.5a)
-- 7.7 (`deliver/` prereqs, benefits from `AzdoRemote` for pr-creation dispatch)
-- 7.8 (`deliver/`, depends on 7.7)
+- Phase 7 cleanup: C10 (bugs first), C11-C14 (tests/hygiene)
 
 **Key decisions:**
 
-- `GenericRemote` narrowed to `host: 'unknown'` only — Azure is now a first-class discriminated type
-- `buildApiBaseUrl` returns `'https://dev.azure.com'` for Azure (azdo.ts hardcodes its own base URL, but the guard in `resolvePlatformHandlers` requires a truthy apiBase)
-- Platform builders extracted to `rework-builders.ts` to keep `rework-handlers.ts` under 300-line limit
-- Legacy `visualstudio.com` URL format not supported — different path structure (org in hostname). Low priority since Microsoft redirects to `dev.azure.com` since 2018
+- `GenericRemote` narrowed to `host: 'unknown'` only — Azure is a first-class discriminated type
+- Core modules return structured data, no `console.log` — terminal layer handles display
+- `epic/` lives at `shared/epic/` not `shared/deliver/epic/` — zero imports from deliver, independently reusable
+- `resolveCommitType` defaults to `feat` when `ticketType` undefined — boards opt in by populating from their API (Shortcut `story_type`, Jira `issuetype`, Azure `WorkItemType`)
+- Legacy `visualstudio.com` URLs not supported — low priority, different path structure
 
 ## Phase 7 Cleanup
 
