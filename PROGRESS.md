@@ -391,17 +391,17 @@ Post-merge audit found 3 HIGH, 12 MEDIUM, 9 LOW across 13 modules. Audit run 202
 
 Adjusted after phase validation + DA review (2026-03-25). Orchestration layer tying Phases 5-7 lifecycle modules into a sequential pipeline. 13 phases + context + orchestrator. Split oversized PRs. `notify/` and `prompt/` stay in Phase 9 per brief — cleanup/invoke accept callbacks. **BLOCKING finding:** `functional/immutable-data` rule flags `ctx.field = value` — RunContext must be class-based (`ignoreClasses: true` allows mutation).
 
-| PR   | Description                                                                                                  | Status  |
-| ---- | ------------------------------------------------------------------------------------------------------------ | ------- |
-| 8.0  | Prerequisites: `preflight/` (binary checks, env, git state, DI exec) + `deleteVerifyAttempt` in lock module  | Done    |
-| 8.1  | Pipeline context: `RunContext` class (mutation-safe), `Phase` type, `createContext()` factory. TDD           | Done    |
-| 8.2a | Phases batch 1a: `lock-check` (105 → decompose), `preflight-phase` (69). Wires to existing `resume/`. TDD    | Done    |
-| 8.2b | `deliverEpicToBase`: shared module for epic PR delivery to base branch (122 lines → decompose). TDD          | Done    |
-| 8.2c | Phases batch 1c: `epic-completion` (72, consumes deliverEpicToBase), `pr-retry` (142 → decompose). TDD       | Done    |
-| 8.3  | Phases batch 2: `rework-detection` (34), `ticket-fetch` (79 → decompose), `dry-run` (38), `feasibility` (39) | Done    |
-| 8.4a | Phases batch 3a: `branch-setup` (115 → major decompose), `transition` (19). TDD                              | Done    |
-| 8.4b | Phases batch 3b: `deliver-phase` (105 → decompose), `cost-phase` (31), `cleanup` (33, notify callback). TDD  | Done    |
-| 8.5  | Pipeline orchestrator: `runPipeline()` — wire all phases, invoke callback injection. TDD                     | Pending |
+| PR   | Description                                                                                                  | Status |
+| ---- | ------------------------------------------------------------------------------------------------------------ | ------ |
+| 8.0  | Prerequisites: `preflight/` (binary checks, env, git state, DI exec) + `deleteVerifyAttempt` in lock module  | Done   |
+| 8.1  | Pipeline context: `RunContext` class (mutation-safe), `Phase` type, `createContext()` factory. TDD           | Done   |
+| 8.2a | Phases batch 1a: `lock-check` (105 → decompose), `preflight-phase` (69). Wires to existing `resume/`. TDD    | Done   |
+| 8.2b | `deliverEpicToBase`: shared module for epic PR delivery to base branch (122 lines → decompose). TDD          | Done   |
+| 8.2c | Phases batch 1c: `epic-completion` (72, consumes deliverEpicToBase), `pr-retry` (142 → decompose). TDD       | Done   |
+| 8.3  | Phases batch 2: `rework-detection` (34), `ticket-fetch` (79 → decompose), `dry-run` (38), `feasibility` (39) | Done   |
+| 8.4a | Phases batch 3a: `branch-setup` (115 → major decompose), `transition` (19). TDD                              | Done   |
+| 8.4b | Phases batch 3b: `deliver-phase` (105 → decompose), `cost-phase` (31), `cleanup` (33, notify callback). TDD  | Done   |
+| 8.5  | Pipeline orchestrator: `runPipeline()` — wire all phases, invoke callback injection. TDD                     | Done   |
 
 ### Dependencies
 
@@ -536,16 +536,17 @@ Completed PRs 8.3-8.4a. Phase 8 pipeline phases 3-8 in place. 108 pipeline tests
 
 ### Session 26 handoff (2026-03-25)
 
-Completed PR 8.4b. All 13 pipeline phases implemented (phases 0-12). 137 pipeline tests. Codebase clean.
+Completed PRs 8.4b-8.5. Phase 8 complete. 159 pipeline tests. Codebase clean.
 
 **What was completed:**
 
-- **8.4b** (#TBD) — 3 phases: `deliver-phase` (decomposed into `deliverRework`, `deliverFresh`, `computeParentKeys`, `resolveSingleChildParent`), `cost-phase` (thin wrapper with `parseTokenRate` helper), `cleanup-phase` (completion data + notify callback). All best-effort error handling. 27 new tests
+- **8.4b** (#70) — 3 phases: `deliver-phase` (decomposed into `deliverRework`, `deliverFresh`, `computeParentKeys`, `resolveSingleChildParent`), `cost-phase` (thin wrapper with `parseTokenRate` helper), `cleanup-phase` (completion data + notify callback). All best-effort error handling. 27 new tests
+- **8.5** (#TBD) — Pipeline orchestrator: `runPipeline(ctx, deps)` with `PipelineDeps` type aggregating all phase deps. Pipeline barrel + core barrel re-exports. `PipelineResult` discriminated union (`completed | aborted | resumed | dry-run | error`). try/catch/finally for lock cleanup. 22 orchestrator tests. Phase barrel `index.ts` files deferred to Phase 9 (terminal layer is the actual consumer — orchestrator uses DI callbacks)
 
 **What's next:**
 
-- Start 8.5 (pipeline orchestrator: `runPipeline()`, invoke callback injection, barrel `index.ts` exports for all phase directories)
-- After 8.5: Phase 8 audit
+- Phase 8 audit
+- Then Phase 9 (terminal wiring)
 
 **Key decisions:**
 
@@ -554,7 +555,11 @@ Completed PR 8.4b. All 13 pipeline phases implemented (phases 0-12). 137 pipelin
 - `deliver-phase` DI pattern: `deliverViaPullRequest` dep is pre-wired with exec/fetchFn/config/ticket by terminal layer, phase only passes delivery-specific opts (ticketBranch, targetBranch, parent, etc.)
 - `singleChildParent` GitHub validation: only valid `#N` refs pass through — milestone titles like "Sprint 3" would produce invalid "Closes Sprint 3" lines
 - `cleanup-phase` returns `CleanupResult` with `ticketKey`, `ticketTitle`, `elapsedMs` — terminal formats the display
-- No new RunContext setters needed — all three phases only read from context
+- `PipelineDeps` uses minimal return type shapes (not full phase result types) — keeps orchestrator decoupled from phase internals
+- Lock-check runs outside try/catch — if it aborts, no lock was acquired so no cleanup needed
+- `restoreBranch` in catch block, `cleanupLock` in finally block — guarantees cleanup on all paths
+- Dry-run gate uses `ctx.dryRun` directly, not a phase dep — the `dryRun` phase module is a standalone utility for ticket info display
+- Phase barrel `index.ts` files deferred again — orchestrator uses DI callbacks (not direct imports), terminal layer (Phase 9) is the actual consumer per export hygiene convention
 
 ### Session 24 handoff (2026-03-25)
 
