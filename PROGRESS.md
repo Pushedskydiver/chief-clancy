@@ -349,13 +349,13 @@ Completed PRs 7.5a-7.8 + Phase 7 audit. Phase 7 complete. Codebase clean.
 
 Post-merge audit found 3 HIGH, 12 MEDIUM, 9 LOW across 13 modules. Audit run 2026-03-25.
 
-| PR  | Description                                                                                     | Status  |
-| --- | ----------------------------------------------------------------------------------------------- | ------- |
-| C10 | Lock stale bug + quality validation + quality reduce + negative duration guard (H1, H2, M1, L7) | Pending |
-| C11 | Rework handler invocation tests + pr-creation result assertions (H3, M6, M9)                    | Pending |
-| C12 | Shared types extraction: `ExecGit`, `FetchFn` + rename `Ctx` → `ReworkCtx` (M2, M3, L4)         | Pending |
-| C13 | JSDoc `@param` sweep + property-based tests for URL builders/string transformers (M4, M8, L1)   | Pending |
-| C14 | Test coverage gaps: deliver, rework, fetch-ticket, epic, cost, commit-type (M5-M7, M10-M12)     | Pending |
+| PR  | Description                                                                                     | Status     |
+| --- | ----------------------------------------------------------------------------------------------- | ---------- |
+| C10 | Lock stale bug + quality validation + quality reduce + negative duration guard (H1, H2, M1, L7) | Done (#58) |
+| C11 | Rework handler invocation tests + pr-creation result assertions (H3, M6, M9)                    | Pending    |
+| C12 | Shared types extraction: `ExecGit`, `FetchFn` + rename `Ctx` → `ReworkCtx` (M2, M3, L4)         | Pending    |
+| C13 | JSDoc `@param` sweep + property-based tests for URL builders/string transformers (M4, M8, L1)   | Pending    |
+| C14 | Test coverage gaps: deliver, rework, fetch-ticket, epic, cost, commit-type (M5-M7, M10-M12)     | Pending    |
 
 ### HIGH findings
 
