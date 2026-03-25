@@ -153,12 +153,15 @@ export function parseRemote(rawUrl: string): RemoteInfo {
 export function detectPlatformFromHostname(hostname: string): GitPlatform {
   const lower = hostname.toLowerCase();
 
-  if (lower === 'github.com' || lower.includes('github')) return 'github';
-  if (lower === 'gitlab.com' || lower.includes('gitlab')) return 'gitlab';
-  if (lower === 'bitbucket.org' || lower.includes('bitbucket'))
-    return 'bitbucket';
-  if (lower.includes('dev.azure') || lower.includes('visualstudio'))
-    return 'azure';
+  const isGitHub = lower === 'github.com' || lower.includes('github');
+  const isGitLab = lower === 'gitlab.com' || lower.includes('gitlab');
+  const isBitbucket = lower === 'bitbucket.org' || lower.includes('bitbucket');
+  const isAzure = lower.includes('dev.azure') || lower.includes('visualstudio');
+
+  if (isGitHub) return 'github';
+  if (isGitLab) return 'gitlab';
+  if (isBitbucket) return 'bitbucket';
+  if (isAzure) return 'azure';
 
   return 'unknown';
 }
