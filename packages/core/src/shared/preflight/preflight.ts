@@ -84,20 +84,20 @@ function isRemoteReachable(exec: ExecCmd): boolean {
 function collectWarnings(exec: ExecCmd): string | undefined {
   const execGit = (args: readonly string[]): string => exec('git', args);
 
-  const warnings: readonly string[] = [
-    ...(!isRemoteReachable(exec)
-      ? [
-          'Could not reach origin. PR creation and rework detection may not work.',
-        ]
-      : []),
-    ...(hasUncommittedChanges(execGit)
-      ? [
-          'Working directory has uncommitted changes — they will be included in the branch.',
-        ]
-      : []),
+  const checks: readonly (readonly [boolean, string])[] = [
+    [
+      !isRemoteReachable(exec),
+      'Could not reach origin. PR creation and rework detection may not work.',
+    ],
+    [
+      hasUncommittedChanges(execGit),
+      'Working directory has uncommitted changes — they will be included in the branch.',
+    ],
   ];
 
-  return warnings.length > 0 ? warnings.join('\n') : undefined;
+  const messages = checks.filter(([flag]) => flag).map(([, msg]) => msg);
+
+  return messages.length > 0 ? messages.join('\n') : undefined;
 }
 
 // ─── Public API ──────────────────────────────────────────────────────────────
