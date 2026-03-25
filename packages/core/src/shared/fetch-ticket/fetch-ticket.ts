@@ -10,7 +10,7 @@ import type { Board, FetchedTicket } from '~/c/types/board.js';
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 /** Options for ticket fetching behaviour. */
-type FetchTicketOpts = {
+type FetchTicketCallOpts = {
   /** If `true`, excludes tickets with the `clancy:hitl` label. */
   readonly isAfk?: boolean;
 };
@@ -50,7 +50,7 @@ export function resolvePlanLabel(
 /** Whether the current run is in AFK mode (exclude hitl tickets). */
 function isAfkMode(
   env: Record<string, string | undefined>,
-  opts?: FetchTicketOpts,
+  opts?: FetchTicketCallOpts,
 ): boolean {
   return opts?.isAfk ?? env.CLANCY_AFK_MODE === '1';
 }
@@ -64,6 +64,9 @@ function selectedMsg(ticket: FetchedTicket): string {
 /**
  * Walk candidates sequentially, returning the first unblocked ticket
  * that does not have the plan label.
+ *
+ * Recursive — safe because candidate lists are small (board queries
+ * return at most ~50 tickets in practice).
  */
 async function firstUnblocked(
   board: Board,
@@ -105,7 +108,7 @@ async function firstUnblocked(
  */
 export async function fetchTicket(
   board: Board,
-  opts?: FetchTicketOpts,
+  opts?: FetchTicketCallOpts,
 ): Promise<FetchedTicket | undefined> {
   const env = board.sharedEnv();
   const excludeHitl = isAfkMode(env, opts);
