@@ -256,6 +256,38 @@ describe('runPipeline — error handling', () => {
 
     expect(deps.checkout).not.toHaveBeenCalled();
   });
+
+  it('does not crash when checkout throws during branch restore', async () => {
+    const ctx = makeCtx();
+    ctx.setBranchSetup({
+      ticketBranch: 'feat/test',
+      targetBranch: 'main',
+      effectiveTarget: 'main',
+      originalBranch: 'develop',
+    });
+    const deps = makeDeps({
+      invoke: vi.fn().mockRejectedValue(new Error('crash')),
+      checkout: vi.fn(() => {
+        throw new Error('checkout failed');
+      }),
+    });
+
+    const result = await runPipeline(ctx, deps);
+
+    expect(result.status).toBe('error');
+    expect(result.error).toBe('crash');
+  });
+
+  it('stringifies non-Error thrown values', async () => {
+    const deps = makeDeps({
+      branchSetup: vi.fn().mockRejectedValue('string error'),
+    });
+
+    const result = await runPipeline(makeCtx(), deps);
+
+    expect(result.status).toBe('error');
+    expect(result.error).toBe('string error');
+  });
 });
 
 // ─── Cleanup (finally block) ────────────────────────────────────────────────
@@ -300,5 +332,34 @@ describe('runPipeline — cleanup', () => {
     await runPipeline(ctx, deps);
 
     expect(deps.deleteLock).toHaveBeenCalledOnce();
+  });
+
+  it('still calls deleteVerifyAttempt when deleteLock throws', async () => {
+    const ctx = makeCtx();
+    ctx.setLockOwner(true);
+    const deps = makeDeps({
+      deleteLock: vi.fn(() => {
+        throw new Error('lock file busy');
+      }),
+    });
+
+    const result = await runPipeline(ctx, deps);
+
+    expect(result.status).toBe('completed');
+    expect(deps.deleteVerifyAttempt).toHaveBeenCalledOnce();
+  });
+
+  it('does not crash when deleteVerifyAttempt throws', async () => {
+    const ctx = makeCtx();
+    ctx.setLockOwner(true);
+    const deps = makeDeps({
+      deleteVerifyAttempt: vi.fn(() => {
+        throw new Error('permission denied');
+      }),
+    });
+
+    const result = await runPipeline(ctx, deps);
+
+    expect(result.status).toBe('completed');
   });
 });

@@ -131,6 +131,18 @@ describe('feasibilityPhase', () => {
     );
   });
 
+  it('uses default reason when checkFeasibility returns no reason', async () => {
+    const ctx = makePopulatedCtx();
+    const deps = makeDeps({
+      checkFeasibility: vi.fn(() => Promise.resolve({ feasible: false })),
+    });
+
+    const result = await feasibilityPhase(ctx, deps);
+
+    expect(result.ok).toBe(false);
+    expect(result.reason).toBe('not implementable as code changes');
+  });
+
   it('returns ok: true with default reason undefined when feasible', async () => {
     const ctx = makePopulatedCtx();
     const deps = makeDeps();

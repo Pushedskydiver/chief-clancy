@@ -152,6 +152,18 @@ describe('createContext', () => {
     expect(ctx.startTime).toBeLessThanOrEqual(after);
   });
 
+  it('uses injected now for startTime', () => {
+    const ctx = createContext({ ...DEFAULTS, now: 1_700_000_000_000 });
+
+    expect(ctx.startTime).toBe(1_700_000_000_000);
+  });
+
+  it('preserves now: 0 (nullish coalescing, not falsy fallback)', () => {
+    const ctx = createContext({ ...DEFAULTS, now: 0 });
+
+    expect(ctx.startTime).toBe(0);
+  });
+
   it('parses --dry-run from argv', () => {
     const ctx = createContext({ projectRoot: '/p', argv: ['--dry-run'] });
 

@@ -130,6 +130,22 @@ describe('preflightPhase', () => {
     expect(result.warning).toContain('origin');
   });
 
+  it('returns error when preflight passes but env is missing', async () => {
+    const deps = makeDeps({
+      runPreflight: vi.fn(() => ({
+        ok: true,
+        env: undefined,
+        error: undefined,
+        warning: undefined,
+      })),
+    });
+
+    const result = await preflightPhase(makeCtx(), deps);
+
+    expect(result.ok).toBe(false);
+    expect(result.error).toContain('env is missing');
+  });
+
   it('does not set ctx.config or ctx.board on failure', async () => {
     const ctx = makeCtx();
     const deps = makeDeps({
