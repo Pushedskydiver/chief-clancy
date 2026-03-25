@@ -514,7 +514,7 @@ Completed PR 8.3. Phase 8 pipeline phases 3-6 in place. 85 pipeline tests. Codeb
 
 **What was completed:**
 
-- **8.3** (#TBD) — 4 lighter phases: `rework-detection` (detect PR rework via DI, best-effort), `ticket-fetch` (fresh fetch or rework, max rework guard, branch computation), `dry-run` (structured ticket info for display, no I/O), `feasibility` (async Claude feasibility check via DI). Added `setTicketBranches` setter to RunContext. Shared `test-helpers.ts` for board mock deduplication. 36 new tests
+- **8.3** (#TBD) — 4 lighter phases: `rework-detection` (detect PR rework via DI, best-effort), `ticket-fetch` (fresh fetch or rework, max rework guard, branch computation), `dry-run` (structured ticket info for display, no I/O), `feasibility` (async Claude feasibility check via DI). Added `setTicketBranches` setter to RunContext. Shared `test-helpers.ts` for board mock deduplication. Restructured all 8 phases into individual directories (`phases/lock-check/`, `phases/dry-run/`, etc.) to match the one-module-per-directory convention. Barrel exports deferred to 8.5. 36 new tests
 
 **What's next:**
 
@@ -530,6 +530,7 @@ Completed PR 8.3. Phase 8 pipeline phases 3-6 in place. 85 pipeline tests. Codeb
 - Non-null assertion comments added per DA review — `// Safe: pipeline ordering guarantees ...`
 - Shared `test-helpers.ts` with `makeCtx()` + internal `makeBoard()` — prevents Board mock drift across 4+ test files
 - `ctx.isRework === true` used consistently (not truthy check) — clear handling of `boolean | undefined`
+- Phases restructured into individual directories (`phases/<name>/<name>.ts`) — matches `shared/` one-module-per-directory convention. Barrel `index.ts` files deferred to 8.5 per export hygiene (no consumers yet). `test-helpers.ts` stays at `phases/` level as shared test utility
 
 ### Session 24 handoff (2026-03-25)
 
