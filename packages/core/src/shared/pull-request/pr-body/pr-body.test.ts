@@ -145,7 +145,7 @@ describe('buildPrBody', () => {
 
     const body = buildPrBody({ config, ticket });
     expect(body).toContain('Clancy');
-    expect(body).toContain('github.com/Pushedskydiver/clancy');
+    expect(body).toContain('github.com/Pushedskydiver/chief-clancy');
   });
 
   it('does not include verification warning when not provided', () => {

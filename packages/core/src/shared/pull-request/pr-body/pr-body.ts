@@ -105,7 +105,7 @@ export function buildEpicPrBody(opts: BuildEpicPrBodyOpts): string {
     ...closesLines,
     '',
     '---',
-    '*Created by [Clancy](https://github.com/Pushedskydiver/clancy)*',
+    '*Created by [Clancy](https://github.com/Pushedskydiver/chief-clancy)*',
   ];
 
   return sections.join('\n');
@@ -182,23 +182,23 @@ function verificationLines(warning: string | undefined): readonly string[] {
   ];
 }
 
+const FOOTER = `---
+*Created by [Clancy](https://github.com/Pushedskydiver/chief-clancy)*
+
+---
+<details>
+<summary><strong>Rework instructions</strong> (click to expand)</summary>
+
+To request changes:
+- **Code comments** — leave inline comments on specific lines. These are always picked up automatically.
+- **General feedback** — reply with a comment starting with \`Rework:\` followed by what needs fixing. Comments without the \`Rework:\` prefix are treated as discussion.
+
+Example: \`Rework: The form validation doesn't handle empty passwords\`
+
+</details>`;
+
 function footerLines(): readonly string[] {
-  return [
-    '---',
-    '*Created by [Clancy](https://github.com/Pushedskydiver/clancy)*',
-    '',
-    '---',
-    '<details>',
-    '<summary><strong>Rework instructions</strong> (click to expand)</summary>',
-    '',
-    'To request changes:',
-    '- **Code comments** — leave inline comments on specific lines. These are always picked up automatically.',
-    '- **General feedback** — reply with a comment starting with `Rework:` followed by what needs fixing. Comments without the `Rework:` prefix are treated as discussion.',
-    '',
-    "Example: `Rework: The form validation doesn't handle empty passwords`",
-    '',
-    '</details>',
-  ];
+  return FOOTER.split('\n');
 }
 
 function githubClosesLines(
