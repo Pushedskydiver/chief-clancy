@@ -7,39 +7,18 @@
  * of switching on `remote.host`.
  */
 import type { SharedEnv } from '~/c/schemas/env/env.js';
-import type {
-  BitbucketRemote,
-  BitbucketServerRemote,
-  GitHubRemote,
-  GitLabRemote,
-  PrReviewState,
-  RemoteInfo,
-} from '~/c/types/remote.js';
+import type { PrReviewState, RemoteInfo } from '~/c/types/remote.js';
 
 import { resolveGitToken } from '~/c/shared/git-token/git-token.js';
-import {
-  checkPrReviewState as checkBbCloudReviewState,
-  fetchPrReviewComments as fetchBbCloudComments,
-  postCloudPrComment,
-} from '~/c/shared/pull-request/bitbucket/cloud.js';
-import {
-  checkServerPrReviewState,
-  fetchServerPrReviewComments,
-  postServerPrComment,
-} from '~/c/shared/pull-request/bitbucket/server.js';
-import {
-  checkPrReviewState as checkGitHubReviewState,
-  fetchPrReviewComments as fetchGitHubComments,
-  postPrComment as postGitHubComment,
-  requestReview as requestGitHubReview,
-} from '~/c/shared/pull-request/github/github.js';
-import {
-  checkMrReviewState,
-  fetchMrReviewComments,
-  postMrNote,
-  resolveDiscussions,
-} from '~/c/shared/pull-request/gitlab/gitlab.js';
 import { buildApiBaseUrl } from '~/c/shared/remote/remote.js';
+
+import {
+  azdoHandlers,
+  bbCloudHandlers,
+  bbServerHandlers,
+  githubHandlers,
+  gitlabHandlers,
+} from './rework-builders.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -79,205 +58,20 @@ export type PlatformReworkHandlers = {
   ) => Promise<boolean>;
 };
 
-/** Options for {@link resolvePlatformHandlers}. */
-type ResolveHandlersOpts = {
-  readonly fetchFn: FetchFn;
-  readonly env: SharedEnv;
-  readonly remote: RemoteInfo;
-};
-
-// ─── Platform builders ──────────────────────────────────────────────────────
-
-const noopResolve = async (): Promise<number> => 0;
-const noopReRequest = async (): Promise<boolean> => false;
-
 /** Shared context passed to every platform builder. */
-type Ctx = {
+export type Ctx = {
   readonly fetchFn: FetchFn;
   readonly token: string;
   readonly apiBase: string;
   readonly username?: string;
 };
 
-function githubHandlers(
-  ctx: Ctx,
-  remote: GitHubRemote,
-): PlatformReworkHandlers {
-  const { fetchFn, token, apiBase } = ctx;
-  const repo = `${remote.owner}/${remote.repo}`;
-  return {
-    checkReviewState: (branch, since) =>
-      checkGitHubReviewState({
-        fetchFn,
-        token,
-        repo,
-        branch,
-        owner: remote.owner,
-        apiBase,
-        since,
-      }),
-    fetchComments: async (prNumber, since) => ({
-      comments: await fetchGitHubComments({
-        fetchFn,
-        token,
-        repo,
-        prNumber,
-        apiBase,
-        since,
-      }),
-    }),
-    postComment: (prNumber, comment) =>
-      postGitHubComment({
-        fetchFn,
-        token,
-        repo,
-        prNumber,
-        body: comment,
-        apiBase,
-      }),
-    resolveThreads: noopResolve,
-    reRequestReview: (prNumber, reviewers) =>
-      requestGitHubReview({
-        fetchFn,
-        token,
-        repo,
-        prNumber,
-        reviewers,
-        apiBase,
-      }),
-  };
-}
-
-function gitlabHandlers(
-  ctx: Ctx,
-  remote: GitLabRemote,
-): PlatformReworkHandlers {
-  const { fetchFn, token, apiBase } = ctx;
-  return {
-    checkReviewState: (branch, since) =>
-      checkMrReviewState({
-        fetchFn,
-        token,
-        apiBase,
-        projectPath: remote.projectPath,
-        branch,
-        since,
-      }),
-    fetchComments: (prNumber, since) =>
-      fetchMrReviewComments({
-        fetchFn,
-        token,
-        apiBase,
-        projectPath: remote.projectPath,
-        mrIid: prNumber,
-        since,
-      }),
-    postComment: (prNumber, comment) =>
-      postMrNote({
-        fetchFn,
-        token,
-        apiBase,
-        projectPath: remote.projectPath,
-        mrIid: prNumber,
-        body: comment,
-      }),
-    resolveThreads: (prNumber, discussionIds) =>
-      resolveDiscussions({
-        fetchFn,
-        token,
-        apiBase,
-        projectPath: remote.projectPath,
-        mrIid: prNumber,
-        discussionIds,
-      }),
-    reRequestReview: noopReRequest,
-  };
-}
-
-function bbCloudHandlers(
-  ctx: Ctx,
-  remote: BitbucketRemote,
-): PlatformReworkHandlers {
-  const { fetchFn, token } = ctx;
-  const username = ctx.username!;
-  return {
-    checkReviewState: (branch, since) =>
-      checkBbCloudReviewState({
-        fetchFn,
-        username,
-        token,
-        workspace: remote.workspace,
-        repoSlug: remote.repoSlug,
-        branch,
-        since,
-      }),
-    fetchComments: async (prNumber, since) => ({
-      comments: await fetchBbCloudComments({
-        fetchFn,
-        username,
-        token,
-        workspace: remote.workspace,
-        repoSlug: remote.repoSlug,
-        prId: prNumber,
-        since,
-      }),
-    }),
-    postComment: (prNumber, comment) =>
-      postCloudPrComment({
-        fetchFn,
-        username,
-        token,
-        workspace: remote.workspace,
-        repoSlug: remote.repoSlug,
-        prId: prNumber,
-        body: comment,
-      }),
-    resolveThreads: noopResolve,
-    reRequestReview: noopReRequest,
-  };
-}
-
-function bbServerHandlers(
-  ctx: Ctx,
-  remote: BitbucketServerRemote,
-): PlatformReworkHandlers {
-  const { fetchFn, token, apiBase } = ctx;
-  return {
-    checkReviewState: (branch, since) =>
-      checkServerPrReviewState({
-        fetchFn,
-        token,
-        apiBase,
-        projectKey: remote.projectKey,
-        repoSlug: remote.repoSlug,
-        branch,
-        since,
-      }),
-    fetchComments: async (prNumber, since) => ({
-      comments: await fetchServerPrReviewComments({
-        fetchFn,
-        token,
-        apiBase,
-        projectKey: remote.projectKey,
-        repoSlug: remote.repoSlug,
-        prId: prNumber,
-        since,
-      }),
-    }),
-    postComment: (prNumber, comment) =>
-      postServerPrComment({
-        fetchFn,
-        token,
-        apiBase,
-        projectKey: remote.projectKey,
-        repoSlug: remote.repoSlug,
-        prId: prNumber,
-        body: comment,
-      }),
-    resolveThreads: noopResolve,
-    reRequestReview: noopReRequest,
-  };
-}
+/** Options for {@link resolvePlatformHandlers}. */
+type ResolveHandlersOpts = {
+  readonly fetchFn: FetchFn;
+  readonly env: SharedEnv;
+  readonly remote: RemoteInfo;
+};
 
 // ─── Public API ──────────────────────────────────────────────────────────────
 
@@ -314,6 +108,8 @@ export function resolvePlatformHandlers(
       return bbCloudHandlers(ctx, remote);
     case 'bitbucket-server':
       return bbServerHandlers(ctx, remote);
+    case 'azure':
+      return azdoHandlers(ctx, remote);
     default:
       return undefined;
   }

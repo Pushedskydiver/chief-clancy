@@ -43,9 +43,18 @@ export type BitbucketServerRemote = {
   readonly hostname: string;
 };
 
-/** Azure DevOps or unknown remote info. */
+/** Azure DevOps remote info. */
+export type AzdoRemote = {
+  readonly host: 'azure';
+  readonly org: string;
+  readonly project: string;
+  readonly repo: string;
+  readonly hostname: string;
+};
+
+/** Unknown remote info. */
 export type GenericRemote = {
-  readonly host: 'azure' | 'unknown';
+  readonly host: 'unknown';
   readonly url: string;
 };
 
@@ -60,6 +69,7 @@ export type RemoteInfo =
   | GitLabRemote
   | BitbucketRemote
   | BitbucketServerRemote
+  | AzdoRemote
   | GenericRemote
   | NoRemote;
 

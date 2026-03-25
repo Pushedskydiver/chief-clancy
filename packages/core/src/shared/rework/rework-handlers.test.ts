@@ -1,4 +1,5 @@
 import type {
+  AzdoRemote,
   BitbucketRemote,
   BitbucketServerRemote,
   GenericRemote,
@@ -39,6 +40,13 @@ function bitbucketEnv() {
   } as Parameters<typeof resolvePlatformHandlers>[0]['env'];
 }
 
+function azdoEnv() {
+  return {
+    AZDO_PAT: 'azdo_pat_test123',
+    CLANCY_GIT_API_URL: undefined,
+  } as Parameters<typeof resolvePlatformHandlers>[0]['env'];
+}
+
 const githubRemote: GitHubRemote = {
   host: 'github',
   owner: 'acme',
@@ -64,6 +72,14 @@ const bbServerRemote: BitbucketServerRemote = {
   projectKey: 'ACME',
   repoSlug: 'app',
   hostname: 'bitbucket.internal.com',
+};
+
+const azdoRemote: AzdoRemote = {
+  host: 'azure',
+  org: 'acme',
+  project: 'platform',
+  repo: 'app',
+  hostname: 'dev.azure.com',
 };
 
 // ─── resolvePlatformHandlers ────────────────────────────────────────────────
@@ -139,18 +155,43 @@ describe('resolvePlatformHandlers', () => {
     expect(handlers).toBeUndefined();
   });
 
-  it('returns undefined for "azure" remote', () => {
-    const remote: GenericRemote = {
-      host: 'azure',
-      url: 'https://dev.azure.com/org/proj',
-    };
+  it('returns handlers for Azure DevOps remote', () => {
     const handlers = resolvePlatformHandlers({
       fetchFn: mockFetchFn,
-      env: githubEnv(),
-      remote,
+      env: azdoEnv(),
+      remote: azdoRemote,
     });
 
-    expect(handlers).toBeUndefined();
+    expect(handlers).toBeDefined();
+    expect(typeof handlers!.checkReviewState).toBe('function');
+    expect(typeof handlers!.fetchComments).toBe('function');
+    expect(typeof handlers!.postComment).toBe('function');
+    expect(typeof handlers!.resolveThreads).toBe('function');
+    expect(typeof handlers!.reRequestReview).toBe('function');
+  });
+
+  it('resolveThreads is no-op on Azure DevOps', async () => {
+    const handlers = resolvePlatformHandlers({
+      fetchFn: mockFetchFn,
+      env: azdoEnv(),
+      remote: azdoRemote,
+    });
+
+    const result = await handlers!.resolveThreads(1, ['thread-1']);
+
+    expect(result).toBe(0);
+  });
+
+  it('reRequestReview is no-op on Azure DevOps', async () => {
+    const handlers = resolvePlatformHandlers({
+      fetchFn: mockFetchFn,
+      env: azdoEnv(),
+      remote: azdoRemote,
+    });
+
+    const result = await handlers!.reRequestReview(1, ['reviewer']);
+
+    expect(result).toBe(false);
   });
 
   it('returns undefined when credentials are missing', () => {

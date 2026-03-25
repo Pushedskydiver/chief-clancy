@@ -50,6 +50,36 @@ function parseBitbucketServerPath(
   };
 }
 
+/**
+ * Parse Azure DevOps path into org/project/repo.
+ *
+ * HTTPS: `org/project/_git/repo`
+ * SSH:   `v3/org/project/repo`
+ */
+function parseAzdoPath(
+  path: string,
+):
+  | { readonly org: string; readonly project: string; readonly repo: string }
+  | undefined {
+  // HTTPS format: org/project/_git/repo
+  const httpsMatch = path.match(/^([^/]+)\/([^/]+)\/_git\/(.+)$/);
+  if (httpsMatch) {
+    return {
+      org: httpsMatch[1]!,
+      project: httpsMatch[2]!,
+      repo: httpsMatch[3]!,
+    };
+  }
+
+  // SSH format: v3/org/project/repo
+  const sshMatch = path.match(/^v3\/([^/]+)\/([^/]+)\/(.+)$/);
+  if (sshMatch) {
+    return { org: sshMatch[1]!, project: sshMatch[2]!, repo: sshMatch[3]! };
+  }
+
+  return undefined;
+}
+
 /** Options for {@link buildRemoteInfo}. */
 type BuildRemoteInfoOpts = {
   readonly platform: GitPlatform;
@@ -105,8 +135,17 @@ function buildRemoteInfo(opts: BuildRemoteInfoOpts): RemoteInfo {
     case 'bitbucket-server':
       return parseBitbucketPath(opts, 'bitbucket-server');
 
-    case 'azure':
-      return { host: 'azure', url: rawUrl };
+    case 'azure': {
+      const azdo = parseAzdoPath(path);
+      if (!azdo) return { host: 'unknown', url: rawUrl };
+      return {
+        host: 'azure',
+        org: azdo.org,
+        project: azdo.project,
+        repo: azdo.repo,
+        hostname,
+      };
+    }
 
     case 'unknown':
     case 'none':
@@ -189,9 +228,10 @@ export function buildApiBaseUrl(
       return 'https://api.bitbucket.org/2.0';
     case 'bitbucket-server':
       return `https://${remote.hostname}/rest/api/1.0`;
+    case 'azure':
+      return 'https://dev.azure.com';
     case 'none':
     case 'unknown':
-    case 'azure':
       return undefined;
   }
 }

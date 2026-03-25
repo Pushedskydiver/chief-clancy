@@ -269,7 +269,7 @@ Adjusted after phase validation (2026-03-25). Added `git-token/` prerequisite (m
 | 7.3  | `quality/`: quality metric tracking (rework cycles, verification retries, delivery duration). DI filesystem    | Done (#51) |
 | 7.4  | `fetch-ticket/`: label resolution, blocker checking, AFK filtering. Consumes Board interface                   | Done (#52) |
 | 7.5  | `rework/`: rework detection — `rework-handlers` (platform dispatch) + orchestrator. Depends on 7.0             | Done (#53) |
-| 7.5a | Azure DevOps rework: `AzdoRemote` type + `parseRemote`/`buildApiBaseUrl` + rework-handler case. Depends on 7.5 | Pending    |
+| 7.5a | Azure DevOps rework: `AzdoRemote` type + `parseRemote`/`buildApiBaseUrl` + rework-handler case. Depends on 7.5 | Done (#54) |
 | 7.6  | `resume/`: crash recovery — detect resumable state, execute resume. Depends on 7.0, 7.1                        | Pending    |
 | 7.7  | `deliver/` prereqs: `outcome/` (pure) + `pr-creation/` (platform dispatch incl. AzDO). Depends on 7.0          | Pending    |
 | 7.8  | `deliver/`: epic branch management + PR delivery orchestration. Split `deliver.ts` + `epic.ts`. Depends on 7.7 | Pending    |
@@ -310,14 +310,34 @@ Completed PRs 7.3–7.5. 1,381 tests passing. Codebase clean.
 
 - **7.3 `quality/`** (#51) — atomic writes via temp+rename, `QualityFs` DI, `sumBy` + `hasTicketsRecord` helpers
 - **7.4 `fetch-ticket/`** (#52) — recursive `firstUnblocked` (no `for...of`), AFK from `board.sharedEnv()` not `process.env`, `FetchTicketCallOpts` renamed to avoid shadowing board type
-- **7.5 `rework/`** (#53, open) — `PlatformReworkHandlers` uniform interface across 4 platforms, `Ctx` shared builder context (max-params compliant), extracted best-effort helpers for complexity compliance
+- **7.5 `rework/`** (#53) — `PlatformReworkHandlers` uniform interface across 4 platforms, `Ctx` shared builder context (max-params compliant), extracted best-effort helpers for complexity compliance
 
 **What's next:**
 
-- Merge PR 7.5, then start 7.6 (`resume/`, depends on 7.0 + 7.1)
-- Follow-up PR: Azure DevOps rework support (needs `AzdoRemote` type + `parseRemote`/`buildApiBaseUrl` changes in `remote.ts`). Saved to memory.
+- Start 7.6 (`resume/`, depends on 7.0 + 7.1)
 
 **Key decisions:**
 
-- Azure rework deferred — `GenericRemote` doesn't parse org/project/repo needed by azdo PR APIs. Follow-up PR scoped.
+- Azure rework deferred to 7.5a — `GenericRemote` doesn't parse org/project/repo needed by azdo PR APIs
 - `rework-handlers` uses `default: return undefined` in switch instead of pre-guard on unsupported hosts
+
+### Session 21 handoff (2026-03-25)
+
+Completed PR 7.5a. Codebase clean.
+
+**What was completed:**
+
+- **7.5a Azure DevOps rework** (#54) — `AzdoRemote` type with `org`/`project`/`repo`/`hostname` fields, replaces `GenericRemote` for Azure in `RemoteInfo` union. Parses `dev.azure.com` HTTPS and `ssh.dev.azure.com` SSH URLs. Wires existing azdo PR APIs into `resolvePlatformHandlers`. Extracted all platform builders into `rework-builders.ts` (line limit).
+
+**What's next:**
+
+- 7.6 (`resume/`, depends on 7.0 + 7.1, independent of 7.5a)
+- 7.7 (`deliver/` prereqs, benefits from `AzdoRemote` for pr-creation dispatch)
+- 7.8 (`deliver/`, depends on 7.7)
+
+**Key decisions:**
+
+- `GenericRemote` narrowed to `host: 'unknown'` only — Azure is now a first-class discriminated type
+- `buildApiBaseUrl` returns `'https://dev.azure.com'` for Azure (azdo.ts hardcodes its own base URL, but the guard in `resolvePlatformHandlers` requires a truthy apiBase)
+- Platform builders extracted to `rework-builders.ts` to keep `rework-handlers.ts` under 300-line limit
+- Legacy `visualstudio.com` URL format not supported — different path structure (org in hostname). Low priority since Microsoft redirects to `dev.azure.com` since 2018

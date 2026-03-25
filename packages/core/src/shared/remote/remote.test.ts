@@ -150,10 +150,42 @@ describe('parseRemote', () => {
 
   // ── Azure DevOps ────────────────────────────────────────────────────
 
-  it('parses Azure DevOps URL', () => {
+  it('parses Azure DevOps HTTPS URL', () => {
     expect(parseRemote('https://dev.azure.com/org/project/_git/repo')).toEqual({
       host: 'azure',
-      url: 'https://dev.azure.com/org/project/_git/repo',
+      org: 'org',
+      project: 'project',
+      repo: 'repo',
+      hostname: 'dev.azure.com',
+    });
+  });
+
+  it('parses Azure DevOps HTTPS URL with .git suffix', () => {
+    expect(
+      parseRemote('https://dev.azure.com/org/project/_git/repo.git'),
+    ).toEqual({
+      host: 'azure',
+      org: 'org',
+      project: 'project',
+      repo: 'repo',
+      hostname: 'dev.azure.com',
+    });
+  });
+
+  it('parses Azure DevOps SSH URL', () => {
+    expect(parseRemote('git@ssh.dev.azure.com:v3/org/project/repo')).toEqual({
+      host: 'azure',
+      org: 'org',
+      project: 'project',
+      repo: 'repo',
+      hostname: 'ssh.dev.azure.com',
+    });
+  });
+
+  it('returns unknown for Azure URL with insufficient path segments', () => {
+    expect(parseRemote('https://dev.azure.com/org')).toEqual({
+      host: 'unknown',
+      url: 'https://dev.azure.com/org',
     });
   });
 
@@ -267,6 +299,28 @@ describe('parseRemote', () => {
         const result = parseRemote(raw);
         return validHosts.has(result.host);
       }),
+    );
+  });
+
+  it('round-trips Azure DevOps HTTPS URLs', () => {
+    fc.assert(
+      fc.property(
+        fc.stringMatching(/^[a-z][a-z0-9-]{0,19}$/),
+        fc.stringMatching(/^[a-z][a-z0-9-]{0,19}$/),
+        fc.stringMatching(/^[a-z][a-z0-9-]{0,19}$/),
+        (org, project, repo) => {
+          const result = parseRemote(
+            `https://dev.azure.com/${org}/${project}/_git/${repo}`,
+          );
+          return (
+            result.host === 'azure' &&
+            'org' in result &&
+            result.org === org &&
+            result.project === project &&
+            result.repo === repo
+          );
+        },
+      ),
     );
   });
 
@@ -389,10 +443,16 @@ describe('buildApiBaseUrl', () => {
     ).toBeUndefined();
   });
 
-  it('returns undefined for azure host', () => {
+  it('returns Azure DevOps API base', () => {
     expect(
-      buildApiBaseUrl({ host: 'azure', url: 'https://dev.azure.com/x' }),
-    ).toBeUndefined();
+      buildApiBaseUrl({
+        host: 'azure',
+        org: 'myorg',
+        project: 'myproj',
+        repo: 'myrepo',
+        hostname: 'dev.azure.com',
+      }),
+    ).toBe('https://dev.azure.com');
   });
 
   it('returns undefined for none host', () => {
