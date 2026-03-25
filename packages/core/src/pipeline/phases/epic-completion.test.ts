@@ -100,13 +100,26 @@ describe('epicCompletion', () => {
     expect(result.results[0]!.ok).toBe(false);
   });
 
-  it('catches errors and returns empty results', async () => {
+  it('catches sync errors and returns empty results', async () => {
     const ctx = makeCtx();
     const deps: EpicCompletionDeps = {
       findCompletedEpics: vi.fn(() => {
         throw new Error('progress read failed');
       }),
       deliverEpicToBase: vi.fn(),
+    };
+
+    const result = await epicCompletion(ctx, deps);
+
+    expect(result.results).toHaveLength(0);
+  });
+
+  it('catches async rejection from deliverEpicToBase', async () => {
+    const ctx = makeCtx();
+    const completedEpics = new Map([['PROJ-100', 'epic/proj-100']]);
+    const deps: EpicCompletionDeps = {
+      findCompletedEpics: vi.fn(() => completedEpics),
+      deliverEpicToBase: vi.fn(() => Promise.reject(new Error('network'))),
     };
 
     const result = await epicCompletion(ctx, deps);
@@ -146,15 +159,5 @@ describe('epicCompletion', () => {
       .calls[0] as [unknown];
     const opts = call[0] as Record<string, unknown>;
     expect(opts).toMatchObject({ baseBranch: 'main' });
-  });
-});
-
-// ─── findCompletedEpics (integration-level via phase) ────────────────────────
-
-describe('findCompletedEpics', () => {
-  it('identifies completed epics from progress and board status', async () => {
-    // This is tested via the phase's DI — the real findCompletedEpics is
-    // extracted as a helper and injected, so direct unit tests live in the
-    // phase file. The phase tests above cover the integration path.
   });
 });

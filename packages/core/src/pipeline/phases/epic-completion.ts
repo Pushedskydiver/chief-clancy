@@ -68,6 +68,7 @@ async function deliverCompletedEpics(
   ctx: RunContext,
   deps: EpicCompletionDeps,
 ): Promise<EpicCompletionResult> {
+  // Safe: pipeline ordering guarantees preflight runs before epic-completion
   const config = ctx.config!;
   const baseBranch = config.env.CLANCY_BASE_BRANCH ?? 'main';
   const completedEpics = deps.findCompletedEpics(ctx);
@@ -80,7 +81,7 @@ async function deliverCompletedEpics(
       projectRoot: ctx.projectRoot,
       config,
       epicKey,
-      epicTitle: epicKey,
+      epicTitle: epicKey, // title not available from progress — key is the fallback
       epicBranch,
       baseBranch,
     });

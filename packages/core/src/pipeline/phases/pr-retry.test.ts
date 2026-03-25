@@ -196,7 +196,7 @@ describe('prRetry', () => {
     expect(deps.appendProgress).not.toHaveBeenCalled();
   });
 
-  it('catches errors and returns empty results', async () => {
+  it('catches sync errors and returns empty results', async () => {
     const deps: PrRetryDeps = {
       findRetryable: vi.fn(() => {
         throw new Error('progress read failed');
@@ -209,6 +209,32 @@ describe('prRetry', () => {
     const result = await prRetry(makeCtx(), deps);
 
     expect(result.results).toHaveLength(0);
+  });
+
+  it('catches async rejection from retryEntry', async () => {
+    const entries = [makeEntry('PROJ-1')];
+    const deps: PrRetryDeps = {
+      findRetryable: vi.fn(() => entries),
+      detectRemote: vi.fn(() => githubRemote),
+      retryEntry: vi.fn(() => Promise.reject(new Error('network'))),
+      appendProgress: vi.fn(),
+    };
+
+    const result = await prRetry(makeCtx(), deps);
+
+    expect(result.results).toHaveLength(0);
+  });
+
+  it('marks entries as unsupported for unknown remote', async () => {
+    const entries = [makeEntry('PROJ-1')];
+    const deps = makeDeps({
+      retryable: entries,
+      remote: { host: 'unknown', url: 'git@custom.example.com:repo.git' },
+    });
+
+    const result = await prRetry(makeCtx(), deps);
+
+    expect(result.results[0]!.status).toBe('unsupported');
   });
 
   it('normalises parent "none" to undefined', async () => {

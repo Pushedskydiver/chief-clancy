@@ -107,7 +107,7 @@ async function retryAll(
     return handleUnsupportedRemote(retryable, deps);
   }
 
-  const process = async (entry: ProgressEntry): Promise<RetryResultEntry> => {
+  const retryOne = async (entry: ProgressEntry): Promise<RetryResultEntry> => {
     const pr = await deps.retryEntry(entry, remote, ctx);
     const status = classifyResult(pr);
     const parent = normaliseParent(entry.parent);
@@ -129,7 +129,7 @@ async function retryAll(
     };
   };
 
-  const results = await Promise.all(retryable.map(process));
+  const results = await Promise.all(retryable.map(retryOne));
 
   return { results };
 }
