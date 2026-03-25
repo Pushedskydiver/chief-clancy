@@ -174,7 +174,7 @@ export {
 } from './schemas/index.js';
 
 export { createContext, RunContext, runPipeline } from './pipeline/index.js';
-export type { Phase, PipelineDeps, PipelineResult } from './pipeline/index.js';
+export type { PipelineDeps, PipelineResult } from './pipeline/index.js';
 
 export { detectBoard, sharedEnv } from './board/index.js';
 export { createBoard } from './board/factory/index.js';

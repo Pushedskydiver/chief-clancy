@@ -55,8 +55,8 @@ export type PipelineDeps = {
   readonly branchSetup: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
   /** Transition — move ticket to In Progress. */
   readonly transition: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
-  /** Invoke — run Claude session. Returns true if successful. */
-  readonly invoke: (ctx: RunContext) => Promise<boolean>;
+  /** Invoke — run Claude session. */
+  readonly invoke: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
   /** Deliver — push + PR creation. */
   readonly deliver: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
   /** Cost — log estimated token cost. */
@@ -149,8 +149,8 @@ async function runPhases(
   await deps.transition(ctx);
 
   // Invoke Claude session
-  const invokeOk = await deps.invoke(ctx);
-  if (!invokeOk) return { status: 'aborted', phase: 'invoke' };
+  const invoke = await deps.invoke(ctx);
+  if (!invoke.ok) return { status: 'aborted', phase: 'invoke' };
 
   // Deliver
   const deliver = await deps.deliver(ctx);
