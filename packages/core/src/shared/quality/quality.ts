@@ -175,6 +175,8 @@ function ensureEntry(
  * Returns empty data if the file is missing, corrupt, or structurally invalid.
  * Summary is always recomputed from ticket entries to guard against stale data.
  *
+ * @param fs - Injected filesystem operations.
+ * @param projectRoot - Absolute path to the project root.
  * @returns The quality data.
  */
 export function readQualityData(
@@ -206,6 +208,9 @@ export function readQualityData(
  * Increments the rework counter. Best-effort — filesystem errors are
  * swallowed to avoid crashing the orchestrator.
  *
+ * @param fs - Injected filesystem operations.
+ * @param projectRoot - Absolute path to the project root.
+ * @param ticketKey - The ticket identifier.
  * @returns Nothing.
  */
 export function recordRework(
@@ -235,6 +240,9 @@ export function recordRework(
  * Sets the verification retry count. Best-effort — filesystem errors are
  * swallowed to avoid crashing the orchestrator.
  *
+ * @param fs - Injected filesystem operations.
+ * @param projectRoot - Absolute path to the project root.
+ * @param opts - Verification retry options (ticket key, retry count).
  * @returns Nothing.
  */
 export function recordVerificationRetry(
@@ -265,6 +273,9 @@ export function recordVerificationRetry(
  * Best-effort — filesystem errors are swallowed to avoid crashing
  * the orchestrator.
  *
+ * @param fs - Injected filesystem operations.
+ * @param projectRoot - Absolute path to the project root.
+ * @param opts - Delivery options (ticket key, duration, timestamp).
  * @returns Nothing.
  */
 export function recordDelivery(
@@ -295,6 +306,8 @@ export function recordDelivery(
 /**
  * Read quality data for reporting.
  *
+ * @param fs - Injected filesystem operations.
+ * @param projectRoot - Absolute path to the project root.
  * @returns The quality data, or `undefined` if no tickets have been tracked.
  */
 export function getQualityData(

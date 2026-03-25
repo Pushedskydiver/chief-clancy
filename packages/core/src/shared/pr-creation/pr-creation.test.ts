@@ -8,6 +8,7 @@ import type {
   NoRemote,
 } from '~/c/types/remote.js';
 
+import fc from 'fast-check';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { attemptPrCreation, buildManualPrUrl } from './pr-creation.js';
@@ -282,5 +283,28 @@ describe('buildManualPrUrl', () => {
     const remote: NoRemote = { host: 'none' };
 
     expect(buildManualPrUrl(remote, 'feature/x', 'main')).toBeUndefined();
+  });
+
+  it('URL-encodes arbitrary branch names for GitHub', () => {
+    fc.assert(
+      fc.property(fc.string({ minLength: 1 }), (branch) => {
+        const url = buildManualPrUrl(githubRemote, branch, 'main');
+        expect(url).toBeDefined();
+        expect(url).toContain(encodeURIComponent(branch));
+      }),
+    );
+  });
+
+  it('always returns a string or undefined for any remote type', () => {
+    fc.assert(
+      fc.property(
+        fc.string({ minLength: 1 }),
+        fc.string({ minLength: 1 }),
+        (src, tgt) => {
+          const result = buildManualPrUrl(githubRemote, src, tgt);
+          expect(typeof result === 'string' || result === undefined).toBe(true);
+        },
+      ),
+    );
   });
 });

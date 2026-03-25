@@ -23,6 +23,7 @@ type FetchTicketCallOpts = {
  * Uses `CLANCY_LABEL_BUILD` if set, falls back to `CLANCY_LABEL` for
  * backward compatibility.
  *
+ * @param env - Environment variables record.
  * @returns The resolved label, or `undefined` if neither env var is set.
  */
 export function resolveBuildLabel(
@@ -37,6 +38,7 @@ export function resolveBuildLabel(
  * Used as an exclusion filter — tickets with this label are still in the
  * planning queue and should not be picked up for implementation.
  *
+ * @param env - Environment variables record.
  * @returns The resolved label, or `undefined` if neither env var is set.
  */
 export function resolvePlanLabel(
@@ -104,6 +106,8 @@ async function firstUnblocked(
  * In AFK mode (`CLANCY_AFK_MODE=1` or `opts.isAfk`), tickets with the
  * `clancy:hitl` label are excluded from the candidate pool.
  *
+ * @param board - The board abstraction to fetch tickets from.
+ * @param opts - Optional call options (AFK mode override).
  * @returns The first unblocked ticket, or `undefined` if none available.
  */
 export async function fetchTicket(

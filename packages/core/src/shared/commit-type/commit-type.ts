@@ -28,6 +28,11 @@ const CHORE_KEYWORDS = [
   'infrastructure',
 ];
 
+/** Check whether `text` contains `keyword` as a whole word. */
+function matchesWord(text: string, keyword: string): boolean {
+  return new RegExp(`\\b${keyword}\\b`).test(text);
+}
+
 /**
  * Resolve a conventional commit type from a board ticket type string.
  *
@@ -43,8 +48,8 @@ export function resolveCommitType(ticketType: string | undefined): CommitType {
   const lower = ticketType.toLowerCase().trim();
   if (!lower) return 'feat';
 
-  if (FIX_KEYWORDS.some((kw) => lower.includes(kw))) return 'fix';
-  if (CHORE_KEYWORDS.some((kw) => lower.includes(kw))) return 'chore';
+  if (FIX_KEYWORDS.some((kw) => matchesWord(lower, kw))) return 'fix';
+  if (CHORE_KEYWORDS.some((kw) => matchesWord(lower, kw))) return 'chore';
 
   return 'feat';
 }
