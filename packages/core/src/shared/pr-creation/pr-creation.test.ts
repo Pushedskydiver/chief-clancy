@@ -106,7 +106,7 @@ describe('attemptPrCreation', () => {
     mockFetchFn.mockClear();
   });
 
-  it('dispatches to GitHub', async () => {
+  it('dispatches to GitHub and returns success result shape', async () => {
     const result = await attemptPrCreation({
       fetchFn: mockFetchFn,
       env: githubEnv(),
@@ -114,9 +114,11 @@ describe('attemptPrCreation', () => {
       ...branchOpts,
     });
 
-    expect(result).toBeDefined();
-    const url = mockFetchFn.mock.calls[0]![0];
-    expect(url).toContain('api.github.com');
+    expect(result).toEqual({
+      ok: true,
+      url: expect.stringContaining('api.github.com'),
+      number: 1,
+    });
   });
 
   it('dispatches to GitLab', async () => {
@@ -204,6 +206,24 @@ describe('attemptPrCreation', () => {
     });
 
     expect(result).toBeUndefined();
+  });
+
+  it('returns failure result for non-201 API response', async () => {
+    const failFetch = vi.fn(() =>
+      Promise.resolve(new Response('Validation Failed', { status: 422 })),
+    );
+    const result = await attemptPrCreation({
+      fetchFn: failFetch,
+      env: githubEnv(),
+      remote: githubRemote,
+      ...branchOpts,
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      error: expect.stringContaining('422'),
+      alreadyExists: expect.any(Boolean),
+    });
   });
 });
 
