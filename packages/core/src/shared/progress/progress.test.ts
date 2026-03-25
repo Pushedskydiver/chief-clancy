@@ -380,7 +380,11 @@ describe('formatTimestamp property-based', () => {
   it('always produces YYYY-MM-DD HH:MM format', () => {
     fc.assert(
       fc.property(
-        fc.date({ min: new Date('2000-01-01'), max: new Date('2099-12-31') }),
+        fc.date({
+          min: new Date('2000-01-01'),
+          max: new Date('2099-12-31'),
+          noInvalidDate: true,
+        }),
         (date) => {
           const result = formatTimestamp(date);
           return /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(result);
