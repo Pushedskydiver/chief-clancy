@@ -14,6 +14,7 @@ import {
 import { basicAuth, postPullRequest } from '../post-pr/post-pr.js';
 import {
   extractReworkContent,
+  isClancyComment,
   isReworkComment,
 } from '../rework-comment/rework-comment.js';
 
@@ -264,13 +265,14 @@ async function fetchThreads(
   return parsed.value;
 }
 
-/** Filter out deleted threads and system comments. */
+/** Filter out deleted threads, system comments, and Clancy automation comments. */
 function activeThreads(threads: readonly AzdoThread[]): readonly AzdoThread[] {
   return threads.filter(
     (t) =>
       t.isDeleted !== true &&
       t.comments.length > 0 &&
-      t.comments[0]!.commentType !== 'system',
+      t.comments[0]!.commentType !== 'system' &&
+      !isClancyComment(t.comments[0]!.content ?? ''),
   );
 }
 

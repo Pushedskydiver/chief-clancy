@@ -14,6 +14,7 @@ import {
 import { basicAuth, postPullRequest } from '../post-pr/post-pr.js';
 import {
   extractReworkContent,
+  isClancyComment,
   isReworkComment,
 } from '../rework-comment/rework-comment.js';
 
@@ -171,7 +172,9 @@ export async function checkPrReviewState(
     });
     if (!comments) return undefined;
 
-    const relevant = filterBySince(comments, since);
+    const relevant = filterBySince(comments, since).filter(
+      (c) => !isClancyComment(c.content.raw),
+    );
     const hasInline = relevant.some((c) => c.inline != null);
     const hasReworkConvo = relevant.some(
       (c) => c.inline == null && isReworkComment(c.content.raw),
@@ -212,7 +215,9 @@ export async function fetchPrReviewComments(
     });
     if (!comments) return [];
 
-    return filterBySince(comments, since).flatMap((c) => formatComment(c));
+    return filterBySince(comments, since)
+      .filter((c) => !isClancyComment(c.content.raw))
+      .flatMap((c) => formatComment(c));
   } catch {
     return [];
   }

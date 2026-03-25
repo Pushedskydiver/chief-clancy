@@ -1,7 +1,11 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 
-import { extractReworkContent, isReworkComment } from './rework-comment.js';
+import {
+  extractReworkContent,
+  isClancyComment,
+  isReworkComment,
+} from './rework-comment.js';
 
 // ─── isReworkComment ────────────────────────────────────────────────────────
 
@@ -29,6 +33,27 @@ describe('isReworkComment', () => {
 
   it('returns false for empty string', () => {
     expect(isReworkComment('')).toBe(false);
+  });
+});
+
+// ─── isClancyComment ─────────────────────────────────────────────────────────
+
+describe('isClancyComment', () => {
+  it('returns true for comment starting with [clancy]', () => {
+    expect(isClancyComment('[clancy] Rework pushed.')).toBe(true);
+  });
+
+  it('allows leading whitespace', () => {
+    expect(isClancyComment('  [clancy] message')).toBe(true);
+  });
+
+  it('returns false for regular comments', () => {
+    expect(isClancyComment('Rework: fix it')).toBe(false);
+    expect(isClancyComment('Looks good!')).toBe(false);
+  });
+
+  it('returns false for empty string', () => {
+    expect(isClancyComment('')).toBe(false);
   });
 });
 

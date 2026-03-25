@@ -16,6 +16,16 @@ export function isReworkComment(body: string): boolean {
 }
 
 /**
+ * Check if a comment was posted by Clancy's automation (starts with `[clancy]`).
+ *
+ * @param body - The comment body to check.
+ * @returns `true` if the comment starts with `[clancy]`.
+ */
+export function isClancyComment(body: string): boolean {
+  return body.trimStart().startsWith('[clancy]');
+}
+
+/**
  * Extract the rework description from a "Rework: ..." comment.
  *
  * Strips the "Rework:" prefix and returns the remaining content trimmed.
