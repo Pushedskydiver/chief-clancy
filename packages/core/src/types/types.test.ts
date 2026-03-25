@@ -162,10 +162,13 @@ describe('RemoteInfo', () => {
     expect(info.host).toBe('bitbucket-server');
   });
 
-  it('satisfies the Azure/unknown variant', () => {
+  it('satisfies the Azure DevOps variant', () => {
     const info = {
       host: 'azure',
-      url: 'https://dev.azure.com/org/project',
+      org: 'myorg',
+      project: 'myproject',
+      repo: 'app',
+      hostname: 'dev.azure.com',
     } satisfies RemoteInfo;
     expect(info.host).toBe('azure');
   });

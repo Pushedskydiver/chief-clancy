@@ -26,6 +26,7 @@ export { modifyLabelList, safeLabel } from './shared/label-helpers/index.js';
 export type { ModifyLabelListOpts } from './shared/label-helpers/index.js';
 
 export type {
+  AzdoRemote,
   BitbucketRemote,
   BitbucketServerRemote,
   Board,

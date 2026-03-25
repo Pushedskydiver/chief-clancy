@@ -9,6 +9,7 @@ export type {
 } from './board.js';
 
 export type {
+  AzdoRemote,
   BitbucketRemote,
   BitbucketServerRemote,
   GenericRemote,

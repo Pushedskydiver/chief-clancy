@@ -49,7 +49,10 @@ const BITBUCKET_SERVER_REMOTE: RemoteInfo = {
 
 const AZURE_REMOTE: RemoteInfo = {
   host: 'azure',
-  url: 'https://dev.azure.com/myorg/myproject/_git/app',
+  org: 'myorg',
+  project: 'myproject',
+  repo: 'app',
+  hostname: 'dev.azure.com',
 };
 
 const UNKNOWN_REMOTE: RemoteInfo = {
