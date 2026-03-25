@@ -193,6 +193,7 @@ export async function fetchPrReviewComments(
  * Best-effort — never throws. Returns `true` on success, `false` on error.
  *
  * @param opts - Options including fetch, token, repo, prNumber, and body.
+ * @returns `true` on success, `false` on error.
  */
 export async function postPrComment(opts: PostCommentOpts): Promise<boolean> {
   const { fetchFn, token, repo, prNumber, body } = opts;
@@ -222,6 +223,7 @@ export async function postPrComment(opts: PostCommentOpts): Promise<boolean> {
  * Best-effort — never throws. Returns `true` on success, `false` on error.
  *
  * @param opts - Options including fetch, token, repo, prNumber, and reviewers.
+ * @returns `true` on success, `false` on error.
  */
 export async function requestReview(opts: RequestReviewOpts): Promise<boolean> {
   const { fetchFn, token, repo, prNumber, reviewers } = opts;
@@ -263,6 +265,7 @@ export async function createPullRequest(
     headers: githubHeaders(token),
     body: { title, head, base, body },
     parseSuccess: (json) => {
+      // Safe: GitHub REST API response shape — optional fields default via ??
       const data = json as { html_url?: string; number?: number };
       return { url: data.html_url ?? '', number: data.number ?? 0 };
     },
