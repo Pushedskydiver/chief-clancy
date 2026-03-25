@@ -304,6 +304,19 @@ describe('branchSetup', () => {
 
   // ── description truncation ────────────────────────────────────────
 
+  it('uses injected now for lock startedAt timestamp', async () => {
+    const ctx = setupCtx({ ticket: NO_PARENT_TICKET });
+    const deps = makeDeps({
+      now: () => '2026-01-15T12:00:00.000Z',
+    });
+
+    await branchSetup(ctx, deps);
+
+    expect(vi.mocked(deps.writeLock)).toHaveBeenCalledWith(
+      expect.objectContaining({ startedAt: '2026-01-15T12:00:00.000Z' }),
+    );
+  });
+
   it('truncates lock description to 2000 chars', async () => {
     const longTicket: FetchedTicket = {
       ...TICKET,
@@ -314,10 +327,8 @@ describe('branchSetup', () => {
 
     await branchSetup(ctx, deps);
 
-    const call = (deps.writeLock as ReturnType<typeof vi.fn>).mock.calls[0] as [
-      Record<string, unknown>,
-    ];
-    const desc = call[0].description as string;
+    const call = vi.mocked(deps.writeLock).mock.calls[0]!;
+    const desc = (call[0] as Record<string, unknown>).description as string;
     expect(desc).toHaveLength(2000);
   });
 });

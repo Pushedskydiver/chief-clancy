@@ -54,6 +54,8 @@ export type BranchSetupDeps = {
   ) => Promise<ChildrenStatus | undefined>;
   /** Write the lock file. Pre-wired with lockFs + projectRoot. */
   readonly writeLock: (data: WriteLockData) => void;
+  /** Current ISO timestamp factory for lock file. Factory (not value) because writeLockSafe runs later than context creation. Default: `() => new Date().toISOString()`. */
+  readonly now?: () => string;
 };
 
 // ─── Phase ───────────────────────────────────────────────────────────────────
@@ -193,6 +195,12 @@ function setupStandalone(
   return { ok: true };
 }
 
+/** Resolve the current ISO timestamp from deps or fallback. */
+function timestamp(deps: BranchSetupDeps): string {
+  const now = deps.now ?? (() => new Date().toISOString());
+  return now();
+}
+
 /** Best-effort lock write — never crashes the pipeline. */
 function writeLockSafe(ctx: RunContext, deps: BranchSetupDeps): void {
   try {
@@ -205,7 +213,7 @@ function writeLockSafe(ctx: RunContext, deps: BranchSetupDeps): void {
       targetBranch: ctx.effectiveTarget!,
       parentKey: ticket.parentInfo,
       description: (ticket.description ?? '').slice(0, 2000) || undefined,
-      startedAt: new Date().toISOString(),
+      startedAt: timestamp(deps),
     });
     ctx.setLockOwner(true);
   } catch {

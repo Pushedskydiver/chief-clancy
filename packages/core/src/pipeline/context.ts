@@ -24,6 +24,8 @@ type CreateContextOpts = {
   readonly argv: readonly string[];
   /** Whether the runner is in AFK (unattended) mode. */
   readonly isAfk?: boolean;
+  /** Timestamp override for deterministic testing (default: `Date.now()`). */
+  readonly now?: number;
 };
 
 // ─── RunContext class ────────────────────────────────────────────────────────
@@ -146,7 +148,7 @@ export class RunContext {
     this.argv = opts.argv;
     this.dryRun = opts.argv.includes('--dry-run');
     this.skipFeasibility = opts.argv.includes('--skip-feasibility');
-    this.startTime = Date.now();
+    this.startTime = opts.now ?? Date.now();
     this.isAfk = opts.isAfk ?? false;
   }
 }
