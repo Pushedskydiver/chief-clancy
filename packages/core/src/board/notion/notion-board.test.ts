@@ -51,6 +51,7 @@ function makeFullPage(
 
 describe('createNotionBoard', () => {
   afterEach(() => {
+    vi.unstubAllGlobals();
     vi.restoreAllMocks();
     vi.clearAllMocks();
   });
@@ -99,9 +100,7 @@ describe('createNotionBoard', () => {
 
   describe('ping', () => {
     it('delegates to pingNotion', async () => {
-      vi.mocked(retryFetch).mockResolvedValue(
-        mockResponse({ id: 'bot-uuid', type: 'bot', name: 'Clancy' }),
-      );
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(mockResponse({})));
 
       const board = createNotionBoard(baseEnv);
       const result = await board.ping();

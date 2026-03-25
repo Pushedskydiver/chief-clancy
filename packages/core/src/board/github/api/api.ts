@@ -92,22 +92,21 @@ export async function resolveUsername(
       headers: githubHeaders(token),
     });
 
-    if (!response.ok) {
+    if (response.ok) {
+      const json: unknown = await response.json();
+      const parsed = githubUserSchema.safeParse(json);
+
+      if (parsed.success) {
+        cache.store(parsed.data.login);
+        return parsed.data.login;
+      }
+
+      console.warn('⚠ Unexpected GitHub /user response — falling back to @me');
+    } else {
       console.warn(
         `⚠ GitHub /user returned HTTP ${response.status} — falling back to @me`,
       );
-      return '@me';
     }
-
-    const json: unknown = await response.json();
-    const parsed = githubUserSchema.safeParse(json);
-
-    if (parsed.success) {
-      cache.store(parsed.data.login);
-      return parsed.data.login;
-    }
-
-    console.warn('⚠ Unexpected GitHub /user response — falling back to @me');
   } catch (err) {
     console.warn(
       `⚠ GitHub /user request failed: ${err instanceof Error ? err.message : String(err)} — falling back to @me`,

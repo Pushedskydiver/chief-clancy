@@ -200,7 +200,7 @@ async function fetchChildrenByBodyRef(
     { headers },
   );
 
-  if (!openResponse.ok) return { total, incomplete: total };
+  if (!openResponse.ok) return undefined;
 
   const openParsed = searchCountSchema.safeParse(await openResponse.json());
   return {

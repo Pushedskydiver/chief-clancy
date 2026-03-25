@@ -46,6 +46,7 @@ function toFetchedTicket(ticket: GitHubTicket): FetchedTicket {
     description: ticket.description,
     parentInfo: ticket.milestone ?? parseEpicRef(ticket.description) ?? 'none',
     blockers: 'None',
+    issueId: ticket.key,
     labels: ticket.labels ?? [],
     status: 'open',
   };

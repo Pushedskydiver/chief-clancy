@@ -44,6 +44,7 @@ function makePage(id: string, title: string, statusName = 'To-do') {
 
 describe('notion api', () => {
   afterEach(() => {
+    vi.unstubAllGlobals();
     vi.restoreAllMocks();
     vi.clearAllMocks();
   });
@@ -52,16 +53,14 @@ describe('notion api', () => {
 
   describe('pingNotion', () => {
     it('returns ok true on successful response', async () => {
-      vi.mocked(retryFetch).mockResolvedValue(
-        mockResponse({ id: 'bot-user-uuid', type: 'bot', name: 'Clancy' }),
-      );
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(mockResponse({})));
 
       const result = await pingNotion(TOKEN);
       expect(result).toEqual({ ok: true });
     });
 
     it('returns error on auth failure (401)', async () => {
-      vi.mocked(retryFetch).mockResolvedValue(mockResponse({}, 401));
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(mockResponse({}, 401)));
 
       const result = await pingNotion(TOKEN);
       expect(result.ok).toBe(false);
@@ -69,7 +68,7 @@ describe('notion api', () => {
     });
 
     it('returns error on server error', async () => {
-      vi.mocked(retryFetch).mockResolvedValue(mockResponse({}, 500));
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(mockResponse({}, 500)));
 
       const result = await pingNotion(TOKEN);
       expect(result.ok).toBe(false);
@@ -77,7 +76,10 @@ describe('notion api', () => {
     });
 
     it('returns error on network failure', async () => {
-      vi.mocked(retryFetch).mockRejectedValue(new Error('ECONNREFUSED'));
+      vi.stubGlobal(
+        'fetch',
+        vi.fn().mockRejectedValue(new Error('ECONNREFUSED')),
+      );
 
       const result = await pingNotion(TOKEN);
       expect(result.ok).toBe(false);
@@ -85,13 +87,12 @@ describe('notion api', () => {
     });
 
     it('sends correct headers', async () => {
-      vi.mocked(retryFetch).mockResolvedValue(
-        mockResponse({ id: 'bot-user-uuid' }),
-      );
+      const mockFetch = vi.fn().mockResolvedValue(mockResponse({}));
+      vi.stubGlobal('fetch', mockFetch);
 
       await pingNotion(TOKEN);
 
-      expect(retryFetch).toHaveBeenCalledWith(
+      expect(mockFetch).toHaveBeenCalledWith(
         'https://api.notion.com/v1/users/me',
         expect.objectContaining({
           headers: expect.objectContaining({
