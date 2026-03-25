@@ -159,7 +159,7 @@ export async function checkPrReviewState(
   try {
     const base = prBaseUrl(org, project, repo);
     const prRes = await fetchFn(
-      `${base}?searchCriteria.sourceRefName=refs/heads/${branch}&searchCriteria.status=active&${API_VERSION}`,
+      `${base}?searchCriteria.sourceRefName=${encodeURIComponent(`refs/heads/${branch}`)}&searchCriteria.status=active&${API_VERSION}`,
       { headers: { Authorization: auth } },
     );
     if (!prRes.ok) return undefined;

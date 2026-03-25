@@ -273,7 +273,7 @@ async function findOpenMr(opts: FindMrOpts): Promise<OpenMr | undefined> {
   const encoded = encodeURIComponent(projectPath);
 
   const res = await fetchFn(
-    `${apiBase}/projects/${encoded}/merge_requests?source_branch=${branch}&state=opened`,
+    `${apiBase}/projects/${encoded}/merge_requests?source_branch=${encodeURIComponent(branch)}&state=opened`,
     { headers: { 'PRIVATE-TOKEN': token } },
   );
 
@@ -340,8 +340,8 @@ function extractFeedback(
       .flatMap((n) => formatNote(n))
       .filter((s) => s !== undefined);
 
-    const hasId = feedback.length > 0 && d.id != null;
-    return { feedback, discussionId: hasId ? d.id! : undefined };
+    const discussionId = feedback.length > 0 && d.id != null ? d.id : undefined;
+    return { feedback, discussionId };
   });
 
   return {

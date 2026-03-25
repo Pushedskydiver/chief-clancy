@@ -319,10 +319,10 @@ describe('checkPrReviewState', () => {
     });
 
     expect(mockFetch.mock.calls[1]![0]).toContain(
-      '&since=2026-03-14T10:00:00Z',
+      `&since=${encodeURIComponent('2026-03-14T10:00:00Z')}`,
     );
     expect(mockFetch.mock.calls[2]![0]).toContain(
-      '&since=2026-03-14T10:00:00Z',
+      `&since=${encodeURIComponent('2026-03-14T10:00:00Z')}`,
     );
   });
 
