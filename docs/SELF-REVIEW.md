@@ -46,6 +46,11 @@ This is a **living document** — when CodeRabbit catches something the self-rev
 - Do docs reference files that only exist in memory (`~/.claude/projects/`) but not in the repo? Contributors can't see memory files
 - After renaming a config key or constant, are all references updated? (not just the definition)
 
+## Lint-staged safety
+
+- Do test helper return types expose mutable collections (`Map`, `Set`, `Array`)? `eslint --fix` auto-converts them to `ReadonlyMap`/`ReadonlySet`/`ReadonlyArray`, breaking `.set()`/`.add()`/`.push()` calls. Use accessor methods instead (PR #49 CI failure)
+- After writing a new test file, run `npx eslint --fix <file> && pnpm typecheck` to verify lint-staged won't break it on commit
+
 ## Monorepo-specific
 
 - Are cross-package imports using the package name (`@chief-clancy/core`), not relative paths (`../../core/`)?
