@@ -1,0 +1,103 @@
+/**
+ * Pipeline context — shared state threaded through all orchestrator phases.
+ *
+ * `RunContext` is a class (not a plain object) because the ESLint
+ * `functional/immutable-data` rule flags `obj.field = value` on plain
+ * objects, but `ignoreClasses: true` allows class property mutation.
+ * Each phase reads from and mutates this context. Fields are populated
+ * progressively — phases that depend on prior state assert required
+ * fields at the top (a missing field means a pipeline ordering bug).
+ */
+import type { BoardConfig } from '~/c/schemas/env/env.js';
+import type { Board, FetchedTicket } from '~/c/types/board.js';
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+/** A pipeline phase: mutates context, returns `true` to continue or `false` to exit. */
+export type Phase = (ctx: RunContext) => Promise<boolean> | boolean;
+
+/** Options for creating a new {@link RunContext}. */
+type CreateContextOpts = {
+  /** Absolute path to the project root directory. */
+  readonly projectRoot: string;
+  /** Process arguments (e.g. `['--dry-run']`). */
+  readonly argv: readonly string[];
+  /** Whether the runner is in AFK (unattended) mode. */
+  readonly isAfk?: boolean;
+};
+
+// ─── RunContext class ────────────────────────────────────────────────────────
+
+/**
+ * Shared state threaded through all orchestrator phases.
+ *
+ * Fixed fields are set at creation and never change. Phase-populated
+ * fields start `undefined` and are set progressively by each phase.
+ */
+export class RunContext {
+  // ── Fixed at creation ──────────────────────────────────────────────
+
+  readonly projectRoot: string;
+  readonly argv: readonly string[];
+  readonly dryRun: boolean;
+  readonly skipFeasibility: boolean;
+  readonly startTime: number;
+  readonly isAfk: boolean;
+
+  /* eslint-disable functional/prefer-readonly-type -- phase-populated fields are mutated progressively */
+
+  // ── Populated by preflight phase ───────────────────────────────────
+
+  config: BoardConfig | undefined;
+  board: Board | undefined;
+
+  // ── Populated by rework / ticket-fetch phases ──────────────────────
+
+  ticket: FetchedTicket | undefined;
+  isRework: boolean | undefined;
+  prFeedback: readonly string[] | undefined;
+  reworkPrNumber: number | undefined;
+  reworkDiscussionIds: readonly string[] | undefined;
+  reworkReviewers: readonly string[] | undefined;
+
+  // ── Populated by branch-setup phase ────────────────────────────────
+
+  ticketBranch: string | undefined;
+  targetBranch: string | undefined;
+  effectiveTarget: string | undefined;
+  baseBranch: string | undefined;
+  originalBranch: string | undefined;
+  skipEpicBranch: boolean | undefined;
+  hasParent: boolean | undefined;
+
+  // ── Populated by lock-write phase ──────────────────────────────────
+
+  lockOwner: boolean | undefined;
+
+  /* eslint-enable functional/prefer-readonly-type */
+
+  constructor(opts: CreateContextOpts) {
+    this.projectRoot = opts.projectRoot;
+    this.argv = opts.argv;
+    this.dryRun = opts.argv.includes('--dry-run');
+    this.skipFeasibility = opts.argv.includes('--skip-feasibility');
+    this.startTime = Date.now();
+    this.isAfk = opts.isAfk ?? false;
+  }
+}
+
+// ─── Factory ─────────────────────────────────────────────────────────────────
+
+/**
+ * Create the initial RunContext from options.
+ *
+ * Uses explicit parameters instead of `process.cwd()` / `process.env`
+ * for testability. The terminal layer is responsible for reading those
+ * globals and passing them in.
+ *
+ * @param opts - Creation options (projectRoot, argv, isAfk).
+ * @returns A new `RunContext` with fixed fields set and phase fields undefined.
+ */
+export function createContext(opts: CreateContextOpts): RunContext {
+  return new RunContext(opts);
+}
