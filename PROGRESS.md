@@ -400,7 +400,7 @@ Adjusted after phase validation + DA review (2026-03-25). Orchestration layer ty
 | 8.2c | Phases batch 1c: `epic-completion` (72, consumes deliverEpicToBase), `pr-retry` (142 → decompose). TDD       | Done    |
 | 8.3  | Phases batch 2: `rework-detection` (34), `ticket-fetch` (79 → decompose), `dry-run` (38), `feasibility` (39) | Done    |
 | 8.4a | Phases batch 3a: `branch-setup` (115 → major decompose), `transition` (19). TDD                              | Done    |
-| 8.4b | Phases batch 3b: `deliver-phase` (105 → decompose), `cost-phase` (31), `cleanup` (33, notify callback). TDD  | Pending |
+| 8.4b | Phases batch 3b: `deliver-phase` (105 → decompose), `cost-phase` (31), `cleanup` (33, notify callback). TDD  | Done    |
 | 8.5  | Pipeline orchestrator: `runPipeline()` — wire all phases, invoke callback injection. TDD                     | Pending |
 
 ### Dependencies
@@ -533,6 +533,28 @@ Completed PRs 8.3-8.4a. Phase 8 pipeline phases 3-8 in place. 108 pipeline tests
 - `ctx.isRework === true` used consistently (not truthy check) — clear handling of `boolean | undefined`
 - Phases restructured into individual directories (`phases/<name>/<name>.ts`) — matches `shared/` one-module-per-directory convention. Barrel `index.ts` files deferred to 8.5 per export hygiene (no consumers yet). `test-helpers.ts` stays at `phases/` level as shared test utility
 - `fetchChildrenStatus` dep takes `FetchedTicket` not raw `(parentKey, parentId?, currentTicketKey?)` — higher-level callback pattern per DI convention. Terminal layer extracts the board-specific fields
+
+### Session 26 handoff (2026-03-25)
+
+Completed PR 8.4b. All 13 pipeline phases implemented (phases 0-12). 137 pipeline tests. Codebase clean.
+
+**What was completed:**
+
+- **8.4b** (#TBD) — 3 phases: `deliver-phase` (decomposed into `deliverRework`, `deliverFresh`, `computeParentKeys`, `resolveSingleChildParent`), `cost-phase` (thin wrapper with `parseTokenRate` helper), `cleanup-phase` (completion data + notify callback). All best-effort error handling. 27 new tests
+
+**What's next:**
+
+- Start 8.5 (pipeline orchestrator: `runPipeline()`, invoke callback injection, barrel `index.ts` exports for all phase directories)
+- After 8.5: Phase 8 audit
+
+**Key decisions:**
+
+- Directory naming uses `-phase` suffix (`deliver-phase/`, `cost-phase/`, `cleanup-phase/`) to avoid collision with existing `shared/` modules (`shared/cost/`, `shared/deliver-ticket/`)
+- `costPhase` is synchronous (no async I/O) — `Phase` type already supports `Promise<boolean> | boolean`
+- `deliver-phase` DI pattern: `deliverViaPullRequest` dep is pre-wired with exec/fetchFn/config/ticket by terminal layer, phase only passes delivery-specific opts (ticketBranch, targetBranch, parent, etc.)
+- `singleChildParent` GitHub validation: only valid `#N` refs pass through — milestone titles like "Sprint 3" would produce invalid "Closes Sprint 3" lines
+- `cleanup-phase` returns `CleanupResult` with `ticketKey`, `ticketTitle`, `elapsedMs` — terminal formats the display
+- No new RunContext setters needed — all three phases only read from context
 
 ### Session 24 handoff (2026-03-25)
 
