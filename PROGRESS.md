@@ -507,3 +507,28 @@ The `functional/immutable-data` rule's `ignoreClasses: true` option ONLY allows 
 - `PreflightPhaseDeps.runPreflight` takes only `projectRoot` (single arg) — the `exec`/`envFs` deps are pre-wired by the terminal layer, not passed through the phase
 - Lock-check `LockCheckDeps` defines resume function types explicitly (not `typeof import`) to avoid value imports that lint flags as type-only
 - Phases return structured result types (`LockCheckResult`, `PreflightPhaseResult`) — no `console.log` in core
+
+### Session 24 handoff (2026-03-25)
+
+Completed PRs 8.2b-8.2c. Phase 8 pipeline phases 0-2a in place. Codebase clean.
+
+**What was completed:**
+
+- **8.2b** (#66) — `deliver-epic/` shared module: creates final PR from epic branch to base branch. Full DI, `resolveCommitType` for PR title, 12 tests. Also renamed `deliver/` → `deliver-ticket/` for clarity, added `buildEpicPrBody` + `gatherChildEntries` barrel exports
+- **8.2c** (#67) — `epic-completion` phase (scans progress for completed epics, creates epic PRs via DI) + `pr-retry` phase (retries PR creation for PUSHED tickets). Both use `Promise.all` + `.map()` (no `for...of`), best-effort try/catch. Decomposed pr-retry into `classifyResult`, `handleUnsupportedRemote`, `normaliseParent`. 22 tests total
+
+**What's next:**
+
+- Start 8.3 (rework-detection, ticket-fetch, dry-run, feasibility — 4 phases in one PR)
+- Then 8.4a (branch-setup + transition)
+
+**Key decisions:**
+
+- `deliver/` renamed to `deliver-ticket/` — clear symmetry with `deliver-epic/`, avoids confusion
+- Phase DI pattern: I/O deps (exec, fetchFn, progressFs) are pre-wired by terminal layer, phases receive higher-level callbacks. E.g., `EpicCompletionDeps.deliverEpicToBase` takes only epic-specific args, not raw I/O deps
+- `epicTitle` falls back to `epicKey` — title not available from progress file, key is the only identifier
+- `for...of` loops replaced with `.map()` + `Promise.all()` — `functional/no-loop-statements` is `warn` but convention is no loops
+- Result types (`EpicCompletionResult`, `PrRetryResult`) start non-exported per convention — will export when orchestrator (8.5) consumes them
+- `computeTargetBranch` barrel export deferred — will add when consumed by branch-setup (8.4a)
+- `process` variable renamed to `retryOne` to avoid shadowing Node global
+- Azure DevOps first-class in pr-retry — old code excluded `azure` from PR creation, new code does not
