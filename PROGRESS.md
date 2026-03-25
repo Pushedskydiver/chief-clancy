@@ -177,19 +177,19 @@ Post-merge audit found 4 HIGH, 8 MEDIUM code, 2 MEDIUM export, 6 test gaps. All 
 
 Adjusted after phase validation (2026-03-25). Brief PRs 6.1-6.3 already done in earlier phases (http/ in 5.0, env-parser/ in 2.0, env-schema/ in 4.2-4.3). Renumbered remaining PRs. Split pull-request/ into 4 PRs (prereqs + 3 platforms). Added fast-check for property-based tests.
 
-| PR   | Description                                                                                                   | Status  |
-| ---- | ------------------------------------------------------------------------------------------------------------- | ------- |
+| PR   | Description                                                                                                   | Status                   |
+| ---- | ------------------------------------------------------------------------------------------------------------- | ------------------------ |
 | 6.0  | Prerequisites: add `fast-check` dev dependency                                                                | Done (already installed) |
-| 6.1  | `shared/format/`: `formatDuration(ms)` — pure, tiny module                                                    | Done (#32) |
-| 6.2  | `shared/branch/`: `computeTicketBranch`, `computeTargetBranch` — pure, property-based tests                   | Done (#33) |
-| 6.3  | `shared/remote/`: `parseRemote`, `detectPlatformFromHostname`, `buildApiBaseUrl` — pure, property-based tests | Done (#34) |
-| 6.4  | `shared/git-ops/`: git command wrappers + `detectRemote` (DI exec). Depends on 6.3                            | Pending |
-| 6.5  | `shared/progress/`: progress file reader/writer (DI filesystem)                                               | Pending |
-| 6.6  | `shared/feasibility/`: prompt builder + response parser + check (DI invoke)                                   | Pending |
-| 6.7  | `shared/pull-request/` prereqs: `post-pr/` + `rework-comment/` + `pr-body/`. Depends on 6.3                   | Pending |
-| 6.8  | `shared/pull-request/github/`: PR creation, review state, comments. Depends on 6.7                            | Pending |
-| 6.9  | `shared/pull-request/gitlab/`: MR creation, review state, discussions. Depends on 6.7                         | Pending |
-| 6.10 | `shared/pull-request/bitbucket/`: Cloud + Server PR creation, review state. Depends on 6.7                    | Pending |
+| 6.1  | `shared/format/`: `formatDuration(ms)` — pure, tiny module                                                    | Done (#32)               |
+| 6.2  | `shared/branch/`: `computeTicketBranch`, `computeTargetBranch` — pure, property-based tests                   | Done (#33)               |
+| 6.3  | `shared/remote/`: `parseRemote`, `detectPlatformFromHostname`, `buildApiBaseUrl` — pure, property-based tests | Done (#34)               |
+| 6.4  | `shared/git-ops/`: git command wrappers + `detectRemote` (DI exec). Depends on 6.3                            | Pending                  |
+| 6.5  | `shared/progress/`: progress file reader/writer (DI filesystem)                                               | Pending                  |
+| 6.6  | `shared/feasibility/`: prompt builder + response parser + check (DI invoke)                                   | Pending                  |
+| 6.7  | `shared/pull-request/` prereqs: `post-pr/` + `rework-comment/` + `pr-body/`. Depends on 6.3                   | Pending                  |
+| 6.8  | `shared/pull-request/github/`: PR creation, review state, comments. Depends on 6.7                            | Pending                  |
+| 6.9  | `shared/pull-request/gitlab/`: MR creation, review state, discussions. Depends on 6.7                         | Pending                  |
+| 6.10 | `shared/pull-request/bitbucket/`: Cloud + Server PR creation, review state. Depends on 6.7                    | Pending                  |
 
 ### Dependencies
 

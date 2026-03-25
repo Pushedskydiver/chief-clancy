@@ -208,6 +208,47 @@ describe('parseRemote', () => {
     });
   });
 
+  // ── Platform override ─────────────────────────────────────────────
+
+  it('uses platformOverride instead of hostname detection', () => {
+    expect(
+      parseRemote('https://git.acme.com/team/project.git', 'gitlab'),
+    ).toEqual({
+      host: 'gitlab',
+      projectPath: 'team/project',
+      hostname: 'git.acme.com',
+    });
+  });
+
+  it('overrides to github on a custom domain', () => {
+    expect(
+      parseRemote('https://git.acme.com/owner/repo.git', 'github'),
+    ).toEqual({
+      host: 'github',
+      owner: 'owner',
+      repo: 'repo',
+      hostname: 'git.acme.com',
+    });
+  });
+
+  it('overrides to bitbucket on a custom domain', () => {
+    expect(
+      parseRemote('https://git.acme.com/workspace/repo.git', 'bitbucket'),
+    ).toEqual({
+      host: 'bitbucket',
+      workspace: 'workspace',
+      repoSlug: 'repo',
+      hostname: 'git.acme.com',
+    });
+  });
+
+  it('ignores platformOverride when URL is unparseable', () => {
+    expect(parseRemote('not-a-url', 'github')).toEqual({
+      host: 'unknown',
+      url: 'not-a-url',
+    });
+  });
+
   // ── Property-based ──────────────────────────────────────────────────
 
   it('always returns a valid host field', () => {

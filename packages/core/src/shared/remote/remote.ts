@@ -122,15 +122,19 @@ function buildRemoteInfo(opts: BuildRemoteInfoOpts): RemoteInfo {
  * (Cloud and Server), Azure DevOps, and self-hosted instances.
  *
  * @param rawUrl - The raw git remote URL.
+ * @param platformOverride - Force a specific platform instead of detecting from hostname.
  * @returns Parsed remote info with platform and path details.
  */
-export function parseRemote(rawUrl: string): RemoteInfo {
+export function parseRemote(
+  rawUrl: string,
+  platformOverride?: GitPlatform,
+): RemoteInfo {
   const extracted = extractHostAndPath(rawUrl);
 
   if (!extracted) return { host: 'unknown', url: rawUrl };
 
   const { hostname, path } = extracted;
-  const platform = detectPlatformFromHostname(hostname);
+  const platform = platformOverride ?? detectPlatformFromHostname(hostname);
 
   return buildRemoteInfo({ platform, hostname, path, rawUrl });
 }
