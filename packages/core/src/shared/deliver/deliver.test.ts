@@ -85,8 +85,13 @@ function makeOpts(
     readonly skipLog?: boolean;
     readonly parent?: string;
     readonly verifyAttempt?: string;
+    readonly ticketType?: string;
   } = {},
 ) {
+  const ticket = overrides.ticketType
+    ? { ...mockTicket, ticketType: overrides.ticketType }
+    : mockTicket;
+
   return {
     exec: makeExec({ pushSucceeds: overrides.pushSucceeds }),
     fetchFn: mockFetchFn,
@@ -94,7 +99,7 @@ function makeOpts(
     deliverFs: makeDeliverFs(overrides.verifyAttempt),
     projectRoot: '/tmp',
     config: mockConfig,
-    ticket: mockTicket,
+    ticket,
     ticketBranch: 'feature/proj-42',
     targetBranch: 'main',
     skipLog: overrides.skipLog,
@@ -171,5 +176,21 @@ describe('deliverViaPullRequest', () => {
     const fetchCall = mockFetchFn.mock.calls;
     const lastBody = fetchCall[fetchCall.length - 1]![1]?.body as string;
     expect(lastBody).toContain('Verification');
+  });
+
+  it('uses fix commit type for bug tickets', async () => {
+    const opts = makeOpts({ ticketType: 'Bug' });
+    await deliverViaPullRequest(opts);
+
+    const fetchBody = mockFetchFn.mock.calls[0]![1]?.body as string;
+    expect(fetchBody).toContain('fix(PROJ-42)');
+  });
+
+  it('uses feat commit type when ticketType is undefined', async () => {
+    const opts = makeOpts();
+    await deliverViaPullRequest(opts);
+
+    const fetchBody = mockFetchFn.mock.calls[0]![1]?.body as string;
+    expect(fetchBody).toContain('feat(PROJ-42)');
   });
 });

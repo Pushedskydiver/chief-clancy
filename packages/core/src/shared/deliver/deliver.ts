@@ -11,6 +11,7 @@ import type { EpicContext } from '~/c/shared/pull-request/pr-body/pr-body.js';
 import type { FetchedTicket } from '~/c/types/board.js';
 import type { PrCreationResult, RemoteInfo } from '~/c/types/remote.js';
 
+import { resolveCommitType } from '~/c/shared/commit-type/commit-type.js';
 import { buildEpicContext } from '~/c/shared/epic/epic.js';
 import {
   checkout,
@@ -129,7 +130,8 @@ async function createPr(
 ): Promise<PrCreationResult | undefined> {
   const { fetchFn, config, ticket, ticketBranch, targetBranch } = opts;
 
-  const prTitle = `feat(${ticket.key}): ${ticket.title}`;
+  const commitType = resolveCommitType(ticket.ticketType);
+  const prTitle = `${commitType}(${ticket.key}): ${ticket.title}`;
   const epicContext = resolveEpicContext(opts);
   const prBody = buildPrBody({
     config,
