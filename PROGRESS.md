@@ -389,24 +389,26 @@ Post-merge audit found 3 HIGH, 12 MEDIUM, 9 LOW across 13 modules. Audit run 202
 
 ## Phase 8: Core — Pipeline
 
-Adjusted after phase validation (2026-03-25). Orchestration layer tying Phases 5-7 lifecycle modules into a sequential pipeline. 13 phases + context + orchestrator. Split batch 1 (lock-check + pr-retry too large for one PR). Added prerequisites PR for `preflight/` + `deleteVerifyAttempt`. `notify/` and `prompt/` stay in Phase 9 per brief — cleanup/invoke accept callbacks instead.
+Adjusted after phase validation + DA review (2026-03-25). Orchestration layer tying Phases 5-7 lifecycle modules into a sequential pipeline. 13 phases + context + orchestrator. Split oversized PRs. `notify/` and `prompt/` stay in Phase 9 per brief — cleanup/invoke accept callbacks. **BLOCKING finding:** `functional/immutable-data` rule flags `ctx.field = value` — RunContext must be class-based (`ignoreClasses: true` allows mutation).
 
-| PR   | Description                                                                                                   | Status  |
-| ---- | ------------------------------------------------------------------------------------------------------------- | ------- |
-| 8.0  | Prerequisites: `preflight/` (binary checks, env, git state) + `deleteVerifyAttempt` in lock module            | Pending |
-| 8.1  | Pipeline context: `RunContext` type, `Phase` type, `createContext()` factory. TDD                             | Pending |
-| 8.2a | Phases batch 1a: `lock-check` (105 lines → decompose), `preflight` (69 lines). TDD                            | Pending |
-| 8.2b | Phases batch 1b: `epic-completion` (72 lines → needs `deliverEpicToBase`), `pr-retry` (142 lines → decompose) | Pending |
-| 8.3  | Phases batch 2: `rework-detection` (34), `ticket-fetch` (79 → decompose), `dry-run` (38), `feasibility` (39)  | Pending |
-| 8.4a | Phases batch 3a: `branch-setup` (115 lines → major decompose), `transition` (19)                              | Pending |
-| 8.4b | Phases batch 3b: `deliver` (105 → decompose), `cost` (31), `cleanup` (33, callback for notify)                | Pending |
-| 8.5  | Pipeline orchestrator: `runPipeline()` — wire all phases, invoke callback injection. TDD                      | Pending |
+| PR   | Description                                                                                                  | Status  |
+| ---- | ------------------------------------------------------------------------------------------------------------ | ------- |
+| 8.0  | Prerequisites: `preflight/` (binary checks, env, git state, DI exec) + `deleteVerifyAttempt` in lock module  | Pending |
+| 8.1  | Pipeline context: `RunContext` class (mutation-safe), `Phase` type, `createContext()` factory. TDD           | Pending |
+| 8.2a | Phases batch 1a: `lock-check` (105 → decompose), `preflight-phase` (69). Wires to existing `resume/`. TDD    | Pending |
+| 8.2b | `deliverEpicToBase`: shared module for epic PR delivery to base branch (122 lines → decompose). TDD          | Pending |
+| 8.2c | Phases batch 1c: `epic-completion` (72, consumes deliverEpicToBase), `pr-retry` (142 → decompose). TDD       | Pending |
+| 8.3  | Phases batch 2: `rework-detection` (34), `ticket-fetch` (79 → decompose), `dry-run` (38), `feasibility` (39) | Pending |
+| 8.4a | Phases batch 3a: `branch-setup` (115 → major decompose), `transition` (19). TDD                              | Pending |
+| 8.4b | Phases batch 3b: `deliver-phase` (105 → decompose), `cost-phase` (31), `cleanup` (33, notify callback). TDD  | Pending |
+| 8.5  | Pipeline orchestrator: `runPipeline()` — wire all phases, invoke callback injection. TDD                     | Pending |
 
 ### Dependencies
 
-- 8.0 is prerequisite for 8.2a (preflight needed by lock-check for AFK resume, preflight phase)
-- 8.1 is prerequisite for all phase PRs (8.2a-8.4b)
-- 8.2a before 8.2b (epic-completion depends on lock-check being merged for resume context)
+- 8.0 is prerequisite for 8.2a (preflight module needed by lock-check AFK resume + preflight phase)
+- 8.1 is prerequisite for all phase PRs (RunContext class must exist first)
+- 8.2a before 8.2b (lock-check establishes resume pattern)
+- 8.2b before 8.2c (epic-completion consumes deliverEpicToBase)
 - 8.3 depends on 8.1 only (independent of 8.2)
 - 8.4a before 8.4b (deliver depends on branch-setup populating effectiveTarget)
 - 8.5 depends on 8.2a-8.4b
@@ -423,7 +425,7 @@ Adjusted after phase validation (2026-03-25). Orchestration layer tying Phases 5
    - `deleteVerifyAttempt` — lock module cleanup helper, called by lock-check and orchestrator. → PR 8.0
    - `deliverEpicToBase` — called by epic-completion, not in new repo. Needs to be built or adapted from `deliverViaPullRequest`. → PR 8.2b
 5. **`notify/` and `prompt/` are Phase 9 (brief 9.2, 9.3)** — NOT Phase 8 prerequisites. Cleanup phase accepts a `notifyFn` callback. Invoke phase accepts an `invokeFn` callback. Core doesn't own these implementations.
-6. **`RunContext` mutation is intentional** — phases use `ctx.config = config` pattern. The type has optional fields populated progressively. No `let` needed since it's property assignment on a mutable object, not variable reassignment. Compatible with `no-let` rule.
+6. **BLOCKING: `functional/immutable-data` flags `ctx.config = config`** — Verified empirically. `ignoreClasses: true` is set, so **class-based RunContext** with setter methods works (confirmed via lint test). Plain object mutation does NOT work. RunContext must be a class, following the `Cached<T>` pattern from Phase 5.
 7. **All 13 phases mix `console.log` with logic.** New versions must return structured results (e.g., `PhaseResult` with `ok`, `message`, `data`). Terminal handles display. This is a significant rewrite for phases with complex output (preflight, ticket-fetch, dry-run, lock-check).
 8. **`process.cwd()` and `process.env` calls need DI.** Old context creates from `process.cwd()`/`process.env.CLANCY_AFK_MODE`. New context should accept these as parameters for testability.
 9. **Non-null assertions (`ctx.config!`, `ctx.board!`) are acceptable** — phase ordering guarantees these fields are populated. Runtime guards optional (these would be pipeline ordering bugs, not user errors).
@@ -459,20 +461,23 @@ Completed Phase 7 cleanup PRs C10-C14 + Phase 8 validation. All phases 1-7 compl
 - **C12** (#60) — `ExecGit` exported from git-ops (3 dups removed), `FetchFn` exported from pr-creation (2 dups removed), `Ctx` → `ReworkCtx` rename
 - **C13** (#61) — `resolveCommitType` word-boundary fix, 6 property-based tests (fast-check), `@param` JSDoc on 12 exported functions
 - **C14** (#62) — 11 coverage gap tests across rework, deliver, cost, fetch-ticket, epic
-- **Phase 8 validation** — Line-by-line review of 14 old source files, identified 4 missing modules, 6 functions >50 lines, split 2 oversized PRs
+- **Phase 8 validation** — Line-by-line review of 14 old source files + DA validation agent. Found BLOCKING ESLint issue, 4 missing modules, 7 functions >50 lines, split 3 oversized PRs
 
 **What's next:**
 
 - Start Phase 8 with PR 8.0 (prerequisites: `preflight/` module + `deleteVerifyAttempt`)
-- Then 8.1 (RunContext + Phase types + createContext factory)
+- Then 8.1 (RunContext CLASS + Phase types + createContext factory)
 
 **Key decisions:**
 
-- Split brief's 8.2 into 8.2a/8.2b and 8.4 into 8.4a/8.4b — original PRs exceeded 200+ lines of source each
+- **BLOCKING resolved:** `functional/immutable-data` flags `ctx.field = value` on plain objects. RunContext must be a CLASS (verified: `ignoreClasses: true` allows class property mutation). Follow `Cached<T>` pattern from Phase 5
+- Split brief's 8.2 into 8.2a/8.2b/8.2c — `deliverEpicToBase` (122 lines) is substantial, needs own PR
+- Split brief's 8.4 into 8.4a/8.4b — branch-setup + deliver too large together
 - `notify/` and `prompt/` stay in Phase 9 per brief — cleanup/invoke accept callbacks instead
-- `deliverEpicToBase` must be built in 8.2b — not in the new repo, needed by epic-completion
-- `invoke` phase in core is pure callback injection — `(ctx) => invokeFn(prompt)`. Terminal provides the actual Claude session
-- `RunContext` property assignment is not a `let` violation — `ctx.config = config` mutates object properties, not variable bindings
-- No console.log in core pipeline — phases return structured `PhaseResult` objects
+- `deliverEpicToBase` must be built in 8.2b as a shared module — called by epic-completion phase
+- `invoke` phase in core is pure callback injection — core builds the prompt, terminal invokes the session
+- `resume/` module (Phase 7.6) already exists — lock-check phase wires to it, no new module needed
+- Azure DevOps is now supported in rework-handlers (PR 7.5a) — don't carry forward old Azure exclusion from pr-retry
+- No console.log in core pipeline — phases return structured data, terminal handles display
 
-Old reference code: `~/Desktop/alex/clancy/src/scripts/once/` — READ-ONLY. Key files: `context/context.ts` (59 lines), `once.ts` (113 lines), `phases/` (13 files, ~880 lines total).
+Old reference code: `~/Desktop/alex/clancy/src/scripts/once/` — READ-ONLY. Key files: `context/context.ts` (59 lines), `once.ts` (113 lines), `phases/` (13 files, ~880 lines total). Also check `~/Desktop/alex/clancy/src/scripts/once/deliver/deliver.ts` for `deliverEpicToBase` (122 lines).
