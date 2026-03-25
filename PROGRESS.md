@@ -481,3 +481,29 @@ Completed Phase 7 cleanup PRs C10-C14 + Phase 8 validation. All phases 1-7 compl
 - No console.log in core pipeline — phases return structured data, terminal handles display
 
 Old reference code: `~/Desktop/alex/clancy/src/scripts/once/` — READ-ONLY. Key files: `context/context.ts` (59 lines), `once.ts` (113 lines), `phases/` (13 files, ~880 lines total). Also check `~/Desktop/alex/clancy/src/scripts/once/deliver/deliver.ts` for `deliverEpicToBase` (122 lines).
+
+### Session 23 handoff (2026-03-25)
+
+Completed PRs 8.0-8.2a. Phase 8 pipeline foundations in place. Codebase clean.
+
+**What was completed:**
+
+- **8.0** (#63) — `shared/preflight/` module with cross-platform binary probing (`--version` not `which`), `ExecCmd` type (not `ExecGit`) for non-git commands, `deleteVerifyAttempt` in lock module. Also: barrel exports added to 15 shared modules (11 shared + 4 pull-request subdirs), all 33 cross-module imports normalised to barrel paths, barrel checks added to DA-REVIEW.md + SELF-REVIEW.md
+- **8.1** (#64) — `RunContext` class with `ignoreClasses: true` ESLint pattern, `Phase` type, `createContext()` factory with DI. Block-level `eslint-disable` for `prefer-readonly-type` (justified — no `ignoreClasses` config option exists for that rule)
+- **8.2a** (#65) — `lock-check` phase (decomposed to `lockCheck` + `attemptResume`), `preflight-phase` (board detection → validation → ping). 5 setter methods added to RunContext. 28 pipeline tests total
+
+**What's next:**
+
+- Start 8.2b (`deliverEpicToBase` shared module — 122 lines from old code, needs decomposition)
+- Then 8.2c (epic-completion + pr-retry phases)
+
+**Critical discovery — `ignoreClasses: true` scope:**
+
+The `functional/immutable-data` rule's `ignoreClasses: true` option ONLY allows `this.field = value` inside class methods/constructors. It does NOT allow `instance.field = value` from external code — ESLint cannot do type analysis to know the variable is a class instance. This means **all phases must use RunContext setter methods** (`setPreflight`, `setRework`, `setTicket`, `setBranchSetup`, `setLockOwner`) instead of direct property assignment. This was discovered empirically during 8.2a when lint flagged `ctx.config = boardResult` in the preflight phase.
+
+**Key decisions:**
+
+- Barrel exports normalised across all shared modules — convention is now: every module with external consumers has an `index.ts` barrel, imports use `/index.js` path
+- `PreflightPhaseDeps.runPreflight` takes only `projectRoot` (single arg) — the `exec`/`envFs` deps are pre-wired by the terminal layer, not passed through the phase
+- Lock-check `LockCheckDeps` defines resume function types explicitly (not `typeof import`) to avoid value imports that lint flags as type-only
+- Phases return structured result types (`LockCheckResult`, `PreflightPhaseResult`) — no `console.log` in core
