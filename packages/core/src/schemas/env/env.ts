@@ -36,6 +36,7 @@ export const sharedEnvSchema = z.object({
   GITLAB_TOKEN: z.optional(z.string()),
   BITBUCKET_USER: z.optional(z.string()),
   BITBUCKET_TOKEN: z.optional(z.string()),
+  AZDO_PAT: z.optional(z.string()),
   CLANCY_GIT_PLATFORM: z.optional(z.string()),
   CLANCY_GIT_API_URL: z.optional(z.string()),
 
