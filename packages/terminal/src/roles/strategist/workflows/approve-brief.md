@@ -78,7 +78,7 @@ Which brief to approve? [1-N]
 **Argument is a positive integer (e.g. `2`):**
 Select the Nth unapproved brief by index. If out of range: `Index out of range.` Stop.
 
-**Argument matches a ticket identifier (`#\d+`, `[A-Z]+-\d+`, bare number for Azure DevOps, or `[A-Za-z]{1,5}-\d+`/bare number for Shortcut):**
+**Argument matches a ticket identifier (`#\d+`, `[A-Z]+-\d+`, bare number for Azure DevOps, `[A-Za-z]{1,5}-\d+`/bare number for Shortcut, or UUID/`notion-XXXXXXXX` for Notion):**
 Scan unapproved brief files for a `**Source:**` line containing the identifier. If 0 matches: show available briefs and stop. If 1 match: load it. If 2+ matches: show numbered list and ask.
 
 **Argument is other text:**
@@ -258,9 +258,22 @@ curl -s \
 
 Check: `completed` or `archived`? -> Warn, ask `[y/N]`. Check `story_links` for existing children.
 
+#### Notion
+
+```bash
+curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  "https://api.notion.com/v1/pages/$PAGE_ID"
+```
+
+Check: `archived` is `true`? -> Warn, ask `[y/N]`. Check `relation` properties for existing child pages.
+
+**Notion limitation:** Notion does not have a native parent-child hierarchy like other boards. Parent relationships are modelled via `relation` properties in the database. If no relation property is configured, children are standalone pages in the same database.
+
 ### Source 2 — `--epic` flag
 
-If `--epic` is provided (e.g. `--epic PROJ-200`, `--epic #100`, `--epic ENG-42`, `--epic SC-123`), validate the target using the same checks as Source 1. If not found or is Done: stop.
+If `--epic` is provided (e.g. `--epic PROJ-200`, `--epic #100`, `--epic ENG-42`, `--epic SC-123`, `--epic notion-XXXXXXXX`), validate the target using the same checks as Source 1. If not found or is Done: stop.
 
 Note: `--epic` is ignored for board-sourced briefs (the source ticket IS the parent).
 
@@ -478,6 +491,27 @@ curl -s \
 ```
 
 Use `id` as the `owner_ids` value for story creation.
+
+### Notion
+
+**Pipeline label for children — mandatory, same logic as other boards.** Use `CLANCY_LABEL_PLAN` or `CLANCY_LABEL_BUILD` from `.clancy/.env` (defaults: `clancy:plan` / `clancy:build`). Labels are applied via multi-select properties.
+
+**Labels:** Notion auto-creates multi-select options when first used — no pre-creation needed. Apply: the pipeline label, `clancy:afk` or `clancy:hitl`. `CLANCY_LABEL` is NOT applied to children when pipeline labels are active.
+
+Use `CLANCY_NOTION_LABELS` to specify which multi-select property holds labels (configurable per database).
+
+**Assignee:** Use `CLANCY_NOTION_ASSIGNEE` property name. Resolve the current user via the Notion API:
+
+```bash
+curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  "https://api.notion.com/v1/users/me"
+```
+
+Use `id` for the people property value.
+
+**Status:** Resolve the backlog status value from `CLANCY_PLAN_STATUS` (default: `Backlog`). Use `CLANCY_NOTION_STATUS` for the status property name.
 
 ---
 
@@ -701,6 +735,50 @@ If no parent: omit `epic_id` (or set to `null`).
 
 **On 429 (rate limited):** Check `Retry-After` header. Wait, retry once. If still 429: stop, enter partial failure flow.
 
+### Notion — POST page
+
+```bash
+curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  -X POST \
+  "https://api.notion.com/v1/pages" \
+  -d '{
+    "parent": {"database_id": "$NOTION_DATABASE_ID"},
+    "properties": {
+      "Name": {"title": [{"text": {"content": "{ticket title}"}}]},
+      "$CLANCY_NOTION_STATUS": {"status": {"name": "$CLANCY_PLAN_STATUS"}},
+      "$CLANCY_NOTION_LABELS": {"multi_select": [{"name": "{PIPELINE_LABEL}"}, {"name": "clancy:{mode}"}]},
+      "$CLANCY_NOTION_ASSIGNEE": {"people": [{"id": "{resolved_user_id}"}]}
+    }
+  }'
+```
+
+After creation, append the description as page content blocks:
+
+```bash
+curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  -X PATCH \
+  "https://api.notion.com/v1/blocks/$NEW_PAGE_ID/children" \
+  -d '{"children": [
+    {"type": "paragraph", "paragraph": {"rich_text": [{"type": "text", "text": {"content": "Epic: {PARENT_KEY}"}}]}},
+    {"type": "divider", "divider": {}},
+    {"type": "paragraph", "paragraph": {"rich_text": [{"type": "text", "text": {"content": "{Description}"}}]}},
+    {"type": "divider", "divider": {}},
+    {"type": "paragraph", "paragraph": {"rich_text": [{"type": "text", "text": {"content": "Brief: {slug}\nSize: {S|M|L}"}}]}}
+  ]}'
+```
+
+**Parent linking:** If the parent is a Notion page with a `relation` property configured, update the relation on the child page to point to the parent. If no relation property: children are standalone pages in the same database.
+
+**Notion limitation:** Page content is stored as blocks, not a description field. The `Epic: {PARENT_KEY}` line is the first block of every child page. Each `rich_text` block has a 2000-character limit — split longer descriptions across multiple blocks.
+
+If no parent: omit the `Epic:` paragraph block and relation property.
+
+**On 429 (rate limited):** Check `Retry-After` header. Wait, retry once. If still 429: stop, enter partial failure flow.
+
 ---
 
 ## Step 8 — Link dependencies
@@ -800,6 +878,25 @@ curl -s \
 Wait **200ms** between each link creation.
 
 On failure: `Could not link {DEPENDENT} -> {BLOCKER}. Link manually in Shortcut.`
+
+### Notion — relation properties
+
+Notion uses **relation properties** for dependencies between pages. If the database has a relation property configured for dependencies:
+
+```bash
+curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  -X PATCH \
+  "https://api.notion.com/v1/pages/$DEPENDENT_PAGE_ID" \
+  -d '{"properties": {"$DEPENDENCY_RELATION_PROPERTY": {"relation": [{"id": "$BLOCKER_PAGE_ID"}, ...existing_relations]}}}'
+```
+
+**Notion limitation:** If no relation property is configured for dependencies, dependency linking is not possible via the API. In this case, add a `Depends on: notion-XXXXXXXX` line to the page content blocks instead (best-effort text reference).
+
+Wait **200ms** between each relation update.
+
+On failure: `Could not link {DEPENDENT} -> {BLOCKER}. Link manually in Notion.`
 
 ---
 
@@ -934,6 +1031,19 @@ curl -s \
 
 Shortcut accepts Markdown directly in comment text.
 
+### Notion — POST comment on parent
+
+```bash
+curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  -X POST \
+  "https://api.notion.com/v1/comments" \
+  -d '{"parent": {"page_id": "$PARENT_PAGE_ID"}, "rich_text": [{"type": "text", "text": {"content": "<tracking comment text>"}}]}'
+```
+
+**Notion limitation:** Comments use `rich_text` blocks, not markdown. The `rich_text` array has a 2000-character limit per text block. Split the tracking table across multiple blocks if needed.
+
 ### Tracking comment format
 
 ```markdown
@@ -1034,6 +1144,24 @@ curl -s \
 
 For epics, use `GET /api/v3/epics/$EPIC_ID` and `PUT /api/v3/epics/$EPIC_ID` with the same label-filtering pattern.
 
+### Notion
+
+```bash
+# Fetch current page properties, remove brief label from multi-select
+PAGE=$(curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  "https://api.notion.com/v1/pages/$PARENT_PAGE_ID")
+
+# Update multi-select property without brief label
+curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  -X PATCH \
+  "https://api.notion.com/v1/pages/$PARENT_PAGE_ID" \
+  -d '{"properties": {"$CLANCY_NOTION_LABELS": {"multi_select": [options_without_brief_label]}}}'
+```
+
 ### On failure
 
 ```
@@ -1097,6 +1225,7 @@ YYYY-MM-DD HH:MM | APPROVE_BRIEF | {slug} | {N} tickets created
 | Linear       | `RATELIMITED` error code         | Wait 60s, retry once                       |
 | Azure DevOps | 429 + `Retry-After` header       | Wait the specified seconds, retry once     |
 | Shortcut     | 429 + `Retry-After` header       | Wait the specified seconds, retry once     |
+| Notion       | 429 + `Retry-After` header       | Wait the specified seconds, retry once     |
 
 If retry also fails: stop, enter partial failure flow.
 
@@ -1120,6 +1249,7 @@ Enter partial failure flow (Step 10).
 | Linear       | 30s per GraphQL call |
 | Azure DevOps | 30s per API call     |
 | Shortcut     | 30s per API call     |
+| Notion       | 30s per API call     |
 
 On timeout: `Request timed out. Ticket may have been created server-side. Check board before re-run.` Enter partial failure flow.
 
@@ -1195,6 +1325,30 @@ Compare story `name` fields against proposed ticket titles (case-insensitive exa
 
 If the parent is a story, check `story_links` for related stories and compare titles.
 
+#### Notion
+
+If the parent page has a `relation` property for children, query related pages:
+
+```bash
+PAGE=$(curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  "https://api.notion.com/v1/pages/$PARENT_PAGE_ID")
+```
+
+Extract page IDs from the relation property, fetch each page's title, and compare against proposed ticket titles (case-insensitive exact match).
+
+If no relation property is configured, query the database for pages with matching titles:
+
+```bash
+curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  -X POST \
+  "https://api.notion.com/v1/databases/$NOTION_DATABASE_ID/query" \
+  -d '{"filter": {"property": "Name", "title": {"equals": "{ticket title}"}}}'
+```
+
 If matching children found:
 
 ```
@@ -1216,9 +1370,10 @@ Default: N (don't create duplicates).
 - The `.approved` marker filename is the full brief filename with `.approved` appended (e.g. `.clancy/briefs/2026-03-14-auth-rework.md.approved`)
 - Tickets are created sequentially (not in parallel) to maintain dependency ordering and respect rate limits
 - The 500ms delay between ticket creations is sufficient for all platforms under normal rate limit conditions
-- Dependency links use "Blocks" for Jira, `blockedBy` for Linear, `System.LinkTypes.Dependency-Reverse` for Azure DevOps, `story_links` with `blocks` verb for Shortcut, and body text cross-references for GitHub
-- Labels on Jira and Azure DevOps are auto-created by the platform; on GitHub they must be pre-created or the 422 fallback handles it; on Linear and Shortcut they are looked up and auto-created if missing
+- Dependency links use "Blocks" for Jira, `blockedBy` for Linear, `System.LinkTypes.Dependency-Reverse` for Azure DevOps, `story_links` with `blocks` verb for Shortcut, `relation` properties for Notion, and body text cross-references for GitHub
+- Labels on Jira, Azure DevOps, and Notion are auto-created by the platform; on GitHub they must be pre-created or the 422 fallback handles it; on Linear and Shortcut they are looked up and auto-created if missing
 - Shortcut uses `Shortcut-Token` header (not `Authorization: Bearer`). API base: `https://api.app.shortcut.com/api/v3`. Stories use `name` (not `title`), descriptions use markdown, and parent linking uses `epic_id` for epic parents or `story_links` for story parents
+- Notion uses `Authorization: Bearer $NOTION_TOKEN` and `Notion-Version: 2022-06-28` headers. API base: `https://api.notion.com/v1`. Comments use `rich_text` blocks (not markdown) with a 2000-character limit per text block. Page content is blocks (not a description field). Labels use multi-select properties. The API does not support editing comments (post new instead). Parent-child relationships use `relation` properties (not native hierarchy)
 - Sprint/milestone assignment is deliberately not set — this is a team planning decision
 - Linear `priority: 0` means "No priority" — the team triages after creation
 - Jira priority is inherited from the parent if available; Linear and GitHub do not inherit priority
