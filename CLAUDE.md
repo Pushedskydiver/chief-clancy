@@ -43,6 +43,8 @@ gh pr create --assignee Pushedskydiver --label "feature" --label "core"
 # Package labels: core, terminal
 ```
 
+Merge policy: for **cleanup PRs** (C-prefixed audit fixes), watch CI and merge once all checks pass. For **regular phase PRs** (new features/modules), create the PR but leave merging to Alex.
+
 ## Architecture
 
 Dependency direction: core ← terminal ← chief-clancy. No reverse imports. Enforced by eslint-plugin-boundaries.
