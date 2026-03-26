@@ -1,24 +1,76 @@
 # Monorepo Progress
 
-## Session 28 Handoff
+## Session 30 Handoff
 
-**PRs merged:** C20 (#77), C21 (#78)
-**Remaining:** C22, C23, C24
+**Starting Phase 9: Terminal — orchestrator.** Validated breakdown, beginning implementation.
+
+## Phase 9: Terminal — Orchestrator
+
+Wire terminal package to core pipeline. Claude CLI bridge, prompt construction, notifications, once/AFK entry points. Also: add missing board support (Azure DevOps, Shortcut, Notion) to planner workflows.
+
+Two independent tracks — board parity (Track A) can proceed in any order relative to orchestrator (Track B).
+
+### Track A — Board parity (planner workflows)
+
+| PR   | Description                                                                                         | Status  |
+| ---- | --------------------------------------------------------------------------------------------------- | ------- |
+| 9.0a | Add Azure DevOps to planner workflows (plan.md + approve-plan.md, all dispatch blocks)              | Pending |
+| 9.0b | Add Shortcut to planner workflows (plan.md + approve-plan.md, all dispatch blocks)                  | Pending |
+| 9.0c | Add Notion to planner workflows (plan.md + approve-plan.md, with documented API limitations)        | Pending |
+
+### Track B — Orchestrator
+
+| PR  | Description                                                                            | Status  |
+| --- | -------------------------------------------------------------------------------------- | ------- |
+| 9.1 | Claude CLI bridge: `invokeClaudePrint`, `invokeClaudeSession`. I/O boundary.           | Pending |
+| 9.2 | Prompt builder: `buildPrompt`, `buildReworkPrompt`, `ticketLabel`, TDD block.          | Pending |
+| 9.3 | Webhook notifications: `sendNotification`, Slack/Teams payload builders.               | Pending |
+| 9.4 | Dep factory: `buildPipelineDeps(opts)` — wire all 15 `PipelineDeps` fields.            | Pending |
+| 9.5 | Once entry point + display: parse args, load env, create context, run pipeline.        | Pending |
+| 9.6 | Session report generator: parse costs.log + progress.txt, write session-report.md.     | Pending |
+| 9.7 | AFK runner: loop orchestration, quiet hours, stop conditions, session report + webhook. | Pending |
+
+### Dependencies
+
+- Track A: 9.0a → 9.0b → 9.0c (sequential — same files)
+- Track B: 9.1, 9.2, 9.3, 9.6 are independent leaves. 9.4 depends on 9.1 + 9.2 + 9.3. 9.5 depends on 9.4. 9.7 depends on 9.5 + 9.6 + 9.3.
+- Tracks A and B are independent of each other.
+
+### Phase validation notes (2026-03-26)
+
+**Key findings from 4-agent validation sweep:**
+
+1. **PR 9.4 (ANSI utils) from original brief already complete** — `ansi.ts` exists with 7 helpers + 9 tests. Removed from breakdown.
+2. **Original PR 9.5 (once orchestrator) too large** — dep factory alone is ~245 lines (15 PipelineDeps fields, 39 sub-deps). Split into dep factory (9.4) + entry point (9.5).
+3. **Original PR 9.6 (AFK runner) too large** — old code is 308 + 258 lines (afk + report). Split into session report (9.6) + AFK runner (9.7).
+4. **"Desktop notifications" removed** — old code is webhooks only (Slack + Teams). Desktop is new scope, deferred.
+5. **Board parity critical** — plan.md + approve-plan.md only handle 3 of 6 boards. Azure DevOps mandatory per project feedback. Added Track A (9.0a/b/c).
+6. **Dep factory fits one file** — single `buildPipelineDeps(opts)` with non-exported `SharedResources` type. ~245 lines. No split needed unless future growth forces it.
+7. **Notion caveats documented** — no comment editing (post-new fallback), 2000-char property limit (use blocks API for description append).
+8. **Notifications needed by dep factory** — cleanup phase takes a `notify` callback, so 9.3 must precede 9.4.
+
+**Removed from original brief:** PR 9.4 (ANSI utils — already done).
+**Added:** Track A (9.0a/b/c — board parity), split orchestrator PRs (9.4 dep factory, 9.6 session report).
+
+---
+
+## Session 29 Handoff
+
+**Phase 2 Cleanup complete.** All 5 cleanup PRs (C20–C24) merged. 185 terminal tests.
 
 ### What was done
 
-- **C20**: Extracted `isPlainObject`, `rejectSymlink`, `hasErrorCode` into `installer/shared/` with subdirectory-per-module convention (matching core). Added barrel `index.ts` per subdirectory, co-located tests (19 new). Replaced `isEnoent` with `hasErrorCode`. Added empty-array guard to `filterNewEntries` (H2). Fixed CI failure on root-user permission test (ENOTDIR instead of EACCES).
-- **C21**: Fixed TOCTOU race in `resolveWorkflowRef` (existsSync → try/catch). Added `entry.isFile()` guard to `copyEntry`. Fixed stale `statusLine` (always overwrite instead of `??`).
+- **C22** (#79): Test coverage gaps — non-ENOENT re-throw tests for readManifest (H4), safeFileHash (H5), safeCopy (M8), safeUnlink (M9). installHooks failure warning test (H6). confirmOverwrite edge cases (M10). ISO meta.date assertion (L11). parseManifestJson array input (L12).
+- **C23** (#80): Comment hygiene + export cleanup — removed over-exported `fileHash`, `red`, `yellow`, `CORE_PACKAGE_NAME` from barrel (M13). Exported `HOOK_FILES` for test import (L15, L7). Added `@returns` JSDoc to 7 functions (L8). Broke 4-method chain in `parseEnabledRoles` (L9). Changed `replaceAll` → `replace` for WORKFLOW_REF regex (L1).
+- **C24** (#81): Improved hook-installer blanket catch — logs error message before returning false (H1). Made `cleanDisabledFiles` recursive with `rmSync` (M6).
 
-### Process notes
+### Audit status
 
-- Alex requested one-at-a-time PR workflow: merge each before creating the next
-- Cleanup PRs auto-merge after CI passes (per merge autonomy memory)
-- Shared folder restructured to use subdirectory convention from core (`folder/folder.ts + folder.test.ts + index.ts`)
+All 6 HIGH, 13 MEDIUM, and non-deferred LOW findings resolved across C20–C24. Deferred items (M11, L2–L6, L13–L14, L16) documented in Phase 2 Cleanup section below.
 
-### Next up: C22 — Test coverage gaps
+## Session 28 Handoff
 
-H4+H5: Tests for non-ENOENT re-throw in readManifest/safeFileHash. H6: Test installHooks returning false in runInstall. M8+M9: Non-ENOENT re-throw in safeCopy/safeUnlink. M10: confirmOverwrite edge cases. L10: hasErrorCode tests (already done in C20). L11: meta.date ISO format assertion. L12: parseManifestJson with array input.
+**PRs merged:** C20 (#77), C21 (#78)
 
 ## Phase 1: Scaffold
 
@@ -87,9 +139,9 @@ Pre-Phase 9 audit of terminal installer modules. 4-agent sweep (bugs, convention
 | --- | ---------------------------------------------------------------------------------------------------------------------------- | ------- |
 | C20 | Shared helpers: extract `isPlainObject` + `rejectSymlink` → `shared/`, replace `isEnoent`, add barrel (H2, M1-M4, M12)       | Done    |
 | C21 | TOCTOU fix + safety: wrap `resolveWorkflowRef` try/catch, `isFile()` guard in `copyEntry`, stale statusLine (H3, M5, M7)     | Done    |
-| C22 | Test coverage: non-ENOENT re-throws, installHooks failure, confirmOverwrite edges, fs-errors tests (H4-H6, M8-M10, L10-L12)  | Pending |
-| C23 | Comment hygiene + export cleanup: `as` cast comments, `@returns` JSDoc, remove over-exports, chain fix (M13, L1, L7-L9, L15) | Pending |
-| C24 | `cleanDisabledFiles` recursive cleanup + `hooks[0]` guard + hook-installer catch improvement (H1, M6)                        | Pending |
+| C22 | Test coverage: non-ENOENT re-throws, installHooks failure, confirmOverwrite edges, fs-errors tests (H4-H6, M8-M10, L10-L12)  | Done    |
+| C23 | Comment hygiene + export cleanup: `as` cast comments, `@returns` JSDoc, remove over-exports, chain fix (M13, L1, L7-L9, L15) | Done    |
+| C24 | `cleanDisabledFiles` recursive cleanup + hook-installer catch improvement (H1, M6)                                            | Done    |
 
 ### HIGH findings
 
