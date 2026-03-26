@@ -13,9 +13,43 @@
 - **C29** (#99): Property-based tests + edge cases — fast-check for `parseCostsLog`, `progressTimestampToMs`, `buildPrompt`, `buildReworkPrompt`. Edge cases for `checkStopCondition` (undefined phase/error), `isSlackWebhook` subdomain, `getQuietSleepMs` sub-minute precision, CRLF, comma tokens, `buildSessionReport` mkdir failure. DA review: 2 MEDIUM (weak properties — fixed).
 - **C30** (#100): Minor cleanup — `\r\n`-safe split in `extractSummaryForWebhook` (M6). `ReadonlyMap` return from `makeFindCompletedEpics` (L3). `TDD_BLOCK` constant rename (L4). Injected `warn` callback in `notify.ts` (L5). `MAX_ITERATIONS_CAP` on `iterations()` (L10). Export-for-testability documented in CONVENTIONS.md (L12). Dep-factory behavioral test (M8). DA review: 2 MEDIUM (negative iterations + missing `\r\n` test — fixed).
 
+### Phase 10 Plan — Terminal Hooks
+
+8 hooks + 1 agent hook. Old hooks are plain JS with convention violations (functions >50 lines, no types, no tests). Each must be rewritten to meet standards: TypeScript source, <50 line functions, named booleans, DI for testability, co-located tests, compiled to CommonJS via esbuild.
+
+**Existing infrastructure:** Hook installer is complete and tested. Expects 8 compiled `.js` files. All hook event registrations already mapped. Verification gate agent prompt already exists at `terminal/src/agents/verification-gate.md`.
+
+**Key constraint:** Hooks must be CommonJS after compilation (esbuild bundles), zero npm dependencies, best-effort/fail-open.
+
+#### PRs
+
+| PR   | Theme                       | Scope                                                                                                                                                             |
+| ---- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 10.1 | Wire `retryEntry` stub      | Complete PR retry wiring in `dep-factory.ts` — delegate to `deliverViaPullRequest` + `resolvePlatformHandlers`. Closes last Phase 9 gap.                          |
+| 10.2 | Hook build infrastructure   | esbuild CJS config, `src/hooks/` dir, shared utilities (stdin reader, lock file parser, tmpdir helpers). Foundation for all hooks.                                |
+| 10.3 | PreToolUse guards           | credential-guard (extract `extractContent` + `scanForCredentials`), branch-guard (decompose 66-line `checkCommand` into 6 check functions, immutable init).       |
+| 10.4 | Simple hooks                | post-compact (54 lines, minimal changes), drift-detector (97 lines, session debounce). Both low complexity.                                                       |
+| 10.5 | Context monitor             | Complex (190 lines, complexity 16). Decompose into `runContextGuard`, `runTimeGuard`, `shouldFireWarning` pure functions + debounce state machine. Standalone PR. |
+| 10.6 | Statusline                  | Writes bridge file for context-monitor. Extract duplicate `normalizeContextUsage` logic. ANSI context bar builder.                                                |
+| 10.7 | Notification + check-update | notification (platform dispatch: macOS/Linux/Windows). check-update (split internal modules: version check + brief staleness).                                    |
+| 10.8 | Verification gate           | Wire existing agent prompt into hook installer. Minimal code — registration config only.                                                                          |
+
+#### Hook complexity summary
+
+| Hook             | Old lines | Complexity | Key refactoring needed                                                     |
+| ---------------- | --------- | ---------- | -------------------------------------------------------------------------- |
+| credential-guard | 121       | Low (4)    | Extract content extraction + scan functions. Narrow regex false positives. |
+| branch-guard     | 128       | Medium (8) | Split `checkCommand` into 6 functions. Immutable `PROTECTED_BRANCHES`.     |
+| post-compact     | 54        | Low (3)    | Minimal — add JSDoc, share lock file reader.                               |
+| drift-detector   | 97        | Low (4)    | Minimal — session debounce via tmpdir.                                     |
+| context-monitor  | 190       | High (16)  | Heavy decomposition. Dual debounce, 145-line callback, nesting depth 4.    |
+| statusline       | 83        | Medium     | Duplicate normalisation logic. Bridge file for context-monitor.            |
+| notification     | 106       | Low-Med    | Platform dispatch (3 OS). Already exports testable functions.              |
+| check-update     | 115       | Medium     | Two responsibilities (npm version + brief staleness). Detached spawn.      |
+
 ### Next up
 
-- Evaluate Phase 10 scope (esbuild bundles? slash command scripts? integration tests?).
+- **10.1**: Wire `retryEntry` stub in dep-factory.
 
 ## Session 33 Handoff
 
