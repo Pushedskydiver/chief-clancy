@@ -63,13 +63,13 @@ Adjusted after phase validation (2026-03-23). Reordered to build leaves first, s
 
 Pre-Phase 9 audit of terminal installer modules. 4-agent sweep (bugs, conventions, test coverage, architecture). Audit run 2026-03-26.
 
-| PR  | Description                                                                                                    | Status  |
-| --- | -------------------------------------------------------------------------------------------------------------- | ------- |
-| C20 | Shared helpers: extract `isPlainObject` + `rejectSymlink` → `shared/`, replace `isEnoent`, add barrel (H2, M1-M4, M12) | Pending |
-| C21 | TOCTOU fix + safety: wrap `resolveWorkflowRef` try/catch, `isFile()` guard in `copyEntry`, stale statusLine (H3, M5, M7) | Pending |
-| C22 | Test coverage: non-ENOENT re-throws, installHooks failure, confirmOverwrite edges, fs-errors tests (H4-H6, M8-M10, L10-L12) | Pending |
+| PR  | Description                                                                                                                  | Status  |
+| --- | ---------------------------------------------------------------------------------------------------------------------------- | ------- |
+| C20 | Shared helpers: extract `isPlainObject` + `rejectSymlink` → `shared/`, replace `isEnoent`, add barrel (H2, M1-M4, M12)       | Pending |
+| C21 | TOCTOU fix + safety: wrap `resolveWorkflowRef` try/catch, `isFile()` guard in `copyEntry`, stale statusLine (H3, M5, M7)     | Pending |
+| C22 | Test coverage: non-ENOENT re-throws, installHooks failure, confirmOverwrite edges, fs-errors tests (H4-H6, M8-M10, L10-L12)  | Pending |
 | C23 | Comment hygiene + export cleanup: `as` cast comments, `@returns` JSDoc, remove over-exports, chain fix (M13, L1, L7-L9, L15) | Pending |
-| C24 | `cleanDisabledFiles` recursive cleanup + `hooks[0]` guard + hook-installer catch improvement (H1, M6)          | Pending |
+| C24 | `cleanDisabledFiles` recursive cleanup + `hooks[0]` guard + hook-installer catch improvement (H1, M6)                        | Pending |
 
 ### HIGH findings
 
@@ -470,9 +470,9 @@ Adjusted after phase validation + DA review (2026-03-25). Orchestration layer ty
 
 Post-merge audit found 3 HIGH, 10 MEDIUM, 14 LOW across 15 pipeline modules. Audit run 2026-03-25.
 
-| PR  | Description                                                                                         | Status  |
-| --- | --------------------------------------------------------------------------------------------------- | ------- |
-| C15 | Bugs: deliver fresh progress log + pr-retry prNumber doc + postReworkActions try/catch (H1, M1, M6) | Done    |
+| PR  | Description                                                                                         | Status     |
+| --- | --------------------------------------------------------------------------------------------------- | ---------- |
+| C15 | Bugs: deliver fresh progress log + pr-retry prNumber doc + postReworkActions try/catch (H1, M1, M6) | Done       |
 | C16 | Time DI + orchestrator error resilience tests (H2, H3, M7, M8)                                      | Done (#73) |
 | C17 | Comment hygiene: strip phase numbers, add Safety comments, rename cleanup file (M2, M3, L3, L6)     | Done (#74) |
 | C18 | Dead code + type cleanup: remove Phase type, invoke structured result, setter overlap (M4, M5, L7)  | Done (#75) |
