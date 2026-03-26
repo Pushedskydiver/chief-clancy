@@ -40,6 +40,7 @@ Promote an approved Clancy plan from a ticket comment to the ticket description.
    - **Jira:** `GET $JIRA_BASE_URL/rest/api/3/issue/$KEY?fields=summary` → use `.fields.summary`
    - **Linear:** `issues(filter: { identifier: { eq: "$KEY" } }) { nodes { title } }` → use `nodes[0].title`
    - **Azure DevOps:** `GET https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$ID?fields=System.Title&api-version=7.1` → use `.fields["System.Title"]`
+   - **Shortcut:** `GET https://api.app.shortcut.com/api/v3/stories/$STORY_ID` → use `.name`
      If fetching fails, show the key without a title: `Auto-selected [{KEY}] (planned {date}). Promote? [Y/n]`
 5. If user declines:
    ```
@@ -56,6 +57,7 @@ Validate the key format per board (case-insensitive):
 - **Jira:** `[A-Za-z][A-Za-z0-9]+-\d+` (e.g. `PROJ-123` or `proj-123`)
 - **Linear:** `[A-Za-z]{1,10}-\d+` (e.g. `ENG-42` or `eng-42`)
 - **Azure DevOps:** `\d+` (bare number, e.g. `42` — work item IDs are always numeric)
+- **Shortcut:** `[A-Za-z]{1,5}-\d+` or bare number (e.g. `SC-123` or `123` — Shortcut story IDs are numeric, prefixed identifiers are optional)
 
 If invalid format:
 
@@ -172,6 +174,24 @@ WORK_ITEM=$(curl -s \
   -u ":$AZDO_PAT" \
   -H "Accept: application/json" \
   "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID?fields=System.Title,System.Description&api-version=7.1")
+```
+
+### Shortcut
+
+Fetch story comments:
+
+```bash
+RESPONSE=$(curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  "https://api.app.shortcut.com/api/v3/stories/$STORY_ID/comments")
+```
+
+Search for the most recent comment where `text` contains `## Clancy Implementation Plan`. **Capture the comment `id`** for later editing in Step 5b. Also fetch the story for its title and description:
+
+```bash
+STORY=$(curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  "https://api.app.shortcut.com/api/v3/stories/$STORY_ID")
 ```
 
 If no plan comment is found:
@@ -340,6 +360,27 @@ curl -s \
 
 Convert the plan markdown to HTML using the same conversion rules as Step 5 in plan.md (headings, lists, tables, bold, code → HTML equivalents). If HTML construction is too complex, wrap the plan in `<pre>` tags as fallback.
 
+### Shortcut — PUT story
+
+Fetch the current description:
+
+```bash
+CURRENT=$(curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  "https://api.app.shortcut.com/api/v3/stories/$STORY_ID")
+```
+
+Append the plan (Shortcut descriptions use markdown):
+
+```bash
+curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -X PUT \
+  "https://api.app.shortcut.com/api/v3/stories/$STORY_ID" \
+  -d '{"description": "<existing description>\n\n---\n\n<plan>"}'
+```
+
 ---
 
 ## Step 5b — Edit plan comment (approval note)
@@ -407,6 +448,17 @@ curl -s \
   -H "Content-Type: application/json" \
   "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID/comments/$COMMENT_ID?api-version=7.1-preview.4" \
   -d '{"text": "<p><strong>Plan approved and promoted to description -- {YYYY-MM-DD}.</strong></p><existing HTML comment>"}'
+```
+
+### Shortcut
+
+```bash
+curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -X PUT \
+  "https://api.app.shortcut.com/api/v3/stories/$STORY_ID/comments/$COMMENT_ID" \
+  -d '{"text": "> **Plan approved and promoted to description** -- {YYYY-MM-DD}\n\n{existing_comment_text}"}'
 ```
 
 On failure for any platform:
@@ -639,6 +691,59 @@ Azure DevOps uses **tags** (semicolon-delimited string field) instead of labels,
      -d '[{"op": "replace", "path": "/fields/System.State", "value": "$CLANCY_STATUS_PLANNED"}]'
    ```
 
+### Shortcut
+
+Shortcut uses **labels** and **workflow state transitions**.
+
+1. **Add build label:**
+
+   ```bash
+   # Resolve build label ID (create if missing)
+   LABELS=$(curl -s \
+     -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+     "https://api.app.shortcut.com/api/v3/labels")
+
+   # Find or create the build label, get its ID
+   # Then add to story:
+   curl -s \
+     -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+     -H "Content-Type: application/json" \
+     -X PUT \
+     "https://api.app.shortcut.com/api/v3/stories/$STORY_ID" \
+     -d '{"labels": [{"name": "$CLANCY_LABEL_BUILD"}, ...existing_labels]}'
+   ```
+
+2. **Remove plan label:**
+
+   ```bash
+   # Fetch current story labels, filter out plan label, update
+   curl -s \
+     -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+     -H "Content-Type: application/json" \
+     -X PUT \
+     "https://api.app.shortcut.com/api/v3/stories/$STORY_ID" \
+     -d '{"labels": [labels_without_plan_label]}'
+   ```
+
+3. **Workflow state transition:**
+
+   ```bash
+   # Resolve the "Unstarted" or "Ready for Development" state ID from workflows
+   WORKFLOWS=$(curl -s \
+     -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+     "https://api.app.shortcut.com/api/v3/workflows")
+
+   # Find state with type "unstarted", get its ID
+   curl -s \
+     -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+     -H "Content-Type: application/json" \
+     -X PUT \
+     "https://api.app.shortcut.com/api/v3/stories/$STORY_ID" \
+     -d '{"workflow_state_id": $UNSTARTED_STATE_ID}'
+   ```
+
+   If no suitable state found: warn, skip transition.
+
 On failure:
 
 ```
@@ -695,6 +800,14 @@ Plan promoted. Work item transitioned to {CLANCY_STATUS_PLANNED}.
 
 ```
 Plan promoted. Move work item {ID} to your implementation queue for /clancy:once.
+
+"Book 'em, Lou." -- The ticket is ready for /clancy:once.
+```
+
+**Shortcut:**
+
+```
+Plan promoted. Moved to unstarted. Ready for /clancy:once.
 
 "Book 'em, Lou." -- The ticket is ready for /clancy:once.
 ```
