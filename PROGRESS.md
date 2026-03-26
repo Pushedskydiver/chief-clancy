@@ -1,5 +1,92 @@
 # Monorepo Progress
 
+## Session 33 Handoff
+
+**Phase 9 complete.** 4 PRs this session: 9.5 (implement entry point), 9.6 (session report), 9.7 (autopilot runner), plus the once→implement rename. Phase 9 audit done — 6 cleanup PRs planned (C25–C30).
+
+### What was done
+
+- **9.5** (#92): Implement entry point — `runImplement` thin orchestration layer. Creates `RunContext`, wires `PipelineDeps` via `buildPipelineDeps`, runs pipeline, displays structured result. All I/O injected (exec, fs, spawn, fetch, console, clock, runPipeline). Switch exhaustive via `default: never`. Also: dep-factory barrel, red/yellow ANSI exports, terminal barrel runner exports. Renamed from `once` → `implement` mid-PR per Alex's request (`/clancy:implement`). 14 tests. DA review: 1 HIGH + 2 MEDIUM + 2 LOW — all fixed.
+- **9.6** (#93): Session report generator — pure-function architecture. `parseCostsLog` (string parser), `progressTimestampToMs` (timestamp converter), `generateSessionReport` (markdown builder with summary/tickets/next-steps/quality sections), `buildSessionReport` (orchestrator with DI). Functional style (no mutation, no reduce, `\r\n` support). Core barrel: added `parseProgressFile`, `formatTimestamp`, `getQualityData` exports. 18 tests. DA review: 3 MEDIUM — all fixed. Multiple readability refactors per Alex's feedback (named booleans, extracted helpers, `optionalLine` DRY pattern, `attachCost` from map callback, `QualitySummary` type extraction).
+- **9.7** (#94): Autopilot runner — `runAutopilot` loop orchestrator. `parseTime` (HH:MM parser), `getQuietSleepMs` (same-day + overnight window support), `checkStopCondition` (discriminated union, exhaustive switch, fatal vs non-fatal abort phases using `PipelineResult` not stdout parsing). All I/O injected. One approved eslint-disable for `functional/no-loop-statements`. 34 tests including fast-check property tests. DA review: 3 MEDIUM + 3 LOW — all fixed. Named boolean refactors per Alex's feedback.
+- **Naming decision:** `once` → `implement` (`/clancy:implement`), `afk` → `autopilot` (`/clancy:autopilot`). Documented in memory + PROGRESS.md.
+
+### Phase 9 final stats
+
+- **Track A** (board parity): 6 PRs (9.0a–f) — all 6 boards in planner + strategist workflows
+- **Track B** (orchestrator): 7 PRs (9.1–9.7) — CLI bridge, prompt builder, webhooks, dep factory, implement, session report, autopilot
+- **Terminal tests:** 322 (was 185 at Phase 8 end, +137 from Phase 9)
+
+### Phase 9 Audit — Cleanup Plan
+
+4-agent sweep (type safety, test coverage, conventions, security/errors) across all 9 source files + 7 test files. **6 HIGH, 10 MEDIUM, 12 LOW** findings (deduplicated).
+
+#### HIGH findings
+
+| ID  | Finding                                                                | Affected files                                   |
+| --- | ---------------------------------------------------------------------- | ------------------------------------------------ |
+| H1  | `SpawnSyncFn` duplicated 4x                                            | cli-bridge, dep-factory, invoke-phase, implement |
+| H2  | `ConsoleLike` duplicated 2x                                            | implement, autopilot                             |
+| H3  | 11 non-null assertions (`!`) without safety comments                   | dep-factory, invoke-phase, deliver-phase         |
+| H4  | `SpawnSyncFn.stdio` type too wide — accepts any `(string \| number)[]` | cli-bridge (propagates to all copies)            |
+| H5  | `deliver-phase.ts` — exported function, zero tests                     | deliver-phase                                    |
+| H6  | `invoke-phase.ts` — exported function, zero tests                      | invoke-phase                                     |
+
+#### MEDIUM findings
+
+| ID  | Finding                                                                                                            |
+| --- | ------------------------------------------------------------------------------------------------------------------ |
+| M1  | `safeRead` swallows all errors (EACCES, EPERM) — should only swallow ENOENT                                        |
+| M2  | Session report write catch silently swallows all errors — should warn                                              |
+| M3  | `sumTokens` unbounded recursion — stack overflow on large cost logs                                                |
+| M4  | `parseTokenCount` NaN propagation on malformed `~,` input                                                          |
+| M5  | Autopilot webhook catch completely silent — should warn                                                            |
+| M6  | `extractSummaryForWebhook` `.split('\n')` not `\r\n`-safe                                                          |
+| M7  | Parsers missing property-based tests: `parseCostsLog`, `progressTimestampToMs`, `buildPrompt`, `buildReworkPrompt` |
+| M8  | `dep-factory.test.ts` assertions all `typeof` checks — no behavioral wiring tests                                  |
+| M9  | `checkStopCondition` missing edge cases: `phase: undefined`, `error: undefined`                                    |
+| M10 | `isSlackWebhook` subdomain branch untested                                                                         |
+
+#### LOW findings
+
+| ID  | Finding                                                                    |
+| --- | -------------------------------------------------------------------------- |
+| L1  | `AppendFn` type duplicated inline in deliver-phase.ts                      |
+| L2  | `deliverFs` adapter missing `readonly` on method                           |
+| L3  | `makeFindCompletedEpics` returns mutable `Map` (should be `ReadonlyMap`)   |
+| L4  | `tddBlock` constant not UPPER_SNAKE_CASE                                   |
+| L5  | `notify.ts` hard-codes `console.warn` instead of injecting logger          |
+| L6  | `getQuietSleepMs` sub-minute precision untested                            |
+| L7  | `parseCostsLog` `\r\n` line endings untested                               |
+| L8  | Comma-formatted tokens (`~1,200,000`) untested                             |
+| L9  | `extractSummaryForWebhook` no fallback for empty summary                   |
+| L10 | `iterations` array — no cap on `maxIterations`                             |
+| L11 | `buildSessionReport` missing tests: `readCostsFile` throws, `mkdir` throws |
+| L12 | Export-for-testability stance undocumented                                 |
+
+#### Cleanup PRs (C25–C30)
+
+| PR  | Theme                                   | Fixes                   | Scope                                                                                                                                                     |
+| --- | --------------------------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C25 | Extract shared types                    | H1, H2, H4, L1          | Create `runner/shared/types.ts` with `SpawnSyncFn` (narrowed stdio), `ConsoleLike`, `AppendFn`. Update 6 files.                                           |
+| C26 | Non-null assertion comments             | H3                      | Add `// Safe: ...` comments to all 11 `!` assertions. Type predicate for `e.parent` filter. Comments only.                                                |
+| C27 | Test gaps: deliver-phase + invoke-phase | H5, H6                  | Create `deliver-phase.test.ts` and `invoke-phase.test.ts`. Cover wiring, branching, null handler.                                                         |
+| C28 | Error handling hardening                | M1–M5, L9               | Narrow catches to ENOENT. Add `console.warn` to silent catches. Replace recursive `sumTokens`. Guard NaN. Webhook fallback.                               |
+| C29 | Property-based tests + edge cases       | M7, M9, M10, L6–L8, L11 | Fast-check for parsers/prompt builders. Edge cases for stop conditions, subdomain, sub-minute, `\r\n`, commas, error paths.                               |
+| C30 | Minor cleanup                           | M6, M8, L2–L5, L10, L12 | `ReadonlyMap`, `readonly` adapter, `TDD_BLOCK`, `\r\n` in webhook extract, dep-factory behavioral tests, `maxIterations` cap, export convention decision. |
+
+### Process notes
+
+- DA review on every PR — caught real issues in all 3 PRs.
+- Alex directed naming decisions mid-session (once→implement, afk→autopilot) — applied cleanly since no downstream consumers yet.
+- Multiple readability refactors per Alex's live feedback: named booleans, extracted helpers, broken chains, expanded ternaries. These are now established patterns for the codebase.
+- Approved one `eslint-disable` for `functional/no-loop-statements` in autopilot (sequential async with early return).
+
+### Next up
+
+- **C25–C30**: Phase 9 cleanup PRs (6 PRs). One at a time, merge each before next. DA review + self-review on every PR.
+- After cleanup: evaluate Phase 10 scope (esbuild bundles? slash command scripts? integration tests?).
+
 ## Session 32 Handoff
 
 **Track B continues.** 3 PRs this session: 9.2 (prompt builder), 9.3 (webhooks), 9.4 (dep factory).
@@ -632,15 +719,15 @@ Two independent tracks — board parity (Track A) can proceed in any order relat
 
 ### Track B — Orchestrator
 
-| PR  | Description                                                                           | Status  |
-| --- | ------------------------------------------------------------------------------------- | ------- |
-| 9.1 | Claude CLI bridge: `invokeClaudePrint`, `invokeClaudeSession`. I/O boundary.          | Done    |
-| 9.2 | Prompt builder: `buildPrompt`, `buildReworkPrompt`, `ticketLabel`, TDD block.         | Done    |
-| 9.3 | Webhook notifications: `sendNotification`, Slack/Teams payload builders.              | Done    |
-| 9.4 | Dep factory: `buildPipelineDeps(opts)` — wire all 15 `PipelineDeps` fields.           | Done    |
-| 9.5 | Implement entry point: parse args, create context, run pipeline, display result.      | Done    |
-| 9.6 | Session report generator: parse costs.log + progress.txt, write session-report.md.    | Done    |
-| 9.7 | Autopilot runner: loop orchestration, quiet hours, stop conditions, report + webhook. | Done    |
+| PR  | Description                                                                           | Status |
+| --- | ------------------------------------------------------------------------------------- | ------ |
+| 9.1 | Claude CLI bridge: `invokeClaudePrint`, `invokeClaudeSession`. I/O boundary.          | Done   |
+| 9.2 | Prompt builder: `buildPrompt`, `buildReworkPrompt`, `ticketLabel`, TDD block.         | Done   |
+| 9.3 | Webhook notifications: `sendNotification`, Slack/Teams payload builders.              | Done   |
+| 9.4 | Dep factory: `buildPipelineDeps(opts)` — wire all 15 `PipelineDeps` fields.           | Done   |
+| 9.5 | Implement entry point: parse args, create context, run pipeline, display result.      | Done   |
+| 9.6 | Session report generator: parse costs.log + progress.txt, write session-report.md.    | Done   |
+| 9.7 | Autopilot runner: loop orchestration, quiet hours, stop conditions, report + webhook. | Done   |
 
 ### Dependencies
 
