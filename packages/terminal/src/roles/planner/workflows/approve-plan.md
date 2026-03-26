@@ -39,6 +39,7 @@ Promote an approved Clancy plan from a ticket comment to the ticket description.
    - **GitHub:** `GET /repos/$GITHUB_REPO/issues/$ISSUE_NUMBER` → use `.title`
    - **Jira:** `GET $JIRA_BASE_URL/rest/api/3/issue/$KEY?fields=summary` → use `.fields.summary`
    - **Linear:** `issues(filter: { identifier: { eq: "$KEY" } }) { nodes { title } }` → use `nodes[0].title`
+   - **Azure DevOps:** `GET https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$ID?fields=System.Title&api-version=7.1` → use `.fields["System.Title"]`
      If fetching fails, show the key without a title: `Auto-selected [{KEY}] (planned {date}). Promote? [Y/n]`
 5. If user declines:
    ```
@@ -54,6 +55,7 @@ Validate the key format per board (case-insensitive):
 - **GitHub:** `#\d+` or bare number
 - **Jira:** `[A-Za-z][A-Za-z0-9]+-\d+` (e.g. `PROJ-123` or `proj-123`)
 - **Linear:** `[A-Za-z]{1,10}-\d+` (e.g. `ENG-42` or `eng-42`)
+- **Azure DevOps:** `\d+` (bare number, e.g. `42` — work item IDs are always numeric)
 
 If invalid format:
 
@@ -151,6 +153,26 @@ query {
 **Important:** `issueSearch` is a fuzzy text search. After fetching results, verify the returned issue's `identifier` field exactly matches the provided key (case-insensitive). If no exact match is found in the results, report: `Issue {KEY} not found. Check the identifier and try again.`
 
 Search the comments for the most recent one containing `## Clancy Implementation Plan`. **Capture the comment `id`** and the existing comment `body` for later editing in Step 5b. Also capture the issue's internal `id` (UUID) for transitions in Step 6.
+
+### Azure DevOps
+
+Fetch work item comments:
+
+```bash
+RESPONSE=$(curl -s \
+  -u ":$AZDO_PAT" \
+  -H "Accept: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID/comments?api-version=7.1-preview.4")
+```
+
+Search `comments` array for the most recent comment where the `text` field (HTML) contains `Clancy Implementation Plan` (as an `<h2>` heading or plain text). **Capture the comment `id`** for later editing in Step 5b. Also fetch the work item title and description:
+
+```bash
+WORK_ITEM=$(curl -s \
+  -u ":$AZDO_PAT" \
+  -H "Accept: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID?fields=System.Title,System.Description&api-version=7.1")
+```
 
 If no plan comment is found:
 
@@ -294,6 +316,30 @@ mutation {
 }
 ```
 
+### Azure DevOps — PATCH work item
+
+Fetch the current description:
+
+```bash
+CURRENT=$(curl -s \
+  -u ":$AZDO_PAT" \
+  -H "Accept: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID?fields=System.Description&api-version=7.1")
+```
+
+Azure DevOps descriptions are **HTML**. Append the plan (converted to HTML) with a horizontal rule separator:
+
+```bash
+curl -s \
+  -u ":$AZDO_PAT" \
+  -X PATCH \
+  -H "Content-Type: application/json-patch+json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID?api-version=7.1" \
+  -d '[{"op": "replace", "path": "/fields/System.Description", "value": "<existing HTML>\n<hr>\n<plan as HTML>"}]'
+```
+
+Convert the plan markdown to HTML using the same conversion rules as Step 5 in plan.md (headings, lists, tables, bold, code → HTML equivalents). If HTML construction is too complex, wrap the plan in `<pre>` tags as fallback.
+
 ---
 
 ## Step 5b — Edit plan comment (approval note)
@@ -350,6 +396,17 @@ mutation {
     success
   }
 }
+```
+
+### Azure DevOps
+
+```bash
+curl -s \
+  -u ":$AZDO_PAT" \
+  -X PATCH \
+  -H "Content-Type: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID/comments/$COMMENT_ID?api-version=7.1-preview.4" \
+  -d '{"text": "<p><strong>Plan approved and promoted to description -- {YYYY-MM-DD}.</strong></p><existing HTML comment>"}'
 ```
 
 On failure for any platform:
@@ -535,6 +592,53 @@ Could not transition ticket. Move it manually to your implementation queue.
 
    If no `unstarted` state found: warn, skip transition.
 
+### Azure DevOps
+
+Azure DevOps uses **tags** (semicolon-delimited string field) instead of labels, and **board columns/states** for transitions.
+
+1. **Add build tag:**
+
+   ```bash
+   # Fetch current tags
+   CURRENT=$(curl -s \
+     -u ":$AZDO_PAT" \
+     -H "Accept: application/json" \
+     "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID?fields=System.Tags&api-version=7.1")
+
+   # Append build tag (semicolon-delimited)
+   # If existing tags are "clancy:plan; bug-fix", new value is "clancy:plan; bug-fix; clancy:build"
+   curl -s \
+     -u ":$AZDO_PAT" \
+     -X PATCH \
+     -H "Content-Type: application/json-patch+json" \
+     "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID?api-version=7.1" \
+     -d '[{"op": "replace", "path": "/fields/System.Tags", "value": "<existing tags>; $CLANCY_LABEL_BUILD"}]'
+   ```
+
+2. **Remove plan tag:**
+
+   ```bash
+   # Re-fetch tags, remove plan tag from the semicolon-delimited string
+   # E.g., "clancy:plan; bug-fix; clancy:build" → "bug-fix; clancy:build"
+   curl -s \
+     -u ":$AZDO_PAT" \
+     -X PATCH \
+     -H "Content-Type: application/json-patch+json" \
+     "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID?api-version=7.1" \
+     -d '[{"op": "replace", "path": "/fields/System.Tags", "value": "<tags without plan tag>"}]'
+   ```
+
+3. **State transition** (only if `CLANCY_STATUS_PLANNED` is set — skip if unset):
+
+   ```bash
+   curl -s \
+     -u ":$AZDO_PAT" \
+     -X PATCH \
+     -H "Content-Type: application/json-patch+json" \
+     "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID?api-version=7.1" \
+     -d '[{"op": "replace", "path": "/fields/System.State", "value": "$CLANCY_STATUS_PLANNED"}]'
+   ```
+
 On failure:
 
 ```
@@ -575,6 +679,22 @@ Plan promoted. Move [{KEY}] to your implementation queue for /clancy:once.
 
 ```
 Plan promoted. Moved to unstarted. Ready for /clancy:once.
+
+"Book 'em, Lou." -- The ticket is ready for /clancy:once.
+```
+
+**Azure DevOps (with transition):**
+
+```
+Plan promoted. Work item transitioned to {CLANCY_STATUS_PLANNED}.
+
+"Book 'em, Lou." -- The ticket is ready for /clancy:once.
+```
+
+**Azure DevOps (no transition configured):**
+
+```
+Plan promoted. Move work item {ID} to your implementation queue for /clancy:once.
 
 "Book 'em, Lou." -- The ticket is ready for /clancy:once.
 ```

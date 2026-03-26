@@ -85,13 +85,13 @@ Adjusted after phase validation (2026-03-23). Reordered to build leaves first, s
 
 Pre-Phase 9 audit of terminal installer modules. 4-agent sweep (bugs, conventions, test coverage, architecture). Audit run 2026-03-26.
 
-| PR  | Description                                                                                                                  | Status  |
-| --- | ---------------------------------------------------------------------------------------------------------------------------- | ------- |
-| C20 | Shared helpers: extract `isPlainObject` + `rejectSymlink` → `shared/`, replace `isEnoent`, add barrel (H2, M1-M4, M12)       | Done    |
-| C21 | TOCTOU fix + safety: wrap `resolveWorkflowRef` try/catch, `isFile()` guard in `copyEntry`, stale statusLine (H3, M5, M7)     | Done    |
-| C22 | Test coverage: non-ENOENT re-throws, installHooks failure, confirmOverwrite edges, fs-errors tests (H4-H6, M8-M10, L10-L12)  | Done    |
-| C23 | Comment hygiene + export cleanup: `as` cast comments, `@returns` JSDoc, remove over-exports, chain fix (M13, L1, L7-L9, L15) | Done    |
-| C24 | `cleanDisabledFiles` recursive cleanup + hook-installer catch improvement (H1, M6)                                            | Done    |
+| PR  | Description                                                                                                                  | Status |
+| --- | ---------------------------------------------------------------------------------------------------------------------------- | ------ |
+| C20 | Shared helpers: extract `isPlainObject` + `rejectSymlink` → `shared/`, replace `isEnoent`, add barrel (H2, M1-M4, M12)       | Done   |
+| C21 | TOCTOU fix + safety: wrap `resolveWorkflowRef` try/catch, `isFile()` guard in `copyEntry`, stale statusLine (H3, M5, M7)     | Done   |
+| C22 | Test coverage: non-ENOENT re-throws, installHooks failure, confirmOverwrite edges, fs-errors tests (H4-H6, M8-M10, L10-L12)  | Done   |
+| C23 | Comment hygiene + export cleanup: `as` cast comments, `@returns` JSDoc, remove over-exports, chain fix (M13, L1, L7-L9, L15) | Done   |
+| C24 | `cleanDisabledFiles` recursive cleanup + hook-installer catch improvement (H1, M6)                                           | Done   |
 
 ### HIGH findings
 
@@ -564,14 +564,14 @@ Two independent tracks — board parity (Track A) can proceed in any order relat
 
 ### Track B — Orchestrator
 
-| PR  | Description                                                                            | Status  |
-| --- | -------------------------------------------------------------------------------------- | ------- |
-| 9.1 | Claude CLI bridge: `invokeClaudePrint`, `invokeClaudeSession`. I/O boundary.           | Pending |
-| 9.2 | Prompt builder: `buildPrompt`, `buildReworkPrompt`, `ticketLabel`, TDD block.          | Pending |
-| 9.3 | Webhook notifications: `sendNotification`, Slack/Teams payload builders.               | Pending |
-| 9.4 | Dep factory: `buildPipelineDeps(opts)` — wire all 15 `PipelineDeps` fields.            | Pending |
-| 9.5 | Once entry point + display: parse args, load env, create context, run pipeline.        | Pending |
-| 9.6 | Session report generator: parse costs.log + progress.txt, write session-report.md.     | Pending |
+| PR  | Description                                                                             | Status  |
+| --- | --------------------------------------------------------------------------------------- | ------- |
+| 9.1 | Claude CLI bridge: `invokeClaudePrint`, `invokeClaudeSession`. I/O boundary.            | Pending |
+| 9.2 | Prompt builder: `buildPrompt`, `buildReworkPrompt`, `ticketLabel`, TDD block.           | Pending |
+| 9.3 | Webhook notifications: `sendNotification`, Slack/Teams payload builders.                | Pending |
+| 9.4 | Dep factory: `buildPipelineDeps(opts)` — wire all 15 `PipelineDeps` fields.             | Pending |
+| 9.5 | Once entry point + display: parse args, load env, create context, run pipeline.         | Pending |
+| 9.6 | Session report generator: parse costs.log + progress.txt, write session-report.md.      | Pending |
 | 9.7 | AFK runner: loop orchestration, quiet hours, stop conditions, session report + webhook. | Pending |
 
 ### Dependencies
@@ -592,6 +592,7 @@ Two independent tracks — board parity (Track A) can proceed in any order relat
 6. **Dep factory fits one file** — single `buildPipelineDeps(opts)` with non-exported `SharedResources` type. ~245 lines. No split needed unless future growth forces it.
 7. **Notion caveats documented** — no comment editing (post-new fallback), 2000-char property limit (use blocks API for description append).
 8. **Notifications needed by dep factory** — cleanup phase takes a `notify` callback, so 9.3 must precede 9.4.
+
 - 8.1 is prerequisite for all phase PRs (RunContext class must exist first)
 - 8.2a before 8.2b (lock-check establishes resume pattern)
 - 8.2b before 8.2c (epic-completion consumes deliverEpicToBase)
