@@ -41,6 +41,7 @@ Promote an approved Clancy plan from a ticket comment to the ticket description.
    - **Linear:** `issues(filter: { identifier: { eq: "$KEY" } }) { nodes { title } }` → use `nodes[0].title`
    - **Azure DevOps:** `GET https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$ID?fields=System.Title&api-version=7.1` → use `.fields["System.Title"]`
    - **Shortcut:** `GET https://api.app.shortcut.com/api/v3/stories/$STORY_ID` → use `.name`
+   - **Notion:** `GET https://api.notion.com/v1/pages/$PAGE_ID` → extract title from the `title` type property in `properties`
      If fetching fails, show the key without a title: `Auto-selected [{KEY}] (planned {date}). Promote? [Y/n]`
 5. If user declines:
    ```
@@ -58,6 +59,7 @@ Validate the key format per board (case-insensitive):
 - **Linear:** `[A-Za-z]{1,10}-\d+` (e.g. `ENG-42` or `eng-42`)
 - **Azure DevOps:** `\d+` (bare number, e.g. `42` — work item IDs are always numeric)
 - **Shortcut:** `[A-Za-z]{1,5}-\d+` or bare number (e.g. `SC-123` or `123` — Shortcut story IDs are numeric, prefixed identifiers are optional)
+- **Notion:** UUID format (`[a-f0-9]{32}` or with dashes) or `notion-[a-f0-9]{8}` short key
 
 If invalid format:
 
@@ -193,6 +195,28 @@ STORY=$(curl -s \
   -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
   "https://api.app.shortcut.com/api/v3/stories/$STORY_ID")
 ```
+
+### Notion
+
+Fetch page comments:
+
+```bash
+RESPONSE=$(curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  "https://api.notion.com/v1/comments?block_id=$PAGE_ID")
+```
+
+Search `results` array for the most recent comment where `rich_text` content contains `Clancy Implementation Plan`. **Capture the comment `id`** for later reference in Step 5b. Also fetch the page for its title and content:
+
+```bash
+PAGE=$(curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  "https://api.notion.com/v1/pages/$PAGE_ID")
+```
+
+**Notion limitation:** Comments use `rich_text` arrays. Search each comment's `rich_text[].text.content` for the plan marker.
 
 If no plan comment is found:
 
@@ -381,6 +405,37 @@ curl -s \
   -d '{"description": "<existing description>\n\n---\n\n<plan>"}'
 ```
 
+### Notion — Append blocks to page
+
+Notion page "descriptions" are stored as **child blocks**, not a single text property. To append the plan, add new blocks to the page:
+
+```bash
+curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  -X PATCH \
+  "https://api.notion.com/v1/blocks/$PAGE_ID/children" \
+  -d '{"children": [
+    {"type": "divider", "divider": {}},
+    {"type": "heading_2", "heading_2": {"rich_text": [{"type": "text", "text": {"content": "Clancy Implementation Plan"}}]}},
+    {"type": "paragraph", "paragraph": {"rich_text": [{"type": "text", "text": {"content": "<plan section text>"}}]}}
+  ]}'
+```
+
+Convert the plan into Notion block format:
+
+- `## Heading` → `heading_2` block
+- `### Heading` → `heading_3` block
+- Plain text paragraphs → `paragraph` block
+- `- bullet` → `bulleted_list_item` block
+- `- [ ] checkbox` → `to_do` block
+- Tables → not natively supported as blocks; use `paragraph` blocks with monospace formatting, or split into individual `paragraph` blocks per row
+- Code blocks → `code` block with `language: "markdown"`
+
+**Notion limitation:** Each `rich_text` block has a **2000-character limit**. Split long sections across multiple blocks. The `children` array can contain up to **100 blocks** per request — if the plan is very large, make multiple PATCH calls.
+
+**Notion limitation:** Unlike other boards, this appends to the page body (not the description property). The plan content will appear at the bottom of the page, after existing content, separated by a divider.
+
 ---
 
 ## Step 5b — Edit plan comment (approval note)
@@ -460,6 +515,21 @@ curl -s \
   "https://api.app.shortcut.com/api/v3/stories/$STORY_ID/comments/$COMMENT_ID" \
   -d '{"text": "> **Plan approved and promoted to description** -- {YYYY-MM-DD}\n\n{existing_comment_text}"}'
 ```
+
+### Notion
+
+**Notion limitation:** The Notion API does **not support editing comments**. There is no PATCH/PUT endpoint for comments. Instead, post a new comment with the approval note:
+
+```bash
+curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  -X POST \
+  "https://api.notion.com/v1/comments" \
+  -d '{"parent": {"page_id": "$PAGE_ID"}, "rich_text": [{"type": "text", "text": {"content": "Plan approved and promoted to page content — {YYYY-MM-DD}."}, "annotations": {"bold": true}}]}'
+```
+
+This posts a new comment rather than editing the original plan comment. The approval note references the plan being promoted to the page body (not description, since Notion uses blocks).
 
 On failure for any platform:
 
@@ -744,6 +814,50 @@ Shortcut uses **labels** and **workflow state transitions**.
 
    If no suitable state found: warn, skip transition.
 
+### Notion
+
+Notion uses **multi-select properties** for labels and **status properties** for transitions.
+
+1. **Add build label** (add to multi-select property):
+
+   ```bash
+   # Fetch current page properties
+   PAGE=$(curl -s \
+     -H "Authorization: Bearer $NOTION_TOKEN" \
+     -H "Notion-Version: 2022-06-28" \
+     "https://api.notion.com/v1/pages/$PAGE_ID")
+
+   # Update multi-select property to include build label
+   curl -s \
+     -H "Authorization: Bearer $NOTION_TOKEN" \
+     -H "Notion-Version: 2022-06-28" \
+     -X PATCH \
+     "https://api.notion.com/v1/pages/$PAGE_ID" \
+     -d '{"properties": {"$CLANCY_NOTION_LABELS": {"multi_select": [existing_options, {"name": "$CLANCY_LABEL_BUILD"}]}}}'
+   ```
+
+2. **Remove plan label** (update multi-select without plan label):
+
+   ```bash
+   curl -s \
+     -H "Authorization: Bearer $NOTION_TOKEN" \
+     -H "Notion-Version: 2022-06-28" \
+     -X PATCH \
+     "https://api.notion.com/v1/pages/$PAGE_ID" \
+     -d '{"properties": {"$CLANCY_NOTION_LABELS": {"multi_select": [options_without_plan_label]}}}'
+   ```
+
+3. **Status transition** (only if `CLANCY_STATUS_PLANNED` is set):
+
+   ```bash
+   curl -s \
+     -H "Authorization: Bearer $NOTION_TOKEN" \
+     -H "Notion-Version: 2022-06-28" \
+     -X PATCH \
+     "https://api.notion.com/v1/pages/$PAGE_ID" \
+     -d '{"properties": {"$CLANCY_NOTION_STATUS": {"status": {"name": "$CLANCY_STATUS_PLANNED"}}}}'
+   ```
+
 On failure:
 
 ```
@@ -808,6 +922,22 @@ Plan promoted. Move work item {ID} to your implementation queue for /clancy:once
 
 ```
 Plan promoted. Moved to unstarted. Ready for /clancy:once.
+
+"Book 'em, Lou." -- The ticket is ready for /clancy:once.
+```
+
+**Notion (with transition):**
+
+```
+Plan promoted to page content. Status updated to {CLANCY_STATUS_PLANNED}.
+
+"Book 'em, Lou." -- The ticket is ready for /clancy:once.
+```
+
+**Notion (no transition configured):**
+
+```
+Plan promoted to page content. Move the page to your implementation queue for /clancy:once.
 
 "Book 'em, Lou." -- The ticket is ready for /clancy:once.
 ```

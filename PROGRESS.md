@@ -559,7 +559,7 @@ Two independent tracks — board parity (Track A) can proceed in any order relat
 | PR   | Description                                                                                  | Status  |
 | ---- | -------------------------------------------------------------------------------------------- | ------- |
 | 9.0a | Add Azure DevOps to planner workflows (plan.md + approve-plan.md) + feedback filtering fix   | Done    |
-| 9.0b | Add Shortcut to planner workflows (plan.md + approve-plan.md, all dispatch blocks)           | Pending |
+| 9.0b | Add Shortcut to planner workflows (plan.md + approve-plan.md, all dispatch blocks)           | Done    |
 | 9.0c | Add Notion to planner workflows (plan.md + approve-plan.md, with documented API limitations) | Pending |
 | 9.0d | Add Azure DevOps to strategist workflows (brief.md + approve-brief.md)                       | Pending |
 | 9.0e | Add Shortcut to strategist workflows (brief.md + approve-brief.md)                           | Pending |
