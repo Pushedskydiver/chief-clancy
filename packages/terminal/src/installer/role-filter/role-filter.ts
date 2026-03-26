@@ -85,6 +85,7 @@ function safeReaddir(dir: string): readonly string[] | null {
  * in the role directory structure, not at runtime.
  *
  * @param options - The role filter options.
+ * @returns Nothing — files are copied/removed in place.
  */
 export function copyRoleFiles(options: CopyRoleFilesOptions): void {
   const { rolesDir, subdir, dest, enabledRoles } = options;

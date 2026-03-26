@@ -1,1 +1,1 @@
-export { copyDir, fileHash, inlineWorkflows } from './file-ops.js';
+export { copyDir, inlineWorkflows } from './file-ops.js';

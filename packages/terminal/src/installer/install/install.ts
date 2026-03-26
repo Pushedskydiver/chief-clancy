@@ -167,12 +167,12 @@ export function parseEnabledRoles(
   const roles = env.CLANCY_ROLES;
   if (!roles) return new Set<string>();
 
-  return new Set(
-    roles
-      .split(',')
-      .map((r) => r.trim().toLowerCase())
-      .filter(Boolean),
-  );
+  const normalised = roles
+    .split(',')
+    .map((r) => r.trim().toLowerCase())
+    .filter(Boolean);
+
+  return new Set(normalised);
 }
 
 /** Throw if a required path does not exist. */
@@ -195,6 +195,7 @@ function requirePath(
  *
  * @param sources - The source directories to check.
  * @param exists - File existence check (injected for testability).
+ * @returns Nothing — throws on the first missing path.
  */
 export function validateSources(
   sources: InstallSources,
@@ -405,6 +406,7 @@ function registerHooks(options: {
  * directory, and registers hooks. Returns normally on success or user abort.
  *
  * @param options - All dependencies and configuration for the install.
+ * @returns Resolves on success or user abort.
  */
 export async function runInstall(options: RunInstallOptions): Promise<void> {
   const { mode, paths, sources, version, nonInteractive, prompts, fs, cwd } =
