@@ -10,19 +10,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { installHooks } from './hook-installer.js';
-
-/** The 8 compiled hook files Clancy ships. */
-const HOOK_FILES = [
-  'clancy-check-update.js',
-  'clancy-statusline.js',
-  'clancy-context-monitor.js',
-  'clancy-credential-guard.js',
-  'clancy-branch-guard.js',
-  'clancy-post-compact.js',
-  'clancy-notification.js',
-  'clancy-drift-detector.js',
-];
+import { HOOK_FILES, installHooks } from './hook-installer.js';
 
 describe('installHooks', () => {
   let tmp: string;

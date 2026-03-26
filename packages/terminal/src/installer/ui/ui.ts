@@ -79,6 +79,7 @@ const BANNER_LINES: readonly string[] = [
  * Print the Clancy ASCII banner and version info.
  *
  * @param version - The package version string to display.
+ * @returns Nothing — output is written to stdout.
  */
 export function printBanner(version: string): void {
   console.log('');
@@ -128,6 +129,7 @@ function printGroup(group: CommandGroup): void {
  * all groups.
  *
  * @param enabledRoles - Role keys matching `CommandGroup.roleKey` (e.g. `"strategist"`), or `null` to show all groups.
+ * @returns Nothing — output is written to stdout.
  */
 export function printSuccess(enabledRoles: ReadonlySet<string> | null): void {
   console.log('');

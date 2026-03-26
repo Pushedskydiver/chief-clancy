@@ -37,7 +37,7 @@ type HookInstallerOptions = {
 };
 
 /** Compiled hook files Clancy ships. */
-const HOOK_FILES = [
+export const HOOK_FILES = [
   'clancy-check-update.js',
   'clancy-statusline.js',
   'clancy-context-monitor.js',

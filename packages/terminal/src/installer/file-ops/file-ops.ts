@@ -58,7 +58,7 @@ const copyEntry =
  *
  * @param src - Source directory path.
  * @param dest - Destination directory path.
- * @throws If the destination is a symlink or the source does not exist.
+ * @returns Nothing — throws on symlink or missing source.
  */
 export const copyDir = (src: string, dest: string): void => {
   rejectSymlink(dest);
@@ -69,7 +69,7 @@ export const copyDir = (src: string, dest: string): void => {
   entries.forEach(copyEntry(src, dest));
 };
 
-/** Matches `@.claude/clancy/workflows/<filename>.md` on its own line (global). Disallows path separators. */
+/** Matches `@.claude/clancy/workflows/<filename>.md` on its own line. Disallows path separators. */
 const WORKFLOW_REF = /^@\.claude\/clancy\/workflows\/([^/\\]+\.md)\r?$/gm;
 
 /** Resolve a workflow @-file reference to its content, or return the original if missing. */
@@ -104,10 +104,8 @@ const inlineFileWorkflows =
 
     const cmdPath = join(commandsDir, entry.name);
     const content = readFileSync(cmdPath, 'utf8');
-    const resolved = content.replaceAll(
-      WORKFLOW_REF,
-      (match, fileName: string) =>
-        resolveWorkflowRef(workflowsDir, match, fileName),
+    const resolved = content.replace(WORKFLOW_REF, (match, fileName: string) =>
+      resolveWorkflowRef(workflowsDir, match, fileName),
     );
     const hasChanges = resolved !== content;
 
@@ -128,6 +126,7 @@ const inlineFileWorkflows =
  *
  * @param commandsDir - The installed commands directory.
  * @param workflowsDir - The installed workflows directory.
+ * @returns Nothing — files are modified in place.
  */
 export const inlineWorkflows = (
   commandsDir: string,
