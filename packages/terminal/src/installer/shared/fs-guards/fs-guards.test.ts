@@ -46,15 +46,11 @@ describe('rejectSymlink', () => {
   });
 
   it('re-throws non-ENOENT errors', () => {
-    const dir = join(tmp, 'noread');
-    mkdirSync(dir, { mode: 0o000 });
-    const target = join(dir, 'child', 'file.txt');
+    // Traversing through a file triggers ENOTDIR, not ENOENT
+    const file = join(tmp, 'blocker.txt');
+    writeFileSync(file, 'content');
+    const target = join(file, 'child');
 
-    try {
-      expect(() => rejectSymlink(target)).toThrow();
-    } finally {
-      // Restore permissions for cleanup
-      mkdirSync(dir, { mode: 0o755, recursive: true });
-    }
+    expect(() => rejectSymlink(target)).toThrow();
   });
 });
