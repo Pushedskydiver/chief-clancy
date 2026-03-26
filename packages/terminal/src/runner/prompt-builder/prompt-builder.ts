@@ -42,7 +42,7 @@ type PromptInput = {
   readonly tdd?: boolean;
 };
 
-const tddBlock = `
+const TDD_BLOCK = `
 ## Test-Driven Development
 
 You MUST follow the red-green-refactor cycle for every behaviour change:
@@ -105,7 +105,7 @@ If you must SKIP this ${ticketWord}:
 3. Append to .clancy/progress.txt: YYYY-MM-DD HH:MM | ${input.key} | {reason} | SKIPPED
 4. Stop — no branches, no file changes, no git operations.
 
-If the ${ticketWord} IS implementable, continue:${input.tdd ? tddBlock : ''}
+If the ${ticketWord} IS implementable, continue:${input.tdd ? TDD_BLOCK : ''}
 1. Read core docs in .clancy/docs/: STACK.md, ARCHITECTURE.md, CONVENTIONS.md, GIT.md, DEFINITION-OF-DONE.md, CONCERNS.md
    Also read if relevant to this ticket: INTEGRATIONS.md (external APIs/services/auth), TESTING.md (tests/specs/coverage), DESIGN-SYSTEM.md (UI/components/styles), ACCESSIBILITY.md (accessibility/ARIA/WCAG)
 2. Follow the conventions in GIT.md exactly
@@ -151,7 +151,7 @@ ${input.description}
 
 ${feedbackSection}${previousSection}
 
-Address the specific feedback above. Don't re-implement unrelated areas. Focus only on what was flagged.${input.tdd ? tddBlock : ''}
+Address the specific feedback above. Don't re-implement unrelated areas. Focus only on what was flagged.${input.tdd ? TDD_BLOCK : ''}
 
 Steps:
 1. Read core docs in .clancy/docs/: STACK.md, ARCHITECTURE.md, CONVENTIONS.md, GIT.md, DEFINITION-OF-DONE.md, CONCERNS.md

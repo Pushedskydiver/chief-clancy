@@ -147,7 +147,6 @@ describe('sendNotification', () => {
   });
 
   it('does not throw on fetch rejection', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const fetch = vi.fn<FetchFn>().mockRejectedValue(new Error('ECONNREFUSED'));
 
     await expect(
@@ -155,13 +154,12 @@ describe('sendNotification', () => {
         webhookUrl: 'https://hooks.slack.com/services/T00/B00/xxx',
         message: 'hello',
         fetch,
+        warn: vi.fn(),
       }),
     ).resolves.toBeUndefined();
-    warn.mockRestore();
   });
 
   it('does not throw on non-ok response', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const fetch = vi
       .fn<FetchFn>()
       .mockResolvedValue({ ok: false, status: 500 } as Response);
@@ -171,13 +169,12 @@ describe('sendNotification', () => {
         webhookUrl: 'https://hooks.slack.com/services/T00/B00/xxx',
         message: 'hello',
         fetch,
+        warn: vi.fn(),
       }),
     ).resolves.toBeUndefined();
-    warn.mockRestore();
   });
 
   it('does not throw when webhook URL is empty', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const fetch = vi
       .fn<FetchFn>()
       .mockRejectedValue(new TypeError('Invalid URL'));
@@ -187,13 +184,13 @@ describe('sendNotification', () => {
         webhookUrl: '',
         message: 'hello',
         fetch,
+        warn: vi.fn(),
       }),
     ).resolves.toBeUndefined();
-    warn.mockRestore();
   });
 
   it('logs warning on non-ok response', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const warn = vi.fn();
     const fetch = vi
       .fn<FetchFn>()
       .mockResolvedValue({ ok: false, status: 403 } as Response);
@@ -202,25 +199,25 @@ describe('sendNotification', () => {
       webhookUrl: 'https://hooks.slack.com/services/T00/B00/xxx',
       message: 'hello',
       fetch,
+      warn,
     });
 
     expect(warn).toHaveBeenCalledWith('⚠ Notification failed: HTTP 403');
-    warn.mockRestore();
   });
 
   it('logs warning on fetch failure', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const warn = vi.fn();
     const fetch = vi.fn<FetchFn>().mockRejectedValue(new Error('ECONNREFUSED'));
 
     await sendNotification({
       webhookUrl: 'https://hooks.slack.com/services/T00/B00/xxx',
       message: 'hello',
       fetch,
+      warn,
     });
 
     expect(warn).toHaveBeenCalledWith(
       '⚠ Notification failed: could not reach webhook',
     );
-    warn.mockRestore();
   });
 });

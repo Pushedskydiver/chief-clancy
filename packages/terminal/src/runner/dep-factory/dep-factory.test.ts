@@ -70,13 +70,18 @@ describe('buildPipelineDeps', () => {
     expect(mockOpts.lockFs.deleteFile).toHaveBeenCalled();
   });
 
-  it('deleteVerifyAttempt calls lockFs.deleteFile', () => {
+  it('deleteVerifyAttempt calls lockFs.deleteFile with distinct path from deleteLock', () => {
     const mockOpts = createMockOpts();
     const deps = buildPipelineDeps(mockOpts);
 
-    deps.deleteVerifyAttempt();
+    deps.deleteLock();
+    const lockPath = mockOpts.lockFs.deleteFile.mock.calls[0]![0] as string;
 
-    expect(mockOpts.lockFs.deleteFile).toHaveBeenCalled();
+    mockOpts.lockFs.deleteFile.mockClear();
+    deps.deleteVerifyAttempt();
+    const verifyPath = mockOpts.lockFs.deleteFile.mock.calls[0]![0] as string;
+
+    expect(lockPath).not.toBe(verifyPath);
   });
 
   it('cleanup wires sendNotification with fetch', async () => {

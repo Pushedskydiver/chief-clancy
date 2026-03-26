@@ -298,6 +298,28 @@ describe('runAutopilot', () => {
     );
   });
 
+  it('extracts summary from report with \\r\\n line endings', async () => {
+    const sendNotification = vi.fn().mockResolvedValue(undefined);
+    const buildReport = vi
+      .fn()
+      .mockReturnValue(
+        '# Report\r\n\r\n## Summary\r\n- Tickets completed: 2\r\n- Total duration: 10m',
+      );
+    const opts = createMockOpts({
+      maxIterations: 1,
+      webhookUrl: 'https://hooks.slack.com/x',
+      sendNotification,
+      buildReport,
+    });
+
+    await runAutopilot(opts);
+
+    expect(sendNotification).toHaveBeenCalledWith(
+      'https://hooks.slack.com/x',
+      expect.stringContaining('Tickets completed'),
+    );
+  });
+
   it('sends fallback message when report has no summary lines', async () => {
     const sendNotification = vi.fn().mockResolvedValue(undefined);
     const buildReport = vi.fn().mockReturnValue('# Report\n\nNo data.');

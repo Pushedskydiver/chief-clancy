@@ -87,6 +87,7 @@ Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 - **Barrel exports match actual consumers.** If nothing outside the module directory imports a function/type, don't re-export it from `index.ts`. Run `pnpm knip` to catch unused exports before pushing.
 - **Core `index.ts` aliases colliding names.** When multiple boards export `fetchBlockerStatus`, alias them in the core barrel: `fetchGitHubBlockerStatus`, `fetchJiraBlockerStatus`, etc.
 - **Label internals stay private.** `ensureLabel`, `addLabel`, `removeLabel`, and low-level helpers (`createLabel`, `fetchLabels`, `getStoryLabelIds`) are internal to each board — don't re-export from the board barrel or core index.
+- **Export for testability is allowed.** When a pure function needs to be tested directly (e.g., `parseCostsLog`, `checkStopCondition`, `parseTime`), exporting it from the module file is preferred over testing through the public entry point. Keep these exports in the module barrel — they're internal API, not package-level public API.
 
 ---
 

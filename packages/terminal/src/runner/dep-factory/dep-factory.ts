@@ -94,7 +94,7 @@ function hasParent(
 }
 
 function makeFindCompletedEpics(progressFs: ProgressFs, projectRoot: string) {
-  return () => {
+  return (): ReadonlyMap<string, string> => {
     const entries = findEntriesWithStatus(progressFs, projectRoot, 'DONE');
     const pairs = entries
       .filter(hasParent)
