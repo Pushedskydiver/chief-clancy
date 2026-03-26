@@ -40,13 +40,11 @@ describe('buildPrompt', () => {
       title: 'Add login page',
       description: 'Create a login page.',
       parentInfo: 'PROJ-100',
-      blockers: 'None',
     });
 
     expect(prompt).toContain('You are implementing Jira ticket PROJ-123');
     expect(prompt).toContain('Summary: Add login page');
     expect(prompt).toContain('Epic: PROJ-100');
-    expect(prompt).toContain('Blockers: None');
     expect(prompt).toContain('Create a login page.');
     expect(prompt).toContain('ticket summary and description');
   });
@@ -75,7 +73,6 @@ describe('buildPrompt', () => {
       title: 'Add feature',
       description: 'New feature needed.',
       parentInfo: 'ENG-50 — Parent epic',
-      blockers: 'None',
     });
 
     expect(prompt).toContain('You are implementing Linear issue ENG-123');
@@ -90,7 +87,6 @@ describe('buildPrompt', () => {
       title: 'Build widget',
       description: 'Widget needed.',
       parentInfo: 'Epic 10',
-      blockers: 'None',
     });
 
     expect(prompt).toContain('You are implementing Shortcut story sc-456');
@@ -254,6 +250,16 @@ describe('buildReworkPrompt', () => {
 
     expect(prompt).toContain('1. Button colour is wrong');
     expect(prompt).toContain('2. Missing validation');
+  });
+
+  it('handles single feedback comment', () => {
+    const prompt = buildReworkPrompt({
+      ...baseInput,
+      feedbackComments: ['Fix the button colour'],
+    });
+
+    expect(prompt).toContain('1. Fix the button colour');
+    expect(prompt).not.toContain('2. Fix');
   });
 
   it('handles empty feedback comments', () => {
