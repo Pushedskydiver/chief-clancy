@@ -84,10 +84,10 @@ export function parseCostsLog(
   content: string,
   sinceMs: number,
 ): readonly CostEntry[] {
-  return content
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0)
+  const lines = content.split(/\r?\n/).map((line) => line.trim());
+  const nonEmpty = lines.filter((line) => line.length > 0);
+
+  return nonEmpty
     .map((line) => parseCostLine(line, sinceMs))
     .filter((entry): entry is CostEntry => entry !== undefined);
 }
