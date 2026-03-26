@@ -6,16 +6,12 @@
  * All internal logic is immutable — settings are built as new objects,
  * never mutated in place.
  */
-import {
-  copyFileSync,
-  lstatSync,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} from 'node:fs';
+import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { hasErrorCode } from '~/t/installer/shared/fs-errors.js';
+import { hasErrorCode } from '~/t/installer/shared/fs-errors/index.js';
+import { rejectSymlink } from '~/t/installer/shared/fs-guards/index.js';
+import { isPlainObject } from '~/t/installer/shared/type-guards/index.js';
 
 /** A command hook entry in Claude's settings.json. */
 type CommandHook = { readonly type: 'command'; readonly command: string };
@@ -51,22 +47,6 @@ const HOOK_FILES = [
   'clancy-notification.js',
   'clancy-drift-detector.js',
 ] as const;
-
-/** Throw if the given path is a symlink. Only swallows ENOENT. */
-function rejectSymlink(path: string): void {
-  try {
-    if (lstatSync(path).isSymbolicLink()) {
-      throw new Error(`${path} is a symlink. Remove it before installing.`);
-    }
-  } catch (err: unknown) {
-    if (!hasErrorCode(err, 'ENOENT')) throw err;
-  }
-}
-
-/** Check whether a value is a plain object (not array, not null). */
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
 
 /** Build a `node "path"` command string for a hook file. */
 function buildNodeCommand(hooksDir: string, fileName: string): string {
@@ -168,6 +148,8 @@ function filterNewEntries(
   desired: readonly HookEntry[],
 ): readonly HookEntry[] {
   return desired.filter((entry) => {
+    if (entry.hooks.length === 0) return false;
+
     const hook = entry.hooks[0];
 
     if (hook.type === 'command') return !hasCommand(existing, hook.command);
@@ -216,6 +198,7 @@ function mergeHookRegistrations(
 /** Check whether a value looks like a HookEntry ({ hooks: [...] }). */
 function isHookEntry(value: unknown): value is HookEntry {
   if (!isPlainObject(value)) return false;
+  // Safe: isPlainObject check above guarantees value is an object
   const hooks = (value as { readonly hooks?: unknown }).hooks;
 
   return Array.isArray(hooks);

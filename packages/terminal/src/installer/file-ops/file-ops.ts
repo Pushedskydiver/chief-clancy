@@ -10,7 +10,6 @@ import { createHash } from 'node:crypto';
 import {
   copyFileSync,
   existsSync,
-  lstatSync,
   mkdirSync,
   readdirSync,
   readFileSync,
@@ -18,25 +17,7 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 
-/** Check if a path is a symlink (including dangling symlinks). Only swallows ENOENT. */
-const isSymlinkAt = (path: string): boolean => {
-  try {
-    return lstatSync(path).isSymbolicLink();
-  } catch (error: unknown) {
-    const code = (error as { readonly code?: string }).code;
-
-    if (code === 'ENOENT') return false;
-
-    throw error;
-  }
-};
-
-/** Throw if the given path is a symlink. */
-const rejectSymlink = (path: string): void => {
-  if (isSymlinkAt(path)) {
-    throw new Error(`${path} is a symlink. Remove it first before installing.`);
-  }
-};
+import { rejectSymlink } from '~/t/installer/shared/fs-guards/index.js';
 
 /**
  * Compute the SHA-256 hash of a file.
