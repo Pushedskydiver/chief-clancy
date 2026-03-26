@@ -78,7 +78,7 @@ Which brief to approve? [1-N]
 **Argument is a positive integer (e.g. `2`):**
 Select the Nth unapproved brief by index. If out of range: `Index out of range.` Stop.
 
-**Argument matches a ticket identifier (`#\d+`, `[A-Z]+-\d+`):**
+**Argument matches a ticket identifier (`#\d+`, `[A-Z]+-\d+`, or bare number for Azure DevOps):**
 Scan unapproved brief files for a `**Source:**` line containing the identifier. If 0 matches: show available briefs and stop. If 1 match: load it. If 2+ matches: show numbered list and ask.
 
 **Argument is other text:**
@@ -933,11 +933,12 @@ YYYY-MM-DD HH:MM | APPROVE_BRIEF | {slug} | {N} tickets created
 
 ### Rate limiting
 
-| Platform | Detection                        | Response                                   |
-| -------- | -------------------------------- | ------------------------------------------ |
-| GitHub   | 403 + `X-RateLimit-Remaining: 0` | Wait until `X-RateLimit-Reset`, retry once |
-| Jira     | 429 + `Retry-After` header       | Wait the specified seconds, retry once     |
-| Linear   | `RATELIMITED` error code         | Wait 60s, retry once                       |
+| Platform     | Detection                        | Response                                   |
+| ------------ | -------------------------------- | ------------------------------------------ |
+| GitHub       | 403 + `X-RateLimit-Remaining: 0` | Wait until `X-RateLimit-Reset`, retry once |
+| Jira         | 429 + `Retry-After` header       | Wait the specified seconds, retry once     |
+| Linear       | `RATELIMITED` error code         | Wait 60s, retry once                       |
+| Azure DevOps | 429 + `Retry-After` header       | Wait the specified seconds, retry once     |
 
 If retry also fails: stop, enter partial failure flow.
 
@@ -954,11 +955,12 @@ Enter partial failure flow (Step 10).
 
 ### Timeout
 
-| Platform | Timeout              |
-| -------- | -------------------- |
-| GitHub   | 15s per API call     |
-| Jira     | 30s per API call     |
-| Linear   | 30s per GraphQL call |
+| Platform     | Timeout              |
+| ------------ | -------------------- |
+| GitHub       | 15s per API call     |
+| Jira         | 30s per API call     |
+| Linear       | 30s per GraphQL call |
+| Azure DevOps | 30s per API call     |
 
 On timeout: `Request timed out. Ticket may have been created server-side. Check board before re-run.` Enter partial failure flow.
 
@@ -1008,6 +1010,18 @@ query {
 }
 ```
 
+#### Azure DevOps
+
+```bash
+# Fetch parent work item relations to find existing children
+curl -s \
+  -u ":$AZDO_PAT" \
+  -H "Accept: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$PARENT_ID?\$expand=relations&api-version=7.1"
+```
+
+Filter `relations` array for entries with `rel: "System.LinkTypes.Hierarchy-Forward"`. Extract child work item IDs from relation URLs, batch fetch titles, and compare against proposed ticket titles (case-insensitive exact match).
+
 If matching children found:
 
 ```
@@ -1029,8 +1043,8 @@ Default: N (don't create duplicates).
 - The `.approved` marker filename is the full brief filename with `.approved` appended (e.g. `.clancy/briefs/2026-03-14-auth-rework.md.approved`)
 - Tickets are created sequentially (not in parallel) to maintain dependency ordering and respect rate limits
 - The 500ms delay between ticket creations is sufficient for all platforms under normal rate limit conditions
-- Dependency links use "Blocks" for Jira, `blockedBy` for Linear, and body text cross-references for GitHub
-- Labels on Jira are auto-created by the platform; on GitHub they must be pre-created or the 422 fallback handles it; on Linear they are looked up and auto-created if missing
+- Dependency links use "Blocks" for Jira, `blockedBy` for Linear, `System.LinkTypes.Dependency-Reverse` for Azure DevOps, and body text cross-references for GitHub
+- Labels on Jira and Azure DevOps are auto-created by the platform; on GitHub they must be pre-created or the 422 fallback handles it; on Linear they are looked up and auto-created if missing
 - Sprint/milestone assignment is deliberately not set — this is a team planning decision
 - Linear `priority: 0` means "No priority" — the team triages after creation
 - Jira priority is inherited from the parent if available; Linear and GitHub do not inherit priority

@@ -61,11 +61,11 @@ Parse the arguments passed to the command. Arguments can appear in any order.
 ### Input modes
 
 - **No input (no flags that consume arguments):** Interactive mode — but first check for `--afk`:
-  - If running in AFK mode (`--afk` flag OR `CLANCY_MODE=afk`): there is no human to answer. Display: `✗ Cannot run /clancy:brief in AFK mode without a ticket or idea. Use: /clancy:brief --afk #42 (GitHub) or PROJ-123 (Jira) or ENG-42 (Linear), or /clancy:brief --afk "Add dark mode", or /clancy:brief 3 (batch mode — implies --afk).` Stop.
-  - Otherwise: prompt `What's the idea?` and parse the response. If the response looks like a ticket reference (`#42`, `PROJ-123`, `ENG-42`), switch to board ticket mode. Otherwise treat as inline text.
-- **Ticket key** (`PROJ-123`, `#42`, `ENG-42`): Board ticket mode — fetch the ticket from the board API. Validate format per platform:
-  - `#N` — valid for GitHub only. If board is Jira or Linear: `The #N format is for GitHub Issues. Use a ticket key like PROJ-123.` Stop.
-  - `PROJ-123` / `ENG-42` (letters-dash-number) — valid for Jira and Linear. If board is GitHub: `Use #N format for GitHub Issues (e.g. #42).` Stop.
+  - If running in AFK mode (`--afk` flag OR `CLANCY_MODE=afk`): there is no human to answer. Display: `✗ Cannot run /clancy:brief in AFK mode without a ticket or idea. Use: /clancy:brief --afk #42 (GitHub) or PROJ-123 (Jira) or ENG-42 (Linear) or 42 (Azure DevOps), or /clancy:brief --afk "Add dark mode", or /clancy:brief 3 (batch mode — implies --afk).` Stop.
+  - Otherwise: prompt `What's the idea?` and parse the response. If the response looks like a ticket reference (`#42`, `PROJ-123`, `ENG-42`, or bare number on AzDo), switch to board ticket mode. Otherwise treat as inline text.
+- **Ticket key** (`PROJ-123`, `#42`, `ENG-42`, `42`): Board ticket mode — fetch the ticket from the board API. Validate format per platform:
+  - `#N` — valid for GitHub only. If board is Jira, Linear, Shortcut, Notion, or Azure DevOps: `The #N format is for GitHub Issues. Use a ticket key like PROJ-123.` Stop.
+  - `PROJ-123` / `ENG-42` (letters-dash-number) — valid for Jira, Linear, and Shortcut. If board is GitHub: `Use #N format for GitHub Issues (e.g. #42).` Stop. If board is Azure DevOps: `Use a numeric work item ID for Azure DevOps (e.g. 42).` Stop.
 - **Quoted string or unquoted non-matching text** (e.g. `"Add dark mode"`): Inline text mode — use the text directly as the idea.
 - **`--from {path}`** — From file mode. Cannot be combined with a ticket reference (error if both present: `Cannot use both a ticket reference and --from. Use one or the other.`). Validate:
   - File does not exist: `File not found: {path}` Stop.
@@ -73,7 +73,8 @@ Parse the arguments passed to the command. Arguments can appear in any order.
   - File > 50KB: Warn `Large file ({size}KB). Clancy will use the first ~50KB for context.` Truncate internally, continue.
 - **Bare positive integer** (e.g. `/clancy:brief 3`): Batch mode or ambiguous.
   - Board is GitHub and value could be an issue: Ambiguous — ask: `Did you mean issue #3 or batch 3 tickets? [1] Brief issue #3 [2] Brief 3 tickets from queue`
-  - Board is Jira or Linear: Batch mode (N tickets from queue). Implies `--afk` (AI-grill for all).
+  - Board is Azure DevOps and value > 10: treat as a work item ID (no ambiguity — AzDo always uses numeric IDs)
+  - Board is Jira, Linear, Shortcut, or Notion: Batch mode (N tickets from queue). Implies `--afk` (AI-grill for all).
 
 If N > 10: `Maximum batch size is 10. Briefing 10 tickets.`
 
@@ -319,7 +320,7 @@ WIQL_RESPONSE=$(curl -s \
   -X POST \
   -H "Content-Type: application/json" \
   "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/wiql?api-version=7.1" \
-  -d '{"query": "SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = '\''$AZDO_PROJECT'\'' AND [System.State] = '\''$CLANCY_PLAN_STATUS'\'' AND [System.AssignedTo] = @Me ORDER BY [Microsoft.VSTS.Common.Priority] ASC"}')
+  -d '{"query": "SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = '\''$AZDO_PROJECT'\'' AND [System.State] = '\''$CLANCY_PLAN_STATUS'\'' AND [System.Tags] CONTAINS '\''$CLANCY_LABEL_PLAN'\'' AND [System.AssignedTo] = @Me ORDER BY [Microsoft.VSTS.Common.Priority] ASC"}')
 
 # Step 2: Batch fetch work items (first N IDs)
 IDS=$(echo "$WIQL_RESPONSE" | jq -r '.workItems[0:'$N'] | map(.id) | join(",")')
