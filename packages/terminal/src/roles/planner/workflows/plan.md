@@ -69,8 +69,9 @@ Parse the arguments passed to the command:
 - **No argument:** plan 1 ticket from the queue
 - **Numeric argument** (e.g. `/clancy:plan 3`): plan up to N tickets from the queue, cap at 10
 - **Specific ticket key:** plan a single ticket by key, with per-platform validation:
-  - `#42` — valid for GitHub only. If board is Jira or Linear: `The #N format is for GitHub Issues. Use a ticket key like PROJ-123.` Stop.
-  - `PROJ-123` / `ENG-42` (letters-dash-number) — valid for Jira and Linear. If board is GitHub: `Use #N format for GitHub Issues (e.g. #42).` Stop.
+  - `#42` — valid for GitHub only. If board is Jira, Linear, Shortcut, Notion, or Azure DevOps: `The #N format is for GitHub Issues. Use a ticket key like PROJ-123.` Stop.
+  - `PROJ-123` / `ENG-42` (letters-dash-number) — valid for Jira, Linear, and Shortcut. If board is GitHub: `Use #N format for GitHub Issues (e.g. #42).` Stop. If board is Azure DevOps: `Use a numeric work item ID for Azure DevOps (e.g. 42).` Stop.
+  - Bare integer — valid for Azure DevOps (work item ID) and GitHub (issue number). On Azure DevOps with value > 10: treat as a work item ID (no ambiguity — AzDo always uses numeric IDs). On GitHub with value > 10: ambiguous — ask:
   - Bare integer on GitHub (e.g. `/clancy:plan 42` where 42 > 10): ambiguous — ask:
     ```
     Did you mean issue #42 or batch mode (42 tickets)?
@@ -167,6 +168,33 @@ Validate the response:
 
 Then skip to Step 3b with this single ticket.
 
+#### Azure DevOps — Fetch specific work item
+
+```bash
+RESPONSE=$(curl -s \
+  -u ":$AZDO_PAT" \
+  -H "Accept: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID?\$expand=relations&api-version=7.1")
+```
+
+Validate the response:
+
+- If response contains `"message"` with `"does not exist"`: `Work item ${ID} not found.` Stop.
+- If `fields["System.State"]` is a done/resolved state (e.g. `Done`, `Closed`, `Resolved`): warn `Work item is done. Plan anyway? [y/N]` (in AFK mode: skip this ticket)
+
+To fetch comments (separate endpoint):
+
+```bash
+COMMENTS=$(curl -s \
+  -u ":$AZDO_PAT" \
+  -H "Accept: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID/comments?api-version=7.1-preview.4")
+```
+
+Map fields: title = `fields["System.Title"]`, description = `fields["System.Description"]` (HTML — strip tags for plan context), parent = check `relations` array for `System.LinkTypes.Hierarchy-Reverse` type.
+
+Then skip to Step 3b with this single ticket.
+
 ### Queue fetch (no specific key)
 
 #### Jira
@@ -253,6 +281,45 @@ query {
 }
 ```
 
+#### Azure DevOps
+
+Build a WIQL query using planning-specific env vars:
+
+- `CLANCY_PLAN_STATUS` defaults to `New` if not set (Azure DevOps uses `New`, `Active`, `Resolved`, `Closed`, `Removed`)
+- Tag clause: include `AND [System.Tags] CONTAINS '$CLANCY_LABEL_PLAN'` if `CLANCY_LABEL_PLAN` is set (falls back to `CLANCY_PLAN_LABEL`). If neither is set, defaults to `clancy:plan`.
+- Assigned to: `AND [System.AssignedTo] = @Me`
+
+Full WIQL: `SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = '$AZDO_PROJECT' AND [System.State] = '$CLANCY_PLAN_STATUS' [AND [System.Tags] CONTAINS '$CLANCY_LABEL_PLAN'] AND [System.AssignedTo] = @Me ORDER BY [Microsoft.VSTS.Common.Priority] ASC`
+
+```bash
+# Step 1: Run WIQL query to get work item IDs
+WIQL_RESPONSE=$(curl -s \
+  -u ":$AZDO_PAT" \
+  -X POST \
+  -H "Content-Type: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/wiql?api-version=7.1" \
+  -d '{"query": "<WIQL as above>"}')
+
+# Step 2: Batch fetch work items (take first N IDs)
+IDS=$(echo "$WIQL_RESPONSE" | jq -r '.workItems[0:N] | map(.id) | join(",")')
+
+RESPONSE=$(curl -s \
+  -u ":$AZDO_PAT" \
+  -H "Accept: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems?ids=$IDS&\$expand=relations&api-version=7.1")
+```
+
+Note: Azure DevOps comments are NOT included in work item responses. For each work item, fetch comments separately:
+
+```bash
+COMMENTS=$(curl -s \
+  -u ":$AZDO_PAT" \
+  -H "Accept: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$ID/comments?api-version=7.1-preview.4")
+```
+
+Map fields: title = `fields["System.Title"]`, description = `fields["System.Description"]` (HTML), parent = relation with `System.LinkTypes.Hierarchy-Reverse` rel type, tags = `fields["System.Tags"]` (semicolon-delimited string).
+
 If the API call fails (non-200 response or network error):
 
 ```
@@ -277,6 +344,7 @@ Then display board-specific guidance:
 - **GitHub:** `For GitHub: planning uses the "$CLANCY_LABEL_PLAN" label (default: clancy:plan, fallback: $CLANCY_PLAN_LABEL or needs-refinement). Apply that label to issues you want planned.`
 - **Jira:** `Check that CLANCY_PLAN_STATUS (currently: "$CLANCY_PLAN_STATUS") matches a status in your Jira project, and that tickets in that status are assigned to you.`
 - **Linear:** `Check that CLANCY_PLAN_STATE_TYPE (currently: "$CLANCY_PLAN_STATE_TYPE") is a valid Linear state type (backlog, unstarted, started, completed, canceled, triage), and that tickets in that state are assigned to you in team $LINEAR_TEAM_ID.`
+- **Azure DevOps:** `Check that CLANCY_PLAN_STATUS (currently: "${CLANCY_PLAN_STATUS || 'New'}") matches a state in your Azure DevOps project, and that work items in that state are assigned to you. Tag "${CLANCY_LABEL_PLAN || 'clancy:plan'}" must be applied.`
 
 Stop.
 
@@ -293,11 +361,9 @@ For each ticket, scan its comments for the marker `## Clancy Implementation Plan
 | Has plan + no feedback + no `--fresh`             | Stop for this ticket: `Already planned. Comment on the ticket to provide feedback, then re-run /clancy:plan {KEY} to revise. Or use --fresh to start over.` |
 | No plan found                                     | Proceed to Step 4                                                                                                                                           |
 
-Feedback detection per platform:
+Feedback detection: scan all comments posted AFTER the most recent `## Clancy Implementation Plan` comment. Exclude comments that are themselves Clancy-generated (contain `## Clancy Implementation Plan` or start with `Clancy skipped this ticket:`). All remaining comments are treated as feedback — regardless of author, since Clancy posts using the user's own credentials.
 
-- **GitHub:** comments posted after the plan comment where `user.login != $GITHUB_USERNAME` (the resolved username)
-- **Jira:** comments posted after the plan comment where `author.accountId != plan_comment.author.accountId`
-- **Linear:** all comments posted after the plan comment are treated as feedback (Linear personal keys don't expose viewer ID easily in comment context)
+This is content-based filtering, not author-based. The user's own feedback comments must not be excluded.
 
 ---
 
@@ -305,13 +371,11 @@ Feedback detection per platform:
 
 When revising a plan (auto-detected from feedback comments after the existing plan), read all comments posted AFTER the most recent `## Clancy Implementation Plan` comment.
 
-Filter out the planner's own comments:
+Filter out Clancy-generated comments by content — exclude any comment that contains `## Clancy Implementation Plan` or starts with `Clancy skipped this ticket:`. These are Clancy's own outputs, not human feedback.
 
-- **GitHub:** exclude comments where `user.login == $GITHUB_USERNAME` (the resolved username)
-- **Jira:** exclude comments by the same `author.accountId` as the plan comment
-- **Linear:** all post-plan comments are treated as feedback
+All other post-plan comments are treated as feedback regardless of author. This is critical because Clancy posts using the user's own credentials — author-based filtering would incorrectly exclude the user's own feedback.
 
-These are presumed to be PO/team feedback. No special syntax needed — they just comment normally on the ticket.
+No special syntax needed — users just comment normally on the ticket.
 
 Pass this feedback to the plan generation step as additional context.
 
@@ -559,6 +623,30 @@ curl -s \
 ```
 
 Linear accepts Markdown directly.
+
+### Azure DevOps — POST comment
+
+```bash
+curl -s \
+  -u ":$AZDO_PAT" \
+  -X POST \
+  -H "Content-Type: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID/comments?api-version=7.1-preview.4" \
+  -d '{"text": "<html plan>"}'
+```
+
+Azure DevOps work item comments use **HTML**, not markdown. Convert the plan markdown to HTML:
+
+- `## Heading` → `<h2>Heading</h2>`
+- `### Heading` → `<h3>Heading</h3>`
+- `- bullet` → `<ul><li>bullet</li></ul>`
+- `- [ ] checkbox` → `<ul><li>☐ checkbox</li></ul>`
+- `| table |` → `<table><tr><td>...</td></tr></table>`
+- `**bold**` → `<strong>bold</strong>`
+- `` `code` `` → `<code>code</code>`
+- Newlines → `<br>` or `<p>` tags
+
+If HTML construction is too complex for a particular element, wrap that section in `<pre>` tags as fallback.
 
 **On failure:** Print the plan to stdout and warn — do not lose the plan. The user can manually paste it.
 

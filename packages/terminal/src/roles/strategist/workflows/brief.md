@@ -434,11 +434,7 @@ Scan `.clancy/briefs/` for an existing brief matching this idea:
 2. **Companion file** — check for `.clancy/briefs/{date}-{slug}.feedback.md`
 3. **Board comments** (board-sourced only) — fetch ALL comments on the source ticket. Scan each comment body for the text `Clancy Strategic Brief` (case-insensitive, match anywhere in the body — it may appear as `# Clancy Strategic Brief`, `## Clancy Strategic Brief`, or just the text). The most recent matching comment is the brief. Collect all comments posted AFTER it as feedback.
 
-Board comment feedback filtering per platform:
-
-- **GitHub:** comments where `created_at` > brief comment's `created_at` AND `user.login` != resolved username (via `GET /user`)
-- **Jira:** comments where created timestamp > brief comment timestamp AND `author.accountId` != brief comment's `author.accountId`
-- **Linear:** all comments posted after the brief comment are treated as feedback (Linear personal keys don't easily expose viewer ID)
+Board comment feedback filtering (all platforms): collect all comments posted AFTER the brief comment. Exclude any comment that itself contains `Clancy Strategic Brief` (case-insensitive) — these are Clancy-generated brief postings, not human feedback. All other post-brief comments are treated as feedback regardless of author, since Clancy posts using the user's own credentials.
 
 Merge order: local `## Feedback` section first, then `.feedback.md` file, then board comments (chronological). All passed to generation step as additional context.
 
