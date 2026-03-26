@@ -59,6 +59,69 @@ Adjusted after phase validation (2026-03-23). Reordered to build leaves first, s
 - Minor rewrite: manifest (immutable), role-filter (options object, split concerns)
 - Major rewrite: hook-installer (immutable, decomposed), ui (data-driven), install.ts (pipeline)
 
+## Phase 2 Cleanup
+
+Pre-Phase 9 audit of terminal installer modules. 4-agent sweep (bugs, conventions, test coverage, architecture). Audit run 2026-03-26.
+
+| PR  | Description                                                                                                    | Status  |
+| --- | -------------------------------------------------------------------------------------------------------------- | ------- |
+| C20 | Shared helpers: extract `isPlainObject` + `rejectSymlink` → `shared/`, replace `isEnoent`, add barrel (H2, M1-M4, M12) | Pending |
+| C21 | TOCTOU fix + safety: wrap `resolveWorkflowRef` try/catch, `isFile()` guard in `copyEntry`, stale statusLine (H3, M5, M7) | Pending |
+| C22 | Test coverage: non-ENOENT re-throws, installHooks failure, confirmOverwrite edges, fs-errors tests (H4-H6, M8-M10, L10-L12) | Pending |
+| C23 | Comment hygiene + export cleanup: `as` cast comments, `@returns` JSDoc, remove over-exports, chain fix (M13, L1, L7-L9, L15) | Pending |
+| C24 | `cleanDisabledFiles` recursive cleanup + `hooks[0]` guard + hook-installer catch improvement (H1, M6)          | Pending |
+
+### HIGH findings
+
+1. **H1** — `hook-installer.ts:332` blanket `catch` swallows EACCES/EPERM, returns `false`. Silent failure with no root cause indication.
+2. **H2** — `hook-installer.ts:170` `entry.hooks[0]` accessed without empty-array guard. Crashes on malformed entry.
+3. **H3** — `file-ops.ts:100-106` TOCTOU race: `existsSync` → `rejectSymlink` → `readFileSync`. Should wrap in try/catch.
+4. **H4** — `manifest.ts:119-126` `readManifest` non-ENOENT re-throw path untested. EACCES silently propagates.
+5. **H5** — `manifest.ts:129-136` `safeFileHash` non-ENOENT re-throw untested. Same pattern as H4.
+6. **H6** — `install.ts:372-394` `installHooks` returning `false` path untested. `printSuccess` shown even when hooks broken.
+
+### MEDIUM findings
+
+- **M1** — `isPlainObject` duplicated in `manifest.ts:93` and `hook-installer.ts:67`. Extract to `shared/`.
+- **M2** — `rejectSymlink` duplicated in `file-ops.ts:22-32` and `hook-installer.ts:56-64`. Extract to `shared/`.
+- **M3** — `manifest.ts:38-41` `isEnoent` reimplements `hasErrorCode(err, 'ENOENT')` from `shared/fs-errors.ts`.
+- **M4** — `as` casts without justification comments in `file-ops.ts:26`, `manifest.ts:40`, `hook-installer.ts:219`.
+- **M5** — `hook-installer.ts:253-258` `statusLine` never updated on reinstall to different path. Stale path preserved.
+- **M6** — `role-filter.ts:49-55` `cleanDisabledFiles` only removes files, not subdirectories. Stale nested dirs remain.
+- **M7** — `file-ops.ts:54-67` `copyEntry` doesn't check `entry.isFile()`. Symlinks/FIFOs/sockets fall through to `copyFileSync`.
+- **M8** — `manifest.ts:178-186` `safeCopy` non-ENOENT re-throw untested.
+- **M9** — `role-filter.ts:40-46` `safeUnlink` non-ENOENT re-throw untested.
+- **M10** — `install.ts:258` `confirmOverwrite` edge cases untested (`"yes"`, `"Y"`, leading whitespace).
+- **M11** — Cross-module imports bypass barrel `index.ts` files — all go direct to source file. _Deferred — cosmetic._
+- **M12** — `shared/` directory has no `index.ts` barrel.
+- **M13** — Over-exported symbols: `fileHash`, `red`, `yellow`, `CORE_PACKAGE_NAME` have no external consumers.
+
+### LOW findings
+
+- **L1** — `file-ops.ts:91` module-level regex with `g` flag (latent `lastIndex` hazard).
+- **L2** — `prompts.ts:52-59` `choose` returns raw input, not validated option. _Deferred — caller responsibility._
+- **L3** — `hook-installer.ts:102` agent prompt fingerprint uses only first 100 chars. _Deferred — acceptable heuristic._
+- **L4** — `hook-installer.ts:219` `isHookEntry` only checks `hooks` is array, not contents. _Deferred — mitigated downstream._
+- **L5** — `ansi.ts` no `NO_COLOR`/`FORCE_COLOR` env var support. _Deferred — cosmetic._
+- **L6** — `install.ts:431` global mode hardcodes `enabledRoles: null`. _Deferred — intentional design._
+- **L7** — Hardcoded count "8" in `hook-installer.test.ts:15` comment.
+- **L8** — Missing `@returns` JSDoc on 7 exported functions across file-ops, role-filter, ui, install.
+- **L9** — `install.ts:171-174` 4-method chain in `parseEnabledRoles`.
+- **L10** — `fs-errors.ts` has no unit tests.
+- **L11** — `manifest.test.ts:212` weak `toBeDefined()` assertion on `meta.date`.
+- **L12** — `manifest.ts:108-116` valid JSON with wrong shape (array) untested.
+- **L13** — Missing integration test: permission error during install. _Deferred — high-effort._
+- **L14** — Missing integration test: concurrent installs. _Deferred — high-effort._
+- **L15** — `HOOK_FILES` duplicated in test instead of imported.
+- **L16** — `install.ts` at 444 lines — above 300-line convention limit. _Deferred — manageable._
+
+### Deferred
+
+- M11: Barrel bypass imports — cosmetic, defer unless barrel convention is formalised
+- L2-L6: Design-level or cosmetic items — document rather than change
+- L13-L14: Integration test scenarios — high-effort, low-probability edge cases
+- L16: `install.ts` length — manageable with extracted helpers, defer unless code changes
+
 ## Phase 3: Terminal — Roles & Agents
 
 | PR  | Description                                                                                      | Status |
@@ -631,7 +694,7 @@ Completed Phase 8 cleanup PRs C16-C19. All audit findings resolved. 174 pipeline
 
 **What's next:**
 
-- Phase 9: Terminal wiring — connect pipeline phases to terminal layer
+- Phase 2 cleanup (C20-C24), then Phase 9 (terminal wiring)
 
 **Key decisions:**
 
