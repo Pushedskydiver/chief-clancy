@@ -114,7 +114,9 @@ function computeQuietStatus(
 /** Calculate minutes remaining until end of quiet window. */
 function computeMinutesUntilEnd(nowMin: number, endMin: number): number {
   const diff = endMin - nowMin;
-  return diff <= 0 ? diff + 24 * 60 : diff;
+  const wrappedToNextDay = diff + 24 * 60;
+
+  return diff <= 0 ? wrappedToNextDay : diff;
 }
 
 /** Phases where an abort should stop the entire autopilot loop. */
