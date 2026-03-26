@@ -61,8 +61,8 @@ Parse the arguments passed to the command. Arguments can appear in any order.
 ### Input modes
 
 - **No input (no flags that consume arguments):** Interactive mode — but first check for `--afk`:
-  - If running in AFK mode (`--afk` flag OR `CLANCY_MODE=afk`): there is no human to answer. Display: `✗ Cannot run /clancy:brief in AFK mode without a ticket or idea. Use: /clancy:brief --afk #42 (GitHub) or PROJ-123 (Jira) or ENG-42 (Linear) or SC-123 (Shortcut) or 42 (Azure DevOps), or /clancy:brief --afk "Add dark mode", or /clancy:brief 3 (batch mode — implies --afk).` Stop.
-  - Otherwise: prompt `What's the idea?` and parse the response. If the response looks like a ticket reference (`#42`, `PROJ-123`, `ENG-42`, `SC-123`, or bare number on AzDo/Shortcut), switch to board ticket mode. Otherwise treat as inline text.
+  - If running in AFK mode (`--afk` flag OR `CLANCY_MODE=afk`): there is no human to answer. Display: `✗ Cannot run /clancy:brief in AFK mode without a ticket or idea. Use: /clancy:brief --afk #42 (GitHub) or PROJ-123 (Jira) or ENG-42 (Linear) or SC-123 (Shortcut) or 42 (Azure DevOps), or notion-XXXXXXXX (Notion), or /clancy:brief --afk "Add dark mode", or /clancy:brief 3 (batch mode — implies --afk).` Stop.
+  - Otherwise: prompt `What's the idea?` and parse the response. If the response looks like a ticket reference (`#42`, `PROJ-123`, `ENG-42`, `SC-123`, bare number on AzDo/Shortcut, or UUID/`notion-XXXXXXXX`), switch to board ticket mode. Otherwise treat as inline text.
 - **Ticket key** (`PROJ-123`, `#42`, `ENG-42`, `42`): Board ticket mode — fetch the ticket from the board API. Validate format per platform:
   - `#N` — valid for GitHub only. If board is Jira, Linear, or Shortcut: `The #N format is for GitHub Issues. Use a ticket key like PROJ-123.` Stop. If board is Azure DevOps: `The #N format is for GitHub Issues. Use a numeric work item ID (e.g. 42).` Stop. If board is Notion: `The #N format is for GitHub Issues. Use a Notion page UUID or notion-XXXXXXXX key.` Stop.
   - `PROJ-123` / `ENG-42` (letters-dash-number) — valid for Jira, Linear, and Shortcut. If board is GitHub: `Use #N format for GitHub Issues (e.g. #42).` Stop. If board is Azure DevOps: `Use a numeric work item ID for Azure DevOps (e.g. 42).` Stop. If board is Notion: `Use a Notion page UUID or notion-XXXXXXXX key.` Stop.
@@ -240,6 +240,49 @@ COMMENTS=$(curl -s \
 
 Check `relations` array for parent (type `System.LinkTypes.Hierarchy-Reverse`) and existing children (type `System.LinkTypes.Hierarchy-Forward`).
 
+#### Notion — Fetch specific page
+
+Notion page IDs are UUIDs (32 hex chars, optionally with dashes). The key format in `.clancy/progress.txt` is `notion-{first 8 chars}` for brevity. To fetch, use the full page ID if available, or search the database.
+
+```bash
+RESPONSE=$(curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  "https://api.notion.com/v1/pages/$PAGE_ID")
+```
+
+If the key is a short `notion-XXXXXXXX` format, query the database instead:
+
+```bash
+RESPONSE=$(curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  -X POST \
+  "https://api.notion.com/v1/databases/$NOTION_DATABASE_ID/query" \
+  -d '{"page_size": 100}')
+```
+
+Then match pages by ID prefix.
+
+Validate the response:
+
+- If `archived` is `true`: warn `Page is archived. Brief it anyway? [y/N]`
+
+Fetch comments for existing brief detection:
+
+```bash
+COMMENTS=$(curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  "https://api.notion.com/v1/comments?block_id=$PAGE_ID")
+```
+
+Map fields: title = extract from `properties` (find the `title` type property), description = fetch page content via `GET /v1/blocks/$PAGE_ID/children` (Notion stores content as blocks, not a single description field), parent = `parent.page_id` or `parent.database_id`.
+
+**Notion limitation:** Page content is stored as blocks, not a single text field. Read all child blocks and concatenate their text content for brief context.
+
+**Notion limitation:** Comments use `rich_text` format, not markdown. When scanning for `Clancy Strategic Brief`, search for the text content within `rich_text` arrays.
+
 #### All platforms — error handling
 
 If the API call fails:
@@ -394,6 +437,39 @@ COMMENTS=$(curl -s \
 ```
 
 Map fields: title = `name`, description = `description` (markdown), parent = `epic_id` (resolve via `GET /api/v3/epics/$EPIC_ID`), labels = `labels[].name`.
+
+#### Notion batch fetch
+
+Query the database with status and assignee filters:
+
+- `CLANCY_NOTION_STATUS` — the status property name (configurable, defaults auto-detected from database schema)
+- `CLANCY_PLAN_STATUS` — the status value to filter on (defaults to `Backlog` if not set)
+- `CLANCY_NOTION_ASSIGNEE` — the assignee property name (configurable)
+- `CLANCY_LABEL_PLAN` — optional label/tag to filter on (via multi-select property `CLANCY_NOTION_LABELS`)
+
+```bash
+RESPONSE=$(curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  -X POST \
+  "https://api.notion.com/v1/databases/$NOTION_DATABASE_ID/query" \
+  -d '{"filter": {"and": [{"property": "$CLANCY_NOTION_STATUS", "status": {"equals": "$CLANCY_PLAN_STATUS"}}, ...]}, "page_size": <N>}')
+```
+
+Add assignee and label filters to the `and` array as needed. Notion filters use property-specific types (`status`, `people`, `multi_select`).
+
+For each page, fetch comments separately:
+
+```bash
+COMMENTS=$(curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  "https://api.notion.com/v1/comments?block_id=$PAGE_ID")
+```
+
+Map fields: title = title property value, description = fetch child blocks via `GET /v1/blocks/$PAGE_ID/children` (concatenate text), parent = `parent.page_id`, labels = multi-select property values.
+
+**Notion limitation:** Comments use `rich_text` format, not markdown. When scanning for `Clancy Strategic Brief`, search for the text content within `rich_text` arrays.
 
 If no tickets found:
 
@@ -601,12 +677,14 @@ Web research agent (adds 1 to the count above, max 4 total):
   - **Linear:** `issues(filter: ...)` by text search
   - **Azure DevOps:** `POST /_apis/wit/wiql` with `[System.Title] CONTAINS 'keywords'`
   - **Shortcut:** `POST /api/v3/stories/search` with `{"query": "keywords"}`
+  - **Notion:** `POST /v1/databases/$NOTION_DATABASE_ID/query` with title text filter
 - Existing children of the source ticket (board-sourced only):
   - **GitHub:** scan open issues for `Epic: #{parent}` in body
   - **Jira:** `POST /rest/api/3/search/jql` with `parent = {KEY}`
   - **Linear:** already included in the fetch response (`children.nodes`)
   - **Azure DevOps:** check `relations` array for `System.LinkTypes.Hierarchy-Forward` entries
   - **Shortcut:** check `story_links` array for related stories; if `epic_id` is set, fetch epic stories via `GET /api/v3/epics/$EPIC_ID/stories`
+  - **Notion:** check `relation` properties on the page for linked child pages
 - Web research (if triggered)
 
 Display per-agent progress:
@@ -844,6 +922,23 @@ Shortcut accepts Markdown directly in comment text.
 
 Comment marker heading: `# Clancy Strategic Brief`.
 
+### Notion — POST comment
+
+```bash
+curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  -X POST \
+  "https://api.notion.com/v1/comments" \
+  -d '{"parent": {"page_id": "$PAGE_ID"}, "rich_text": [{"type": "text", "text": {"content": "<brief text>"}}]}'
+```
+
+**Notion limitation:** Comments use `rich_text` blocks, not markdown. For the brief content, use a single `text` block with the full brief as plain text. Notion will render it without markdown formatting. For better readability, consider splitting the brief into multiple `rich_text` blocks (one per section) with `annotations` for bold headings.
+
+**Notion limitation:** The `rich_text` array has a **2000-character limit per text block**. If the brief exceeds 2000 characters, split it across multiple `rich_text` blocks within the same comment (each block up to 2000 chars). The total comment can contain many blocks.
+
+Comment marker: include `Clancy Strategic Brief` as the first text content in the `rich_text` array.
+
 ### On failure (any platform)
 
 ```
@@ -954,6 +1049,24 @@ curl -s \
   -d '{"labels": [labels_without_plan_and_build]}'
 ```
 
+#### Notion
+
+```bash
+# Fetch current page properties, remove plan + build labels from multi-select
+PAGE=$(curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  "https://api.notion.com/v1/pages/$PAGE_ID")
+
+# Update multi-select property without plan + build labels
+curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  -X PATCH \
+  "https://api.notion.com/v1/pages/$PAGE_ID" \
+  -d '{"properties": {"$CLANCY_NOTION_LABELS": {"multi_select": [options_without_plan_and_build]}}}'
+```
+
 ### Add brief label
 
 Ensure the label exists and add it to the ticket. Best-effort — warn on failure, never stop.
@@ -1050,6 +1163,24 @@ curl -s \
   -X PUT \
   "https://api.app.shortcut.com/api/v3/stories/$STORY_ID" \
   -d '{"labels": [{"name": "$CLANCY_LABEL_BRIEF"}, ...existing_labels]}'
+```
+
+#### Notion
+
+```bash
+# Fetch current page properties, add brief label to multi-select
+PAGE=$(curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  "https://api.notion.com/v1/pages/$PAGE_ID")
+
+# Update multi-select property to include brief label
+curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  -X PATCH \
+  "https://api.notion.com/v1/pages/$PAGE_ID" \
+  -d '{"properties": {"$CLANCY_NOTION_LABELS": {"multi_select": [existing_options, {"name": "$CLANCY_LABEL_BRIEF"}]}}}'
 ```
 
 #### On failure (any platform)
@@ -1195,4 +1326,5 @@ Briefs saved to .clancy/briefs/. Run /clancy:approve-brief to create tickets.
 - Jira uses ADF for comments (with `codeBlock` fallback). GitHub, Linear, and Shortcut accept Markdown directly.
 - Linear personal API keys do NOT use `Bearer` prefix.
 - Shortcut uses `Shortcut-Token` header (not `Authorization: Bearer`). API base: `https://api.app.shortcut.com/api/v3`. Stories use `name` (not `title`), `description` is markdown, dependencies use `story_links` with `blocks` verb, and workflow state transitions use `workflow_state_id`.
+- Notion uses `Authorization: Bearer $NOTION_TOKEN` and `Notion-Version: 2022-06-28` headers. API base: `https://api.notion.com/v1`. Comments use `rich_text` blocks (not markdown) with a 2000-character limit per text block. Page content is stored as blocks (use `GET /v1/blocks/$PAGE_ID/children`), not a single description field. Labels use multi-select properties. The Notion API does not support editing comments — post new comments instead.
 - Jira uses the new `POST /rest/api/3/search/jql` endpoint (old GET `/search` removed Aug 2025).
