@@ -288,6 +288,7 @@ describe('buildSessionReport', () => {
       readCostsFile,
       writeFile,
       mkdir,
+      console: { log: vi.fn(), error: vi.fn() },
       projectRoot: '/my/project',
       loopStartTime: 1000,
       loopEndTime: 61_000, // 1m
@@ -302,7 +303,75 @@ describe('buildSessionReport', () => {
     );
   });
 
-  it('still returns report when write fails', () => {
+  it('rethrows non-ENOENT error from readCostsFile', () => {
+    const progressFs = {
+      readFile: vi.fn().mockReturnValue(''),
+      appendFile: vi.fn(),
+      mkdir: vi.fn(),
+    };
+    const qualityFs = {
+      readFile: vi.fn().mockImplementation(() => {
+        throw new Error('ENOENT');
+      }),
+      writeFile: vi.fn(),
+      rename: vi.fn(),
+      mkdir: vi.fn(),
+    };
+    const eacces = Object.assign(new Error('EACCES'), { code: 'EACCES' });
+    const readCostsFile = vi.fn().mockImplementation(() => {
+      throw eacces;
+    });
+
+    expect(() =>
+      buildSessionReport({
+        progressFs,
+        qualityFs,
+        readCostsFile,
+        writeFile: vi.fn(),
+        mkdir: vi.fn(),
+        console: { log: vi.fn(), error: vi.fn() },
+        projectRoot: '/my/project',
+        loopStartTime: 0,
+        loopEndTime: 5000,
+      }),
+    ).toThrow('EACCES');
+  });
+
+  it('returns empty costs when readCostsFile throws ENOENT', () => {
+    const progressFs = {
+      readFile: vi.fn().mockReturnValue(''),
+      appendFile: vi.fn(),
+      mkdir: vi.fn(),
+    };
+    const qualityFs = {
+      readFile: vi.fn().mockImplementation(() => {
+        throw new Error('ENOENT');
+      }),
+      writeFile: vi.fn(),
+      rename: vi.fn(),
+      mkdir: vi.fn(),
+    };
+    const enoent = Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
+    const readCostsFile = vi.fn().mockImplementation(() => {
+      throw enoent;
+    });
+
+    const report = buildSessionReport({
+      progressFs,
+      qualityFs,
+      readCostsFile,
+      writeFile: vi.fn(),
+      mkdir: vi.fn(),
+      console: { log: vi.fn(), error: vi.fn() },
+      projectRoot: '/my/project',
+      loopStartTime: 0,
+      loopEndTime: 5000,
+    });
+
+    expect(report).toContain('# Autopilot Session Report');
+  });
+
+  it('warns and still returns report when write fails', () => {
     const progressFs = {
       readFile: vi.fn().mockReturnValue(''),
       appendFile: vi.fn(),
@@ -319,6 +388,7 @@ describe('buildSessionReport', () => {
     const writeFile = vi.fn().mockImplementation(() => {
       throw new Error('EACCES');
     });
+    const consoleMock = { log: vi.fn(), error: vi.fn() };
 
     const report = buildSessionReport({
       progressFs,
@@ -326,12 +396,16 @@ describe('buildSessionReport', () => {
       readCostsFile: vi.fn().mockReturnValue(''),
       writeFile,
       mkdir: vi.fn(),
+      console: consoleMock,
       projectRoot: '/my/project',
       loopStartTime: 0,
       loopEndTime: 5000,
     });
 
     expect(report).toContain('# Autopilot Session Report');
+    expect(consoleMock.error).toHaveBeenCalledWith(
+      expect.stringContaining('Failed to write session report'),
+    );
   });
 
   it('filters progress entries to session window', () => {
@@ -362,6 +436,7 @@ describe('buildSessionReport', () => {
       readCostsFile: vi.fn().mockReturnValue(''),
       writeFile: vi.fn(),
       mkdir: vi.fn(),
+      console: { log: vi.fn(), error: vi.fn() },
       projectRoot: '/my/project',
       loopStartTime: loopStart,
       loopEndTime: loopEnd,

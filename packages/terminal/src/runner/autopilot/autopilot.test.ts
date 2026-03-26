@@ -275,6 +275,24 @@ describe('runAutopilot', () => {
     );
   });
 
+  it('sends fallback message when report has no summary lines', async () => {
+    const sendNotification = vi.fn().mockResolvedValue(undefined);
+    const buildReport = vi.fn().mockReturnValue('# Report\n\nNo data.');
+    const opts = createMockOpts({
+      maxIterations: 1,
+      webhookUrl: 'https://hooks.slack.com/x',
+      sendNotification,
+      buildReport,
+    });
+
+    await runAutopilot(opts);
+
+    expect(sendNotification).toHaveBeenCalledWith(
+      'https://hooks.slack.com/x',
+      expect.stringContaining('session complete'),
+    );
+  });
+
   it('does not send webhook when URL is not configured', async () => {
     const sendNotification = vi.fn();
     const opts = createMockOpts({
@@ -288,17 +306,22 @@ describe('runAutopilot', () => {
     expect(sendNotification).not.toHaveBeenCalled();
   });
 
-  it('completes when webhook notification fails', async () => {
+  it('warns and completes when webhook notification fails', async () => {
     const sendNotification = vi
       .fn()
       .mockRejectedValue(new Error('ECONNREFUSED'));
+    const consoleMock = { log: vi.fn(), error: vi.fn() };
     const opts = createMockOpts({
       maxIterations: 1,
       webhookUrl: 'https://hooks.slack.com/x',
       sendNotification,
+      console: consoleMock,
     });
 
     await expect(runAutopilot(opts)).resolves.toBeUndefined();
+    expect(consoleMock.error).toHaveBeenCalledWith(
+      expect.stringContaining('Webhook notification failed'),
+    );
   });
 
   it('sleeps between iterations', async () => {

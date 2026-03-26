@@ -282,8 +282,9 @@ async function finalize(
     const summary = extractSummaryForWebhook(report);
     try {
       await opts.sendNotification(opts.webhookUrl, summary);
-    } catch {
-      // Best-effort — webhook failure shouldn't crash
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      out.error(`Webhook notification failed: ${message}`);
     }
   }
 }
@@ -294,5 +295,8 @@ function extractSummaryForWebhook(report: string): string {
     .split('\n')
     .filter((l) => l.startsWith('- Tickets') || l.startsWith('- Total'));
 
-  return `Clancy autopilot: ${summaryLines.join('. ')}`;
+  const detail =
+    summaryLines.length > 0 ? summaryLines.join('. ') : 'session complete';
+
+  return `Clancy autopilot: ${detail}`;
 }
