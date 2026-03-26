@@ -110,6 +110,27 @@ describe('installHooks', () => {
     expect(settings.hooks).toBeDefined();
   });
 
+  it('updates statusLine to the current hooks path on reinstall', () => {
+    const staleStatusLine = {
+      type: 'command',
+      command: 'node "/old/path/clancy-statusline.js"',
+    };
+    writeFileSync(
+      join(claudeDir, 'settings.json'),
+      JSON.stringify({ statusLine: staleStatusLine }, null, 2),
+    );
+
+    installHooks({ claudeConfigDir: claudeDir, hooksSourceDir: hooksSource });
+
+    const settings = JSON.parse(
+      readFileSync(join(claudeDir, 'settings.json'), 'utf8'),
+    ) as Record<string, unknown>;
+    const statusLine = settings.statusLine as { command: string };
+
+    expect(statusLine.command).toContain('clancy-statusline.js');
+    expect(statusLine.command).not.toContain('/old/path/');
+  });
+
   it('returns true on success', () => {
     const result = installHooks({
       claudeConfigDir: claudeDir,
@@ -190,8 +211,8 @@ describe('installHooks', () => {
     expect(hooks.PreToolUse).toHaveLength(2);
     expect(hooks.PostCompact).toHaveLength(1);
     expect(hooks.Notification).toHaveLength(1);
-    // Malformed statusLine is preserved — we only set if absent
-    expect(settings.statusLine).toBe(42);
+    // Malformed statusLine is overwritten with the correct command
+    expect((settings.statusLine as { type: string }).type).toBe('command');
   });
 
   it('handles malformed hook event arrays gracefully', () => {
