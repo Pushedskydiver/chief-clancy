@@ -50,3 +50,7 @@ export {
   buildPrompt,
   buildReworkPrompt,
 } from './runner/prompt-builder/index.js';
+export {
+  buildSessionReport,
+  generateSessionReport,
+} from './runner/session-report/index.js';

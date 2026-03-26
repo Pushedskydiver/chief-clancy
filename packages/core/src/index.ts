@@ -230,6 +230,8 @@ export {
   appendProgress,
   countReworkCycles,
   findEntriesWithStatus,
+  formatTimestamp,
+  parseProgressFile,
 } from './shared/progress/index.js';
 
 export {
@@ -255,7 +257,11 @@ export { deliverEpicToBase } from './shared/deliver-epic/deliver-epic.js';
 
 export { ensureEpicBranch } from './shared/epic/epic.js';
 
-export { recordDelivery, recordRework } from './shared/quality/quality.js';
+export {
+  getQualityData,
+  recordDelivery,
+  recordRework,
+} from './shared/quality/quality.js';
 export type { QualityFs } from './shared/quality/quality.js';
 
 export type { FetchFn } from './shared/pr-creation/pr-creation.js';
