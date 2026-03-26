@@ -1,3 +1,6 @@
+import type { BoardProvider } from '@chief-clancy/core';
+
+import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -5,6 +8,17 @@ import {
   buildReworkPrompt,
   ticketLabel,
 } from './prompt-builder.js';
+
+const PROVIDERS: readonly BoardProvider[] = [
+  'jira',
+  'github',
+  'linear',
+  'shortcut',
+  'notion',
+  'azdo',
+];
+
+const providerArb = fc.constantFrom(...PROVIDERS);
 
 describe('ticketLabel', () => {
   it('returns "Jira ticket" for jira', () => {
@@ -226,6 +240,38 @@ describe('buildPrompt', () => {
 
     expect(prompt).not.toContain('## Test-Driven Development');
   });
+
+  it('always contains ticket key and label for any provider', () => {
+    fc.assert(
+      fc.property(providerArb, fc.string({ minLength: 1 }), (provider, key) => {
+        const prompt = buildPrompt({
+          provider,
+          key,
+          title: 'T',
+          description: 'D',
+          parentInfo: 'none',
+        });
+        return prompt.includes(key) && prompt.includes(ticketLabel(provider));
+      }),
+    );
+  });
+
+  it('includes TDD block if and only if tdd is true for any provider', () => {
+    fc.assert(
+      fc.property(providerArb, fc.boolean(), (provider, tdd) => {
+        const prompt = buildPrompt({
+          provider,
+          key: 'K-1',
+          title: 'T',
+          description: 'D',
+          parentInfo: 'none',
+          tdd,
+        });
+        const hasTdd = prompt.includes('## Test-Driven Development');
+        return tdd ? hasTdd : !hasTdd;
+      }),
+    );
+  });
 });
 
 describe('buildReworkPrompt', () => {
@@ -315,5 +361,37 @@ describe('buildReworkPrompt', () => {
     const prompt = buildReworkPrompt(baseInput);
 
     expect(prompt).not.toContain('## Test-Driven Development');
+  });
+
+  it('always contains ticket key for any provider', () => {
+    fc.assert(
+      fc.property(providerArb, fc.string({ minLength: 1 }), (provider, key) => {
+        const prompt = buildReworkPrompt({
+          provider,
+          key,
+          title: 'T',
+          description: 'D',
+          feedbackComments: ['Fix it'],
+        });
+        return prompt.includes(key);
+      }),
+    );
+  });
+
+  it('numbers all feedback comments sequentially', () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.string({ minLength: 1 }), { minLength: 1, maxLength: 10 }),
+        (comments) => {
+          const prompt = buildReworkPrompt({
+            ...baseInput,
+            feedbackComments: comments,
+          });
+          return comments.every((_, i) =>
+            prompt.includes(`${i + 1}. ${comments[i]}`),
+          );
+        },
+      ),
+    );
   });
 });

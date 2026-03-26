@@ -1,6 +1,6 @@
 import type { EnvFileSystem } from './env-parser.js';
 
-import * as fc from 'fast-check';
+import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
 
 import { loadClancyEnv, parseEnvContent } from './env-parser.js';
