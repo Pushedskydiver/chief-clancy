@@ -195,6 +195,32 @@ Map fields: title = `fields["System.Title"]`, description = `fields["System.Desc
 
 Then skip to Step 3b with this single ticket.
 
+#### Shortcut — Fetch specific story
+
+```bash
+RESPONSE=$(curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  "https://api.app.shortcut.com/api/v3/stories/$STORY_ID")
+```
+
+Extract the story ID from the key (e.g. `SC-123` → `123`, or use the numeric portion). Validate the response:
+
+- If response status is 404: `Story ${KEY} not found on Shortcut.` Stop.
+- If `completed` is `true` or `archived` is `true`: warn `Story is completed/archived. Plan anyway? [y/N]` (in AFK mode: skip this ticket)
+
+To fetch comments:
+
+```bash
+COMMENTS=$(curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  "https://api.app.shortcut.com/api/v3/stories/$STORY_ID/comments")
+```
+
+Map fields: title = `name`, description = `description` (markdown), parent = `epic_id` (fetch epic name via `GET /api/v3/epics/$EPIC_ID` if set).
+
+Then skip to Step 3b with this single ticket.
+
 ### Queue fetch (no specific key)
 
 #### Jira
@@ -320,6 +346,42 @@ COMMENTS=$(curl -s \
 
 Map fields: title = `fields["System.Title"]`, description = `fields["System.Description"]` (HTML), parent = relation with `System.LinkTypes.Hierarchy-Reverse` rel type, tags = `fields["System.Tags"]` (semicolon-delimited string).
 
+#### Shortcut
+
+Search for stories in the planning workflow state. Shortcut uses workflow states (not labels) for queue filtering, but labels can further narrow results.
+
+- `SHORTCUT_WORKFLOW` — optional workflow ID. If not set, use the default workflow.
+- `CLANCY_LABEL_PLAN` — optional label name to filter stories (falls back to `CLANCY_PLAN_LABEL`).
+
+```bash
+RESPONSE=$(curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -X POST \
+  "https://api.app.shortcut.com/api/v3/stories/search" \
+  -d '{"owner_ids": ["<current member UUID>"], "workflow_state_types": ["backlog"], "page_size": <N>}')
+```
+
+To resolve the current member UUID:
+
+```bash
+MEMBER=$(curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  "https://api.app.shortcut.com/api/v3/member-info")
+```
+
+Use `MEMBER.id` as the owner filter. If `CLANCY_LABEL_PLAN` is set, add `"label_ids": [<label_id>]` to the search body (resolve label ID via `GET /api/v3/labels`).
+
+For each story, fetch comments separately:
+
+```bash
+COMMENTS=$(curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  "https://api.app.shortcut.com/api/v3/stories/$STORY_ID/comments")
+```
+
+Map fields: title = `name`, description = `description` (markdown), parent = `epic_id` (resolve via `GET /api/v3/epics/$EPIC_ID`), labels = `labels[].name`.
+
 If the API call fails (non-200 response or network error):
 
 ```
@@ -345,6 +407,7 @@ Then display board-specific guidance:
 - **Jira:** `Check that CLANCY_PLAN_STATUS (currently: "$CLANCY_PLAN_STATUS") matches a status in your Jira project, and that tickets in that status are assigned to you.`
 - **Linear:** `Check that CLANCY_PLAN_STATE_TYPE (currently: "$CLANCY_PLAN_STATE_TYPE") is a valid Linear state type (backlog, unstarted, started, completed, canceled, triage), and that tickets in that state are assigned to you in team $LINEAR_TEAM_ID.`
 - **Azure DevOps:** `Check that CLANCY_PLAN_STATUS (currently: "${CLANCY_PLAN_STATUS || 'New'}") matches a state in your Azure DevOps project, and that work items in that state are assigned to you. Tag "${CLANCY_LABEL_PLAN || 'clancy:plan'}" must be applied.`
+- **Shortcut:** `Check that your stories are in a "backlog" workflow state and assigned to you. If using CLANCY_LABEL_PLAN, ensure the label exists and is applied to stories you want planned.`
 
 Stop.
 
@@ -647,6 +710,19 @@ Azure DevOps work item comments use **HTML**, not markdown. Convert the plan mar
 - Newlines → `<br>` or `<p>` tags
 
 If HTML construction is too complex for a particular element, wrap that section in `<pre>` tags as fallback.
+
+### Shortcut — POST comment
+
+```bash
+curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -X POST \
+  "https://api.app.shortcut.com/api/v3/stories/$STORY_ID/comments" \
+  -d '{"text": "<markdown plan>"}'
+```
+
+Shortcut accepts Markdown directly in comment text.
 
 **On failure:** Print the plan to stdout and warn — do not lose the plan. The user can manually paste it.
 
