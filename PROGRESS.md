@@ -1,5 +1,22 @@
 # Monorepo Progress
 
+## Session 34 Handoff
+
+**Phase 9 cleanup in progress.** 3 PRs this session: C25, C26, C27. 334 terminal tests (was 322).
+
+### What was done
+
+- **C25** (#95): Extract shared types — consolidated `SpawnSyncFn` (4x), `ConsoleLike` (2x), `AppendFn` (inline) into `runner/shared/types.ts`. Narrowed `stdio` from `(string | number)[]` to `StdioValue` union. Updated 6 consuming files. DA review: 0 HIGH, 0 MEDIUM, 3 LOW — all acceptable.
+- **C26** (#96): Non-null assertion comments — added `// Safe: ...` comments to 10 `!` assertions explaining pipeline ordering guarantees. Replaced `e.parent!` with `hasParent` type predicate (eliminates assertion entirely). DA review: 0 HIGH, 1 MEDIUM (invoke-phase assertions missed — fixed), 2 LOW.
+- **C27** (#97): Test gaps — `invoke-phase.test.ts` (5 tests: fresh/rework branching, TDD flag, ok/fail, prFeedback default) + `deliver-phase.test.ts` (7 tests: wiring, appendProgress, recordDelivery/recordRework, postReworkActions with/without handlers). DA review: 1 HIGH (mock reset — fixed), 3 MEDIUM (missing assertions — fixed).
+
+### Next up
+
+- **C28**: Error handling hardening (M1–M5, L9)
+- **C29**: Property-based tests + edge cases (M7, M9, M10, L6–L8, L11)
+- **C30**: Minor cleanup (M6, M8, L2–L5, L10, L12)
+- After cleanup: evaluate Phase 10 scope.
+
 ## Session 33 Handoff
 
 **Phase 9 complete.** 4 PRs this session: 9.5 (implement entry point), 9.6 (session report), 9.7 (autopilot runner), plus the once→implement rename. Phase 9 audit done — 6 cleanup PRs planned (C25–C30).
