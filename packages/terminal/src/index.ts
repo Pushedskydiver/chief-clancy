@@ -29,4 +29,24 @@ export { createPrompts } from './installer/prompts/index.js';
 export { copyRoleFiles } from './installer/role-filter/index.js';
 export { printBanner, printSuccess } from './installer/ui/index.js';
 
-export { blue, bold, cyan, dim, green } from './shared/ansi/index.js';
+export {
+  blue,
+  bold,
+  cyan,
+  dim,
+  green,
+  red,
+  yellow,
+} from './shared/ansi/index.js';
+
+export {
+  invokeClaudePrint,
+  invokeClaudeSession,
+} from './runner/cli-bridge/index.js';
+export { buildPipelineDeps } from './runner/dep-factory/index.js';
+export { sendNotification } from './runner/notify/index.js';
+export { runOnce } from './runner/once/index.js';
+export {
+  buildPrompt,
+  buildReworkPrompt,
+} from './runner/prompt-builder/index.js';
