@@ -68,7 +68,7 @@
 
 | PR  | Theme                                   | Fixes                   | Scope                                                                                                                                                     |
 | --- | --------------------------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| C25 | Extract shared types                    | H1, H2, H4, L1          | Create `runner/shared/types.ts` with `SpawnSyncFn` (narrowed stdio), `ConsoleLike`, `AppendFn`. Update 6 files. **Done** |
+| C25 | Extract shared types                    | H1, H2, H4, L1          | Create `runner/shared/types.ts` with `SpawnSyncFn` (narrowed stdio), `ConsoleLike`, `AppendFn`. Update 6 files. **Done**                                  |
 | C26 | Non-null assertion comments             | H3                      | Add `// Safe: ...` comments to all 11 `!` assertions. Type predicate for `e.parent` filter. Comments only.                                                |
 | C27 | Test gaps: deliver-phase + invoke-phase | H5, H6                  | Create `deliver-phase.test.ts` and `invoke-phase.test.ts`. Cover wiring, branching, null handler.                                                         |
 | C28 | Error handling hardening                | M1–M5, L9               | Narrow catches to ENOENT. Add `console.warn` to silent catches. Replace recursive `sumTokens`. Guard NaN. Webhook fallback.                               |
