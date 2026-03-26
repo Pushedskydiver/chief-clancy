@@ -176,6 +176,95 @@ export {
 export { createContext, RunContext, runPipeline } from './pipeline/index.js';
 export type { PipelineDeps, PipelineResult } from './pipeline/index.js';
 
+// Phase functions + deps types (consumed by terminal dep factory)
+export {
+  branchSetup,
+  cleanupPhase,
+  costPhase,
+  deliverPhase,
+  dryRun,
+  epicCompletion,
+  feasibilityPhase,
+  lockCheck,
+  prRetry,
+  preflightPhase,
+  reworkDetection,
+  ticketFetch,
+  transition,
+} from './pipeline/index.js';
+export type {
+  BranchSetupDeps,
+  CleanupDeps,
+  CostPhaseDeps,
+  DeliverPhaseDeps,
+  EpicCompletionDeps,
+  FeasibilityPhaseDeps,
+  LockCheckDeps,
+  PreflightPhaseDeps,
+  PrRetryDeps,
+  ReworkDetectionDeps,
+  TicketFetchDeps,
+  TransitionDeps,
+} from './pipeline/index.js';
+
+// Shared utilities (consumed by terminal dep factory for phase wiring)
+export type { ExecGit } from './shared/git-ops/index.js';
+export {
+  checkout,
+  currentBranch,
+  detectRemote,
+  ensureBranch,
+  fetchRemoteBranch,
+} from './shared/git-ops/index.js';
+
+export type { LockFs } from './shared/lock/index.js';
+export {
+  deleteLock,
+  deleteVerifyAttempt,
+  readLock,
+  writeLock,
+} from './shared/lock/index.js';
+
+export type { ProgressEntry, ProgressFs } from './shared/progress/index.js';
+export {
+  appendProgress,
+  countReworkCycles,
+  findEntriesWithStatus,
+} from './shared/progress/index.js';
+
+export {
+  computeTargetBranch,
+  computeTicketBranch,
+} from './shared/branch/index.js';
+
+export { runPreflight } from './shared/preflight/preflight.js';
+export type { PreflightDeps } from './shared/preflight/preflight.js';
+
+export { detectResume, executeResume } from './shared/resume/resume.js';
+
+export { fetchReworkFromPrReview } from './shared/rework/rework.js';
+export { postReworkActions } from './shared/rework/rework.js';
+export type { PlatformReworkHandlers } from './shared/rework/rework-handlers.js';
+export { resolvePlatformHandlers } from './shared/rework/rework-handlers.js';
+
+export { checkFeasibility } from './shared/feasibility/feasibility.js';
+
+export { deliverViaPullRequest } from './shared/deliver-ticket/deliver-ticket.js';
+
+export { deliverEpicToBase } from './shared/deliver-epic/deliver-epic.js';
+
+export { ensureEpicBranch } from './shared/epic/epic.js';
+
+export { recordDelivery, recordRework } from './shared/quality/quality.js';
+export type { QualityFs } from './shared/quality/quality.js';
+
+export type { FetchFn } from './shared/pr-creation/pr-creation.js';
+
+export type { CostFs } from './shared/cost/cost.js';
+export { appendCostEntry } from './shared/cost/cost.js';
+
+export { formatDuration } from './shared/format/format.js';
+
 export { detectBoard, sharedEnv } from './board/index.js';
 export { createBoard } from './board/factory/index.js';
 

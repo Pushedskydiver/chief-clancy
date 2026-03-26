@@ -1,0 +1,89 @@
+/**
+ * Deliver phase wiring — push, PR creation, rework actions.
+ *
+ * Extracted from the dep factory to stay within file-length limits.
+ */
+import type {
+  ExecGit,
+  FetchFn,
+  PipelineDeps,
+  ProgressFs,
+  QualityFs,
+  RunContext,
+} from '@chief-clancy/core';
+
+import {
+  deliverPhase,
+  deliverViaPullRequest,
+  detectRemote,
+  postReworkActions,
+  recordDelivery,
+  recordRework,
+  resolvePlatformHandlers,
+} from '@chief-clancy/core';
+
+type DeliverOpts = {
+  readonly projectRoot: string;
+  readonly exec: ExecGit;
+  readonly progressFs: ProgressFs;
+  readonly qualityFs: QualityFs;
+  readonly fetch: FetchFn;
+};
+
+/**
+ * Wire the deliver phase with shared I/O resources.
+ *
+ * @param opts - Shared I/O resources for delivery.
+ * @param progress - Pre-wired progress append function.
+ * @returns The deliver field for PipelineDeps.
+ */
+export function wireDeliver(
+  opts: DeliverOpts,
+  progress: (opts: {
+    readonly key: string;
+    readonly summary: string;
+    readonly status: string;
+    readonly prNumber?: number;
+    readonly parent?: string;
+  }) => void,
+): Pick<PipelineDeps, 'deliver'> {
+  const { projectRoot, exec, fetch: fetchFn, qualityFs } = opts;
+
+  return {
+    deliver: (ctx: RunContext) =>
+      deliverPhase(ctx, {
+        deliverViaPullRequest: (callOpts) =>
+          deliverViaPullRequest({
+            ...callOpts,
+            exec,
+            fetchFn,
+            progressFs: opts.progressFs,
+            deliverFs: { readFile: (p: string) => qualityFs.readFile(p) },
+            projectRoot,
+            config: ctx.config!,
+            ticket: ctx.ticket!,
+          }),
+        appendProgress: progress,
+        recordDelivery: () => {
+          const now = Date.now();
+          recordDelivery(qualityFs, projectRoot, {
+            ticketKey: ctx.ticket!.key,
+            duration: now - ctx.startTime,
+            now,
+          });
+        },
+        recordRework: () =>
+          recordRework(qualityFs, projectRoot, ctx.ticket!.key),
+        postReworkActions: async (reworkCallOpts) => {
+          const remote = detectRemote(exec);
+          const handlers = resolvePlatformHandlers({
+            fetchFn,
+            env: ctx.config!.env,
+            remote,
+          });
+          if (!handlers) return;
+          await postReworkActions({ ...reworkCallOpts, handlers });
+        },
+      }),
+  };
+}
