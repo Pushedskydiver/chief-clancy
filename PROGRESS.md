@@ -640,7 +640,7 @@ Two independent tracks — board parity (Track A) can proceed in any order relat
 | 9.4 | Dep factory: `buildPipelineDeps(opts)` — wire all 15 `PipelineDeps` fields.           | Done    |
 | 9.5 | Implement entry point: parse args, create context, run pipeline, display result.      | Done    |
 | 9.6 | Session report generator: parse costs.log + progress.txt, write session-report.md.    | Done    |
-| 9.7 | Autopilot runner: loop orchestration, quiet hours, stop conditions, report + webhook. | Pending |
+| 9.7 | Autopilot runner: loop orchestration, quiet hours, stop conditions, report + webhook. | Done    |
 
 ### Dependencies
 
