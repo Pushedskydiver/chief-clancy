@@ -85,8 +85,8 @@ Pre-Phase 9 audit of terminal installer modules. 4-agent sweep (bugs, convention
 
 | PR  | Description                                                                                                                  | Status  |
 | --- | ---------------------------------------------------------------------------------------------------------------------------- | ------- |
-| C20 | Shared helpers: extract `isPlainObject` + `rejectSymlink` → `shared/`, replace `isEnoent`, add barrel (H2, M1-M4, M12)       | Done |
-| C21 | TOCTOU fix + safety: wrap `resolveWorkflowRef` try/catch, `isFile()` guard in `copyEntry`, stale statusLine (H3, M5, M7)     | Done |
+| C20 | Shared helpers: extract `isPlainObject` + `rejectSymlink` → `shared/`, replace `isEnoent`, add barrel (H2, M1-M4, M12)       | Done    |
+| C21 | TOCTOU fix + safety: wrap `resolveWorkflowRef` try/catch, `isFile()` guard in `copyEntry`, stale statusLine (H3, M5, M7)     | Done    |
 | C22 | Test coverage: non-ENOENT re-throws, installHooks failure, confirmOverwrite edges, fs-errors tests (H4-H6, M8-M10, L10-L12)  | Pending |
 | C23 | Comment hygiene + export cleanup: `as` cast comments, `@returns` JSDoc, remove over-exports, chain fix (M13, L1, L7-L9, L15) | Pending |
 | C24 | `cleanDisabledFiles` recursive cleanup + `hooks[0]` guard + hook-installer catch improvement (H1, M6)                        | Pending |

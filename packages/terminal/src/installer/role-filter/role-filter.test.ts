@@ -119,6 +119,25 @@ describe('copyRoleFiles', () => {
     expect(existsSync(join(dest, 'run.md'))).toBe(true);
   });
 
+  it('propagates non-ENOENT errors when unlinking disabled role files (M9)', () => {
+    // Source has a file named 'conflict'
+    createRole('optional', 'commands', ['conflict']);
+
+    const dest = join(testDir, 'dest');
+    mkdirSync(dest, { recursive: true });
+    // Dest has a directory named 'conflict' — unlinkSync on a dir throws EPERM/EISDIR
+    mkdirSync(join(dest, 'conflict'), { recursive: true });
+
+    expect(() =>
+      copyRoleFiles({
+        rolesDir: join(testDir, 'roles'),
+        subdir: 'commands',
+        dest,
+        enabledRoles: new Set<string>(),
+      }),
+    ).toThrow();
+  });
+
   it('handles subdirectories in disabled roles without throwing', () => {
     createRole('planner', 'commands', ['plan.md']);
     // Add a nested subdirectory inside the role's commands dir

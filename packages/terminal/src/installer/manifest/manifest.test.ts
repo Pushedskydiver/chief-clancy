@@ -101,6 +101,35 @@ describe('detectModifiedFiles', () => {
     expect(result).toEqual([]);
   });
 
+  it('propagates non-ENOENT errors when reading manifest (H4)', () => {
+    // Reading through a file as if it were a directory triggers ENOTDIR
+    writeFileSync(join(tmp, 'blocker'), 'x');
+    const badManifestPath = join(tmp, 'blocker', 'manifest.json');
+
+    expect(() => detectModifiedFiles(tmp, badManifestPath)).toThrow();
+  });
+
+  it('propagates non-ENOENT errors when hashing a file (H5)', () => {
+    // Create a valid manifest pointing to a path that triggers ENOTDIR
+    writeFileSync(join(tmp, 'blocker'), 'x');
+    const manifestPath = join(tmp, 'manifest.json');
+    writeFileSync(
+      manifestPath,
+      JSON.stringify({ 'blocker/nested.md': 'fakehash' }),
+    );
+
+    expect(() => detectModifiedFiles(tmp, manifestPath)).toThrow();
+  });
+
+  it('returns empty for manifest with valid JSON array (L12)', () => {
+    const manifestPath = join(tmp, 'manifest.json');
+    writeFileSync(manifestPath, '[1, 2, 3]');
+
+    const result = detectModifiedFiles(tmp, manifestPath);
+
+    expect(result).toEqual([]);
+  });
+
   it('detects modified files', () => {
     writeFileSync(join(tmp, 'a.md'), 'original');
     const manifest = buildManifest(tmp);
@@ -209,7 +238,22 @@ describe('backupModifiedFiles', () => {
       readFileSync(join(patchesDir, 'backup-meta.json'), 'utf8'),
     ) as { backed_up: string[]; date: string };
     expect(meta.backed_up).toEqual(['a.md']);
-    expect(meta.date).toBeDefined();
+    expect(meta.date).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+  });
+
+  it('propagates non-ENOENT errors when copying backup files (M8)', () => {
+    const srcDir = join(tmp, 'src');
+    mkdirSync(srcDir, { recursive: true });
+    // Use a directory as the source — copyFileSync on a directory throws EISDIR
+    mkdirSync(join(srcDir, 'subdir'), { recursive: true });
+    const patchesDir = join(tmp, 'patches');
+
+    expect(() =>
+      backupModifiedFiles(
+        [{ rel: 'subdir', absPath: join(srcDir, 'subdir') }],
+        patchesDir,
+      ),
+    ).toThrow();
   });
 
   it('preserves nested directory structure in backup', () => {
