@@ -93,7 +93,7 @@ type DepFactoryOpts = {
 type AppendFn = (opts: {
   readonly key: string;
   readonly summary: string;
-  readonly status: string;
+  readonly status: ProgressStatus;
   readonly prNumber?: number;
   readonly parent?: string;
 }) => void;
@@ -102,13 +102,7 @@ function makeAppendProgress(
   progressFs: ProgressFs,
   projectRoot: string,
 ): AppendFn {
-  return (opts) =>
-    appendProgress(progressFs, projectRoot, {
-      ...opts,
-      // Phase deps declare status as string; core expects ProgressStatus.
-      // The phase functions always pass valid statuses — cast bridges the gap.
-      status: opts.status as ProgressStatus,
-    });
+  return (opts) => appendProgress(progressFs, projectRoot, opts);
 }
 
 function makeFindCompletedEpics(progressFs: ProgressFs, projectRoot: string) {

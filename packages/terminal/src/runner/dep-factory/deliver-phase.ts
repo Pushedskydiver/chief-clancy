@@ -8,6 +8,7 @@ import type {
   FetchFn,
   PipelineDeps,
   ProgressFs,
+  ProgressStatus,
   QualityFs,
   RunContext,
 } from '@chief-clancy/core';
@@ -42,7 +43,7 @@ export function wireDeliver(
   progress: (opts: {
     readonly key: string;
     readonly summary: string;
-    readonly status: string;
+    readonly status: ProgressStatus;
     readonly prNumber?: number;
     readonly parent?: string;
   }) => void,

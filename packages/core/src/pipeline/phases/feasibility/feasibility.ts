@@ -6,6 +6,7 @@
  * Returns structured results — no console output.
  */
 import type { RunContext } from '../../context.js';
+import type { ProgressStatus } from '~/c/types/progress.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -33,7 +34,7 @@ type FeasibilityPhaseResult = {
 type AppendFn = (opts: {
   readonly key: string;
   readonly summary: string;
-  readonly status: string;
+  readonly status: ProgressStatus;
 }) => void;
 
 /** Injected dependencies for feasibility. */
