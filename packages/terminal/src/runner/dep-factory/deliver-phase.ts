@@ -55,6 +55,7 @@ export function wireDeliver(
             progressFs: opts.progressFs,
             deliverFs: { readFile: (p: string) => qualityFs.readFile(p) },
             projectRoot,
+            // Safe: deliver runs after preflight (config) and ticketFetch (ticket)
             config: ctx.config!,
             ticket: ctx.ticket!,
           }),
@@ -62,17 +63,20 @@ export function wireDeliver(
         recordDelivery: () => {
           const now = Date.now();
           recordDelivery(qualityFs, projectRoot, {
+            // Safe: recordDelivery runs after ticketFetch, which sets ticket
             ticketKey: ctx.ticket!.key,
             duration: now - ctx.startTime,
             now,
           });
         },
         recordRework: () =>
+          // Safe: recordRework runs after ticketFetch, which sets ticket
           recordRework(qualityFs, projectRoot, ctx.ticket!.key),
         postReworkActions: async (reworkCallOpts) => {
           const remote = detectRemote(exec);
           const handlers = resolvePlatformHandlers({
             fetchFn,
+            // Safe: postReworkActions runs after preflight, which sets config
             env: ctx.config!.env,
             remote,
           });

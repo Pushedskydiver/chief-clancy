@@ -22,6 +22,7 @@ export function makeInvokePhase(
   spawn: SpawnSyncFn,
 ): (ctx: RunContext) => Promise<{ readonly ok: boolean }> {
   return async (ctx) => {
+    // Safe: invoke runs after preflight (config) and ticketFetch (ticket)
     const config = ctx.config!;
     const ticket = ctx.ticket!;
     const tdd = config.env.CLANCY_TDD === 'true';
