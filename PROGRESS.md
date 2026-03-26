@@ -1,5 +1,28 @@
 # Monorepo Progress
 
+## Session 31 Handoff
+
+**Track A complete, Track B started.** 3 PRs this session: 9.0e-9.0f (board parity finished) + 9.1 (first TypeScript in Phase 9).
+
+### What was done
+
+- **9.0e** (#86): Shortcut added to strategist workflows (brief.md + approve-brief.md). DA review caught 3 findings (missing timeout table entry, wrong verb name, missing interactive hint) — all fixed.
+- **9.0f** (#87): Notion added to strategist workflows with documented API limitations (rich_text not markdown, 2000-char limit, no comment editing, blocks not description, relation properties for hierarchy). DA review caught 1 HIGH (missing Notion in AFK error message) — fixed.
+- **Track A complete:** All 6 boards (GitHub, Jira, Linear, Azure DevOps, Shortcut, Notion) now have dispatch blocks in both planner and strategist workflows.
+- **9.1** (#88): Claude CLI bridge — first TypeScript in Phase 9 Track B. Two functions: `invokeClaudePrint` (single-prompt mode, captures stdout) and `invokeClaudeSession` (interactive, streams to terminal). `spawnSync` injected via DI. 16 tests. 201 terminal tests total. DA review caught 3 MEDIUM (type safety) — all fixed.
+
+### Process notes
+
+- Barrel `index.ts` deferred for new leaf modules until the consuming PR (knip flags unused files). CLI bridge barrel will be added in 9.4 (dep factory).
+- DA review on every PR without exception — caught real issues in all 3 PRs this session.
+
+### Next up
+
+- **9.2**: Prompt builder (`buildPrompt`, `buildReworkPrompt`, `ticketLabel`)
+- **9.3**: Webhook notifications (`sendNotification`, Slack/Teams payload builders)
+- **9.6**: Session report generator (parse costs.log + progress.txt)
+- Then 9.4 (dep factory, depends on 9.1+9.2+9.3) → 9.5 (once entry) → 9.7 (AFK runner)
+
 ## Session 30 Handoff
 
 **Phase 9 validated and Track A (board parity) in progress.** 7 PRs merged this session: C22-C24 (Phase 2 Cleanup complete) + 9.0a-9.0d (4 of 6 board parity PRs).
@@ -576,20 +599,20 @@ Two independent tracks — board parity (Track A) can proceed in any order relat
 
 ### Track A — Board parity (planner + strategist workflows)
 
-| PR   | Description                                                                                  | Status  |
-| ---- | -------------------------------------------------------------------------------------------- | ------- |
-| 9.0a | Add Azure DevOps to planner workflows (plan.md + approve-plan.md) + feedback filtering fix   | Done    |
-| 9.0b | Add Shortcut to planner workflows (plan.md + approve-plan.md, all dispatch blocks)           | Done    |
-| 9.0c | Add Notion to planner workflows (plan.md + approve-plan.md, with documented API limitations) | Done    |
-| 9.0d | Add Azure DevOps to strategist workflows (brief.md + approve-brief.md)                       | Done    |
-| 9.0e | Add Shortcut to strategist workflows (brief.md + approve-brief.md)                           | Pending |
-| 9.0f | Add Notion to strategist workflows (brief.md + approve-brief.md)                             | Pending |
+| PR   | Description                                                                                  | Status |
+| ---- | -------------------------------------------------------------------------------------------- | ------ |
+| 9.0a | Add Azure DevOps to planner workflows (plan.md + approve-plan.md) + feedback filtering fix   | Done   |
+| 9.0b | Add Shortcut to planner workflows (plan.md + approve-plan.md, all dispatch blocks)           | Done   |
+| 9.0c | Add Notion to planner workflows (plan.md + approve-plan.md, with documented API limitations) | Done   |
+| 9.0d | Add Azure DevOps to strategist workflows (brief.md + approve-brief.md)                       | Done   |
+| 9.0e | Add Shortcut to strategist workflows (brief.md + approve-brief.md)                           | Done   |
+| 9.0f | Add Notion to strategist workflows (brief.md + approve-brief.md)                             | Done   |
 
 ### Track B — Orchestrator
 
 | PR  | Description                                                                             | Status  |
 | --- | --------------------------------------------------------------------------------------- | ------- |
-| 9.1 | Claude CLI bridge: `invokeClaudePrint`, `invokeClaudeSession`. I/O boundary.            | Pending |
+| 9.1 | Claude CLI bridge: `invokeClaudePrint`, `invokeClaudeSession`. I/O boundary.            | Done    |
 | 9.2 | Prompt builder: `buildPrompt`, `buildReworkPrompt`, `ticketLabel`, TDD block.           | Pending |
 | 9.3 | Webhook notifications: `sendNotification`, Slack/Teams payload builders.                | Pending |
 | 9.4 | Dep factory: `buildPipelineDeps(opts)` — wire all 15 `PipelineDeps` fields.             | Pending |
