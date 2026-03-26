@@ -361,12 +361,9 @@ For each ticket, scan its comments for the marker `## Clancy Implementation Plan
 | Has plan + no feedback + no `--fresh`             | Stop for this ticket: `Already planned. Comment on the ticket to provide feedback, then re-run /clancy:plan {KEY} to revise. Or use --fresh to start over.` |
 | No plan found                                     | Proceed to Step 4                                                                                                                                           |
 
-Feedback detection per platform:
+Feedback detection: scan all comments posted AFTER the most recent `## Clancy Implementation Plan` comment. Exclude comments that are themselves Clancy-generated (contain `## Clancy Implementation Plan` or start with `Clancy skipped this ticket:`). All remaining comments are treated as feedback — regardless of author, since Clancy posts using the user's own credentials.
 
-- **GitHub:** comments posted after the plan comment where `user.login != $GITHUB_USERNAME` (the resolved username)
-- **Jira:** comments posted after the plan comment where `author.accountId != plan_comment.author.accountId`
-- **Linear:** all comments posted after the plan comment are treated as feedback (Linear personal keys don't expose viewer ID easily in comment context)
-- **Azure DevOps:** comments posted after the plan comment where the author identity does not match the PAT owner. Azure DevOps comment authors are identified by `createdBy.uniqueName`. Compare against the authenticated user (resolve via `GET https://dev.azure.com/$AZDO_ORG/_apis/connectionData` → `authenticatedUser.properties.Account.$value`).
+This is content-based filtering, not author-based. The user's own feedback comments must not be excluded.
 
 ---
 
@@ -374,14 +371,11 @@ Feedback detection per platform:
 
 When revising a plan (auto-detected from feedback comments after the existing plan), read all comments posted AFTER the most recent `## Clancy Implementation Plan` comment.
 
-Filter out the planner's own comments:
+Filter out Clancy-generated comments by content — exclude any comment that contains `## Clancy Implementation Plan` or starts with `Clancy skipped this ticket:`. These are Clancy's own outputs, not human feedback.
 
-- **GitHub:** exclude comments where `user.login == $GITHUB_USERNAME` (the resolved username)
-- **Jira:** exclude comments by the same `author.accountId` as the plan comment
-- **Linear:** all post-plan comments are treated as feedback
-- **Azure DevOps:** exclude comments where `createdBy.uniqueName` matches the authenticated user
+All other post-plan comments are treated as feedback regardless of author. This is critical because Clancy posts using the user's own credentials — author-based filtering would incorrectly exclude the user's own feedback.
 
-These are presumed to be PO/team feedback. No special syntax needed — they just comment normally on the ticket.
+No special syntax needed — users just comment normally on the ticket.
 
 Pass this feedback to the plan generation step as additional context.
 
