@@ -15,6 +15,8 @@ import {
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 
 import { fileHash } from '~/t/installer/file-ops/file-ops.js';
+import { hasErrorCode } from '~/t/installer/shared/fs-errors/index.js';
+import { isPlainObject } from '~/t/installer/shared/type-guards/index.js';
 
 /** A file that has been modified by the user since last install. */
 type ModifiedFile = { readonly rel: string; readonly absPath: string };
@@ -32,12 +34,6 @@ function isSafeRelativePath(rel: string): boolean {
   if (isAbsolute(rel)) return false;
   const segments = rel.split('/');
   return segments.every((s) => s !== '.' && s !== '..');
-}
-
-/** Check whether an error is a file-not-found (ENOENT). */
-function isEnoent(err: unknown): boolean {
-  if (!(err instanceof Error) || !('code' in err)) return false;
-  return (err as { readonly code?: unknown }).code === 'ENOENT';
 }
 
 /** Resolve a single directory entry into `[rel, hash]` pairs. */
@@ -89,11 +85,6 @@ export function buildManifest(baseDir: string): Record<string, string> {
   return Object.fromEntries(collectEntries(resolve(baseDir), ''));
 }
 
-/** Check whether a value looks like a plain object (not array, not null). */
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
 /** Keep only entries where the value is a string. */
 function stringValuesOnly(
   record: Record<string, unknown>,
@@ -120,7 +111,7 @@ function readManifest(manifestPath: string): Record<string, string> | null {
   try {
     return parseManifestJson(readFileSync(manifestPath, 'utf8'));
   } catch (err: unknown) {
-    if (isEnoent(err)) return null;
+    if (hasErrorCode(err, 'ENOENT')) return null;
     throw err;
   }
 }
@@ -130,7 +121,7 @@ function safeFileHash(filePath: string): string | null {
   try {
     return fileHash(filePath);
   } catch (err: unknown) {
-    if (isEnoent(err)) return null;
+    if (hasErrorCode(err, 'ENOENT')) return null;
     throw err;
   }
 }
@@ -180,7 +171,7 @@ function safeCopy(src: string, dest: string): boolean {
     copyFileSync(src, dest);
     return true;
   } catch (err: unknown) {
-    if (isEnoent(err)) return false;
+    if (hasErrorCode(err, 'ENOENT')) return false;
     throw err;
   }
 }
