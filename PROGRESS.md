@@ -18,9 +18,9 @@
 
 ### Next up
 
-- **9.5**: Once entry point (depends on 9.4) — parse args, load env, create context, run pipeline
+- **9.5**: Implement entry point (depends on 9.4) — parse args, create context, run pipeline, display result
 - **9.6**: Session report generator (independent) — parse costs.log + progress.txt
-- Then 9.7 (AFK runner, depends on 9.5 + 9.6 + 9.3)
+- Then 9.7 (autopilot runner, depends on 9.5 + 9.6 + 9.3)
 
 ## Session 31 Handoff
 
@@ -615,7 +615,7 @@ Post-merge audit found 3 HIGH, 10 MEDIUM, 14 LOW across 15 pipeline modules. Aud
 
 ## Phase 9: Terminal — Orchestrator
 
-Wire terminal package to core pipeline. Claude CLI bridge, prompt construction, notifications, once/AFK entry points. Also: add missing board support (Azure DevOps, Shortcut, Notion) to planner and strategist workflows.
+Wire terminal package to core pipeline. Claude CLI bridge, prompt construction, notifications, implement/autopilot entry points. Also: add missing board support (Azure DevOps, Shortcut, Notion) to planner and strategist workflows.
 
 Two independent tracks — board parity (Track A) can proceed in any order relative to orchestrator (Track B).
 
@@ -632,21 +632,21 @@ Two independent tracks — board parity (Track A) can proceed in any order relat
 
 ### Track B — Orchestrator
 
-| PR  | Description                                                                             | Status  |
-| --- | --------------------------------------------------------------------------------------- | ------- |
-| 9.1 | Claude CLI bridge: `invokeClaudePrint`, `invokeClaudeSession`. I/O boundary.            | Done    |
-| 9.2 | Prompt builder: `buildPrompt`, `buildReworkPrompt`, `ticketLabel`, TDD block.           | Done    |
-| 9.3 | Webhook notifications: `sendNotification`, Slack/Teams payload builders.                | Done    |
-| 9.4 | Dep factory: `buildPipelineDeps(opts)` — wire all 15 `PipelineDeps` fields.             | Done    |
-| 9.5 | Once entry point + display: parse args, load env, create context, run pipeline.         | Pending |
-| 9.6 | Session report generator: parse costs.log + progress.txt, write session-report.md.      | Pending |
-| 9.7 | AFK runner: loop orchestration, quiet hours, stop conditions, session report + webhook. | Pending |
+| PR  | Description                                                                           | Status  |
+| --- | ------------------------------------------------------------------------------------- | ------- |
+| 9.1 | Claude CLI bridge: `invokeClaudePrint`, `invokeClaudeSession`. I/O boundary.          | Done    |
+| 9.2 | Prompt builder: `buildPrompt`, `buildReworkPrompt`, `ticketLabel`, TDD block.         | Done    |
+| 9.3 | Webhook notifications: `sendNotification`, Slack/Teams payload builders.              | Done    |
+| 9.4 | Dep factory: `buildPipelineDeps(opts)` — wire all 15 `PipelineDeps` fields.           | Done    |
+| 9.5 | Implement entry point: parse args, create context, run pipeline, display result.      | Pending |
+| 9.6 | Session report generator: parse costs.log + progress.txt, write session-report.md.    | Pending |
+| 9.7 | Autopilot runner: loop orchestration, quiet hours, stop conditions, report + webhook. | Pending |
 
 ### Dependencies
 
 - Track A planner: 9.0a → 9.0b → 9.0c (sequential — same files)
 - Track A strategist: 9.0d → 9.0e → 9.0f (sequential — same files, independent of planner PRs)
-- Track B: 9.1, 9.2, 9.3, 9.6 are independent leaves. 9.4 depends on 9.1 + 9.2 + 9.3. 9.5 depends on 9.4. 9.7 depends on 9.5 + 9.6 + 9.3.
+- Track B: 9.1, 9.2, 9.3, 9.6 are independent leaves. 9.4 depends on 9.1 + 9.2 + 9.3. 9.5 (implement) depends on 9.4. 9.7 (autopilot) depends on 9.5 + 9.6 + 9.3.
 - Tracks A and B are independent of each other.
 
 ### Phase validation notes (2026-03-26)
@@ -654,8 +654,8 @@ Two independent tracks — board parity (Track A) can proceed in any order relat
 **Key findings from 4-agent validation sweep:**
 
 1. **PR 9.4 (ANSI utils) from original brief already complete** — `ansi.ts` exists with 7 helpers + 9 tests. Removed from breakdown.
-2. **Original PR 9.5 (once orchestrator) too large** — dep factory alone is ~245 lines (15 PipelineDeps fields, 39 sub-deps). Split into dep factory (9.4) + entry point (9.5).
-3. **Original PR 9.6 (AFK runner) too large** — old code is 308 + 258 lines (afk + report). Split into session report (9.6) + AFK runner (9.7).
+2. **Original PR 9.5 (once orchestrator) too large** — dep factory alone is ~245 lines (15 PipelineDeps fields, 39 sub-deps). Split into dep factory (9.4) + implement entry point (9.5).
+3. **Original PR 9.6 (AFK runner) too large** — old code is 308 + 258 lines (afk + report). Split into session report (9.6) + autopilot runner (9.7).
 4. **"Desktop notifications" removed** — old code is webhooks only (Slack + Teams). Desktop is new scope, deferred.
 5. **Board parity critical** — plan.md + approve-plan.md only handle 3 of 6 boards. Azure DevOps mandatory per project feedback. Added Track A (9.0a/b/c).
 6. **Dep factory fits one file** — single `buildPipelineDeps(opts)` with non-exported `SharedResources` type. ~245 lines. No split needed unless future growth forces it.
@@ -736,7 +736,7 @@ Completed Phase 7 cleanup PRs C10-C14 + Phase 8 validation. All phases 1-7 compl
 - Azure DevOps is now supported in rework-handlers (PR 7.5a) — don't carry forward old Azure exclusion from pr-retry
 - No console.log in core pipeline — phases return structured data, terminal handles display
 
-Old reference code: `~/Desktop/alex/clancy/src/scripts/once/` — READ-ONLY. Key files: `context/context.ts` (59 lines), `once.ts` (113 lines), `phases/` (13 files, ~880 lines total). Also check `~/Desktop/alex/clancy/src/scripts/once/deliver/deliver.ts` for `deliverEpicToBase` (122 lines).
+Old reference code: `~/Desktop/alex/clancy/src/scripts/once/` — READ-ONLY (maps to new `implement` module). Key files: `context/context.ts` (59 lines), `once.ts` (113 lines), `phases/` (13 files, ~880 lines total). Also check `~/Desktop/alex/clancy/src/scripts/once/deliver/deliver.ts` for `deliverEpicToBase` (122 lines).
 
 ### Session 23 handoff (2026-03-25)
 
