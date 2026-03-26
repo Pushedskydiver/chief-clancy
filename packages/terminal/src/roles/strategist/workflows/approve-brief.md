@@ -225,6 +225,17 @@ query {
 
 Check: `state.type == "completed"` or `"canceled"`? -> Warn, ask `[y/N]`. `team.id != LINEAR_TEAM_ID`? -> Warn about cross-team children, ask `[Y/n]`.
 
+#### Azure DevOps
+
+```bash
+curl -s \
+  -u ":$AZDO_PAT" \
+  -H "Accept: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$PARENT_ID?\$expand=relations&api-version=7.1"
+```
+
+Check: `fields["System.State"]` is `Done`/`Closed`/`Resolved`? -> Warn, ask `[y/N]`. Check `relations` for existing children (type `System.LinkTypes.Hierarchy-Forward`).
+
 ### Source 2 — `--epic` flag
 
 If `--epic` is provided (e.g. `--epic PROJ-200`, `--epic #100`, `--epic ENG-42`), validate the target using the same checks as Source 1. If not found or is Done: stop.
@@ -389,6 +400,34 @@ mutation {
 
 On failure to create label: warn, continue without it.
 
+### Azure DevOps
+
+**Work item type:** Azure DevOps uses configurable work item types. Use `CLANCY_BRIEF_ISSUE_TYPE` (default: `Task`). Validate by fetching available types:
+
+```bash
+curl -s \
+  -u ":$AZDO_PAT" \
+  -H "Accept: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitemtypes?api-version=7.1"
+```
+
+If the specified type is not found, stop with the available types listed.
+
+**Pipeline tag for children — mandatory, same logic as other boards.** Use `CLANCY_LABEL_PLAN` or `CLANCY_LABEL_BUILD` from `.clancy/.env` (defaults: `clancy:plan` / `clancy:build`). Tags are applied via the `System.Tags` field (semicolon-delimited).
+
+**Tags:** Azure DevOps auto-creates tags — no pre-creation needed. Apply: the pipeline tag, `clancy:afk` or `clancy:hitl`. `CLANCY_LABEL` is NOT applied to children when pipeline tags are active.
+
+**Resolve authenticated user** for assignment:
+
+```bash
+curl -s \
+  -u ":$AZDO_PAT" \
+  -H "Accept: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/_apis/connectionData"
+```
+
+Use `authenticatedUser.providerDisplayName` for the `System.AssignedTo` field.
+
 ---
 
 ## Step 6a — Pre-creation race check
@@ -545,6 +584,35 @@ If no parent: omit `parentId`.
 
 **On rate limit (RATELIMITED error code):** Wait 60s, retry once. If still limited: stop, enter partial failure flow.
 
+### Azure DevOps — POST work item
+
+```bash
+curl -s \
+  -u ":$AZDO_PAT" \
+  -X POST \
+  -H "Content-Type: application/json-patch+json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/\$${WORK_ITEM_TYPE}?api-version=7.1" \
+  -d '[
+    {"op": "add", "path": "/fields/System.Title", "value": "{ticket title}"},
+    {"op": "add", "path": "/fields/System.Description", "value": "<h3>{Title}</h3><p>{Description as HTML}</p><hr><p><strong>Brief:</strong> {slug}</p><p><strong>Size:</strong> {S|M|L}</p>"},
+    {"op": "add", "path": "/fields/System.Tags", "value": "{PIPELINE_TAG}; clancy:{mode}"},
+    {"op": "add", "path": "/fields/System.AssignedTo", "value": "{resolved_user}"},
+    {"op": "add", "path": "/relations/-", "value": {"rel": "System.LinkTypes.Hierarchy-Reverse", "url": "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$PARENT_ID"}}
+  ]'
+```
+
+**Work item type:** Use `CLANCY_BRIEF_ISSUE_TYPE` (default: `Task`). The type is part of the URL path: `$${type}`.
+
+**Parent linking:** Azure DevOps uses the `relations` array with `System.LinkTypes.Hierarchy-Reverse` to link children to parents. This is included in the creation payload as a relation add operation.
+
+**Description:** Azure DevOps uses HTML. Convert the ticket description markdown to HTML.
+
+If no parent: omit the `relations/-` operation from the JSON Patch array.
+
+**On 400 (validation error):** Check if the work item type or a field is invalid. Warn with the specific error and stop.
+
+**On 429 (rate limited):** Check `Retry-After` header. Wait, retry once. If still 429: stop, enter partial failure flow.
+
 ---
 
 ## Step 8 — Link dependencies
@@ -602,6 +670,25 @@ mutation {
 Wait **200ms** between each relation creation.
 
 On failure: `Could not link {DEPENDENT} -> {BLOCKER}. Add manually in Linear.`
+
+### Azure DevOps — PATCH work item (add relation)
+
+For each dependency, add a `System.LinkTypes.Dependency-Reverse` relation (predecessor link):
+
+```bash
+curl -s \
+  -u ":$AZDO_PAT" \
+  -X PATCH \
+  -H "Content-Type: application/json-patch+json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$DEPENDENT_ID?api-version=7.1" \
+  -d '[{"op": "add", "path": "/relations/-", "value": {"rel": "System.LinkTypes.Dependency-Reverse", "url": "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$BLOCKER_ID", "attributes": {"comment": "Depends on #$BLOCKER_ID (from Clancy brief)"}}}]'
+```
+
+`System.LinkTypes.Dependency-Reverse` = "Predecessor" (blocker must finish before dependent can start).
+
+Wait **200ms** between each link creation.
+
+On failure: `Could not link {DEPENDENT} -> {BLOCKER}. Link manually in Azure DevOps.`
 
 ---
 
@@ -697,6 +784,19 @@ mutation {
 }
 ```
 
+### Azure DevOps
+
+```bash
+curl -s \
+  -u ":$AZDO_PAT" \
+  -X POST \
+  -H "Content-Type: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$PARENT_ID/comments?api-version=7.1-preview.4" \
+  -d '{"text": "<tracking comment as HTML>"}'
+```
+
+Convert the tracking comment markdown to HTML (table → `<table>`, headings → `<h2>`, etc.).
+
 ### Tracking comment format
 
 ```markdown
@@ -758,6 +858,23 @@ curl -s \
 ```bash
 # Fetch current label IDs on the parent, remove the brief label ID, issueUpdate
 # Use the same pattern as brief.md Step 10a — query labels, filter, update
+```
+
+### Azure DevOps
+
+```bash
+# Fetch current tags, remove brief tag from semicolon-delimited string
+CURRENT=$(curl -s \
+  -u ":$AZDO_PAT" \
+  -H "Accept: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$PARENT_ID?fields=System.Tags&api-version=7.1")
+
+curl -s \
+  -u ":$AZDO_PAT" \
+  -X PATCH \
+  -H "Content-Type: application/json-patch+json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$PARENT_ID?api-version=7.1" \
+  -d '[{"op": "replace", "path": "/fields/System.Tags", "value": "<tags without brief tag>"}]'
 ```
 
 ### On failure
