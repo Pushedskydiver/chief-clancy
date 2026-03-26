@@ -4,56 +4,6 @@
 
 **Starting Phase 9: Terminal — orchestrator.** Validated breakdown, beginning implementation.
 
-## Phase 9: Terminal — Orchestrator
-
-Wire terminal package to core pipeline. Claude CLI bridge, prompt construction, notifications, once/AFK entry points. Also: add missing board support (Azure DevOps, Shortcut, Notion) to planner workflows.
-
-Two independent tracks — board parity (Track A) can proceed in any order relative to orchestrator (Track B).
-
-### Track A — Board parity (planner workflows)
-
-| PR   | Description                                                                                         | Status  |
-| ---- | --------------------------------------------------------------------------------------------------- | ------- |
-| 9.0a | Add Azure DevOps to planner workflows (plan.md + approve-plan.md, all dispatch blocks)              | Pending |
-| 9.0b | Add Shortcut to planner workflows (plan.md + approve-plan.md, all dispatch blocks)                  | Pending |
-| 9.0c | Add Notion to planner workflows (plan.md + approve-plan.md, with documented API limitations)        | Pending |
-
-### Track B — Orchestrator
-
-| PR  | Description                                                                            | Status  |
-| --- | -------------------------------------------------------------------------------------- | ------- |
-| 9.1 | Claude CLI bridge: `invokeClaudePrint`, `invokeClaudeSession`. I/O boundary.           | Pending |
-| 9.2 | Prompt builder: `buildPrompt`, `buildReworkPrompt`, `ticketLabel`, TDD block.          | Pending |
-| 9.3 | Webhook notifications: `sendNotification`, Slack/Teams payload builders.               | Pending |
-| 9.4 | Dep factory: `buildPipelineDeps(opts)` — wire all 15 `PipelineDeps` fields.            | Pending |
-| 9.5 | Once entry point + display: parse args, load env, create context, run pipeline.        | Pending |
-| 9.6 | Session report generator: parse costs.log + progress.txt, write session-report.md.     | Pending |
-| 9.7 | AFK runner: loop orchestration, quiet hours, stop conditions, session report + webhook. | Pending |
-
-### Dependencies
-
-- Track A: 9.0a → 9.0b → 9.0c (sequential — same files)
-- Track B: 9.1, 9.2, 9.3, 9.6 are independent leaves. 9.4 depends on 9.1 + 9.2 + 9.3. 9.5 depends on 9.4. 9.7 depends on 9.5 + 9.6 + 9.3.
-- Tracks A and B are independent of each other.
-
-### Phase validation notes (2026-03-26)
-
-**Key findings from 4-agent validation sweep:**
-
-1. **PR 9.4 (ANSI utils) from original brief already complete** — `ansi.ts` exists with 7 helpers + 9 tests. Removed from breakdown.
-2. **Original PR 9.5 (once orchestrator) too large** — dep factory alone is ~245 lines (15 PipelineDeps fields, 39 sub-deps). Split into dep factory (9.4) + entry point (9.5).
-3. **Original PR 9.6 (AFK runner) too large** — old code is 308 + 258 lines (afk + report). Split into session report (9.6) + AFK runner (9.7).
-4. **"Desktop notifications" removed** — old code is webhooks only (Slack + Teams). Desktop is new scope, deferred.
-5. **Board parity critical** — plan.md + approve-plan.md only handle 3 of 6 boards. Azure DevOps mandatory per project feedback. Added Track A (9.0a/b/c).
-6. **Dep factory fits one file** — single `buildPipelineDeps(opts)` with non-exported `SharedResources` type. ~245 lines. No split needed unless future growth forces it.
-7. **Notion caveats documented** — no comment editing (post-new fallback), 2000-char property limit (use blocks API for description append).
-8. **Notifications needed by dep factory** — cleanup phase takes a `notify` callback, so 9.3 must precede 9.4.
-
-**Removed from original brief:** PR 9.4 (ANSI utils — already done).
-**Added:** Track A (9.0a/b/c — board parity), split orchestrator PRs (9.4 dep factory, 9.6 session report).
-
----
-
 ## Session 29 Handoff
 
 **Phase 2 Cleanup complete.** All 5 cleanup PRs (C20–C24) merged. 185 terminal tests.
@@ -597,6 +547,51 @@ Post-merge audit found 3 HIGH, 10 MEDIUM, 14 LOW across 15 pipeline modules. Aud
 ### Dependencies
 
 - 8.0 is prerequisite for 8.2a (preflight module needed by lock-check AFK resume + preflight phase)
+
+## Phase 9: Terminal — Orchestrator
+
+Wire terminal package to core pipeline. Claude CLI bridge, prompt construction, notifications, once/AFK entry points. Also: add missing board support (Azure DevOps, Shortcut, Notion) to planner workflows.
+
+Two independent tracks — board parity (Track A) can proceed in any order relative to orchestrator (Track B).
+
+### Track A — Board parity (planner workflows)
+
+| PR   | Description                                                                                  | Status  |
+| ---- | -------------------------------------------------------------------------------------------- | ------- |
+| 9.0a | Add Azure DevOps to planner workflows (plan.md + approve-plan.md, all dispatch blocks)       | Pending |
+| 9.0b | Add Shortcut to planner workflows (plan.md + approve-plan.md, all dispatch blocks)           | Pending |
+| 9.0c | Add Notion to planner workflows (plan.md + approve-plan.md, with documented API limitations) | Pending |
+
+### Track B — Orchestrator
+
+| PR  | Description                                                                            | Status  |
+| --- | -------------------------------------------------------------------------------------- | ------- |
+| 9.1 | Claude CLI bridge: `invokeClaudePrint`, `invokeClaudeSession`. I/O boundary.           | Pending |
+| 9.2 | Prompt builder: `buildPrompt`, `buildReworkPrompt`, `ticketLabel`, TDD block.          | Pending |
+| 9.3 | Webhook notifications: `sendNotification`, Slack/Teams payload builders.               | Pending |
+| 9.4 | Dep factory: `buildPipelineDeps(opts)` — wire all 15 `PipelineDeps` fields.            | Pending |
+| 9.5 | Once entry point + display: parse args, load env, create context, run pipeline.        | Pending |
+| 9.6 | Session report generator: parse costs.log + progress.txt, write session-report.md.     | Pending |
+| 9.7 | AFK runner: loop orchestration, quiet hours, stop conditions, session report + webhook. | Pending |
+
+### Dependencies
+
+- Track A: 9.0a → 9.0b → 9.0c (sequential — same files)
+- Track B: 9.1, 9.2, 9.3, 9.6 are independent leaves. 9.4 depends on 9.1 + 9.2 + 9.3. 9.5 depends on 9.4. 9.7 depends on 9.5 + 9.6 + 9.3.
+- Tracks A and B are independent of each other.
+
+### Phase validation notes (2026-03-26)
+
+**Key findings from 4-agent validation sweep:**
+
+1. **PR 9.4 (ANSI utils) from original brief already complete** — `ansi.ts` exists with 7 helpers + 9 tests. Removed from breakdown.
+2. **Original PR 9.5 (once orchestrator) too large** — dep factory alone is ~245 lines (15 PipelineDeps fields, 39 sub-deps). Split into dep factory (9.4) + entry point (9.5).
+3. **Original PR 9.6 (AFK runner) too large** — old code is 308 + 258 lines (afk + report). Split into session report (9.6) + AFK runner (9.7).
+4. **"Desktop notifications" removed** — old code is webhooks only (Slack + Teams). Desktop is new scope, deferred.
+5. **Board parity critical** — plan.md + approve-plan.md only handle 3 of 6 boards. Azure DevOps mandatory per project feedback. Added Track A (9.0a/b/c).
+6. **Dep factory fits one file** — single `buildPipelineDeps(opts)` with non-exported `SharedResources` type. ~245 lines. No split needed unless future growth forces it.
+7. **Notion caveats documented** — no comment editing (post-new fallback), 2000-char property limit (use blocks API for description append).
+8. **Notifications needed by dep factory** — cleanup phase takes a `notify` callback, so 9.3 must precede 9.4.
 - 8.1 is prerequisite for all phase PRs (RunContext class must exist first)
 - 8.2a before 8.2b (lock-check establishes resume pattern)
 - 8.2b before 8.2c (epic-completion consumes deliverEpicToBase)
