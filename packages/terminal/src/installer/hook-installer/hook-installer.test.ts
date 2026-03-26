@@ -8,7 +8,7 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { HOOK_FILES, installHooks } from './hook-installer.js';
 
@@ -243,5 +243,21 @@ describe('installHooks', () => {
       hooksSourceDir: join(tmp, 'nonexistent'),
     });
     expect(result).toBe(false);
+  });
+
+  it('logs the error message on failure (H1)', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    installHooks({
+      claudeConfigDir: claudeDir,
+      hooksSourceDir: join(tmp, 'nonexistent'),
+    });
+
+    const errorCall = spy.mock.calls.find((args) =>
+      String(args[0]).includes('Hook install failed'),
+    );
+    expect(errorCall).toBeDefined();
+
+    spy.mockRestore();
   });
 });

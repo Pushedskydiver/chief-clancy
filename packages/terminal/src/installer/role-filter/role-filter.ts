@@ -5,7 +5,7 @@
  * applying core vs optional role filtering. Disabled optional roles have their
  * previously-installed files removed.
  */
-import { mkdirSync, readdirSync, unlinkSync } from 'node:fs';
+import { mkdirSync, readdirSync, rmSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { copyDir } from '~/t/installer/file-ops/file-ops.js';
@@ -45,13 +45,17 @@ function safeUnlink(filePath: string): void {
   }
 }
 
-/** Remove previously-installed files for a disabled role. */
+/** Remove previously-installed files and subdirectories for a disabled role. */
 function cleanDisabledFiles(srcDir: string, dest: string): void {
-  readdirSync(srcDir, { withFileTypes: true })
-    .filter((entry) => entry.isFile())
-    .forEach((entry) => {
-      safeUnlink(join(dest, entry.name));
-    });
+  readdirSync(srcDir, { withFileTypes: true }).forEach((entry) => {
+    const target = join(dest, entry.name);
+
+    if (entry.isFile()) {
+      safeUnlink(target);
+    } else if (entry.isDirectory()) {
+      rmSync(target, { recursive: true, force: true });
+    }
+  });
 }
 
 /** Try to read a directory, returning null if it doesn't exist or isn't a directory. */

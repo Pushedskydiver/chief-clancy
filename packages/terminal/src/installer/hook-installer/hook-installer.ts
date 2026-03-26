@@ -309,7 +309,9 @@ export function installHooks(options: HookInstallerOptions): boolean {
     writeFileSync(settingsFile, JSON.stringify(merged, null, 2) + '\n');
 
     return true;
-  } catch {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`  Hook install failed: ${message}`);
     return false;
   }
 }
