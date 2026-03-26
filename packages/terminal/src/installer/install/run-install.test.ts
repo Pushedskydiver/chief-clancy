@@ -109,6 +109,21 @@ describe('runInstall', () => {
       );
     });
 
+    it('logs warning when installHooks returns false (H6)', async () => {
+      resetMocks();
+      mockInstallHooks.mockReturnValueOnce(false);
+      const spy = vi.spyOn(console, 'log');
+
+      await runInstall(baseOptions);
+
+      const warningCall = spy.mock.calls.find((args) =>
+        String(args[0]).includes('hooks could not be installed'),
+      );
+      expect(warningCall).toBeDefined();
+
+      spy.mockRestore();
+    });
+
     it('calls printSuccess', async () => {
       resetMocks();
       await runInstall(baseOptions);
@@ -216,6 +231,18 @@ describe('runInstall', () => {
 
       expect(mockCopyRoleFiles).not.toHaveBeenCalled();
     });
+
+    it.each(['yes', 'Y', '  y  '])(
+      'accepts overwrite answer "%s" (M10)',
+      async (answer) => {
+        resetMocks();
+        stubPrompts.ask.mockResolvedValueOnce(answer);
+
+        await runInstall({ ...baseOptions, nonInteractive: false });
+
+        expect(mockCopyRoleFiles).toHaveBeenCalled();
+      },
+    );
 
     it('backs up modified files before overwriting', async () => {
       resetMocks();
