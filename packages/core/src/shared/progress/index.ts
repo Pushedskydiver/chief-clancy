@@ -4,4 +4,6 @@ export {
   countReworkCycles,
   findEntriesWithStatus,
   findLastEntry,
+  formatTimestamp,
+  parseProgressFile,
 } from './progress.js';
