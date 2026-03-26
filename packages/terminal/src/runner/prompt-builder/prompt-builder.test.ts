@@ -1,0 +1,313 @@
+import { describe, expect, it } from 'vitest';
+
+import {
+  buildPrompt,
+  buildReworkPrompt,
+  ticketLabel,
+} from './prompt-builder.js';
+
+describe('ticketLabel', () => {
+  it('returns "Jira ticket" for jira', () => {
+    expect(ticketLabel('jira')).toBe('Jira ticket');
+  });
+
+  it('returns "GitHub Issue" for github', () => {
+    expect(ticketLabel('github')).toBe('GitHub Issue');
+  });
+
+  it('returns "Linear issue" for linear', () => {
+    expect(ticketLabel('linear')).toBe('Linear issue');
+  });
+
+  it('returns "Shortcut story" for shortcut', () => {
+    expect(ticketLabel('shortcut')).toBe('Shortcut story');
+  });
+
+  it('returns "Notion page" for notion', () => {
+    expect(ticketLabel('notion')).toBe('Notion page');
+  });
+
+  it('returns "Azure DevOps work item" for azdo', () => {
+    expect(ticketLabel('azdo')).toBe('Azure DevOps work item');
+  });
+});
+
+describe('buildPrompt', () => {
+  it('builds a Jira prompt with correct labels', () => {
+    const prompt = buildPrompt({
+      provider: 'jira',
+      key: 'PROJ-123',
+      title: 'Add login page',
+      description: 'Create a login page.',
+      parentInfo: 'PROJ-100',
+      blockers: 'None',
+    });
+
+    expect(prompt).toContain('You are implementing Jira ticket PROJ-123');
+    expect(prompt).toContain('Summary: Add login page');
+    expect(prompt).toContain('Epic: PROJ-100');
+    expect(prompt).toContain('Blockers: None');
+    expect(prompt).toContain('Create a login page.');
+    expect(prompt).toContain('ticket summary and description');
+  });
+
+  it('builds a GitHub prompt with correct labels', () => {
+    const prompt = buildPrompt({
+      provider: 'github',
+      key: '#42',
+      title: 'Fix bug',
+      description: 'There is a bug.',
+      parentInfo: 'none',
+    });
+
+    expect(prompt).toContain('You are implementing GitHub Issue #42');
+    expect(prompt).toContain('Title: Fix bug');
+    expect(prompt).toContain('Milestone: none');
+    expect(prompt).not.toContain('Blockers:');
+    expect(prompt).toContain('issue title and description');
+    expect(prompt).toContain('SKIP this issue');
+  });
+
+  it('builds a Linear prompt with correct labels', () => {
+    const prompt = buildPrompt({
+      provider: 'linear',
+      key: 'ENG-123',
+      title: 'Add feature',
+      description: 'New feature needed.',
+      parentInfo: 'ENG-50 — Parent epic',
+      blockers: 'None',
+    });
+
+    expect(prompt).toContain('You are implementing Linear issue ENG-123');
+    expect(prompt).toContain('Epic: ENG-50 — Parent epic');
+    expect(prompt).toContain('ticket summary and description');
+  });
+
+  it('builds a Shortcut prompt with correct labels', () => {
+    const prompt = buildPrompt({
+      provider: 'shortcut',
+      key: 'sc-456',
+      title: 'Build widget',
+      description: 'Widget needed.',
+      parentInfo: 'Epic 10',
+      blockers: 'None',
+    });
+
+    expect(prompt).toContain('You are implementing Shortcut story sc-456');
+    expect(prompt).toContain('Epic: Epic 10');
+  });
+
+  it('builds a Notion prompt with correct labels', () => {
+    const prompt = buildPrompt({
+      provider: 'notion',
+      key: 'abc123',
+      title: 'Task',
+      description: 'Do it.',
+      parentInfo: 'Sprint board',
+    });
+
+    expect(prompt).toContain('You are implementing Notion page abc123');
+    expect(prompt).toContain('Parent page: Sprint board');
+  });
+
+  it('builds an Azure DevOps prompt with correct labels', () => {
+    const prompt = buildPrompt({
+      provider: 'azdo',
+      key: '789',
+      title: 'Work item',
+      description: 'Do the thing.',
+      parentInfo: 'Epic 5',
+      blockers: 'Blocked by: 788',
+    });
+
+    expect(prompt).toContain('You are implementing Azure DevOps work item 789');
+    expect(prompt).toContain('Epic: Epic 5');
+    expect(prompt).toContain('Blockers: Blocked by: 788');
+  });
+
+  it('includes blockers for non-GitHub providers', () => {
+    const prompt = buildPrompt({
+      provider: 'jira',
+      key: 'PROJ-123',
+      title: 'Add login',
+      description: 'Login page.',
+      parentInfo: 'PROJ-100',
+      blockers: 'Blocked by: PROJ-99, PROJ-98',
+    });
+
+    expect(prompt).toContain('Blockers: Blocked by: PROJ-99, PROJ-98');
+  });
+
+  it('omits blockers for GitHub', () => {
+    const prompt = buildPrompt({
+      provider: 'github',
+      key: '#10',
+      title: 'Fix',
+      description: 'Fix it.',
+      parentInfo: 'none',
+      blockers: 'Some blocker',
+    });
+
+    expect(prompt).not.toContain('Blockers:');
+  });
+
+  it('omits blockers when not provided for non-GitHub provider', () => {
+    const prompt = buildPrompt({
+      provider: 'jira',
+      key: 'PROJ-1',
+      title: 'T',
+      description: 'D',
+      parentInfo: 'none',
+    });
+
+    expect(prompt).not.toContain('Blockers:');
+  });
+
+  it('includes skip instructions with correct ticket key', () => {
+    const prompt = buildPrompt({
+      provider: 'jira',
+      key: 'PROJ-123',
+      title: 'Test',
+      description: 'Test.',
+      parentInfo: 'none',
+    });
+
+    expect(prompt).toContain('⚠ Skipping [PROJ-123]');
+    expect(prompt).toContain(
+      'YYYY-MM-DD HH:MM | PROJ-123 | {reason} | SKIPPED',
+    );
+  });
+
+  it('includes doc reading instructions', () => {
+    const prompt = buildPrompt({
+      provider: 'linear',
+      key: 'ENG-1',
+      title: 'T',
+      description: 'D',
+      parentInfo: 'none',
+    });
+
+    expect(prompt).toContain('STACK.md, ARCHITECTURE.md, CONVENTIONS.md');
+    expect(prompt).toContain('Follow the conventions in GIT.md exactly');
+  });
+
+  it('includes TDD instructions when tdd is true', () => {
+    const prompt = buildPrompt({
+      provider: 'jira',
+      key: 'PROJ-1',
+      title: 'T',
+      description: 'D',
+      parentInfo: 'none',
+      tdd: true,
+    });
+
+    expect(prompt).toContain('## Test-Driven Development');
+    expect(prompt).toContain('red-green-refactor');
+    expect(prompt).toContain('Write a failing test');
+  });
+
+  it('omits TDD instructions when tdd is false', () => {
+    const prompt = buildPrompt({
+      provider: 'jira',
+      key: 'PROJ-1',
+      title: 'T',
+      description: 'D',
+      parentInfo: 'none',
+      tdd: false,
+    });
+
+    expect(prompt).not.toContain('## Test-Driven Development');
+  });
+
+  it('omits TDD instructions when tdd is undefined', () => {
+    const prompt = buildPrompt({
+      provider: 'jira',
+      key: 'PROJ-1',
+      title: 'T',
+      description: 'D',
+      parentInfo: 'none',
+    });
+
+    expect(prompt).not.toContain('## Test-Driven Development');
+  });
+});
+
+describe('buildReworkPrompt', () => {
+  const baseInput = {
+    key: 'PROJ-123',
+    title: 'Add login page',
+    description: 'Create a login page with email/password fields.',
+    provider: 'jira' as const,
+    feedbackComments: ['Button colour is wrong', 'Missing validation'],
+  };
+
+  it('includes ticket key and title', () => {
+    const prompt = buildReworkPrompt(baseInput);
+
+    expect(prompt).toContain(
+      'You are fixing review feedback on [PROJ-123] Add login page',
+    );
+  });
+
+  it('includes feedback comments as numbered list', () => {
+    const prompt = buildReworkPrompt(baseInput);
+
+    expect(prompt).toContain('1. Button colour is wrong');
+    expect(prompt).toContain('2. Missing validation');
+  });
+
+  it('handles empty feedback comments', () => {
+    const prompt = buildReworkPrompt({
+      ...baseInput,
+      feedbackComments: [],
+    });
+
+    expect(prompt).toContain(
+      'No reviewer comments found. Review the existing implementation and fix any issues.',
+    );
+  });
+
+  it('includes previous context when provided', () => {
+    const prompt = buildReworkPrompt({
+      ...baseInput,
+      previousContext: 'diff --git a/file.ts b/file.ts\n+added line',
+    });
+
+    expect(prompt).toContain('## Previous Implementation');
+    expect(prompt).toContain('diff --git a/file.ts b/file.ts');
+  });
+
+  it('omits previous context section when not provided', () => {
+    const prompt = buildReworkPrompt(baseInput);
+
+    expect(prompt).not.toContain('## Previous Implementation');
+  });
+
+  it('includes doc reading instructions', () => {
+    const prompt = buildReworkPrompt(baseInput);
+
+    expect(prompt).toContain('STACK.md, ARCHITECTURE.md, CONVENTIONS.md');
+    expect(prompt).toContain('Follow the conventions in GIT.md exactly');
+  });
+
+  it('includes focus instruction', () => {
+    const prompt = buildReworkPrompt(baseInput);
+
+    expect(prompt).toContain(
+      "Don't re-implement unrelated areas. Focus only on what was flagged.",
+    );
+  });
+
+  it('includes TDD instructions when tdd is true', () => {
+    const prompt = buildReworkPrompt({ ...baseInput, tdd: true });
+
+    expect(prompt).toContain('## Test-Driven Development');
+    expect(prompt).toContain('red-green-refactor');
+  });
+
+  it('omits TDD instructions when tdd is not set', () => {
+    const prompt = buildReworkPrompt(baseInput);
+
+    expect(prompt).not.toContain('## Test-Driven Development');
+  });
+});
