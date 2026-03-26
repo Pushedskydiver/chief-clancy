@@ -8,6 +8,7 @@
 import type { RunContext } from '../../context.js';
 import type { BoardConfig } from '~/c/schemas/env/env.js';
 import type { Board, BoardProvider, FetchedTicket } from '~/c/types/board.js';
+import type { ProgressStatus } from '~/c/types/progress.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -22,7 +23,7 @@ type TicketFetchResult = {
 type AppendFn = (opts: {
   readonly key: string;
   readonly summary: string;
-  readonly status: string;
+  readonly status: ProgressStatus;
 }) => void;
 
 /** Injected dependencies for ticket-fetch. */

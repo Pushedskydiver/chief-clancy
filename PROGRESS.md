@@ -2,22 +2,25 @@
 
 ## Session 32 Handoff
 
-**Track B continues.** 1 PR this session: 9.2 (prompt builder).
+**Track B continues.** 3 PRs this session: 9.2 (prompt builder), 9.3 (webhooks), 9.4 (dep factory).
 
 ### What was done
 
 - **9.2** (#89): Prompt builder — three pure functions for constructing Claude CLI prompts. `ticketLabel` (provider-specific labels for all 6 boards), `buildPrompt` (full implementation prompt with executability check, TDD block, blocker handling), `buildReworkPrompt` (reviewer feedback prompt with numbered comments, previous context). Both switches (`ticketLabel`, `parentLabel`) are exhaustive over `BoardProvider`. No DI needed — pure string builders. 30 tests. 231 terminal tests total. DA review caught 2 MEDIUM (exhaustive `parentLabel` switch, field ordering) + 4 LOW (misleading test values, test gaps) — all fixed.
+- **9.3** (#90): Webhook notifications — `isSlackWebhook` (hostname-based URL detection, fixed CodeQL substring sanitization finding), `buildSlackPayload`, `buildTeamsPayload`, `sendNotification` (DI for fetch, auto-detects Slack vs Teams, best-effort). 19 tests including property-based tests via fast-check. DA review caught 2 MEDIUM + 2 LOW — all fixed.
+- **9.4** (#91): Dep factory — `buildPipelineDeps(opts)` wiring all 15 `PipelineDeps` fields from shared I/O resources (exec, lockFs, progressFs, costFs, envFs, qualityFs, spawn, fetch). Decomposed into `wireEarlyPhases`, `wireTicketPhases`, `wireGitAndInvoke`, `wireDeliver`, `wireFinalization` to stay under 50-line function limit. Invoke phase extracted to `invoke-phase.ts`, deliver phase to `deliver-phase.ts`. Also added: 13 phase barrel index.ts files + phases aggregate barrel, core barrel exports for phase functions + shared utilities, terminal runner barrels for cli-bridge/prompt-builder/notify. Refactored phase `AppendFn` types to use `ProgressStatus` instead of `string` (removed `as` cast). 6 tests. 256 terminal tests total. DA review caught 4 MEDIUM + 5 LOW — all fixed.
 
 ### Process notes
 
-- Barrel `index.ts` still deferred for new leaf modules until the consuming PR (9.4 dep factory).
-- DA review on every PR without exception — all 6 findings addressed including LOW severity.
+- DA review on every PR without exception — all findings addressed including LOW severity.
+- CodeQL caught incomplete URL substring sanitization in `isSlackWebhook` — fixed with hostname-based URL parsing.
+- Phase `AppendFn` types now use `ProgressStatus` instead of `string` — type safety enforced at the phase boundary, no casts in dep factory.
 
 ### Next up
 
-- **9.3**: Webhook notifications (`sendNotification`, Slack/Teams payload builders)
-- **9.6**: Session report generator (parse costs.log + progress.txt)
-- Then 9.4 (dep factory, depends on 9.1+9.2+9.3) → 9.5 (once entry) → 9.7 (AFK runner)
+- **9.5**: Once entry point (depends on 9.4) — parse args, load env, create context, run pipeline
+- **9.6**: Session report generator (independent) — parse costs.log + progress.txt
+- Then 9.7 (AFK runner, depends on 9.5 + 9.6 + 9.3)
 
 ## Session 31 Handoff
 
@@ -633,8 +636,8 @@ Two independent tracks — board parity (Track A) can proceed in any order relat
 | --- | --------------------------------------------------------------------------------------- | ------- |
 | 9.1 | Claude CLI bridge: `invokeClaudePrint`, `invokeClaudeSession`. I/O boundary.            | Done    |
 | 9.2 | Prompt builder: `buildPrompt`, `buildReworkPrompt`, `ticketLabel`, TDD block.           | Done    |
-| 9.3 | Webhook notifications: `sendNotification`, Slack/Teams payload builders.                | Pending |
-| 9.4 | Dep factory: `buildPipelineDeps(opts)` — wire all 15 `PipelineDeps` fields.             | Pending |
+| 9.3 | Webhook notifications: `sendNotification`, Slack/Teams payload builders.                | Done    |
+| 9.4 | Dep factory: `buildPipelineDeps(opts)` — wire all 15 `PipelineDeps` fields.             | Done    |
 | 9.5 | Once entry point + display: parse args, load env, create context, run pipeline.         | Pending |
 | 9.6 | Session report generator: parse costs.log + progress.txt, write session-report.md.      | Pending |
 | 9.7 | AFK runner: loop orchestration, quiet hours, stop conditions, session report + webhook. | Pending |

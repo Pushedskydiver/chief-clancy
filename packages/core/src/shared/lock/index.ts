@@ -1,1 +1,7 @@
-export type { LockData } from './lock.js';
+export type { LockData, LockFs } from './lock.js';
+export {
+  deleteLock,
+  deleteVerifyAttempt,
+  readLock,
+  writeLock,
+} from './lock.js';

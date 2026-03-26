@@ -10,6 +10,7 @@
  */
 import type { RunContext } from '../../context.js';
 import type { ProgressEntry } from '~/c/shared/progress/index.js';
+import type { ProgressStatus } from '~/c/types/progress.js';
 import type { PrCreationResult, RemoteInfo } from '~/c/types/remote.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -33,7 +34,7 @@ type PrRetryResult = {
 type AppendFn = (opts: {
   readonly key: string;
   readonly summary: string;
-  readonly status: string;
+  readonly status: ProgressStatus;
   readonly prNumber?: number;
   readonly parent?: string;
 }) => void;

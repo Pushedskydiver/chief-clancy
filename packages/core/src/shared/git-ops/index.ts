@@ -4,6 +4,7 @@ export {
   checkout,
   currentBranch,
   detectRemote,
+  ensureBranch,
   fetchRemoteBranch,
   hasUncommittedChanges,
   pushBranch,

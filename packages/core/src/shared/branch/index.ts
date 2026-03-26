@@ -1,1 +1,1 @@
-export { computeTicketBranch } from './branch.js';
+export { computeTargetBranch, computeTicketBranch } from './branch.js';
