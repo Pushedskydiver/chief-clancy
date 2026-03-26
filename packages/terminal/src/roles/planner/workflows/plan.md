@@ -221,6 +221,49 @@ Map fields: title = `name`, description = `description` (markdown), parent = `ep
 
 Then skip to Step 3b with this single ticket.
 
+#### Notion — Fetch specific page
+
+Notion page IDs are UUIDs (32 hex chars, optionally with dashes). The key format in `.clancy/progress.txt` is `notion-{first 8 chars}` for brevity. To fetch, use the full page ID if available, or search the database.
+
+```bash
+RESPONSE=$(curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  "https://api.notion.com/v1/pages/$PAGE_ID")
+```
+
+If the key is a short `notion-XXXXXXXX` format, query the database instead:
+
+```bash
+RESPONSE=$(curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  -X POST \
+  "https://api.notion.com/v1/databases/$NOTION_DATABASE_ID/query" \
+  -d '{"page_size": 100}')
+```
+
+Then match pages by ID prefix.
+
+Validate the response:
+
+- If `archived` is `true`: warn `Page is archived. Plan anyway? [y/N]` (in AFK mode: skip)
+
+To fetch comments (separate endpoint):
+
+```bash
+COMMENTS=$(curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  "https://api.notion.com/v1/comments?block_id=$PAGE_ID")
+```
+
+Map fields: title = extract from `properties` (find the `title` type property), description = fetch page content via `GET /v1/blocks/$PAGE_ID/children` (Notion stores content as blocks, not a single description field), parent = `parent.page_id` or `parent.database_id`.
+
+**Notion limitation:** Page content is stored as blocks, not a single text field. Read all child blocks and concatenate their text content for plan context.
+
+Then skip to Step 3b with this single ticket.
+
 ### Queue fetch (no specific key)
 
 #### Jira
@@ -382,6 +425,39 @@ COMMENTS=$(curl -s \
 
 Map fields: title = `name`, description = `description` (markdown), parent = `epic_id` (resolve via `GET /api/v3/epics/$EPIC_ID`), labels = `labels[].name`.
 
+#### Notion
+
+Query the database with status and assignee filters:
+
+- `CLANCY_NOTION_STATUS` — the status property name (configurable, defaults auto-detected from database schema)
+- `CLANCY_PLAN_STATUS` — the status value to filter on (defaults to `Backlog` if not set)
+- `CLANCY_NOTION_ASSIGNEE` — the assignee property name (configurable)
+- `CLANCY_LABEL_PLAN` — optional label/tag to filter on (via multi-select property `CLANCY_NOTION_LABELS`)
+
+```bash
+RESPONSE=$(curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  -X POST \
+  "https://api.notion.com/v1/databases/$NOTION_DATABASE_ID/query" \
+  -d '{"filter": {"and": [{"property": "$CLANCY_NOTION_STATUS", "status": {"equals": "$CLANCY_PLAN_STATUS"}}, ...]}, "page_size": <N>}')
+```
+
+Add assignee and label filters to the `and` array as needed. Notion filters use property-specific types (`status`, `people`, `multi_select`).
+
+For each page, fetch comments separately:
+
+```bash
+COMMENTS=$(curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  "https://api.notion.com/v1/comments?block_id=$PAGE_ID")
+```
+
+Map fields: title = title property value, description = fetch child blocks via `GET /v1/blocks/$PAGE_ID/children` (concatenate text), parent = `parent.page_id`, labels = multi-select property values.
+
+**Notion limitation:** Comments use `rich_text` format, not markdown. When scanning for `## Clancy Implementation Plan`, search for the text content within `rich_text` arrays.
+
 If the API call fails (non-200 response or network error):
 
 ```
@@ -408,6 +484,7 @@ Then display board-specific guidance:
 - **Linear:** `Check that CLANCY_PLAN_STATE_TYPE (currently: "$CLANCY_PLAN_STATE_TYPE") is a valid Linear state type (backlog, unstarted, started, completed, canceled, triage), and that tickets in that state are assigned to you in team $LINEAR_TEAM_ID.`
 - **Azure DevOps:** `Check that CLANCY_PLAN_STATUS (currently: "${CLANCY_PLAN_STATUS || 'New'}") matches a state in your Azure DevOps project, and that work items in that state are assigned to you. Tag "${CLANCY_LABEL_PLAN || 'clancy:plan'}" must be applied.`
 - **Shortcut:** `Check that your stories are in a "backlog" workflow state and assigned to you. If using CLANCY_LABEL_PLAN, ensure the label exists and is applied to stories you want planned.`
+- **Notion:** `Check that pages in database $NOTION_DATABASE_ID have status "${CLANCY_PLAN_STATUS || 'Backlog'}" and are assigned to you. If using CLANCY_LABEL_PLAN, ensure the multi-select label is applied.`
 
 Stop.
 
@@ -723,6 +800,21 @@ curl -s \
 ```
 
 Shortcut accepts Markdown directly in comment text.
+
+### Notion — POST comment
+
+```bash
+curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  -X POST \
+  "https://api.notion.com/v1/comments" \
+  -d '{"parent": {"page_id": "$PAGE_ID"}, "rich_text": [{"type": "text", "text": {"content": "<plan text>"}}]}'
+```
+
+**Notion limitation:** Comments use `rich_text` blocks, not markdown. For the plan content, use a single `text` block with the full plan as plain text. Notion will render it without markdown formatting. For better readability, consider splitting the plan into multiple `rich_text` blocks (one per section) with `annotations` for bold headings.
+
+**Notion limitation:** The `rich_text` array has a **2000-character limit per text block**. If the plan exceeds 2000 characters, split it across multiple `rich_text` blocks within the same comment (each block up to 2000 chars). The total comment can contain many blocks.
 
 **On failure:** Print the plan to stdout and warn — do not lose the plan. The user can manually paste it.
 
