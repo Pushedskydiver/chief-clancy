@@ -152,6 +152,15 @@ function optionalLine(
 
 // ─── Report generation ───────────────────────────────────────────────────────
 
+/** Merge a progress entry with its matching cost data. */
+function attachCost(
+  costByKey: ReadonlyMap<string, CostEntry>,
+  entry: ProgressEntry,
+): SessionTicket {
+  const cost = costByKey.get(entry.key);
+  return { ...entry, duration: cost?.duration, tokens: cost?.tokens };
+}
+
 /** Enrich progress entries with cost data, deduplicated by key. */
 function enrichTickets(
   entries: readonly ProgressEntry[],
@@ -161,10 +170,7 @@ function enrichTickets(
   const costByKey = new Map(costs.map((c) => [c.key, c]));
   const latestByKey = new Map(entries.map((e) => [e.key, e]));
 
-  return [...latestByKey.values()].map((entry) => {
-    const cost = costByKey.get(entry.key);
-    return { ...entry, duration: cost?.duration, tokens: cost?.tokens };
-  });
+  return [...latestByKey.values()].map((entry) => attachCost(costByKey, entry));
 }
 
 /**
