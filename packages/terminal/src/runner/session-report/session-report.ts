@@ -64,7 +64,9 @@ type BuildReportOpts = {
  * @returns Milliseconds since epoch, or `NaN` if invalid.
  */
 export function progressTimestampToMs(timestamp: string): number {
-  if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(timestamp)) return NaN;
+  const isValidFormat = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(timestamp);
+  if (!isValidFormat) return NaN;
+
   return new Date(timestamp.replace(' ', 'T') + ':00Z').getTime();
 }
 
