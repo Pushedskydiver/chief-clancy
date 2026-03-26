@@ -39,6 +39,7 @@ export {
   yellow,
 } from './shared/ansi/index.js';
 
+export { runAutopilot } from './runner/autopilot/index.js';
 export {
   invokeClaudePrint,
   invokeClaudeSession,
