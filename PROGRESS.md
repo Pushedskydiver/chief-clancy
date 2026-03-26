@@ -2,7 +2,27 @@
 
 ## Session 30 Handoff
 
-**Starting Phase 9: Terminal — orchestrator.** Validated breakdown, beginning implementation.
+**Phase 9 validated and Track A (board parity) in progress.** 7 PRs merged this session: C22-C24 (Phase 2 Cleanup complete) + 9.0a-9.0d (4 of 6 board parity PRs).
+
+### What was done
+
+- **Phase 2 Cleanup complete:** C22 (#79), C23 (#80), C24 (#81) merged. 185 terminal tests. All audit findings resolved.
+- **Phase 9 validated:** 4-agent sweep of original brief. Key changes: removed PR 9.4 (ANSI already done), split 9.5 (dep factory + entry point), split 9.6 (session report + AFK runner), added Track A (board parity), deferred desktop notifications.
+- **9.0a** (#82): Azure DevOps added to planner workflows (plan.md + approve-plan.md). Also fixed pre-existing feedback filtering bug — changed from author-based to content-based filtering in plan.md and brief.md (Clancy posts as the user, so author filtering excluded the user's own feedback).
+- **9.0b** (#83): Shortcut added to planner workflows.
+- **9.0c** (#84): Notion added to planner workflows with documented API limitations (no comment editing, 2000-char rich_text limit, blocks API for description).
+- **9.0d** (#85): Azure DevOps added to strategist workflows (brief.md + approve-brief.md, 21 dispatch blocks). DA review caught 7 MEDIUM findings — all fixed. Also included retroactive DA fixes for planner (dependency detection table, board-specific key format errors).
+
+### Process notes
+
+- DA review must never be skipped, even for markdown PRs. PRs 9.0a-c were merged without DA review; retroactive review caught dependency detection table gaps and board-specific error message issues that required fixes in 9.0d.
+- Content-based comment filtering (not author-based) is the correct pattern across all workflows — Clancy posts using the user's own credentials.
+
+### Next up
+
+- **9.0e**: Add Shortcut to strategist workflows (brief.md + approve-brief.md)
+- **9.0f**: Add Notion to strategist workflows (brief.md + approve-brief.md)
+- Then Track B: 9.1 (Claude CLI bridge) → 9.2 (prompt builder) → 9.3 (webhooks) → 9.4 (dep factory) → 9.5 (once entry) → 9.6 (session report) → 9.7 (AFK runner)
 
 ## Session 29 Handoff
 
@@ -561,7 +581,7 @@ Two independent tracks — board parity (Track A) can proceed in any order relat
 | 9.0a | Add Azure DevOps to planner workflows (plan.md + approve-plan.md) + feedback filtering fix   | Done    |
 | 9.0b | Add Shortcut to planner workflows (plan.md + approve-plan.md, all dispatch blocks)           | Done    |
 | 9.0c | Add Notion to planner workflows (plan.md + approve-plan.md, with documented API limitations) | Done    |
-| 9.0d | Add Azure DevOps to strategist workflows (brief.md + approve-brief.md)                       | Pending |
+| 9.0d | Add Azure DevOps to strategist workflows (brief.md + approve-brief.md)                       | Done    |
 | 9.0e | Add Shortcut to strategist workflows (brief.md + approve-brief.md)                           | Pending |
 | 9.0f | Add Notion to strategist workflows (brief.md + approve-brief.md)                             | Pending |
 
