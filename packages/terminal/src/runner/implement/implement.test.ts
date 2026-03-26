@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { runOnce } from './once.js';
+import { runImplement } from './implement.js';
 
-type OnceOpts = Parameters<typeof runOnce>[0];
+type ImplementOpts = Parameters<typeof runImplement>[0];
 
 // Mock shape — fs stubs don't match full FS interface types
-function createMockOpts(overrides?: Partial<OnceOpts>): OnceOpts {
+function createMockOpts(overrides?: Partial<ImplementOpts>): ImplementOpts {
   return {
     argv: [],
     projectRoot: '/tmp/test',
@@ -28,22 +28,22 @@ function createMockOpts(overrides?: Partial<OnceOpts>): OnceOpts {
     now: 1000,
     clock: () => 31_000, // 30s elapsed from now=1000
     ...overrides,
-  } as unknown as OnceOpts;
+  } as unknown as ImplementOpts;
 }
 
-function logOutput(opts: OnceOpts): string {
+function logOutput(opts: ImplementOpts): string {
   const calls = (opts.console.log as ReturnType<typeof vi.fn>).mock.calls;
   return calls.map((c) => c[0]).join('\n');
 }
 
-function errorOutput(opts: OnceOpts): string {
+function errorOutput(opts: ImplementOpts): string {
   const calls = (opts.console.error as ReturnType<typeof vi.fn>).mock.calls;
   return calls.map((c) => c[0]).join('\n');
 }
 
 // ─── Context creation ────────────────────────────────────────────────────────
 
-describe('runOnce — context creation', () => {
+describe('runImplement — context creation', () => {
   it('passes projectRoot and argv to createContext', async () => {
     const pipeline = vi.fn().mockResolvedValue({ status: 'completed' });
     const opts = createMockOpts({
@@ -52,7 +52,7 @@ describe('runOnce — context creation', () => {
       runPipeline: pipeline,
     });
 
-    await runOnce(opts);
+    await runImplement(opts);
 
     const ctx = pipeline.mock.calls[0]![0];
     expect(ctx.projectRoot).toBe('/my/project');
@@ -66,7 +66,7 @@ describe('runOnce — context creation', () => {
       runPipeline: pipeline,
     });
 
-    await runOnce(opts);
+    await runImplement(opts);
 
     const ctx = pipeline.mock.calls[0]![0];
     expect(ctx.isAfk).toBe(true);
@@ -79,7 +79,7 @@ describe('runOnce — context creation', () => {
       runPipeline: pipeline,
     });
 
-    await runOnce(opts);
+    await runImplement(opts);
 
     const ctx = pipeline.mock.calls[0]![0];
     expect(ctx.startTime).toBe(5000);
@@ -88,12 +88,12 @@ describe('runOnce — context creation', () => {
 
 // ─── Dep wiring ──────────────────────────────────────────────────────────────
 
-describe('runOnce — dep wiring', () => {
+describe('runImplement — dep wiring', () => {
   it('passes wired PipelineDeps to runPipeline', async () => {
     const pipeline = vi.fn().mockResolvedValue({ status: 'completed' });
     const opts = createMockOpts({ runPipeline: pipeline });
 
-    await runOnce(opts);
+    await runImplement(opts);
 
     const deps = pipeline.mock.calls[0]![1];
     expect(typeof deps.lockCheck).toBe('function');
@@ -106,11 +106,11 @@ describe('runOnce — dep wiring', () => {
 
 // ─── Display ─────────────────────────────────────────────────────────────────
 
-describe('runOnce — display', () => {
+describe('runImplement — display', () => {
   it('prints success message on completed status', async () => {
     const opts = createMockOpts();
 
-    await runOnce(opts);
+    await runImplement(opts);
 
     expect(logOutput(opts)).toContain('completed');
   });
@@ -121,7 +121,7 @@ describe('runOnce — display', () => {
       clock: () => 31_000, // 30s elapsed
     });
 
-    await runOnce(opts);
+    await runImplement(opts);
 
     expect(logOutput(opts)).toContain('30s');
   });
@@ -135,7 +135,7 @@ describe('runOnce — display', () => {
         .mockResolvedValue({ status: 'aborted', phase: 'preflight' }),
     });
 
-    await runOnce(opts);
+    await runImplement(opts);
 
     const output = logOutput(opts);
     expect(output).toContain('aborted');
@@ -147,7 +147,7 @@ describe('runOnce — display', () => {
       runPipeline: vi.fn().mockResolvedValue({ status: 'aborted' }),
     });
 
-    await runOnce(opts);
+    await runImplement(opts);
 
     expect(logOutput(opts)).toContain('unknown');
   });
@@ -159,7 +159,7 @@ describe('runOnce — display', () => {
       runPipeline: vi.fn().mockResolvedValue({ status: 'resumed' }),
     });
 
-    await runOnce(opts);
+    await runImplement(opts);
 
     expect(logOutput(opts)).toContain('Resumed');
   });
@@ -171,7 +171,7 @@ describe('runOnce — display', () => {
       runPipeline: vi.fn().mockResolvedValue({ status: 'dry-run' }),
     });
 
-    await runOnce(opts);
+    await runImplement(opts);
 
     expect(logOutput(opts)).toContain('Dry run');
   });
@@ -185,7 +185,7 @@ describe('runOnce — display', () => {
         .mockResolvedValue({ status: 'error', error: 'Something broke' }),
     });
 
-    await runOnce(opts);
+    await runImplement(opts);
 
     const output = errorOutput(opts);
     expect(output).toContain('Clancy stopped');
@@ -197,7 +197,7 @@ describe('runOnce — display', () => {
       runPipeline: vi.fn().mockResolvedValue({ status: 'error' }),
     });
 
-    await runOnce(opts);
+    await runImplement(opts);
 
     expect(errorOutput(opts)).toContain('Unknown error');
   });
@@ -209,7 +209,7 @@ describe('runOnce — display', () => {
         .mockResolvedValue({ status: 'error', error: 'fail' }),
     });
 
-    await runOnce(opts);
+    await runImplement(opts);
 
     expect(opts.console.log).not.toHaveBeenCalled();
   });
@@ -217,12 +217,12 @@ describe('runOnce — display', () => {
 
 // ─── Error propagation ───────────────────────────────────────────────────────
 
-describe('runOnce — error propagation', () => {
+describe('runImplement — error propagation', () => {
   it('propagates runPipeline rejection to caller', async () => {
     const opts = createMockOpts({
       runPipeline: vi.fn().mockRejectedValue(new Error('Pipeline crash')),
     });
 
-    await expect(runOnce(opts)).rejects.toThrow('Pipeline crash');
+    await expect(runImplement(opts)).rejects.toThrow('Pipeline crash');
   });
 });

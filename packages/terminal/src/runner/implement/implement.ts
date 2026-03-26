@@ -1,10 +1,10 @@
 /**
- * Once entry point — parse args, create context, run pipeline, display result.
+ * Implement entry point — parse args, create context, run pipeline, display result.
  *
  * Thin orchestration layer over the core pipeline. All business logic
  * lives in core phases; this module wires dependencies and formats output.
- * All exit paths use exit code 0 — the AFK runner detects stop conditions
- * by parsing stdout, not exit codes.
+ * All exit paths use exit code 0 — the autopilot runner detects stop
+ * conditions by parsing stdout, not exit codes.
  */
 import type {
   CostFs,
@@ -47,8 +47,8 @@ type RunPipelineFn = (
   deps: PipelineDeps,
 ) => Promise<PipelineResult>;
 
-/** Options for running the once orchestrator. */
-type OnceOpts = {
+/** Options for running the implement orchestrator. */
+type ImplementOpts = {
   readonly argv: readonly string[];
   readonly projectRoot: string;
   readonly isAfk: boolean;
@@ -112,12 +112,12 @@ function displayResult(
 // ─── Entry point ─────────────────────────────────────────────────────────────
 
 /**
- * Run the once orchestrator — full ticket lifecycle.
+ * Implement a single ticket — full lifecycle from pickup to PR delivery.
  *
  * @param opts - Injected I/O resources and configuration.
  * @returns Resolves when the pipeline run and result display are complete.
  */
-export async function runOnce(opts: OnceOpts): Promise<void> {
+export async function runImplement(opts: ImplementOpts): Promise<void> {
   const ctx = createContext({
     projectRoot: opts.projectRoot,
     argv: opts.argv,

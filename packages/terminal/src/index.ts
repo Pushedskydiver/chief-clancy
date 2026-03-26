@@ -45,7 +45,7 @@ export {
 } from './runner/cli-bridge/index.js';
 export { buildPipelineDeps } from './runner/dep-factory/index.js';
 export { sendNotification } from './runner/notify/index.js';
-export { runOnce } from './runner/once/index.js';
+export { runImplement } from './runner/implement/index.js';
 export {
   buildPrompt,
   buildReworkPrompt,
