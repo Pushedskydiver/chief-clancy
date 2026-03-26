@@ -2,7 +2,7 @@
 
 ## Session 34 Handoff
 
-**Phase 9 cleanup in progress.** 4 PRs this session: C25, C26, C27, C28. 337 terminal tests (was 322).
+**Phase 9 cleanup complete.** 6 PRs this session: C25–C30. 352 terminal tests (was 322).
 
 ### What was done
 
@@ -10,12 +10,12 @@
 - **C26** (#96): Non-null assertion comments — added `// Safe: ...` comments to 10 `!` assertions explaining pipeline ordering guarantees. Replaced `e.parent!` with `hasParent` type predicate (eliminates assertion entirely). DA review: 0 HIGH, 1 MEDIUM (invoke-phase assertions missed — fixed), 2 LOW.
 - **C27** (#97): Test gaps — `invoke-phase.test.ts` (5 tests: fresh/rework branching, TDD flag, ok/fail, prFeedback default) + `deliver-phase.test.ts` (7 tests: wiring, appendProgress, recordDelivery/recordRework, postReworkActions with/without handlers). DA review: 1 HIGH (mock reset — fixed), 3 MEDIUM (missing assertions — fixed).
 - **C28** (#98): Error handling hardening — narrowed `safeRead` catch to ENOENT only (M1). Added `console.error` to silent `buildSessionReport` write catch with `ConsoleLike` on `BuildReportOpts` (M2). NaN guard in `parseTokenCount` (M4). Added `console.error` to silent autopilot webhook catch (M5). Added `'session complete'` fallback in `extractSummaryForWebhook` (L9). DA review: 0 findings.
+- **C29** (#99): Property-based tests + edge cases — fast-check for `parseCostsLog`, `progressTimestampToMs`, `buildPrompt`, `buildReworkPrompt`. Edge cases for `checkStopCondition` (undefined phase/error), `isSlackWebhook` subdomain, `getQuietSleepMs` sub-minute precision, CRLF, comma tokens, `buildSessionReport` mkdir failure. DA review: 2 MEDIUM (weak properties — fixed).
+- **C30** (#100): Minor cleanup — `\r\n`-safe split in `extractSummaryForWebhook` (M6). `ReadonlyMap` return from `makeFindCompletedEpics` (L3). `TDD_BLOCK` constant rename (L4). Injected `warn` callback in `notify.ts` (L5). `MAX_ITERATIONS_CAP` on `iterations()` (L10). Export-for-testability documented in CONVENTIONS.md (L12). Dep-factory behavioral test (M8). DA review: 2 MEDIUM (negative iterations + missing `\r\n` test — fixed).
 
 ### Next up
 
-- **C29**: Property-based tests + edge cases (M7, M9, M10, L6–L8, L11)
-- **C30**: Minor cleanup (M6, M8, L2–L5, L10, L12)
-- After cleanup: evaluate Phase 10 scope.
+- Evaluate Phase 10 scope (esbuild bundles? slash command scripts? integration tests?).
 
 ## Session 33 Handoff
 
@@ -89,8 +89,8 @@
 | C26 | Non-null assertion comments             | H3                      | Add `// Safe: ...` comments to all 10 `!` assertions. Type predicate `hasParent` eliminates 1 assertion. **Done**                                         |
 | C27 | Test gaps: deliver-phase + invoke-phase | H5, H6                  | `invoke-phase.test.ts` (5 tests) + `deliver-phase.test.ts` (7 tests). Wiring, branching, handler dispatch. **Done**                                       |
 | C28 | Error handling hardening                | M1–M5, L9               | Narrow catches to ENOENT. Add `console.error` to silent catches. NaN guard in `parseTokenCount`. Webhook fallback. **Done**                               |
-| C29 | Property-based tests + edge cases       | M7, M9, M10, L6–L8, L11 | Fast-check for parsers/prompt builders. Edge cases for stop conditions, subdomain, sub-minute, `\r\n`, commas, error paths.                               |
-| C30 | Minor cleanup                           | M6, M8, L2–L5, L10, L12 | `ReadonlyMap`, `readonly` adapter, `TDD_BLOCK`, `\r\n` in webhook extract, dep-factory behavioral tests, `maxIterations` cap, export convention decision. |
+| C29 | Property-based tests + edge cases       | M7, M9, M10, L6–L8, L11 | Fast-check for parsers/prompt builders. Edge cases for stop conditions, subdomain, sub-minute, `\r\n`, commas, error paths. **Done**                      |
+| C30 | Minor cleanup                           | M6, M8, L2–L5, L10, L12 | `ReadonlyMap`, `TDD_BLOCK`, `\r\n` in webhook extract, inject warn, dep-factory behavioral test, `maxIterations` cap, export convention. **Done**         |
 
 ### Process notes
 

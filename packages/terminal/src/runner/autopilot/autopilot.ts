@@ -197,15 +197,17 @@ async function runIterations(
   opts: AutopilotOpts,
   loopStart: number,
 ): Promise<number> {
-  const { maxIterations, console: out, clock } = opts;
+  const { console: out, clock } = opts;
+  const iterIndices = iterations(opts.maxIterations);
+  const totalIterations = iterIndices.length;
 
   // eslint-disable-next-line functional/no-loop-statements -- sequential async loop with early return on stop conditions; map/flatMap can't express this
-  for (const i of iterations(maxIterations)) {
+  for (const i of iterIndices) {
     await handleQuietHours(opts);
 
     const iterStart = clock();
     out.log('');
-    out.log(bold(`🔁 Iteration ${i}/${maxIterations}`));
+    out.log(bold(`🔁 Iteration ${i}/${totalIterations}`));
 
     const result = await opts.runIteration();
     const iterElapsed = formatDuration(clock() - iterStart);
@@ -223,16 +225,19 @@ async function runIterations(
       return i;
     }
 
-    const isLastIteration = i === maxIterations;
+    const isLastIteration = i === totalIterations;
     if (!isLastIteration) await opts.sleep(2000);
   }
 
-  return maxIterations;
+  return totalIterations;
 }
 
-/** Generate 1-based iteration indices. */
+const MAX_ITERATIONS_CAP = 100;
+
+/** Generate 1-based iteration indices, capped at {@link MAX_ITERATIONS_CAP}. */
 function iterations(max: number): readonly number[] {
-  return Array.from({ length: max }, (_, idx) => idx + 1);
+  const capped = Math.min(Math.max(0, max), MAX_ITERATIONS_CAP);
+  return Array.from({ length: capped }, (_, idx) => idx + 1);
 }
 
 async function handleQuietHours(opts: AutopilotOpts): Promise<void> {
@@ -292,7 +297,7 @@ async function finalize(
 /** Extract summary lines from report for webhook message. */
 function extractSummaryForWebhook(report: string): string {
   const summaryLines = report
-    .split('\n')
+    .split(/\r?\n/)
     .filter((l) => l.startsWith('- Tickets') || l.startsWith('- Total'));
 
   const detail =

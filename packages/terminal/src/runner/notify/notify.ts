@@ -69,6 +69,7 @@ type NotifyOptions = {
   readonly webhookUrl: string;
   readonly message: string;
   readonly fetch: (url: string, init: RequestInit) => Promise<Response>;
+  readonly warn?: (message: string) => void;
 };
 
 /**
@@ -81,7 +82,7 @@ type NotifyOptions = {
  * @returns Resolves when the notification attempt completes (never rejects).
  */
 export async function sendNotification(options: NotifyOptions): Promise<void> {
-  const { webhookUrl, message, fetch: fetchFn } = options;
+  const { webhookUrl, message, fetch: fetchFn, warn = console.warn } = options;
   const payload = isSlackWebhook(webhookUrl)
     ? buildSlackPayload(message)
     : buildTeamsPayload(message);
@@ -94,9 +95,9 @@ export async function sendNotification(options: NotifyOptions): Promise<void> {
     });
 
     if (!response.ok) {
-      console.warn(`⚠ Notification failed: HTTP ${response.status}`);
+      warn(`⚠ Notification failed: HTTP ${response.status}`);
     }
   } catch {
-    console.warn('⚠ Notification failed: could not reach webhook');
+    warn('⚠ Notification failed: could not reach webhook');
   }
 }
