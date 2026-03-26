@@ -27,6 +27,12 @@ type CostEntry = {
   readonly tokens: string;
 };
 
+/** A ticket enriched with cost data for the report. */
+type SessionTicket = ProgressEntry & {
+  readonly duration?: string;
+  readonly tokens?: string;
+};
+
 /** Quality summary fields used in the report. */
 type QualitySummary = {
   readonly avgReworkCycles: number;
@@ -99,7 +105,8 @@ function parseCostLine(line: string, sinceMs: number): CostEntry | undefined {
 
   const timestamp = parts[0]!;
   const entryTime = new Date(timestamp).getTime();
-  if (Number.isNaN(entryTime) || entryTime < sinceMs) return undefined;
+  const isRecentAndValid = !Number.isNaN(entryTime) && entryTime >= sinceMs;
+  if (!isRecentAndValid) return undefined;
 
   return {
     timestamp,
@@ -135,6 +142,31 @@ function formatDate(ms: number): string {
   return `${y}-${mo}-${d}`;
 }
 
+/** Include a line only when the value is present. */
+function optionalLine(
+  value: string | number | undefined,
+  format: (v: string | number) => string,
+): readonly string[] {
+  return value != null ? [format(value)] : [];
+}
+
+// ─── Report generation ───────────────────────────────────────────────────────
+
+/** Enrich progress entries with cost data, deduplicated by key. */
+function enrichTickets(
+  entries: readonly ProgressEntry[],
+  costs: readonly CostEntry[],
+): readonly SessionTicket[] {
+  // Last entry per key wins (handles rework cycles)
+  const costByKey = new Map(costs.map((c) => [c.key, c]));
+  const latestByKey = new Map(entries.map((e) => [e.key, e]));
+
+  return [...latestByKey.values()].map((entry) => {
+    const cost = costByKey.get(entry.key);
+    return { ...entry, duration: cost?.duration, tokens: cost?.tokens };
+  });
+}
+
 /**
  * Generate a session report from pre-parsed data.
  *
@@ -143,19 +175,7 @@ function formatDate(ms: number): string {
  */
 export function generateSessionReport(data: SessionReportData): string {
   const { entries, costs, quality, loopStartTime, loopEndTime } = data;
-
-  // Build cost lookup by ticket key
-  const costByKey = new Map(costs.map((c) => [c.key, c]));
-
-  // Deduplicate entries — keep latest per key (for rework cycles)
-  const latestByKey = new Map(entries.map((e) => [e.key, e]));
-
-  // Build session tickets with cost data
-  const tickets = [...latestByKey.values()].map((entry) => {
-    const cost = costByKey.get(entry.key);
-    return { ...entry, duration: cost?.duration, tokens: cost?.tokens };
-  });
-
+  const tickets = enrichTickets(entries, costs);
   const completed = tickets.filter((t) => COMPLETED_STATUSES.has(t.status));
   const failed = tickets.filter((t) => FAILED_STATUSES.has(t.status));
 
@@ -172,13 +192,8 @@ export function generateSessionReport(data: SessionReportData): string {
   ].join('\n');
 }
 
-type SessionTicket = ProgressEntry & {
-  readonly duration?: string;
-  readonly tokens?: string;
-};
-
 function buildSummary(
-  tickets: { readonly completed: number; readonly failed: number },
+  counts: { readonly completed: number; readonly failed: number },
   timing: { readonly start: number; readonly end: number },
   costs: readonly CostEntry[],
 ): readonly string[] {
@@ -193,8 +208,8 @@ function buildSummary(
     `# Autopilot Session Report — ${formatDate(timing.start)}`,
     '',
     '## Summary',
-    `- Tickets completed: ${tickets.completed}`,
-    `- Tickets failed: ${tickets.failed}`,
+    `- Tickets completed: ${counts.completed}`,
+    `- Tickets failed: ${counts.failed}`,
     `- Total duration: ${totalDuration}`,
     ...tokenLine,
   ];
@@ -217,9 +232,9 @@ function formatTicket(ticket: SessionTicket): readonly string[] {
   return [
     '',
     `### ${icon} ${ticket.key} — ${ticket.summary}`,
-    ...(ticket.duration ? [`- Duration: ${ticket.duration}`] : []),
-    ...(ticket.tokens ? [`- Tokens: ${ticket.tokens}`] : []),
-    ...(ticket.prNumber != null ? [`- PR: #${ticket.prNumber}`] : []),
+    ...optionalLine(ticket.duration, (v) => `- Duration: ${v}`),
+    ...optionalLine(ticket.tokens, (v) => `- Tokens: ${v}`),
+    ...optionalLine(ticket.prNumber, (v) => `- PR: #${v}`),
     `- Status: ${ticket.status}`,
   ];
 }
@@ -232,8 +247,9 @@ function buildNextSteps(
     .filter((t) => t.prNumber != null)
     .map((t) => `#${t.prNumber}`);
   const skippedKeys = failed.map((t) => t.key);
+  const hasNextSteps = prNumbers.length > 0 || skippedKeys.length > 0;
 
-  if (prNumbers.length === 0 && skippedKeys.length === 0) return [];
+  if (!hasNextSteps) return [];
 
   return [
     '',
@@ -248,16 +264,18 @@ function buildQualitySection(
 ): readonly string[] {
   if (!quality) return [];
 
+  const { avgReworkCycles, avgVerificationRetries, avgDuration } =
+    quality.summary;
   const durationLine =
-    quality.summary.avgDuration > 0
-      ? [`- Avg delivery time: ${formatDuration(quality.summary.avgDuration)}`]
+    avgDuration > 0
+      ? [`- Avg delivery time: ${formatDuration(avgDuration)}`]
       : [];
 
   return [
     '',
     '## Quality Metrics',
-    `- Avg rework cycles: ${quality.summary.avgReworkCycles}`,
-    `- Avg verification retries: ${quality.summary.avgVerificationRetries}`,
+    `- Avg rework cycles: ${avgReworkCycles}`,
+    `- Avg verification retries: ${avgVerificationRetries}`,
     ...durationLine,
   ];
 }
@@ -269,6 +287,12 @@ function safeRead(readFile: (path: string) => string, path: string): string {
   } catch {
     return '';
   }
+}
+
+/** Check if a progress entry falls within the session window. */
+function isInSessionWindow(entry: ProgressEntry, startMinute: number): boolean {
+  const entryMs = progressTimestampToMs(entry.timestamp);
+  return !Number.isNaN(entryMs) && entryMs >= startMinute;
 }
 
 // ─── Orchestrator ────────────────────────────────────────────────────────────
@@ -289,22 +313,17 @@ export function buildSessionReport(opts: BuildReportOpts): string {
   // Round start down to the minute to match progress file precision
   const startMinute = Math.floor(loopStartTime / 60_000) * 60_000;
 
-  // Read and filter progress entries
   const allProgress = parseProgressFile(progressFs, projectRoot);
-  const sessionEntries = allProgress.filter((entry) => {
-    const entryMs = progressTimestampToMs(entry.timestamp);
-    return !Number.isNaN(entryMs) && entryMs >= startMinute;
-  });
+  const sessionEntries = allProgress.filter((entry) =>
+    isInSessionWindow(entry, startMinute),
+  );
 
-  // Read and filter cost entries
   const costsPath = join(projectRoot, '.clancy', 'costs.log');
   const costsContent = safeRead(opts.readCostsFile, costsPath);
   const costs = parseCostsLog(costsContent, loopStartTime);
 
-  // Read quality data (best-effort)
   const quality = getQualityData(qualityFs, projectRoot);
 
-  // Generate the report
   const report = generateSessionReport({
     entries: sessionEntries,
     costs,
