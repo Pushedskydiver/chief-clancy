@@ -17,6 +17,7 @@ import type {
   FetchFn,
   LockFs,
   PipelineDeps,
+  ProgressEntry,
   ProgressFs,
   QualityFs,
   RunContext,
@@ -86,12 +87,18 @@ function makeAppendProgress(
   return (opts) => appendProgress(progressFs, projectRoot, opts);
 }
 
+function hasParent(
+  entry: ProgressEntry,
+): entry is ProgressEntry & { readonly parent: string } {
+  return entry.parent !== undefined;
+}
+
 function makeFindCompletedEpics(progressFs: ProgressFs, projectRoot: string) {
   return () => {
     const entries = findEntriesWithStatus(progressFs, projectRoot, 'DONE');
     const pairs = entries
-      .filter((e) => e.parent !== undefined)
-      .map((e) => [e.parent!, e.key] as const);
+      .filter(hasParent)
+      .map((e) => [e.parent, e.key] as const);
     return new Map(pairs);
   };
 }
@@ -130,6 +137,7 @@ function wireEarlyPhases(opts: DepFactoryOpts, progress: AppendFn) {
             fetchFn: opts.fetch,
             progressFs,
             projectRoot,
+            // Safe: epicCompletion runs after preflight, which sets config
             config: epicOpts.config!,
           }),
       }),
@@ -213,6 +221,7 @@ function wireGitAndInvoke(opts: DepFactoryOpts) {
         ensureEpicBranch: (epicBranch, baseBranch) =>
           ensureEpicBranch({ exec, epicBranch, baseBranch }),
         fetchChildrenStatus: (ticket: FetchedTicket) =>
+          // Safe: branchSetup runs after preflight, which sets board
           ctx.board!.fetchChildrenStatus(ticket.key, ticket.issueId),
         writeLock: (data) =>
           writeLock(lockFs, projectRoot, { ...data, pid: process.pid }),
@@ -221,6 +230,7 @@ function wireGitAndInvoke(opts: DepFactoryOpts) {
     transition: (ctx: RunContext) =>
       transition(ctx, {
         transitionTicket: (ticket, status) =>
+          // Safe: transition runs after preflight, which sets board
           ctx.board!.transitionTicket(ticket, status),
       }),
 
