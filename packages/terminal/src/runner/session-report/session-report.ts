@@ -27,19 +27,18 @@ type CostEntry = {
   readonly tokens: string;
 };
 
+/** Quality summary fields used in the report. */
+type QualitySummary = {
+  readonly avgReworkCycles: number;
+  readonly avgVerificationRetries: number;
+  readonly avgDuration: number;
+};
+
 /** Data required to generate a session report. */
 type SessionReportData = {
   readonly entries: readonly ProgressEntry[];
   readonly costs: readonly CostEntry[];
-  readonly quality:
-    | {
-        readonly summary: {
-          readonly avgReworkCycles: number;
-          readonly avgVerificationRetries: number;
-          readonly avgDuration: number;
-        };
-      }
-    | undefined;
+  readonly quality: { readonly summary: QualitySummary } | undefined;
   readonly loopStartTime: number;
   readonly loopEndTime: number;
 };
