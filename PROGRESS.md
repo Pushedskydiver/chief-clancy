@@ -550,17 +550,20 @@ Post-merge audit found 3 HIGH, 10 MEDIUM, 14 LOW across 15 pipeline modules. Aud
 
 ## Phase 9: Terminal — Orchestrator
 
-Wire terminal package to core pipeline. Claude CLI bridge, prompt construction, notifications, once/AFK entry points. Also: add missing board support (Azure DevOps, Shortcut, Notion) to planner workflows.
+Wire terminal package to core pipeline. Claude CLI bridge, prompt construction, notifications, once/AFK entry points. Also: add missing board support (Azure DevOps, Shortcut, Notion) to planner and strategist workflows.
 
 Two independent tracks — board parity (Track A) can proceed in any order relative to orchestrator (Track B).
 
-### Track A — Board parity (planner workflows)
+### Track A — Board parity (planner + strategist workflows)
 
 | PR   | Description                                                                                  | Status  |
 | ---- | -------------------------------------------------------------------------------------------- | ------- |
-| 9.0a | Add Azure DevOps to planner workflows (plan.md + approve-plan.md, all dispatch blocks)       | Pending |
+| 9.0a | Add Azure DevOps to planner workflows (plan.md + approve-plan.md) + feedback filtering fix   | Pending |
 | 9.0b | Add Shortcut to planner workflows (plan.md + approve-plan.md, all dispatch blocks)           | Pending |
 | 9.0c | Add Notion to planner workflows (plan.md + approve-plan.md, with documented API limitations) | Pending |
+| 9.0d | Add Azure DevOps to strategist workflows (brief.md + approve-brief.md)                       | Pending |
+| 9.0e | Add Shortcut to strategist workflows (brief.md + approve-brief.md)                           | Pending |
+| 9.0f | Add Notion to strategist workflows (brief.md + approve-brief.md)                             | Pending |
 
 ### Track B — Orchestrator
 
@@ -576,7 +579,8 @@ Two independent tracks — board parity (Track A) can proceed in any order relat
 
 ### Dependencies
 
-- Track A: 9.0a → 9.0b → 9.0c (sequential — same files)
+- Track A planner: 9.0a → 9.0b → 9.0c (sequential — same files)
+- Track A strategist: 9.0d → 9.0e → 9.0f (sequential — same files, independent of planner PRs)
 - Track B: 9.1, 9.2, 9.3, 9.6 are independent leaves. 9.4 depends on 9.1 + 9.2 + 9.3. 9.5 depends on 9.4. 9.7 depends on 9.5 + 9.6 + 9.3.
 - Tracks A and B are independent of each other.
 
