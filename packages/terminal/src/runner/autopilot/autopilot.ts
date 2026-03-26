@@ -100,11 +100,15 @@ function computeQuietStatus(
 ): boolean {
   if (startMin === endMin) return false;
 
-  // Same-day window (e.g. 09:00–17:00)
-  if (startMin < endMin) return nowMin >= startMin && nowMin < endMin;
+  const isSameDayWindow = startMin < endMin;
+  const isAfterStart = nowMin >= startMin;
+  const isBeforeEnd = nowMin < endMin;
 
-  // Overnight window (e.g. 22:00–06:00)
-  return nowMin >= startMin || nowMin < endMin;
+  // Same-day window (e.g. 09:00–17:00): must be between start and end
+  if (isSameDayWindow) return isAfterStart && isBeforeEnd;
+
+  // Overnight window (e.g. 22:00–06:00): after start OR before end
+  return isAfterStart || isBeforeEnd;
 }
 
 /** Calculate minutes remaining until end of quiet window. */
