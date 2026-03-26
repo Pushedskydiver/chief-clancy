@@ -138,16 +138,17 @@ describe('copyRoleFiles', () => {
     ).toThrow();
   });
 
-  it('handles subdirectories in disabled roles without throwing', () => {
+  it('removes subdirectories from dest for disabled roles (M6)', () => {
     createRole('planner', 'commands', ['plan.md']);
     // Add a nested subdirectory inside the role's commands dir
-    mkdirSync(join(testDir, 'roles', 'planner', 'commands', 'nested'), {
-      recursive: true,
-    });
+    const nestedSrc = join(testDir, 'roles', 'planner', 'commands', 'nested');
+    mkdirSync(nestedSrc, { recursive: true });
+    writeFileSync(join(nestedSrc, 'deep.md'), '# nested');
 
     const dest = join(testDir, 'dest');
-    mkdirSync(dest, { recursive: true });
+    mkdirSync(join(dest, 'nested'), { recursive: true });
     writeFileSync(join(dest, 'plan.md'), '# old planner file');
+    writeFileSync(join(dest, 'nested', 'deep.md'), '# old nested file');
 
     copyRoleFiles({
       rolesDir: join(testDir, 'roles'),
@@ -156,8 +157,8 @@ describe('copyRoleFiles', () => {
       enabledRoles: new Set<string>(),
     });
 
-    // File removed, subdirectory entry skipped (not unlinkable)
     expect(existsSync(join(dest, 'plan.md'))).toBe(false);
+    expect(existsSync(join(dest, 'nested'))).toBe(false);
   });
 
   it('copies nested directory content for enabled roles', () => {
