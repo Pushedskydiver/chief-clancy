@@ -83,14 +83,14 @@
 
 #### Cleanup PRs (C25–C30)
 
-| PR  | Theme                                   | Fixes                   | Scope                                                                                                                                                     |
-| --- | --------------------------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| C25 | Extract shared types                    | H1, H2, H4, L1          | Create `runner/shared/types.ts` with `SpawnSyncFn` (narrowed stdio), `ConsoleLike`, `AppendFn`. Update 6 files. **Done**                                  |
-| C26 | Non-null assertion comments             | H3                      | Add `// Safe: ...` comments to all 10 `!` assertions. Type predicate `hasParent` eliminates 1 assertion. **Done**                                         |
-| C27 | Test gaps: deliver-phase + invoke-phase | H5, H6                  | `invoke-phase.test.ts` (5 tests) + `deliver-phase.test.ts` (7 tests). Wiring, branching, handler dispatch. **Done**                                       |
-| C28 | Error handling hardening                | M1–M5, L9               | Narrow catches to ENOENT. Add `console.error` to silent catches. NaN guard in `parseTokenCount`. Webhook fallback. **Done**                               |
-| C29 | Property-based tests + edge cases       | M7, M9, M10, L6–L8, L11 | Fast-check for parsers/prompt builders. Edge cases for stop conditions, subdomain, sub-minute, `\r\n`, commas, error paths. **Done**                      |
-| C30 | Minor cleanup                           | M6, M8, L2–L5, L10, L12 | `ReadonlyMap`, `TDD_BLOCK`, `\r\n` in webhook extract, inject warn, dep-factory behavioral test, `maxIterations` cap, export convention. **Done**         |
+| PR  | Theme                                   | Fixes                   | Scope                                                                                                                                             |
+| --- | --------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C25 | Extract shared types                    | H1, H2, H4, L1          | Create `runner/shared/types.ts` with `SpawnSyncFn` (narrowed stdio), `ConsoleLike`, `AppendFn`. Update 6 files. **Done**                          |
+| C26 | Non-null assertion comments             | H3                      | Add `// Safe: ...` comments to all 10 `!` assertions. Type predicate `hasParent` eliminates 1 assertion. **Done**                                 |
+| C27 | Test gaps: deliver-phase + invoke-phase | H5, H6                  | `invoke-phase.test.ts` (5 tests) + `deliver-phase.test.ts` (7 tests). Wiring, branching, handler dispatch. **Done**                               |
+| C28 | Error handling hardening                | M1–M5, L9               | Narrow catches to ENOENT. Add `console.error` to silent catches. NaN guard in `parseTokenCount`. Webhook fallback. **Done**                       |
+| C29 | Property-based tests + edge cases       | M7, M9, M10, L6–L8, L11 | Fast-check for parsers/prompt builders. Edge cases for stop conditions, subdomain, sub-minute, `\r\n`, commas, error paths. **Done**              |
+| C30 | Minor cleanup                           | M6, M8, L2–L5, L10, L12 | `ReadonlyMap`, `TDD_BLOCK`, `\r\n` in webhook extract, inject warn, dep-factory behavioral test, `maxIterations` cap, export convention. **Done** |
 
 ### Process notes
 
