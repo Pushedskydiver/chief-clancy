@@ -9,7 +9,6 @@ import type { Dirent } from 'node:fs';
 import { createHash } from 'node:crypto';
 import {
   copyFileSync,
-  existsSync,
   mkdirSync,
   readdirSync,
   readFileSync,
@@ -42,6 +41,8 @@ const copyEntry =
       copyDir(srcPath, destPath);
       return;
     }
+
+    if (!entry.isFile()) return; // Skip symlinks, FIFOs, sockets, etc.
 
     rejectSymlink(destPath);
     copyFileSync(srcPath, destPath);
@@ -78,13 +79,19 @@ const resolveWorkflowRef = (
   fileName: string,
 ): string => {
   const workflowFile = join(workflowsDir, fileName);
-  const workflowExists = existsSync(workflowFile);
 
-  if (!workflowExists) return fullMatch;
+  try {
+    rejectSymlink(workflowFile);
 
-  rejectSymlink(workflowFile);
+    return readFileSync(workflowFile, 'utf8');
+  } catch (error: unknown) {
+    // Safe: rejectSymlink already swallows ENOENT internally
+    const code = (error as { readonly code?: string }).code;
 
-  return readFileSync(workflowFile, 'utf8');
+    if (code === 'ENOENT') return fullMatch;
+
+    throw error;
+  }
 };
 
 /** Inline workflow references in a single command file. */

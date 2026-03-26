@@ -114,6 +114,19 @@ describe('copyDir', () => {
     expect(() => copyDir(src, dest)).toThrow('symlink');
   });
 
+  it('skips non-file entries in the source directory', () => {
+    const src = join(tmp, 'src');
+    const dest = join(tmp, 'dest');
+    mkdirSync(src, { recursive: true });
+    writeFileSync(join(src, 'real.txt'), 'content');
+    symlinkSync(join(src, 'real.txt'), join(src, 'link.txt'));
+
+    copyDir(src, dest);
+
+    expect(readFileSync(join(dest, 'real.txt'), 'utf8')).toBe('content');
+    expect(() => readFileSync(join(dest, 'link.txt'), 'utf8')).toThrow();
+  });
+
   it('merges multiple source directories into a single destination', () => {
     const roleA = join(tmp, 'roles', 'implementer', 'commands');
     const roleB = join(tmp, 'roles', 'reviewer', 'commands');

@@ -233,10 +233,7 @@ function mergeSettings(
 ): Record<string, unknown> {
   const existingHooks = normalizeHooks(settings.hooks);
   const mergedHooks = mergeHookRegistrations(existingHooks, desired);
-  const statusLine = settings.statusLine ?? {
-    type: 'command',
-    command: statusLineCommand,
-  };
+  const statusLine = { type: 'command', command: statusLineCommand };
 
   return { ...settings, hooks: mergedHooks, statusLine };
 }
