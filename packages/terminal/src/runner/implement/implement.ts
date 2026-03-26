@@ -6,6 +6,7 @@
  * All exit paths use exit code 0 — the autopilot runner detects stop
  * conditions by parsing stdout, not exit codes.
  */
+import type { ConsoleLike, SpawnSyncFn } from '../shared/types.js';
 import type {
   CostFs,
   EnvFileSystem,
@@ -18,7 +19,6 @@ import type {
   QualityFs,
   RunContext,
 } from '@chief-clancy/core';
-import type { SpawnSyncReturns } from 'node:child_process';
 
 import { createContext, formatDuration } from '@chief-clancy/core';
 
@@ -26,21 +26,6 @@ import { dim, green, red } from '../../shared/ansi/index.js';
 import { buildPipelineDeps } from '../dep-factory/index.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-
-type SpawnSyncFn = (
-  command: string,
-  args: readonly string[],
-  options: {
-    readonly input: string;
-    readonly stdio: readonly (string | number)[];
-    readonly encoding: 'utf8';
-  },
-) => SpawnSyncReturns<string>;
-
-type ConsoleLike = {
-  readonly log: (message: string) => void;
-  readonly error: (message: string) => void;
-};
 
 type RunPipelineFn = (
   ctx: RunContext,

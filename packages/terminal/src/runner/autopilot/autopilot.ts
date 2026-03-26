@@ -5,6 +5,7 @@
  * stop conditions between iterations. Generates a session report and
  * optionally sends a webhook notification when the loop ends.
  */
+import type { ConsoleLike } from '../shared/types.js';
 import type { PipelineResult } from '@chief-clancy/core';
 
 import { formatDuration } from '@chief-clancy/core';
@@ -12,11 +13,6 @@ import { formatDuration } from '@chief-clancy/core';
 import { bold, dim, green, yellow } from '../../shared/ansi/index.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-
-type ConsoleLike = {
-  readonly log: (message: string) => void;
-  readonly error: (message: string) => void;
-};
 
 type StopCondition =
   | { readonly stop: false }

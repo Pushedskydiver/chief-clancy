@@ -3,12 +3,12 @@
  *
  * Extracted from the dep factory to stay within file-length limits.
  */
+import type { AppendFn } from '../shared/types.js';
 import type {
   ExecGit,
   FetchFn,
   PipelineDeps,
   ProgressFs,
-  ProgressStatus,
   QualityFs,
   RunContext,
 } from '@chief-clancy/core';
@@ -40,13 +40,7 @@ type DeliverOpts = {
  */
 export function wireDeliver(
   opts: DeliverOpts,
-  progress: (opts: {
-    readonly key: string;
-    readonly summary: string;
-    readonly status: ProgressStatus;
-    readonly prNumber?: number;
-    readonly parent?: string;
-  }) => void,
+  progress: AppendFn,
 ): Pick<PipelineDeps, 'deliver'> {
   const { projectRoot, exec, fetch: fetchFn, qualityFs } = opts;
 

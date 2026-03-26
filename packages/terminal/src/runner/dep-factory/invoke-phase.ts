@@ -3,21 +3,11 @@
  *
  * Extracted from the dep factory to stay within file-length limits.
  */
+import type { SpawnSyncFn } from '../shared/types.js';
 import type { RunContext } from '@chief-clancy/core';
-import type { SpawnSyncReturns } from 'node:child_process';
 
 import { invokeClaudeSession } from '../cli-bridge/index.js';
 import { buildPrompt, buildReworkPrompt } from '../prompt-builder/index.js';
-
-type SpawnSyncFn = (
-  command: string,
-  args: readonly string[],
-  options: {
-    readonly input: string;
-    readonly stdio: readonly (string | number)[];
-    readonly encoding: 'utf8';
-  },
-) => SpawnSyncReturns<string>;
 
 /**
  * Create the invoke phase closure.
