@@ -39,6 +39,12 @@ describe('isSlackWebhook', () => {
   it('returns false for invalid URLs', () => {
     expect(isSlackWebhook('not-a-url')).toBe(false);
   });
+
+  it('returns true for subdomain of hooks.slack.com', () => {
+    expect(
+      isSlackWebhook('https://workspace.hooks.slack.com/services/T00/B00/xxx'),
+    ).toBe(true);
+  });
 });
 
 describe('buildSlackPayload', () => {

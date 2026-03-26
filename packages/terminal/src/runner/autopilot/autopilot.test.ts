@@ -1,4 +1,4 @@
-import * as fc from 'fast-check';
+import fc from 'fast-check';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -96,6 +96,16 @@ describe('getQuietSleepMs', () => {
     const now = new Date(2026, 2, 20, 12, 0, 0);
     expect(getQuietSleepMs('12:00', '12:00', now)).toBe(0);
   });
+
+  it('accounts for sub-minute precision (seconds + milliseconds)', () => {
+    // 12:30:45.500 inside quiet window 09:00–17:00, end at 17:00
+    const now = new Date(2026, 2, 20, 12, 30, 45, 500);
+    const ms = getQuietSleepMs('09:00', '17:00', now);
+    const expectedMinutes = (17 - 12) * 60 - 30; // 270 minutes
+    const expectedMs = expectedMinutes * 60_000 - (45 * 1000 + 500);
+
+    expect(ms).toBe(expectedMs);
+  });
 });
 
 // ─── checkStopCondition ──────────────────────────────────────────────────────
@@ -174,6 +184,19 @@ describe('checkStopCondition', () => {
 
   it('stops on dry-run', () => {
     expect(checkStopCondition({ status: 'dry-run' }).stop).toBe(true);
+  });
+
+  // ── Edge cases (M9) ──────────────────────────────────────────────────
+
+  it('continues on aborted with phase undefined', () => {
+    const result = checkStopCondition({ status: 'aborted' });
+    expect(result.stop).toBe(false);
+  });
+
+  it('uses fallback reason when error is undefined', () => {
+    const result = checkStopCondition({ status: 'error' });
+    expect(result.stop).toBe(true);
+    if (result.stop) expect(result.reason).toBe('Unknown error');
   });
 });
 

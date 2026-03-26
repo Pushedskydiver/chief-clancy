@@ -1,3 +1,4 @@
+import fc from 'fast-check';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -46,6 +47,38 @@ describe('parseCostsLog', () => {
 
     expect(parseCostsLog(content, 0)).toEqual([]);
   });
+
+  it('returns entries with non-empty key and tokens fields for any input', () => {
+    fc.assert(
+      fc.property(fc.string(), (content) => {
+        const entries = parseCostsLog(content, 0);
+        return entries.every(
+          (e) => e.key.trim().length > 0 && e.tokens.trim().length > 0,
+        );
+      }),
+    );
+  });
+
+  it('parses lines with \\r\\n line endings', () => {
+    const ts = new Date().toISOString();
+    const content = `${ts} | KEY-1 | 3min | ~19800 tokens (estimated)\r\n${ts} | KEY-2 | 5min | ~33000 tokens (estimated)\r\n`;
+
+    const entries = parseCostsLog(content, 0);
+
+    expect(entries).toHaveLength(2);
+    expect(entries[0]!.key).toBe('KEY-1');
+    expect(entries[1]!.key).toBe('KEY-2');
+  });
+
+  it('parses comma-formatted token counts correctly', () => {
+    const ts = new Date().toISOString();
+    const content = `${ts} | KEY-1 | 10min | ~1,200,000 tokens (estimated)\n`;
+
+    const entries = parseCostsLog(content, 0);
+
+    expect(entries).toHaveLength(1);
+    expect(entries[0]!.tokens).toBe('~1,200,000 tokens (estimated)');
+  });
 });
 
 // ─── progressTimestampToMs ───────────────────────────────────────────────────
@@ -63,6 +96,31 @@ describe('progressTimestampToMs', () => {
 
   it('returns NaN for empty string', () => {
     expect(progressTimestampToMs('')).toBeNaN();
+  });
+
+  it('returns a valid number for any well-formed YYYY-MM-DD HH:MM string', () => {
+    const datePartsArb = fc.record({
+      y: fc.integer({ min: 2000, max: 2099 }),
+      mo: fc.integer({ min: 1, max: 12 }),
+      d: fc.integer({ min: 1, max: 28 }),
+      h: fc.integer({ min: 0, max: 23 }),
+      m: fc.integer({ min: 0, max: 59 }),
+    });
+
+    fc.assert(
+      fc.property(datePartsArb, ({ y, mo, d, h, m }) => {
+        const pad = (n: number) => String(n).padStart(2, '0');
+        const ts = `${y}-${pad(mo)}-${pad(d)} ${pad(h)}:${pad(m)}`;
+        return !Number.isNaN(progressTimestampToMs(ts));
+      }),
+    );
+  });
+
+  it('returns NaN for format-matching but invalid date components', () => {
+    // Month 13, day 32, hour 25 — all match the format regex but are invalid
+    expect(progressTimestampToMs('2026-13-01 00:00')).toBeNaN();
+    expect(progressTimestampToMs('2026-01-32 00:00')).toBeNaN();
+    expect(progressTimestampToMs('2026-01-01 25:00')).toBeNaN();
   });
 });
 
@@ -396,6 +454,43 @@ describe('buildSessionReport', () => {
       readCostsFile: vi.fn().mockReturnValue(''),
       writeFile,
       mkdir: vi.fn(),
+      console: consoleMock,
+      projectRoot: '/my/project',
+      loopStartTime: 0,
+      loopEndTime: 5000,
+    });
+
+    expect(report).toContain('# Autopilot Session Report');
+    expect(consoleMock.error).toHaveBeenCalledWith(
+      expect.stringContaining('Failed to write session report'),
+    );
+  });
+
+  it('warns and still returns report when mkdir fails', () => {
+    const progressFs = {
+      readFile: vi.fn().mockReturnValue(''),
+      appendFile: vi.fn(),
+      mkdir: vi.fn(),
+    };
+    const qualityFs = {
+      readFile: vi.fn().mockImplementation(() => {
+        throw new Error('ENOENT');
+      }),
+      writeFile: vi.fn(),
+      rename: vi.fn(),
+      mkdir: vi.fn(),
+    };
+    const mkdirFn = vi.fn().mockImplementation(() => {
+      throw new Error('EACCES');
+    });
+    const consoleMock = { log: vi.fn(), error: vi.fn() };
+
+    const report = buildSessionReport({
+      progressFs,
+      qualityFs,
+      readCostsFile: vi.fn().mockReturnValue(''),
+      writeFile: vi.fn(),
+      mkdir: mkdirFn,
       console: consoleMock,
       projectRoot: '/my/project',
       loopStartTime: 0,
