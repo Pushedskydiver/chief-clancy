@@ -117,9 +117,12 @@ function parseTokenCount(tokens: string): number {
 
 /** Sum token counts from cost entries (recursive to avoid reduce). */
 function sumTokens(costs: readonly CostEntry[], i = 0): number {
-  return i >= costs.length
-    ? 0
-    : parseTokenCount(costs[i]!.tokens) + sumTokens(costs, i + 1);
+  if (i >= costs.length) return 0;
+
+  const current = parseTokenCount(costs[i]!.tokens);
+  const remaining = sumTokens(costs, i + 1);
+
+  return current + remaining;
 }
 
 /** Format a UTC date as `YYYY-MM-DD`. */
