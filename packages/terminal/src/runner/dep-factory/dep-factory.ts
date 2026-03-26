@@ -6,6 +6,7 @@
  * captures the shared resources and delegates to the corresponding
  * core phase function.
  */
+import type { AppendFn, SpawnSyncFn } from '../shared/types.js';
 import type {
   Board,
   BoardProvider,
@@ -17,11 +18,9 @@ import type {
   LockFs,
   PipelineDeps,
   ProgressFs,
-  ProgressStatus,
   QualityFs,
   RunContext,
 } from '@chief-clancy/core';
-import type { SpawnSyncReturns } from 'node:child_process';
 
 import {
   appendCostEntry,
@@ -67,16 +66,6 @@ import { sendNotification } from '../notify/index.js';
 import { wireDeliver } from './deliver-phase.js';
 import { makeInvokePhase } from './invoke-phase.js';
 
-type SpawnSyncFn = (
-  command: string,
-  args: readonly string[],
-  options: {
-    readonly input: string;
-    readonly stdio: readonly (string | number)[];
-    readonly encoding: 'utf8';
-  },
-) => SpawnSyncReturns<string>;
-
 /** Options for building the pipeline dependency object. */
 type DepFactoryOpts = {
   readonly projectRoot: string;
@@ -89,14 +78,6 @@ type DepFactoryOpts = {
   readonly spawn: SpawnSyncFn;
   readonly fetch: FetchFn;
 };
-
-type AppendFn = (opts: {
-  readonly key: string;
-  readonly summary: string;
-  readonly status: ProgressStatus;
-  readonly prNumber?: number;
-  readonly parent?: string;
-}) => void;
 
 function makeAppendProgress(
   progressFs: ProgressFs,

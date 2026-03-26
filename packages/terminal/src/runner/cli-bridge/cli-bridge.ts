@@ -1,16 +1,5 @@
+import type { SpawnSyncFn } from '../shared/types.js';
 import type { SpawnSyncReturns } from 'node:child_process';
-
-type SpawnOptions = {
-  readonly input: string;
-  readonly stdio: readonly (string | number)[];
-  readonly encoding: 'utf8';
-};
-
-type SpawnSyncFn = (
-  command: string,
-  args: readonly string[],
-  options: SpawnOptions,
-) => SpawnSyncReturns<string>;
 
 /** Options for both print and session invocations. */
 type ClaudeInvokeOptions = {
