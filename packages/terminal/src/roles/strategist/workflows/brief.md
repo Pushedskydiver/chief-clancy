@@ -61,11 +61,11 @@ Parse the arguments passed to the command. Arguments can appear in any order.
 ### Input modes
 
 - **No input (no flags that consume arguments):** Interactive mode — but first check for `--afk`:
-  - If running in AFK mode (`--afk` flag OR `CLANCY_MODE=afk`): there is no human to answer. Display: `✗ Cannot run /clancy:brief in AFK mode without a ticket or idea. Use: /clancy:brief --afk #42 (GitHub) or PROJ-123 (Jira) or ENG-42 (Linear), or /clancy:brief --afk "Add dark mode", or /clancy:brief 3 (batch mode — implies --afk).` Stop.
-  - Otherwise: prompt `What's the idea?` and parse the response. If the response looks like a ticket reference (`#42`, `PROJ-123`, `ENG-42`), switch to board ticket mode. Otherwise treat as inline text.
-- **Ticket key** (`PROJ-123`, `#42`, `ENG-42`): Board ticket mode — fetch the ticket from the board API. Validate format per platform:
-  - `#N` — valid for GitHub only. If board is Jira or Linear: `The #N format is for GitHub Issues. Use a ticket key like PROJ-123.` Stop.
-  - `PROJ-123` / `ENG-42` (letters-dash-number) — valid for Jira and Linear. If board is GitHub: `Use #N format for GitHub Issues (e.g. #42).` Stop.
+  - If running in AFK mode (`--afk` flag OR `CLANCY_MODE=afk`): there is no human to answer. Display: `✗ Cannot run /clancy:brief in AFK mode without a ticket or idea. Use: /clancy:brief --afk #42 (GitHub) or PROJ-123 (Jira) or ENG-42 (Linear) or 42 (Azure DevOps), or /clancy:brief --afk "Add dark mode", or /clancy:brief 3 (batch mode — implies --afk).` Stop.
+  - Otherwise: prompt `What's the idea?` and parse the response. If the response looks like a ticket reference (`#42`, `PROJ-123`, `ENG-42`, or bare number on AzDo), switch to board ticket mode. Otherwise treat as inline text.
+- **Ticket key** (`PROJ-123`, `#42`, `ENG-42`, `42`): Board ticket mode — fetch the ticket from the board API. Validate format per platform:
+  - `#N` — valid for GitHub only. If board is Jira, Linear, or Shortcut: `The #N format is for GitHub Issues. Use a ticket key like PROJ-123.` Stop. If board is Azure DevOps: `The #N format is for GitHub Issues. Use a numeric work item ID (e.g. 42).` Stop. If board is Notion: `The #N format is for GitHub Issues. Use a Notion page UUID or notion-XXXXXXXX key.` Stop.
+  - `PROJ-123` / `ENG-42` (letters-dash-number) — valid for Jira, Linear, and Shortcut. If board is GitHub: `Use #N format for GitHub Issues (e.g. #42).` Stop. If board is Azure DevOps: `Use a numeric work item ID for Azure DevOps (e.g. 42).` Stop. If board is Notion: `Use a Notion page UUID or notion-XXXXXXXX key.` Stop.
 - **Quoted string or unquoted non-matching text** (e.g. `"Add dark mode"`): Inline text mode — use the text directly as the idea.
 - **`--from {path}`** — From file mode. Cannot be combined with a ticket reference (error if both present: `Cannot use both a ticket reference and --from. Use one or the other.`). Validate:
   - File does not exist: `File not found: {path}` Stop.
@@ -73,7 +73,8 @@ Parse the arguments passed to the command. Arguments can appear in any order.
   - File > 50KB: Warn `Large file ({size}KB). Clancy will use the first ~50KB for context.` Truncate internally, continue.
 - **Bare positive integer** (e.g. `/clancy:brief 3`): Batch mode or ambiguous.
   - Board is GitHub and value could be an issue: Ambiguous — ask: `Did you mean issue #3 or batch 3 tickets? [1] Brief issue #3 [2] Brief 3 tickets from queue`
-  - Board is Jira or Linear: Batch mode (N tickets from queue). Implies `--afk` (AI-grill for all).
+  - Board is Azure DevOps and value > 10: treat as a work item ID (no ambiguity — AzDo always uses numeric IDs)
+  - Board is Jira, Linear, Shortcut, or Notion: Batch mode (N tickets from queue). Implies `--afk` (AI-grill for all).
 
 If N > 10: `Maximum batch size is 10. Briefing 10 tickets.`
 
@@ -186,6 +187,33 @@ Validate the response:
 - If `parent` is present: warn `{KEY} is a sub-issue of {parent.identifier}. Creating children will produce a 3-level hierarchy. Continue? [Y/n]`
 - If `team.id` differs from `LINEAR_TEAM_ID`: warn `{KEY} belongs to team "{team.name}", but LINEAR_TEAM_ID is different. Continue? [Y/n]`
 
+#### Azure DevOps — Fetch specific work item
+
+```bash
+RESPONSE=$(curl -s \
+  -u ":$AZDO_PAT" \
+  -H "Accept: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID?\$expand=relations&api-version=7.1")
+```
+
+Validate the response:
+
+- If response contains `"message"` with `"does not exist"`: `Work item ${ID} not found.` Stop.
+- If `fields["System.State"]` is a done/resolved state (e.g. `Done`, `Closed`, `Resolved`): warn `Work item is done. Brief it anyway? [y/N]`
+- If `fields["System.State"]` is `Active`: warn `Work item is Active — briefing anyway.`
+- Extract: `fields["System.Title"]`, `fields["System.Description"]` (HTML — strip tags), `fields["System.State"]`, `fields["System.Tags"]`.
+
+Fetch comments (separate endpoint):
+
+```bash
+COMMENTS=$(curl -s \
+  -u ":$AZDO_PAT" \
+  -H "Accept: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID/comments?api-version=7.1-preview.4")
+```
+
+Check `relations` array for parent (type `System.LinkTypes.Hierarchy-Reverse`) and existing children (type `System.LinkTypes.Hierarchy-Forward`).
+
 #### All platforms — error handling
 
 If the API call fails:
@@ -282,6 +310,28 @@ query {
   }
 }
 ```
+
+#### Azure DevOps batch fetch
+
+```bash
+# Step 1: WIQL query for planning queue
+WIQL_RESPONSE=$(curl -s \
+  -u ":$AZDO_PAT" \
+  -X POST \
+  -H "Content-Type: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/wiql?api-version=7.1" \
+  -d '{"query": "SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = '\''$AZDO_PROJECT'\'' AND [System.State] = '\''$CLANCY_PLAN_STATUS'\'' AND [System.Tags] CONTAINS '\''$CLANCY_LABEL_PLAN'\'' AND [System.AssignedTo] = @Me ORDER BY [Microsoft.VSTS.Common.Priority] ASC"}')
+
+# Step 2: Batch fetch work items (first N IDs)
+IDS=$(echo "$WIQL_RESPONSE" | jq -r '.workItems[0:'$N'] | map(.id) | join(",")')
+
+RESPONSE=$(curl -s \
+  -u ":$AZDO_PAT" \
+  -H "Accept: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems?ids=$IDS&\$expand=relations&api-version=7.1")
+```
+
+`CLANCY_PLAN_STATUS` defaults to `New`. For each work item, fetch comments separately via `GET /_apis/wit/workitems/{id}/comments?api-version=7.1-preview.4`.
 
 If no tickets found:
 
@@ -487,10 +537,12 @@ Web research agent (adds 1 to the count above, max 4 total):
   - **GitHub:** `GET /repos/$GITHUB_REPO/issues?state=open&per_page=30` and text-match
   - **Jira:** `POST /rest/api/3/search/jql` with `summary ~ "keywords"`
   - **Linear:** `issues(filter: ...)` by text search
+  - **Azure DevOps:** `POST /_apis/wit/wiql` with `[System.Title] CONTAINS 'keywords'`
 - Existing children of the source ticket (board-sourced only):
   - **GitHub:** scan open issues for `Epic: #{parent}` in body
   - **Jira:** `POST /rest/api/3/search/jql` with `parent = {KEY}`
   - **Linear:** already included in the fetch response (`children.nodes`)
+  - **Azure DevOps:** check `relations` array for `System.LinkTypes.Hierarchy-Forward` entries
 - Web research (if triggered)
 
 Display per-agent progress:
@@ -698,6 +750,21 @@ Linear accepts Markdown directly. Comment marker heading: `# Clancy Strategic Br
 
 Note: Linear personal API keys do NOT use `Bearer` prefix.
 
+### Azure DevOps — POST comment
+
+```bash
+curl -s \
+  -u ":$AZDO_PAT" \
+  -X POST \
+  -H "Content-Type: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID/comments?api-version=7.1-preview.4" \
+  -d '{"text": "<brief as HTML>"}'
+```
+
+Azure DevOps comments use **HTML**, not markdown. Convert the brief markdown to HTML (same rules as planner: headings → `<h2>/<h3>`, bullets → `<ul><li>`, bold → `<strong>`, code → `<code>`, tables → `<table>`). If HTML construction is too complex, wrap in `<pre>` tags as fallback.
+
+Comment marker heading: `<h2>Clancy Strategic Brief</h2>`.
+
 ### On failure (any platform)
 
 ```
@@ -772,6 +839,25 @@ ISSUE_DATA=$(curl -s \
 # Filter out plan + build label IDs, then issueUpdate with remaining labelIds
 ```
 
+#### Azure DevOps
+
+```bash
+# Fetch current tags, remove plan + build tags from semicolon-delimited string
+CURRENT=$(curl -s \
+  -u ":$AZDO_PAT" \
+  -H "Accept: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID?fields=System.Tags&api-version=7.1")
+
+# Parse tags, remove plan + build tags, rejoin with "; " separator
+# E.g., "clancy:plan; clancy:build; feature" → "feature"
+curl -s \
+  -u ":$AZDO_PAT" \
+  -X PATCH \
+  -H "Content-Type: application/json-patch+json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID?api-version=7.1" \
+  -d '[{"op": "replace", "path": "/fields/System.Tags", "value": "<tags without plan/build>"}]'
+```
+
 ### Add brief label
 
 Ensure the label exists and add it to the ticket. Best-effort — warn on failure, never stop.
@@ -832,6 +918,24 @@ curl -s \
   -d '{"query": "mutation { issueLabelCreate(input: { teamId: \"$LINEAR_TEAM_ID\", name: \"$CLANCY_LABEL_BRIEF\", color: \"#0075ca\" }) { success issueLabel { id } } }"}'
 
 # Add label to issue (fetch current labelIds, append new, issueUpdate)
+```
+
+#### Azure DevOps
+
+```bash
+# Fetch current tags, append brief tag
+CURRENT=$(curl -s \
+  -u ":$AZDO_PAT" \
+  -H "Accept: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID?fields=System.Tags&api-version=7.1")
+
+# Append brief tag to semicolon-delimited string
+curl -s \
+  -u ":$AZDO_PAT" \
+  -X PATCH \
+  -H "Content-Type: application/json-patch+json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID?api-version=7.1" \
+  -d '[{"op": "replace", "path": "/fields/System.Tags", "value": "<existing tags>; $CLANCY_LABEL_BRIEF"}]'
 ```
 
 #### On failure (any platform)
