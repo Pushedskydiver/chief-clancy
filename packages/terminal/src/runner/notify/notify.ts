@@ -8,11 +8,21 @@
 /**
  * Detect whether a webhook URL is for Slack (vs Teams/other).
  *
+ * Parses the URL and checks the hostname to avoid substring false
+ * positives (e.g., `evil.com/?hooks.slack.com`).
+ *
  * @param url - The webhook URL to check.
- * @returns `true` if the URL contains `hooks.slack.com`.
+ * @returns `true` if the hostname ends with `hooks.slack.com`.
  */
 export function isSlackWebhook(url: string): boolean {
-  return url.includes('hooks.slack.com');
+  try {
+    const { hostname } = new URL(url);
+    return (
+      hostname === 'hooks.slack.com' || hostname.endsWith('.hooks.slack.com')
+    );
+  } catch {
+    return false;
+  }
 }
 
 /**

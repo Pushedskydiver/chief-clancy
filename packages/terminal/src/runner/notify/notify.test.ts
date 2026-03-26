@@ -30,6 +30,15 @@ describe('isSlackWebhook', () => {
   it('returns false for empty string', () => {
     expect(isSlackWebhook('')).toBe(false);
   });
+
+  it('returns false when hooks.slack.com appears in path or query', () => {
+    expect(isSlackWebhook('https://evil.com/?hooks.slack.com')).toBe(false);
+    expect(isSlackWebhook('https://evil.com/hooks.slack.com')).toBe(false);
+  });
+
+  it('returns false for invalid URLs', () => {
+    expect(isSlackWebhook('not-a-url')).toBe(false);
+  });
 });
 
 describe('buildSlackPayload', () => {
