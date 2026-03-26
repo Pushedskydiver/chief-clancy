@@ -61,8 +61,8 @@ Parse the arguments passed to the command. Arguments can appear in any order.
 ### Input modes
 
 - **No input (no flags that consume arguments):** Interactive mode — but first check for `--afk`:
-  - If running in AFK mode (`--afk` flag OR `CLANCY_MODE=afk`): there is no human to answer. Display: `✗ Cannot run /clancy:brief in AFK mode without a ticket or idea. Use: /clancy:brief --afk #42 (GitHub) or PROJ-123 (Jira) or ENG-42 (Linear) or 42 (Azure DevOps), or /clancy:brief --afk "Add dark mode", or /clancy:brief 3 (batch mode — implies --afk).` Stop.
-  - Otherwise: prompt `What's the idea?` and parse the response. If the response looks like a ticket reference (`#42`, `PROJ-123`, `ENG-42`, or bare number on AzDo), switch to board ticket mode. Otherwise treat as inline text.
+  - If running in AFK mode (`--afk` flag OR `CLANCY_MODE=afk`): there is no human to answer. Display: `✗ Cannot run /clancy:brief in AFK mode without a ticket or idea. Use: /clancy:brief --afk #42 (GitHub) or PROJ-123 (Jira) or ENG-42 (Linear) or SC-123 (Shortcut) or 42 (Azure DevOps), or /clancy:brief --afk "Add dark mode", or /clancy:brief 3 (batch mode — implies --afk).` Stop.
+  - Otherwise: prompt `What's the idea?` and parse the response. If the response looks like a ticket reference (`#42`, `PROJ-123`, `ENG-42`, `SC-123`, or bare number on AzDo/Shortcut), switch to board ticket mode. Otherwise treat as inline text.
 - **Ticket key** (`PROJ-123`, `#42`, `ENG-42`, `42`): Board ticket mode — fetch the ticket from the board API. Validate format per platform:
   - `#N` — valid for GitHub only. If board is Jira, Linear, or Shortcut: `The #N format is for GitHub Issues. Use a ticket key like PROJ-123.` Stop. If board is Azure DevOps: `The #N format is for GitHub Issues. Use a numeric work item ID (e.g. 42).` Stop. If board is Notion: `The #N format is for GitHub Issues. Use a Notion page UUID or notion-XXXXXXXX key.` Stop.
   - `PROJ-123` / `ENG-42` (letters-dash-number) — valid for Jira, Linear, and Shortcut. If board is GitHub: `Use #N format for GitHub Issues (e.g. #42).` Stop. If board is Azure DevOps: `Use a numeric work item ID for Azure DevOps (e.g. 42).` Stop. If board is Notion: `Use a Notion page UUID or notion-XXXXXXXX key.` Stop.
@@ -186,6 +186,32 @@ Validate the response:
 - If `state.type` is `started`: warn `{KEY} is In Progress — briefing anyway.`
 - If `parent` is present: warn `{KEY} is a sub-issue of {parent.identifier}. Creating children will produce a 3-level hierarchy. Continue? [Y/n]`
 - If `team.id` differs from `LINEAR_TEAM_ID`: warn `{KEY} belongs to team "{team.name}", but LINEAR_TEAM_ID is different. Continue? [Y/n]`
+
+#### Shortcut — Fetch specific story
+
+```bash
+RESPONSE=$(curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  "https://api.app.shortcut.com/api/v3/stories/$STORY_ID")
+```
+
+Extract the story ID from the key (e.g. `SC-123` → `123`, or use the numeric portion). Validate the response:
+
+- If response status is 404: `Story ${KEY} not found on Shortcut.` Stop.
+- If `completed` is `true` or `archived` is `true`: warn `Story is completed/archived. Brief it anyway? [y/N]`
+- If `started` is `true`: warn `Story is in progress — briefing anyway.`
+- If `epic_id` is present: note `Story belongs to epic — child tickets will be created under it.`
+
+Fetch comments for existing brief detection:
+
+```bash
+COMMENTS=$(curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  "https://api.app.shortcut.com/api/v3/stories/$STORY_ID/comments")
+```
+
+Map fields: title = `name`, description = `description` (markdown), parent = `epic_id` (fetch epic name via `GET /api/v3/epics/$EPIC_ID` if set), labels = `labels[].name`.
 
 #### Azure DevOps — Fetch specific work item
 
@@ -332,6 +358,42 @@ RESPONSE=$(curl -s \
 ```
 
 `CLANCY_PLAN_STATUS` defaults to `New`. For each work item, fetch comments separately via `GET /_apis/wit/workitems/{id}/comments?api-version=7.1-preview.4`.
+
+#### Shortcut batch fetch
+
+Search for stories in the planning workflow state. Shortcut uses workflow states (not labels) for queue filtering, but labels can further narrow results.
+
+- `SHORTCUT_WORKFLOW` — optional workflow ID. If not set, use the default workflow.
+- `CLANCY_LABEL_PLAN` — optional label name to filter stories (falls back to `CLANCY_PLAN_LABEL`).
+
+```bash
+RESPONSE=$(curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -X POST \
+  "https://api.app.shortcut.com/api/v3/stories/search" \
+  -d '{"owner_ids": ["<current member UUID>"], "workflow_state_types": ["backlog"], "page_size": <N>}')
+```
+
+To resolve the current member UUID:
+
+```bash
+MEMBER=$(curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  "https://api.app.shortcut.com/api/v3/member-info")
+```
+
+Use `MEMBER.id` as the owner filter. If `CLANCY_LABEL_PLAN` is set, add `"label_ids": [<label_id>]` to the search body (resolve label ID via `GET /api/v3/labels`).
+
+For each story, fetch comments separately:
+
+```bash
+COMMENTS=$(curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  "https://api.app.shortcut.com/api/v3/stories/$STORY_ID/comments")
+```
+
+Map fields: title = `name`, description = `description` (markdown), parent = `epic_id` (resolve via `GET /api/v3/epics/$EPIC_ID`), labels = `labels[].name`.
 
 If no tickets found:
 
@@ -538,11 +600,13 @@ Web research agent (adds 1 to the count above, max 4 total):
   - **Jira:** `POST /rest/api/3/search/jql` with `summary ~ "keywords"`
   - **Linear:** `issues(filter: ...)` by text search
   - **Azure DevOps:** `POST /_apis/wit/wiql` with `[System.Title] CONTAINS 'keywords'`
+  - **Shortcut:** `POST /api/v3/stories/search` with `{"query": "keywords"}`
 - Existing children of the source ticket (board-sourced only):
   - **GitHub:** scan open issues for `Epic: #{parent}` in body
   - **Jira:** `POST /rest/api/3/search/jql` with `parent = {KEY}`
   - **Linear:** already included in the fetch response (`children.nodes`)
   - **Azure DevOps:** check `relations` array for `System.LinkTypes.Hierarchy-Forward` entries
+  - **Shortcut:** check `story_links` array for related stories; if `epic_id` is set, fetch epic stories via `GET /api/v3/epics/$EPIC_ID/stories`
 - Web research (if triggered)
 
 Display per-agent progress:
@@ -765,6 +829,21 @@ Azure DevOps comments use **HTML**, not markdown. Convert the brief markdown to 
 
 Comment marker heading: `<h2>Clancy Strategic Brief</h2>`.
 
+### Shortcut — POST comment
+
+```bash
+curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -X POST \
+  "https://api.app.shortcut.com/api/v3/stories/$STORY_ID/comments" \
+  -d '{"text": "<full brief markdown>"}'
+```
+
+Shortcut accepts Markdown directly in comment text.
+
+Comment marker heading: `# Clancy Strategic Brief`.
+
 ### On failure (any platform)
 
 ```
@@ -858,6 +937,23 @@ curl -s \
   -d '[{"op": "replace", "path": "/fields/System.Tags", "value": "<tags without plan/build>"}]'
 ```
 
+#### Shortcut
+
+```bash
+# Fetch current story labels, filter out plan + build labels, update
+STORY=$(curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  "https://api.app.shortcut.com/api/v3/stories/$STORY_ID")
+
+# Remove plan + build labels from the labels array, then update story:
+curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -X PUT \
+  "https://api.app.shortcut.com/api/v3/stories/$STORY_ID" \
+  -d '{"labels": [labels_without_plan_and_build]}'
+```
+
 ### Add brief label
 
 Ensure the label exists and add it to the ticket. Best-effort — warn on failure, never stop.
@@ -936,6 +1032,24 @@ curl -s \
   -H "Content-Type: application/json-patch+json" \
   "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID?api-version=7.1" \
   -d '[{"op": "replace", "path": "/fields/System.Tags", "value": "<existing tags>; $CLANCY_LABEL_BRIEF"}]'
+```
+
+#### Shortcut
+
+```bash
+# Resolve brief label ID (create if missing)
+LABELS=$(curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  "https://api.app.shortcut.com/api/v3/labels")
+
+# Find or create the brief label, get its ID
+# Then add to story (merge with existing labels):
+curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -X PUT \
+  "https://api.app.shortcut.com/api/v3/stories/$STORY_ID" \
+  -d '{"labels": [{"name": "$CLANCY_LABEL_BRIEF"}, ...existing_labels]}'
 ```
 
 #### On failure (any platform)
@@ -1078,6 +1192,7 @@ Briefs saved to .clancy/briefs/. Run /clancy:approve-brief to create tickets.
 - Batch mode (`/clancy:brief 3`) implies AI-grill — each ticket is briefed autonomously.
 - All board API calls are best-effort — if a comment fails to post, print the brief and warn. The local file is the source of truth.
 - The `Clancy Strategic Brief` text in comments is the marker used by both `/clancy:brief` (to detect existing briefs and feedback) and `/clancy:approve-brief` (to find the brief). Search case-insensitively and match regardless of heading level (`#`, `##`, or plain text).
-- Jira uses ADF for comments (with `codeBlock` fallback). GitHub and Linear accept Markdown directly.
+- Jira uses ADF for comments (with `codeBlock` fallback). GitHub, Linear, and Shortcut accept Markdown directly.
 - Linear personal API keys do NOT use `Bearer` prefix.
+- Shortcut uses `Shortcut-Token` header (not `Authorization: Bearer`). API base: `https://api.app.shortcut.com/api/v3`. Stories use `name` (not `title`), `description` is markdown, dependencies use `story_links` with `blocks` verb, and workflow state transitions use `workflow_state_id`.
 - Jira uses the new `POST /rest/api/3/search/jql` endpoint (old GET `/search` removed Aug 2025).

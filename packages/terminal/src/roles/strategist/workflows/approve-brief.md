@@ -78,7 +78,7 @@ Which brief to approve? [1-N]
 **Argument is a positive integer (e.g. `2`):**
 Select the Nth unapproved brief by index. If out of range: `Index out of range.` Stop.
 
-**Argument matches a ticket identifier (`#\d+`, `[A-Z]+-\d+`, or bare number for Azure DevOps):**
+**Argument matches a ticket identifier (`#\d+`, `[A-Z]+-\d+`, bare number for Azure DevOps, or `[A-Za-z]{1,5}-\d+`/bare number for Shortcut):**
 Scan unapproved brief files for a `**Source:**` line containing the identifier. If 0 matches: show available briefs and stop. If 1 match: load it. If 2+ matches: show numbered list and ask.
 
 **Argument is other text:**
@@ -236,9 +236,31 @@ curl -s \
 
 Check: `fields["System.State"]` is `Done`/`Closed`/`Resolved`? -> Warn, ask `[y/N]`. Check `relations` for existing children (type `System.LinkTypes.Hierarchy-Forward`).
 
+#### Shortcut
+
+If the parent is a Shortcut epic, fetch it:
+
+```bash
+curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  "https://api.app.shortcut.com/api/v3/epics/$EPIC_ID"
+```
+
+Check: `completed` or `archived`? -> Warn, ask `[y/N]`. Fetch epic stories via `GET /api/v3/epics/$EPIC_ID/stories` to check for existing children.
+
+If the parent is a story (not an epic), fetch it:
+
+```bash
+curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  "https://api.app.shortcut.com/api/v3/stories/$STORY_ID"
+```
+
+Check: `completed` or `archived`? -> Warn, ask `[y/N]`. Check `story_links` for existing children.
+
 ### Source 2 — `--epic` flag
 
-If `--epic` is provided (e.g. `--epic PROJ-200`, `--epic #100`, `--epic ENG-42`), validate the target using the same checks as Source 1. If not found or is Done: stop.
+If `--epic` is provided (e.g. `--epic PROJ-200`, `--epic #100`, `--epic ENG-42`, `--epic SC-123`), validate the target using the same checks as Source 1. If not found or is Done: stop.
 
 Note: `--epic` is ignored for board-sourced briefs (the source ticket IS the parent).
 
@@ -428,6 +450,35 @@ curl -s \
 
 Use `authenticatedUser.providerDisplayName` for the `System.AssignedTo` field.
 
+### Shortcut
+
+**Story type:** Shortcut creates stories by default. Use `story_type` field if needed (`feature`, `bug`, `chore` — default: `feature`).
+
+**Pipeline label for children — mandatory, same logic as other boards.** Use `CLANCY_LABEL_PLAN` or `CLANCY_LABEL_BUILD` from `.clancy/.env` (defaults: `clancy:plan` / `clancy:build`).
+
+**Labels:** Resolve label IDs via `GET /api/v3/labels`. If the required label does not exist, create it:
+
+```bash
+curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -X POST \
+  "https://api.app.shortcut.com/api/v3/labels" \
+  -d '{"name": "$LABEL_NAME", "color": "#d4c5f9"}'
+```
+
+On failure to create label: warn, continue without it. Apply: the pipeline label, `clancy:afk` or `clancy:hitl`. `CLANCY_LABEL` is NOT applied to children when pipeline labels are active.
+
+**Resolve current member** for assignment:
+
+```bash
+curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  "https://api.app.shortcut.com/api/v3/member-info"
+```
+
+Use `id` as the `owner_ids` value for story creation.
+
 ---
 
 ## Step 6a — Pre-creation race check
@@ -613,6 +664,43 @@ If no parent: omit the `relations/-` operation from the JSON Patch array.
 
 **On 429 (rate limited):** Check `Retry-After` header. Wait, retry once. If still 429: stop, enter partial failure flow.
 
+### Shortcut — POST story
+
+```bash
+curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -X POST \
+  "https://api.app.shortcut.com/api/v3/stories" \
+  -d '{
+    "name": "{ticket title}",
+    "description": "Epic: {PARENT_KEY}\n\n{Description}\n\n---\n\n**Brief:** {slug}\n**Size:** {S|M|L}",
+    "story_type": "feature",
+    "labels": [{"name": "{PIPELINE_LABEL}"}, {"name": "clancy:{mode}"}],
+    "owner_ids": ["{resolved_member_id}"],
+    "epic_id": {EPIC_ID_or_null},
+    "workflow_state_id": {BACKLOG_STATE_ID}
+  }'
+```
+
+**Parent linking:** If the parent is a Shortcut epic, use the `epic_id` field. If the parent is a story, omit `epic_id` and link via `story_links` after creation (see Step 8).
+
+**Description:** Shortcut uses markdown. The `Epic: {PARENT_KEY}` line is always the first line of the description.
+
+**Workflow state:** Resolve the backlog state ID from the default workflow:
+
+```bash
+WORKFLOWS=$(curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  "https://api.app.shortcut.com/api/v3/workflows")
+```
+
+Find the state with `type: "backlog"` (or `"unstarted"` as fallback). Use its `id` for `workflow_state_id`.
+
+If no parent: omit `epic_id` (or set to `null`).
+
+**On 429 (rate limited):** Check `Retry-After` header. Wait, retry once. If still 429: stop, enter partial failure flow.
+
 ---
 
 ## Step 8 — Link dependencies
@@ -689,6 +777,29 @@ curl -s \
 Wait **200ms** between each link creation.
 
 On failure: `Could not link {DEPENDENT} -> {BLOCKER}. Link manually in Azure DevOps.`
+
+### Shortcut — POST story link
+
+For each dependency (e.g. ticket #3 depends on #2), create a story link:
+
+```bash
+curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -X POST \
+  "https://api.app.shortcut.com/api/v3/story-links" \
+  -d '{
+    "subject_id": {BLOCKER_STORY_ID},
+    "object_id": {DEPENDENT_STORY_ID},
+    "verb": "blocks"
+  }'
+```
+
+`subject_id` = the blocker story, `object_id` = the dependent story. The `verb: "blocks"` means "subject blocks object".
+
+Wait **200ms** between each link creation.
+
+On failure: `Could not link {DEPENDENT} -> {BLOCKER}. Link manually in Shortcut.`
 
 ---
 
@@ -797,6 +908,32 @@ curl -s \
 
 Convert the tracking comment markdown to HTML (table → `<table>`, headings → `<h2>`, etc.).
 
+### Shortcut — POST comment on parent
+
+If the parent is an epic:
+
+```bash
+curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -X POST \
+  "https://api.app.shortcut.com/api/v3/epics/$EPIC_ID/comments" \
+  -d '{"text": "<tracking comment markdown>"}'
+```
+
+If the parent is a story:
+
+```bash
+curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -X POST \
+  "https://api.app.shortcut.com/api/v3/stories/$STORY_ID/comments" \
+  -d '{"text": "<tracking comment markdown>"}'
+```
+
+Shortcut accepts Markdown directly in comment text.
+
 ### Tracking comment format
 
 ```markdown
@@ -877,6 +1014,26 @@ curl -s \
   -d '[{"op": "replace", "path": "/fields/System.Tags", "value": "<tags without brief tag>"}]'
 ```
 
+### Shortcut
+
+```bash
+# Fetch current story/epic labels, filter out brief label, update
+# For stories:
+STORY=$(curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  "https://api.app.shortcut.com/api/v3/stories/$PARENT_STORY_ID")
+
+# Remove brief label from labels array, then update:
+curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -X PUT \
+  "https://api.app.shortcut.com/api/v3/stories/$PARENT_STORY_ID" \
+  -d '{"labels": [labels_without_brief_label]}'
+```
+
+For epics, use `GET /api/v3/epics/$EPIC_ID` and `PUT /api/v3/epics/$EPIC_ID` with the same label-filtering pattern.
+
 ### On failure
 
 ```
@@ -939,6 +1096,7 @@ YYYY-MM-DD HH:MM | APPROVE_BRIEF | {slug} | {N} tickets created
 | Jira         | 429 + `Retry-After` header       | Wait the specified seconds, retry once     |
 | Linear       | `RATELIMITED` error code         | Wait 60s, retry once                       |
 | Azure DevOps | 429 + `Retry-After` header       | Wait the specified seconds, retry once     |
+| Shortcut     | 429 + `Retry-After` header       | Wait the specified seconds, retry once     |
 
 If retry also fails: stop, enter partial failure flow.
 
@@ -961,6 +1119,7 @@ Enter partial failure flow (Step 10).
 | Jira         | 30s per API call     |
 | Linear       | 30s per GraphQL call |
 | Azure DevOps | 30s per API call     |
+| Shortcut     | 30s per API call     |
 
 On timeout: `Request timed out. Ticket may have been created server-side. Check board before re-run.` Enter partial failure flow.
 
@@ -1022,6 +1181,20 @@ curl -s \
 
 Filter `relations` array for entries with `rel: "System.LinkTypes.Hierarchy-Forward"`. Extract child work item IDs from relation URLs, batch fetch titles, and compare against proposed ticket titles (case-insensitive exact match).
 
+#### Shortcut
+
+If the parent is an epic, fetch its stories:
+
+```bash
+curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  "https://api.app.shortcut.com/api/v3/epics/$EPIC_ID/stories"
+```
+
+Compare story `name` fields against proposed ticket titles (case-insensitive exact match).
+
+If the parent is a story, check `story_links` for related stories and compare titles.
+
 If matching children found:
 
 ```
@@ -1043,8 +1216,9 @@ Default: N (don't create duplicates).
 - The `.approved` marker filename is the full brief filename with `.approved` appended (e.g. `.clancy/briefs/2026-03-14-auth-rework.md.approved`)
 - Tickets are created sequentially (not in parallel) to maintain dependency ordering and respect rate limits
 - The 500ms delay between ticket creations is sufficient for all platforms under normal rate limit conditions
-- Dependency links use "Blocks" for Jira, `blockedBy` for Linear, `System.LinkTypes.Dependency-Reverse` for Azure DevOps, and body text cross-references for GitHub
-- Labels on Jira and Azure DevOps are auto-created by the platform; on GitHub they must be pre-created or the 422 fallback handles it; on Linear they are looked up and auto-created if missing
+- Dependency links use "Blocks" for Jira, `blockedBy` for Linear, `System.LinkTypes.Dependency-Reverse` for Azure DevOps, `story_links` with `blocks` verb for Shortcut, and body text cross-references for GitHub
+- Labels on Jira and Azure DevOps are auto-created by the platform; on GitHub they must be pre-created or the 422 fallback handles it; on Linear and Shortcut they are looked up and auto-created if missing
+- Shortcut uses `Shortcut-Token` header (not `Authorization: Bearer`). API base: `https://api.app.shortcut.com/api/v3`. Stories use `name` (not `title`), descriptions use markdown, and parent linking uses `epic_id` for epic parents or `story_links` for story parents
 - Sprint/milestone assignment is deliberately not set — this is a team planning decision
 - Linear `priority: 0` means "No priority" — the team triages after creation
 - Jira priority is inherited from the parent if available; Linear and GitHub do not inherit priority
