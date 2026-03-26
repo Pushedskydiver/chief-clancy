@@ -5,6 +5,7 @@
  * an autopilot session. Pure functions handle parsing and generation;
  * the orchestrator reads FS and writes the report.
  */
+import type { ConsoleLike } from '../shared/types.js';
 import type { ProgressEntry, ProgressFs, QualityFs } from '@chief-clancy/core';
 
 import { join } from 'node:path';
@@ -56,6 +57,7 @@ type BuildReportOpts = {
   readonly readCostsFile: (path: string) => string;
   readonly writeFile: (path: string, content: string) => void;
   readonly mkdir: (path: string) => void;
+  readonly console: ConsoleLike;
   readonly projectRoot: string;
   readonly loopStartTime: number;
   readonly loopEndTime: number;
@@ -119,17 +121,17 @@ function parseCostLine(line: string, sinceMs: number): CostEntry | undefined {
 /** Parse token count from a single cost entry, or 0 if malformed. */
 function parseTokenCount(tokens: string): number {
   const match = tokens.match(/~(\d[\d,]*)/);
-  return match ? parseInt(match[1]!.replace(/,/g, ''), 10) : 0;
+  if (!match) return 0;
+
+  const parsed = parseInt(match[1]!.replace(/,/g, ''), 10);
+  return Number.isNaN(parsed) ? 0 : parsed;
 }
 
-/** Sum token counts from cost entries (recursive to avoid reduce). */
+/** Sum token counts from cost entries (recursive — safe for bounded session sizes). */
 function sumTokens(costs: readonly CostEntry[], i = 0): number {
-  if (i >= costs.length) return 0;
-
-  const current = parseTokenCount(costs[i]!.tokens);
-  const remaining = sumTokens(costs, i + 1);
-
-  return current + remaining;
+  return i >= costs.length
+    ? 0
+    : parseTokenCount(costs[i]!.tokens) + sumTokens(costs, i + 1);
 }
 
 /** Format a UTC date as `YYYY-MM-DD`. */
@@ -286,12 +288,15 @@ function buildQualitySection(
   ];
 }
 
-/** Read a file, returning empty string on any error. */
+/** Read a file, returning empty string on ENOENT. */
 function safeRead(readFile: (path: string) => string, path: string): string {
   try {
     return readFile(path);
-  } catch {
-    return '';
+  } catch (err: unknown) {
+    const isNotFound =
+      err instanceof Error && (err as NodeJS.ErrnoException).code === 'ENOENT';
+    if (isNotFound) return '';
+    throw err;
   }
 }
 
@@ -342,8 +347,9 @@ export function buildSessionReport(opts: BuildReportOpts): string {
   try {
     opts.mkdir(join(projectRoot, '.clancy'));
     opts.writeFile(join(projectRoot, '.clancy', 'session-report.md'), report);
-  } catch {
-    // Best-effort — report is still returned for stdout
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    opts.console.error(`Failed to write session report: ${message}`);
   }
 
   return report;

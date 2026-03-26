@@ -2,17 +2,17 @@
 
 ## Session 34 Handoff
 
-**Phase 9 cleanup in progress.** 3 PRs this session: C25, C26, C27. 334 terminal tests (was 322).
+**Phase 9 cleanup in progress.** 4 PRs this session: C25, C26, C27, C28. 337 terminal tests (was 322).
 
 ### What was done
 
 - **C25** (#95): Extract shared types — consolidated `SpawnSyncFn` (4x), `ConsoleLike` (2x), `AppendFn` (inline) into `runner/shared/types.ts`. Narrowed `stdio` from `(string | number)[]` to `StdioValue` union. Updated 6 consuming files. DA review: 0 HIGH, 0 MEDIUM, 3 LOW — all acceptable.
 - **C26** (#96): Non-null assertion comments — added `// Safe: ...` comments to 10 `!` assertions explaining pipeline ordering guarantees. Replaced `e.parent!` with `hasParent` type predicate (eliminates assertion entirely). DA review: 0 HIGH, 1 MEDIUM (invoke-phase assertions missed — fixed), 2 LOW.
 - **C27** (#97): Test gaps — `invoke-phase.test.ts` (5 tests: fresh/rework branching, TDD flag, ok/fail, prFeedback default) + `deliver-phase.test.ts` (7 tests: wiring, appendProgress, recordDelivery/recordRework, postReworkActions with/without handlers). DA review: 1 HIGH (mock reset — fixed), 3 MEDIUM (missing assertions — fixed).
+- **C28** (#98): Error handling hardening — narrowed `safeRead` catch to ENOENT only (M1). Added `console.error` to silent `buildSessionReport` write catch with `ConsoleLike` on `BuildReportOpts` (M2). NaN guard in `parseTokenCount` (M4). Added `console.error` to silent autopilot webhook catch (M5). Added `'session complete'` fallback in `extractSummaryForWebhook` (L9). DA review: 0 findings.
 
 ### Next up
 
-- **C28**: Error handling hardening (M1–M5, L9)
 - **C29**: Property-based tests + edge cases (M7, M9, M10, L6–L8, L11)
 - **C30**: Minor cleanup (M6, M8, L2–L5, L10, L12)
 - After cleanup: evaluate Phase 10 scope.
@@ -88,7 +88,7 @@
 | C25 | Extract shared types                    | H1, H2, H4, L1          | Create `runner/shared/types.ts` with `SpawnSyncFn` (narrowed stdio), `ConsoleLike`, `AppendFn`. Update 6 files. **Done**                                  |
 | C26 | Non-null assertion comments             | H3                      | Add `// Safe: ...` comments to all 10 `!` assertions. Type predicate `hasParent` eliminates 1 assertion. **Done**                                         |
 | C27 | Test gaps: deliver-phase + invoke-phase | H5, H6                  | `invoke-phase.test.ts` (5 tests) + `deliver-phase.test.ts` (7 tests). Wiring, branching, handler dispatch. **Done**                                       |
-| C28 | Error handling hardening                | M1–M5, L9               | Narrow catches to ENOENT. Add `console.warn` to silent catches. Replace recursive `sumTokens`. Guard NaN. Webhook fallback.                               |
+| C28 | Error handling hardening                | M1–M5, L9               | Narrow catches to ENOENT. Add `console.error` to silent catches. NaN guard in `parseTokenCount`. Webhook fallback. **Done**                               |
 | C29 | Property-based tests + edge cases       | M7, M9, M10, L6–L8, L11 | Fast-check for parsers/prompt builders. Edge cases for stop conditions, subdomain, sub-minute, `\r\n`, commas, error paths.                               |
 | C30 | Minor cleanup                           | M6, M8, L2–L5, L10, L12 | `ReadonlyMap`, `readonly` adapter, `TDD_BLOCK`, `\r\n` in webhook extract, dep-factory behavioral tests, `maxIterations` cap, export convention decision. |
 
