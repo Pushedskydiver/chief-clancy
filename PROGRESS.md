@@ -1,5 +1,25 @@
 # Monorepo Progress
 
+## Session 28 Handoff
+
+**PRs merged:** C20 (#77), C21 (#78)
+**Remaining:** C22, C23, C24
+
+### What was done
+
+- **C20**: Extracted `isPlainObject`, `rejectSymlink`, `hasErrorCode` into `installer/shared/` with subdirectory-per-module convention (matching core). Added barrel `index.ts` per subdirectory, co-located tests (19 new). Replaced `isEnoent` with `hasErrorCode`. Added empty-array guard to `filterNewEntries` (H2). Fixed CI failure on root-user permission test (ENOTDIR instead of EACCES).
+- **C21**: Fixed TOCTOU race in `resolveWorkflowRef` (existsSync → try/catch). Added `entry.isFile()` guard to `copyEntry`. Fixed stale `statusLine` (always overwrite instead of `??`).
+
+### Process notes
+
+- Alex requested one-at-a-time PR workflow: merge each before creating the next
+- Cleanup PRs auto-merge after CI passes (per merge autonomy memory)
+- Shared folder restructured to use subdirectory convention from core (`folder/folder.ts + folder.test.ts + index.ts`)
+
+### Next up: C22 — Test coverage gaps
+
+H4+H5: Tests for non-ENOENT re-throw in readManifest/safeFileHash. H6: Test installHooks returning false in runInstall. M8+M9: Non-ENOENT re-throw in safeCopy/safeUnlink. M10: confirmOverwrite edge cases. L10: hasErrorCode tests (already done in C20). L11: meta.date ISO format assertion. L12: parseManifestJson with array input.
+
 ## Phase 1: Scaffold
 
 | PR   | Description                                                                                 | Status |
@@ -65,8 +85,8 @@ Pre-Phase 9 audit of terminal installer modules. 4-agent sweep (bugs, convention
 
 | PR  | Description                                                                                                                  | Status  |
 | --- | ---------------------------------------------------------------------------------------------------------------------------- | ------- |
-| C20 | Shared helpers: extract `isPlainObject` + `rejectSymlink` → `shared/`, replace `isEnoent`, add barrel (H2, M1-M4, M12)       | Pending |
-| C21 | TOCTOU fix + safety: wrap `resolveWorkflowRef` try/catch, `isFile()` guard in `copyEntry`, stale statusLine (H3, M5, M7)     | Pending |
+| C20 | Shared helpers: extract `isPlainObject` + `rejectSymlink` → `shared/`, replace `isEnoent`, add barrel (H2, M1-M4, M12)       | Done |
+| C21 | TOCTOU fix + safety: wrap `resolveWorkflowRef` try/catch, `isFile()` guard in `copyEntry`, stale statusLine (H3, M5, M7)     | Done |
 | C22 | Test coverage: non-ENOENT re-throws, installHooks failure, confirmOverwrite edges, fs-errors tests (H4-H6, M8-M10, L10-L12)  | Pending |
 | C23 | Comment hygiene + export cleanup: `as` cast comments, `@returns` JSDoc, remove over-exports, chain fix (M13, L1, L7-L9, L15) | Pending |
 | C24 | `cleanDisabledFiles` recursive cleanup + `hooks[0]` guard + hook-installer catch improvement (H1, M6)                        | Pending |
