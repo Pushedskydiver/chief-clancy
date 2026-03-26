@@ -53,10 +53,10 @@ export function parseTime(
 
   const hours = parseInt(match[1]!, 10);
   const minutes = parseInt(match[2]!, 10);
-  const isValidRange =
-    hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
+  const isValidHour = hours >= 0 && hours <= 23;
+  const isValidMinute = minutes >= 0 && minutes <= 59;
 
-  return isValidRange ? { hours, minutes } : undefined;
+  return isValidHour && isValidMinute ? { hours, minutes } : undefined;
 }
 
 /**
