@@ -1,5 +1,24 @@
 # Monorepo Progress
 
+## Session 32 Handoff
+
+**Track B continues.** 1 PR this session: 9.2 (prompt builder).
+
+### What was done
+
+- **9.2** (#89): Prompt builder — three pure functions for constructing Claude CLI prompts. `ticketLabel` (provider-specific labels for all 6 boards), `buildPrompt` (full implementation prompt with executability check, TDD block, blocker handling), `buildReworkPrompt` (reviewer feedback prompt with numbered comments, previous context). Both switches (`ticketLabel`, `parentLabel`) are exhaustive over `BoardProvider`. No DI needed — pure string builders. 30 tests. 231 terminal tests total. DA review caught 2 MEDIUM (exhaustive `parentLabel` switch, field ordering) + 4 LOW (misleading test values, test gaps) — all fixed.
+
+### Process notes
+
+- Barrel `index.ts` still deferred for new leaf modules until the consuming PR (9.4 dep factory).
+- DA review on every PR without exception — all 6 findings addressed including LOW severity.
+
+### Next up
+
+- **9.3**: Webhook notifications (`sendNotification`, Slack/Teams payload builders)
+- **9.6**: Session report generator (parse costs.log + progress.txt)
+- Then 9.4 (dep factory, depends on 9.1+9.2+9.3) → 9.5 (once entry) → 9.7 (AFK runner)
+
 ## Session 31 Handoff
 
 **Track A complete, Track B started.** 3 PRs this session: 9.0e-9.0f (board parity finished) + 9.1 (first TypeScript in Phase 9).
@@ -613,7 +632,7 @@ Two independent tracks — board parity (Track A) can proceed in any order relat
 | PR  | Description                                                                             | Status  |
 | --- | --------------------------------------------------------------------------------------- | ------- |
 | 9.1 | Claude CLI bridge: `invokeClaudePrint`, `invokeClaudeSession`. I/O boundary.            | Done    |
-| 9.2 | Prompt builder: `buildPrompt`, `buildReworkPrompt`, `ticketLabel`, TDD block.           | Pending |
+| 9.2 | Prompt builder: `buildPrompt`, `buildReworkPrompt`, `ticketLabel`, TDD block.           | Done    |
 | 9.3 | Webhook notifications: `sendNotification`, Slack/Teams payload builders.                | Pending |
 | 9.4 | Dep factory: `buildPipelineDeps(opts)` — wire all 15 `PipelineDeps` fields.             | Pending |
 | 9.5 | Once entry point + display: parse args, load env, create context, run pipeline.         | Pending |
