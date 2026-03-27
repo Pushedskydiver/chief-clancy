@@ -27,10 +27,10 @@ Detect board from `.clancy/.env` and fetch with `maxResults=1`. The query must m
 **Jira:** Build JQL using the same clauses as the once-runner:
 
 - Sprint clause: include `AND sprint in openSprints()` if `CLANCY_JQL_SPRINT` is set
-- Label clause: include `AND labels = "$CLANCY_LABEL"` if `CLANCY_LABEL` is set
+- Label clause: include `AND labels = "$CLANCY_LABEL_BUILD"` if `CLANCY_LABEL_BUILD` is set (falls back to `CLANCY_LABEL`)
 - `CLANCY_JQL_STATUS` defaults to `To Do` if not set
 
-Full JQL: `project=$JIRA_PROJECT_KEY [AND sprint in openSprints()] [AND labels = "$CLANCY_LABEL"] AND assignee=currentUser() AND status="$CLANCY_JQL_STATUS" ORDER BY priority ASC`
+Full JQL: `project=$JIRA_PROJECT_KEY [AND sprint in openSprints()] [AND labels = "$CLANCY_LABEL_BUILD"] AND assignee=currentUser() AND status="$CLANCY_JQL_STATUS" ORDER BY priority ASC`
 
 Use the POST `/rest/api/3/search/jql` endpoint (the old GET `/rest/api/3/search` was removed Aug 2025):
 
@@ -46,9 +46,9 @@ RESPONSE=$(curl -s \
 
 **GitHub Issues:** First resolve the authenticated username (don't use `@me` — it breaks with fine-grained PATs):
 `GITHUB_USERNAME=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" https://api.github.com/user | jq -r '.login')`
-Then: `GET /repos/$GITHUB_REPO/issues?state=open&assignee=$GITHUB_USERNAME&labels=clancy&per_page=1` — filter out PRs (entries with `pull_request` key).
+Then: `GET /repos/$GITHUB_REPO/issues?state=open&assignee=$GITHUB_USERNAME&labels=$CLANCY_LABEL_BUILD&per_page=1` — filter out PRs (entries with `pull_request` key). Use `CLANCY_LABEL_BUILD` from `.clancy/.env` (falls back to `CLANCY_LABEL`, defaults to `clancy`).
 
-**Linear:** GraphQL `viewer.assignedIssues` with `filter: { state: { type: { eq: "unstarted" } }, team: { id: { eq: "$LINEAR_TEAM_ID" } }[, labels: { name: { eq: "$CLANCY_LABEL" } }] }` (label clause only if `CLANCY_LABEL` is set), `first: 1`, `orderBy: priority`
+**Linear:** GraphQL `viewer.assignedIssues` with `filter: { state: { type: { eq: "unstarted" } }, team: { id: { eq: "$LINEAR_TEAM_ID" } }[, labels: { name: { eq: "$CLANCY_LABEL_BUILD" } }] }` (label clause only if `CLANCY_LABEL_BUILD` is set, falls back to `CLANCY_LABEL`), `first: 1`, `orderBy: priority`
 
 Fetch full ticket content: summary, description (full text), acceptance criteria (if present), epic/parent info, blockers/issue links.
 

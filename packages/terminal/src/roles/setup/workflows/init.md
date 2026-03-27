@@ -170,7 +170,7 @@ Add this label to any issue you want Clancy to work on.
    - If the query fails or returns no teams: fall back to asking manually: `What's your Linear team ID? (find it at linear.app/settings/teams — click your team, copy the ID from the URL)`
 3. `What label should Clancy filter by? Create a "clancy" label in your Linear team and apply it to issues you want Clancy to implement. [clancy]`
 
-If a label is entered: store as `CLANCY_LABEL` in `.clancy/.env`. Always wrap the value in double quotes (e.g. `CLANCY_LABEL="clancy"`).
+If a label is entered: store as `CLANCY_LABEL_BUILD` in `.clancy/.env`. Always wrap the value in double quotes (e.g. `CLANCY_LABEL_BUILD="clancy"`).
 If enter is pressed with no value: skip — omit the label clause entirely (Clancy will pick up all unstarted assigned issues).
 
 ---
@@ -323,7 +323,7 @@ If no: omit the sprint clause from JQL entirely.
 
 Output: `What label should Clancy filter by? Create a "clancy" label in your Jira project and apply it to tickets you want Clancy to implement. [clancy]`
 
-If a label is entered: store as `CLANCY_LABEL` in `.clancy/.env`. Always wrap the value in double quotes (e.g. `CLANCY_LABEL="clancy"`).
+If a label is entered: store as `CLANCY_LABEL_BUILD` in `.clancy/.env`. Always wrap the value in double quotes (e.g. `CLANCY_LABEL_BUILD="clancy"`).
 If enter is pressed with no value: skip — omit the label clause entirely (Clancy will pick up all assigned tickets in the queue).
 
 ---
