@@ -70,14 +70,14 @@ General
 Jira
   [B1] Queue status      {CLANCY_JQL_STATUS:-To Do}
   [B2] Sprint filter     {on if CLANCY_JQL_SPRINT set, else off}
-  [B3] Label filter      {CLANCY_LABEL if set, else off}
+  [B3] Label filter      {CLANCY_LABEL_BUILD if set, else off}
   [B4] Pickup status     {CLANCY_STATUS_IN_PROGRESS if set, else off}
   [B5] Done status       {CLANCY_STATUS_DONE if set, else off}
   [B6] Review status     {CLANCY_STATUS_REVIEW if set, else "uses Done status"}
 
 {If Linear:}
 Linear
-  [B1] Label filter      {CLANCY_LABEL if set, else off}
+  [B1] Label filter      {CLANCY_LABEL_BUILD if set, else off}
   [B2] Pickup status     {CLANCY_STATUS_IN_PROGRESS if set, else off}
   [B3] Done status       {CLANCY_STATUS_DONE if set, else off}
   [B4] Review status     {CLANCY_STATUS_REVIEW if set, else "uses Done state"}
@@ -358,8 +358,8 @@ where some tickets are not suitable for autonomous implementation.
 [3] Cancel
 ```
 
-If [1]: prompt `What label should Clancy filter by? (must already exist in Jira)` then write `CLANCY_LABEL=<value>` to `.clancy/.env`.
-If [2]: remove `CLANCY_LABEL` from `.clancy/.env`.
+If [1]: prompt `What label should Clancy filter by? (must already exist in Jira)` then write `CLANCY_LABEL_BUILD=<value>` to `.clancy/.env`.
+If [2]: remove `CLANCY_LABEL_BUILD` from `.clancy/.env`.
 
 ---
 
@@ -426,8 +426,8 @@ where some issues are not suitable for autonomous implementation.
 [3] Cancel
 ```
 
-If [1]: prompt `What label should Clancy filter by? (must already exist in your Linear team)` then write `CLANCY_LABEL=<value>` to `.clancy/.env`.
-If [2]: remove `CLANCY_LABEL` from `.clancy/.env`.
+If [1]: prompt `What label should Clancy filter by? (must already exist in your Linear team)` then write `CLANCY_LABEL_BUILD=<value>` to `.clancy/.env`.
+If [2]: remove `CLANCY_LABEL_BUILD` from `.clancy/.env`.
 
 ---
 

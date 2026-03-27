@@ -26,11 +26,11 @@ Detect board from `.clancy/.env`:
 Build the JQL string first using the same clauses as the once-runner:
 
 - Sprint clause: include `AND sprint in openSprints()` if `CLANCY_JQL_SPRINT` is set
-- Label clause: include `AND labels = "$CLANCY_LABEL"` if `CLANCY_LABEL` is set
+- Label clause: include `AND labels = "$CLANCY_LABEL_BUILD"` if `CLANCY_LABEL_BUILD` is set (falls back to `CLANCY_LABEL`)
 - `CLANCY_JQL_STATUS` defaults to `To Do` if not set
 
 Full JQL (with both optional clauses shown):
-`project=$JIRA_PROJECT_KEY [AND sprint in openSprints()] [AND labels = "$CLANCY_LABEL"] AND assignee=currentUser() AND status="$CLANCY_JQL_STATUS" ORDER BY priority ASC`
+`project=$JIRA_PROJECT_KEY [AND sprint in openSprints()] [AND labels = "$CLANCY_LABEL_BUILD"] AND assignee=currentUser() AND status="$CLANCY_JQL_STATUS" ORDER BY priority ASC`
 
 ```bash
 RESPONSE=$(curl -s \
@@ -55,22 +55,22 @@ Then fetch issues:
 RESPONSE=$(curl -s \
   -H "Authorization: Bearer $GITHUB_TOKEN" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
-  "https://api.github.com/repos/$GITHUB_REPO/issues?state=open&assignee=$GITHUB_USERNAME&labels=clancy&per_page=3")
+  "https://api.github.com/repos/$GITHUB_REPO/issues?state=open&assignee=$GITHUB_USERNAME&labels=$CLANCY_LABEL_BUILD&per_page=3")
 # Filter out PRs (entries with pull_request key)
 ```
 
 **Linear:**
 
-Build the filter — `CLANCY_LABEL` is optional:
+Build the filter — `CLANCY_LABEL_BUILD` is optional (falls back to `CLANCY_LABEL`):
 
 - Base filter: `state: { type: { eq: "unstarted" } }, team: { id: { eq: "$LINEAR_TEAM_ID" } }`
-- If `CLANCY_LABEL` is set: add `labels: { name: { eq: "$CLANCY_LABEL" } }` to the filter
+- If `CLANCY_LABEL_BUILD` is set (or `CLANCY_LABEL` fallback): add `labels: { name: { eq: "$CLANCY_LABEL_BUILD" } }` to the filter
 
 ```graphql
 query {
   viewer {
     assignedIssues(
-      filter: { state: { type: { eq: "unstarted" } }, team: { id: { eq: "$LINEAR_TEAM_ID" } } [, labels: { name: { eq: "$CLANCY_LABEL" } }] }
+      filter: { state: { type: { eq: "unstarted" } }, team: { id: { eq: "$LINEAR_TEAM_ID" } } [, labels: { name: { eq: "$CLANCY_LABEL_BUILD" } }] }
       first: 3
       orderBy: priority
     ) {
