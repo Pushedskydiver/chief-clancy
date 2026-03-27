@@ -18,7 +18,7 @@
     "@chief-clancy/core": "workspace:*"
   },
   "scripts": {
-    "build": "tsc --project tsconfig.build.json && tsc-alias --project tsconfig.build.json && node dist/hooks/esbuild.hooks.js",
+    "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc --project tsconfig.build.json && tsc-alias --project tsconfig.build.json && node dist/hooks/esbuild.hooks.js",
     "test": "vitest run",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
