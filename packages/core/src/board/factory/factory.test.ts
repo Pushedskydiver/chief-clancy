@@ -104,7 +104,7 @@ describe('createBoard', () => {
     };
 
     createBoard({ provider: 'jira', env });
-    expect(createJiraBoard).toHaveBeenCalledWith(env);
+    expect(createJiraBoard).toHaveBeenCalledWith(env, undefined);
   });
 
   it('passes github env to createGitHubBoard', async () => {
@@ -112,7 +112,7 @@ describe('createBoard', () => {
     const env = { GITHUB_TOKEN: 'ghp_test', GITHUB_REPO: 'owner/repo' };
 
     createBoard({ provider: 'github', env });
-    expect(createGitHubBoard).toHaveBeenCalledWith(env);
+    expect(createGitHubBoard).toHaveBeenCalledWith(env, undefined);
   });
 
   it('passes linear env to createLinearBoard', async () => {
@@ -120,7 +120,7 @@ describe('createBoard', () => {
     const env = { LINEAR_API_KEY: 'lin_test', LINEAR_TEAM_ID: 'team-123' };
 
     createBoard({ provider: 'linear', env });
-    expect(createLinearBoard).toHaveBeenCalledWith(env);
+    expect(createLinearBoard).toHaveBeenCalledWith(env, undefined);
   });
 
   it('passes shortcut env to createShortcutBoard', async () => {
@@ -129,7 +129,7 @@ describe('createBoard', () => {
     const env = { SHORTCUT_API_TOKEN: 'sc_test' };
 
     createBoard({ provider: 'shortcut', env });
-    expect(createShortcutBoard).toHaveBeenCalledWith(env);
+    expect(createShortcutBoard).toHaveBeenCalledWith(env, undefined);
   });
 
   it('passes notion env to createNotionBoard', async () => {
@@ -137,7 +137,7 @@ describe('createBoard', () => {
     const env = { NOTION_TOKEN: 'ntn_test', NOTION_DATABASE_ID: 'db-uuid' };
 
     createBoard({ provider: 'notion', env });
-    expect(createNotionBoard).toHaveBeenCalledWith(env);
+    expect(createNotionBoard).toHaveBeenCalledWith(env, undefined);
   });
 
   it('passes azdo env to createAzdoBoard', async () => {
@@ -145,6 +145,6 @@ describe('createBoard', () => {
     const env = { AZDO_ORG: 'myorg', AZDO_PROJECT: 'proj', AZDO_PAT: 'pat' };
 
     createBoard({ provider: 'azdo', env });
-    expect(createAzdoBoard).toHaveBeenCalledWith(env);
+    expect(createAzdoBoard).toHaveBeenCalledWith(env, undefined);
   });
 });

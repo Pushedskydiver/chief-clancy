@@ -64,7 +64,7 @@ describe('linearGraphql', () => {
     } as Response);
     vi.stubGlobal('fetch', mockFetch);
 
-    await linearGraphql('api_key', '{ viewer { id } }');
+    await linearGraphql({ apiKey: 'api_key', query: '{ viewer { id } }' });
 
     expect(mockFetch).toHaveBeenCalledWith(
       'https://api.linear.app/graphql',
@@ -79,7 +79,7 @@ describe('linearGraphql', () => {
     } as Response);
     vi.stubGlobal('fetch', mockFetch);
 
-    await linearGraphql('lin_api_key', '{ viewer { id } }');
+    await linearGraphql({ apiKey: 'lin_api_key', query: '{ viewer { id } }' });
 
     const init = mockFetch.mock.calls[0]?.[1] as RequestInit;
     const headers = init.headers as Record<string, string>;
@@ -93,8 +93,10 @@ describe('linearGraphql', () => {
     } as Response);
     vi.stubGlobal('fetch', mockFetch);
 
-    await linearGraphql('key', 'query($id: ID!) { issue(id: $id) { id } }', {
-      id: '123',
+    await linearGraphql({
+      apiKey: 'key',
+      query: 'query($id: ID!) { issue(id: $id) { id } }',
+      variables: { id: '123' },
     });
 
     const init = mockFetch.mock.calls[0]?.[1] as RequestInit;
@@ -113,7 +115,10 @@ describe('linearGraphql', () => {
       } as Response),
     );
 
-    const result = await linearGraphql('key', '{ viewer { id } }');
+    const result = await linearGraphql({
+      apiKey: 'key',
+      query: '{ viewer { id } }',
+    });
     expect(result).toEqual(expected);
   });
 
@@ -123,7 +128,10 @@ describe('linearGraphql', () => {
       vi.fn().mockRejectedValue(new Error('network down')),
     );
 
-    const result = await linearGraphql('key', '{ viewer { id } }');
+    const result = await linearGraphql({
+      apiKey: 'key',
+      query: '{ viewer { id } }',
+    });
     expect(result).toBeUndefined();
   });
 
@@ -133,7 +141,10 @@ describe('linearGraphql', () => {
       vi.fn().mockResolvedValue({ ok: false, status: 500 } as Response),
     );
 
-    const result = await linearGraphql('key', '{ viewer { id } }');
+    const result = await linearGraphql({
+      apiKey: 'key',
+      query: '{ viewer { id } }',
+    });
     expect(result).toBeUndefined();
   });
 
@@ -146,7 +157,10 @@ describe('linearGraphql', () => {
       } as Response),
     );
 
-    const result = await linearGraphql('key', '{ viewer { id } }');
+    const result = await linearGraphql({
+      apiKey: 'key',
+      query: '{ viewer { id } }',
+    });
     expect(result).toBeUndefined();
   });
 });

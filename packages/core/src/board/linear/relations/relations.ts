@@ -46,7 +46,7 @@ export async function fetchBlockerStatus(
     }
   `;
 
-  const raw = await linearGraphql(apiKey, query, { issueId });
+  const raw = await linearGraphql({ apiKey, query, variables: { issueId } });
   const parsed = linearIssueRelationsResponseSchema.safeParse(raw);
   if (!parsed.success) return false;
 
@@ -118,7 +118,11 @@ async function fetchChildrenByDescription(
     }
   `;
 
-  const raw = await linearGraphql(apiKey, query, { filter: descriptionRef });
+  const raw = await linearGraphql({
+    apiKey,
+    query,
+    variables: { filter: descriptionRef },
+  });
   const parsed = linearIssueSearchResponseSchema.safeParse(raw);
   if (!parsed.success) return undefined;
 
@@ -143,7 +147,11 @@ async function fetchChildrenByNativeApi(
     }
   `;
 
-  const raw = await linearGraphql(apiKey, query, { issueId: parentId });
+  const raw = await linearGraphql({
+    apiKey,
+    query,
+    variables: { issueId: parentId },
+  });
   const parsed = linearIssueChildrenResponseSchema.safeParse(raw);
   if (!parsed.success) return undefined;
 
@@ -175,9 +183,10 @@ export async function lookupWorkflowStateId(
     }
   `;
 
-  const raw = await linearGraphql(apiKey, query, {
-    teamId,
-    name: stateName,
+  const raw = await linearGraphql({
+    apiKey,
+    query,
+    variables: { teamId, name: stateName },
   });
   const parsed = linearWorkflowStatesResponseSchema.safeParse(raw);
   if (!parsed.success) return undefined;
@@ -222,7 +231,11 @@ export async function transitionIssue(opts: TransitionOpts): Promise<boolean> {
       }
     `;
 
-    const raw = await linearGraphql(apiKey, mutation, { issueId, stateId });
+    const raw = await linearGraphql({
+      apiKey,
+      query: mutation,
+      variables: { issueId, stateId },
+    });
     const parsed = linearIssueUpdateResponseSchema.safeParse(raw);
     if (!parsed.success) return false;
 

@@ -83,7 +83,7 @@ export async function queryDatabase(
     {
       schema: notionDatabaseQueryResponseSchema,
       label: 'Notion API',
-      fetcher: retryFetch,
+      fetcher: ctx.fetcher ?? retryFetch,
     },
   );
 }
@@ -145,11 +145,16 @@ async function collectPages(
 export async function fetchPage(
   token: string,
   pageId: string,
+  fetcher?: (url: string, init?: RequestInit) => Promise<Response>,
 ): Promise<NotionPage | undefined> {
   return fetchAndParse(
     `${NOTION_API}/pages/${pageId}`,
     { headers: notionHeaders(token) },
-    { schema: notionPageSchema, label: 'Notion page', fetcher: retryFetch },
+    {
+      schema: notionPageSchema,
+      label: 'Notion page',
+      fetcher: fetcher ?? retryFetch,
+    },
   );
 }
 

@@ -149,6 +149,7 @@ async function fetchChildrenByLinks(
     {
       schema: azdoWiqlLinkResponseSchema,
       label: 'Azure DevOps WIQL links',
+      fetcher: ctx.fetcher,
     },
   );
 

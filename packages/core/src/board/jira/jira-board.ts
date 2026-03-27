@@ -6,6 +6,7 @@
  */
 import type { JiraTicket } from './api/index.js';
 import type { JiraEnv } from '~/c/schemas/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/index.js';
 
 import {
@@ -59,6 +60,7 @@ type JiraCtx = {
   readonly auth: string;
   readonly projectKey: string;
   readonly statusName: string;
+  readonly fetcher?: Fetcher;
 };
 
 /** Fetch and normalise Jira tickets into FetchedTickets. */
@@ -75,6 +77,7 @@ async function fetchJiraTickets(
     sprint: env.CLANCY_JQL_SPRINT,
     label: opts.buildLabel ?? env.CLANCY_LABEL,
     excludeHitl: opts.excludeHitl,
+    fetcher: ctx.fetcher,
   });
   return tickets.map((t) => toFetchedTicket(t, ctx.statusName));
 }
@@ -90,6 +93,7 @@ async function doTransition(
     auth: ctx.auth,
     issueKey: ticket.key,
     statusName: status,
+    fetcher: ctx.fetcher,
   });
   if (ok) console.log(`  → Transitioned to ${status}`);
   return ok;
@@ -101,12 +105,13 @@ async function doTransition(
  * @param env - The validated Jira environment variables.
  * @returns A Board object that delegates to Jira API functions.
  */
-export function createJiraBoard(env: JiraEnv): Board {
+export function createJiraBoard(env: JiraEnv, fetcher?: Fetcher): Board {
   const ctx: JiraCtx = {
     baseUrl: env.JIRA_BASE_URL,
     auth: buildAuthHeader(env.JIRA_USER, env.JIRA_API_TOKEN),
     projectKey: env.JIRA_PROJECT_KEY,
     statusName: env.CLANCY_JQL_STATUS ?? 'To Do',
+    fetcher,
   };
   const labelCtx = { baseUrl: ctx.baseUrl, auth: ctx.auth };
   const fetch = (opts: FetchTicketOpts) => fetchJiraTickets(ctx, opts, env);

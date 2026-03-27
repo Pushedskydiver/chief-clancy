@@ -5,6 +5,7 @@
  * Uses the POST `/rest/api/3/search/jql` endpoint (old GET `/search`
  * was removed by Atlassian in August 2025).
  */
+import type { Fetcher } from '~/c/shared/http/index.js';
 import type { PingResult } from '~/c/types/index.js';
 
 import {
@@ -163,6 +164,7 @@ type FetchTicketsOpts = {
   readonly label?: string;
   readonly excludeHitl?: boolean;
   readonly limit?: number;
+  readonly fetcher?: Fetcher;
 };
 
 /**
@@ -175,7 +177,7 @@ export async function fetchTickets(
   opts: FetchTicketsOpts,
 ): Promise<readonly JiraTicket[]> {
   const { baseUrl, auth, projectKey, status } = opts;
-  const { sprint, label, excludeHitl, limit = 5 } = opts;
+  const { sprint, label, excludeHitl, limit = 5, fetcher } = opts;
 
   const jql = buildJql({ projectKey, status, sprint, label, excludeHitl });
 
@@ -197,7 +199,7 @@ export async function fetchTickets(
         ],
       }),
     },
-    { schema: jiraSearchResponseSchema, label: 'Jira API' },
+    { schema: jiraSearchResponseSchema, label: 'Jira API', fetcher },
   );
 
   if (!data) return [];
@@ -253,6 +255,7 @@ type TransitionOpts = {
   readonly auth: string;
   readonly issueKey: string;
   readonly statusName: string;
+  readonly fetcher?: Fetcher;
 };
 
 /**
@@ -270,7 +273,11 @@ export async function lookupTransitionId(
   const data = await fetchAndParse(
     `${baseUrl}/rest/api/3/issue/${issueKey}/transitions`,
     { headers: jiraHeaders(auth) },
-    { schema: jiraTransitionsResponseSchema, label: 'Jira transitions' },
+    {
+      schema: jiraTransitionsResponseSchema,
+      label: 'Jira transitions',
+      fetcher: opts.fetcher,
+    },
   );
 
   return data?.transitions.find((t) => t.name === statusName)?.id;

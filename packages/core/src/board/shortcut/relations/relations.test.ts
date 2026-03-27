@@ -53,11 +53,11 @@ describe('fetchBlockerStatus', () => {
       } as Response);
     vi.stubGlobal('fetch', mockFetch);
 
-    const result = await fetchBlockerStatus(
-      'tok',
-      42,
-      makeCacheWithWorkflows(),
-    );
+    const result = await fetchBlockerStatus({
+      token: 'tok',
+      storyId: 42,
+      workflowCache: makeCacheWithWorkflows(),
+    });
     expect(result).toBe(true);
   });
 
@@ -87,11 +87,11 @@ describe('fetchBlockerStatus', () => {
       } as Response);
     vi.stubGlobal('fetch', mockFetch);
 
-    const result = await fetchBlockerStatus(
-      'tok',
-      42,
-      makeCacheWithWorkflows(),
-    );
+    const result = await fetchBlockerStatus({
+      token: 'tok',
+      storyId: 42,
+      workflowCache: makeCacheWithWorkflows(),
+    });
     expect(result).toBe(false);
   });
 
@@ -104,11 +104,11 @@ describe('fetchBlockerStatus', () => {
       } as Response),
     );
 
-    const result = await fetchBlockerStatus(
-      'tok',
-      42,
-      makeCacheWithWorkflows(),
-    );
+    const result = await fetchBlockerStatus({
+      token: 'tok',
+      storyId: 42,
+      workflowCache: makeCacheWithWorkflows(),
+    });
     expect(result).toBe(false);
   });
 
@@ -127,11 +127,11 @@ describe('fetchBlockerStatus', () => {
       } as Response),
     );
 
-    const result = await fetchBlockerStatus(
-      'tok',
-      42,
-      makeCacheWithWorkflows(),
-    );
+    const result = await fetchBlockerStatus({
+      token: 'tok',
+      storyId: 42,
+      workflowCache: makeCacheWithWorkflows(),
+    });
     expect(result).toBe(false);
   });
 
@@ -145,11 +145,11 @@ describe('fetchBlockerStatus', () => {
       } as Response),
     );
 
-    const result = await fetchBlockerStatus(
-      'tok',
-      42,
-      makeCacheWithWorkflows(),
-    );
+    const result = await fetchBlockerStatus({
+      token: 'tok',
+      storyId: 42,
+      workflowCache: makeCacheWithWorkflows(),
+    });
     expect(result).toBe(false);
   });
 });

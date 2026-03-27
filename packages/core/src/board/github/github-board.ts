@@ -6,6 +6,7 @@
  */
 import type { GitHubTicket } from './api/index.js';
 import type { GitHubEnv } from '~/c/schemas/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/index.js';
 
 import { Cached } from '~/c/shared/cache/index.js';
@@ -58,6 +59,7 @@ type GitHubCtx = {
   readonly repo: string;
   readonly defaultLabel?: string;
   readonly usernameCache: Cached<string>;
+  readonly fetcher?: Fetcher;
 };
 
 /** Fetch and normalise GitHub issues into FetchedTickets. */
@@ -72,6 +74,7 @@ async function fetchGitHubTickets(
     label: opts.buildLabel ?? ctx.defaultLabel,
     username,
     excludeHitl: opts.excludeHitl,
+    fetcher: ctx.fetcher,
   });
   return tickets.map(toFetchedTicket);
 }
@@ -80,14 +83,16 @@ async function fetchGitHubTickets(
  * Create a Board implementation for GitHub Issues.
  *
  * @param env - The validated GitHub environment variables.
+ * @param fetcher - Optional custom fetch function for DI in tests.
  * @returns A Board object that delegates to GitHub API functions.
  */
-export function createGitHubBoard(env: GitHubEnv): Board {
+export function createGitHubBoard(env: GitHubEnv, fetcher?: Fetcher): Board {
   const ctx: GitHubCtx = {
     token: env.GITHUB_TOKEN,
     repo: env.GITHUB_REPO,
     defaultLabel: env.CLANCY_LABEL,
     usernameCache: new Cached<string>(),
+    fetcher,
   };
   const fetch = (opts: FetchTicketOpts) => fetchGitHubTickets(ctx, opts);
   return {

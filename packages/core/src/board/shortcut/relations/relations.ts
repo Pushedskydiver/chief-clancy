@@ -6,6 +6,7 @@
  */
 import type { ShortcutWorkflowsResponse } from '~/c/schemas/index.js';
 import type { Cached } from '~/c/shared/cache/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 import type { ChildrenStatus } from '~/c/types/index.js';
 
 import {
@@ -21,16 +22,25 @@ import {
   shortcutHeaders,
 } from '../api/index.js';
 
+/** Options for {@link isBlockerUnresolved}. */
+type BlockerCheckOpts = {
+  readonly token: string;
+  readonly blockerId: number;
+  readonly doneStateIds: ReadonlySet<number>;
+  readonly fetcher?: Fetcher;
+};
+
 /** Check if a single blocking story is unresolved (not in a done state). */
-async function isBlockerUnresolved(
-  token: string,
-  blockerId: number,
-  doneStateIds: ReadonlySet<number>,
-): Promise<boolean> {
+async function isBlockerUnresolved(opts: BlockerCheckOpts): Promise<boolean> {
+  const { token, blockerId, doneStateIds, fetcher } = opts;
   const blocker = await fetchAndParse(
     `${SHORTCUT_API}/stories/${String(blockerId)}`,
     { headers: shortcutHeaders(token) },
-    { schema: shortcutStoryDetailResponseSchema, label: 'Shortcut blocker' },
+    {
+      schema: shortcutStoryDetailResponseSchema,
+      label: 'Shortcut blocker',
+      fetcher,
+    },
   );
 
   if (!blocker) return false;
@@ -53,16 +63,27 @@ async function isBlockerUnresolved(
  * @param workflowCache - The workflow cache instance.
  * @returns `true` if any blocker is unresolved, `false` otherwise.
  */
+/** Options for {@link fetchBlockerStatus}. */
+type FetchBlockerOpts = {
+  readonly token: string;
+  readonly storyId: number;
+  readonly workflowCache: Cached<ShortcutWorkflowsResponse>;
+  readonly fetcher?: Fetcher;
+};
+
 export async function fetchBlockerStatus(
-  token: string,
-  storyId: number,
-  workflowCache: Cached<ShortcutWorkflowsResponse>,
+  opts: FetchBlockerOpts,
 ): Promise<boolean> {
+  const { token, storyId, workflowCache, fetcher } = opts;
   try {
     const story = await fetchAndParse(
       `${SHORTCUT_API}/stories/${String(storyId)}`,
       { headers: shortcutHeaders(token) },
-      { schema: shortcutStoryDetailResponseSchema, label: 'Shortcut story' },
+      {
+        schema: shortcutStoryDetailResponseSchema,
+        label: 'Shortcut story',
+        fetcher,
+      },
     );
 
     if (!story?.blocked) return false;
@@ -77,7 +98,12 @@ export async function fetchBlockerStatus(
 
     const results = await Promise.all(
       blockerLinks.map((link) =>
-        isBlockerUnresolved(token, link.object_id, doneStateIds),
+        isBlockerUnresolved({
+          token,
+          blockerId: link.object_id,
+          doneStateIds,
+          fetcher,
+        }),
       ),
     );
 
@@ -93,6 +119,7 @@ type FetchChildrenOpts = {
   readonly epicId: number;
   readonly workflowCache: Cached<ShortcutWorkflowsResponse>;
   readonly parentKey?: string;
+  readonly fetcher?: Fetcher;
 };
 
 /**
@@ -107,20 +134,21 @@ type FetchChildrenOpts = {
 export async function fetchChildrenStatus(
   opts: FetchChildrenOpts,
 ): Promise<ChildrenStatus | undefined> {
-  const { token, epicId, workflowCache, parentKey } = opts;
+  const { token, epicId, workflowCache, parentKey, fetcher } = opts;
 
   try {
+    const shared = { token, workflowCache, fetcher };
+
     if (parentKey) {
-      const epicResult = await fetchChildrenByDescription(
-        token,
-        `Epic: ${parentKey}`,
-        workflowCache,
-      );
+      const epicResult = await fetchChildrenByDescription({
+        ...shared,
+        descriptionRef: `Epic: ${parentKey}`,
+      });
 
       if (epicResult && epicResult.total > 0) return epicResult;
     }
 
-    return await fetchChildrenByEpicApi(token, epicId, workflowCache);
+    return await fetchChildrenByEpicApi({ ...shared, epicId });
   } catch {
     return undefined;
   }
@@ -140,12 +168,18 @@ function countChildrenStatus(
   return { total, incomplete };
 }
 
+/** Options for internal children fetch functions. */
+type InternalChildrenOpts = {
+  readonly token: string;
+  readonly workflowCache: Cached<ShortcutWorkflowsResponse>;
+  readonly fetcher?: Fetcher;
+};
+
 /** Fetch children by searching story descriptions for a text reference. */
 async function fetchChildrenByDescription(
-  token: string,
-  descriptionRef: string,
-  workflowCache: Cached<ShortcutWorkflowsResponse>,
+  opts: InternalChildrenOpts & { readonly descriptionRef: string },
 ): Promise<ChildrenStatus | undefined> {
+  const { token, workflowCache, fetcher, descriptionRef } = opts;
   const data = await fetchAndParse(
     `${SHORTCUT_API}/stories/search`,
     {
@@ -156,6 +190,7 @@ async function fetchChildrenByDescription(
     {
       schema: shortcutStorySearchResponseSchema,
       label: 'Shortcut story search',
+      fetcher,
     },
   );
 
@@ -170,16 +205,16 @@ async function fetchChildrenByDescription(
 
 /** Fetch children from the native epic stories endpoint. */
 async function fetchChildrenByEpicApi(
-  token: string,
-  epicId: number,
-  workflowCache: Cached<ShortcutWorkflowsResponse>,
+  opts: InternalChildrenOpts & { readonly epicId: number },
 ): Promise<ChildrenStatus | undefined> {
+  const { token, workflowCache, fetcher, epicId } = opts;
   const stories = await fetchAndParse(
     `${SHORTCUT_API}/epics/${String(epicId)}/stories`,
     { headers: shortcutHeaders(token) },
     {
       schema: shortcutEpicStoriesResponseSchema,
       label: 'Shortcut epic stories',
+      fetcher,
     },
   );
 

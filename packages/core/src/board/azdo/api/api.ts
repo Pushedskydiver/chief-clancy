@@ -63,7 +63,11 @@ export async function runWiql(
       headers: azdoHeaders(ctx.pat),
       body: JSON.stringify({ query }),
     },
-    { schema: azdoWiqlResponseSchema, label: 'Azure DevOps WIQL' },
+    {
+      schema: azdoWiqlResponseSchema,
+      label: 'Azure DevOps WIQL',
+      fetcher: ctx.fetcher,
+    },
   );
 
   return data ? data.workItems.map((wi) => wi.id) : [];
@@ -83,7 +87,11 @@ export async function fetchWorkItem(
   return fetchAndParse(
     `${apiBase(ctx.org, ctx.project)}/wit/workitems/${String(id)}?$expand=relations&api-version=${AZDO_API_VERSION}`,
     { headers: azdoHeaders(ctx.pat) },
-    { schema: azdoWorkItemSchema, label: 'Azure DevOps work item' },
+    {
+      schema: azdoWorkItemSchema,
+      label: 'Azure DevOps work item',
+      fetcher: ctx.fetcher,
+    },
   );
 }
 
@@ -152,6 +160,7 @@ async function fetchBatch(
     {
       schema: azdoWorkItemsBatchResponseSchema,
       label: 'Azure DevOps work items batch',
+      fetcher: ctx.fetcher,
     },
   );
 

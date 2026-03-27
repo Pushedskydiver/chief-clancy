@@ -9,6 +9,7 @@ import type {
   ShortcutWorkflowsResponse,
 } from '~/c/schemas/index.js';
 import type { Cached } from '~/c/shared/cache/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 import type { PingResult } from '~/c/types/index.js';
 
 import {
@@ -90,6 +91,7 @@ export async function pingShortcut(token: string): Promise<PingResult> {
 export async function fetchWorkflows(
   token: string,
   cache: Cached<ShortcutWorkflowsResponse>,
+  fetcher?: Fetcher,
 ): Promise<ShortcutWorkflowsResponse> {
   const cached = cache.get();
   if (cached) return cached;
@@ -97,7 +99,11 @@ export async function fetchWorkflows(
   const data = await fetchAndParse(
     `${SHORTCUT_API}/workflows`,
     { headers: shortcutHeaders(token) },
-    { schema: shortcutWorkflowsResponseSchema, label: 'Shortcut workflows' },
+    {
+      schema: shortcutWorkflowsResponseSchema,
+      label: 'Shortcut workflows',
+      fetcher,
+    },
   );
 
   if (data) cache.store(data);
@@ -116,14 +122,15 @@ type ResolveStateOpts = {
   readonly token: string;
   readonly cache: Cached<ShortcutWorkflowsResponse>;
   readonly workflowName?: string;
+  readonly fetcher?: Fetcher;
 };
 
 export async function resolveWorkflowStateId(
   stateName: string,
   opts: ResolveStateOpts,
 ): Promise<number | undefined> {
-  const { token, cache, workflowName } = opts;
-  const workflows = await fetchWorkflows(token, cache);
+  const { token, cache, workflowName, fetcher } = opts;
+  const workflows = await fetchWorkflows(token, cache, fetcher);
   const lower = stateName.toLowerCase();
 
   const matching = workflows
@@ -145,8 +152,8 @@ export async function resolveWorkflowStateIdsByType(
   stateType: string,
   opts: ResolveStateOpts,
 ): Promise<readonly number[]> {
-  const { token, cache, workflowName } = opts;
-  const workflows = await fetchWorkflows(token, cache);
+  const { token, cache, workflowName, fetcher } = opts;
+  const workflows = await fetchWorkflows(token, cache, fetcher);
 
   return workflows.flatMap((wf) => {
     if (workflowName && wf.name !== workflowName) return [];
@@ -189,6 +196,7 @@ type FetchStoriesOpts = {
   readonly label?: string;
   readonly excludeHitl?: boolean;
   readonly limit?: number;
+  readonly fetcher?: Fetcher;
 };
 
 /** Parse the dual-shape Shortcut search response. */
@@ -229,7 +237,14 @@ function toShortcutTicket(story: ShortcutStoryNode): ShortcutTicket {
 export async function fetchStories(
   opts: FetchStoriesOpts,
 ): Promise<readonly ShortcutTicket[]> {
-  const { token, workflowStateIds, label, excludeHitl, limit = 5 } = opts;
+  const {
+    token,
+    workflowStateIds,
+    label,
+    excludeHitl,
+    limit = 5,
+    fetcher,
+  } = opts;
   if (!workflowStateIds.length) return [];
 
   // Shortcut removed workflow_state_ids (plural) — the API now
@@ -239,7 +254,8 @@ export async function fetchStories(
     ...(label ? { label_name: label } : {}),
   };
 
-  const response = await fetch(`${SHORTCUT_API}/stories/search`, {
+  const doFetch = fetcher ?? fetch;
+  const response = await doFetch(`${SHORTCUT_API}/stories/search`, {
     method: 'POST',
     headers: shortcutHeaders(token),
     body: JSON.stringify(body),

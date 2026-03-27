@@ -41,7 +41,11 @@ async function findTeamLabel(
     }
   `;
 
-  const raw = await linearGraphql(apiKey, query, { teamId, name: label });
+  const raw = await linearGraphql({
+    apiKey,
+    query,
+    variables: { teamId, name: label },
+  });
   const parsed = linearTeamLabelsResponseSchema.safeParse(raw);
   return parsed.success
     ? parsed.data.data?.team?.labels?.nodes?.[0]?.id
@@ -61,7 +65,11 @@ async function findWorkspaceLabel(
     }
   `;
 
-  const raw = await linearGraphql(apiKey, query, { name: label });
+  const raw = await linearGraphql({
+    apiKey,
+    query,
+    variables: { name: label },
+  });
   const parsed = linearWorkspaceLabelsResponseSchema.safeParse(raw);
   return parsed.success
     ? parsed.data.data?.issueLabels?.nodes?.[0]?.id
@@ -83,7 +91,11 @@ async function createTeamLabel(
     }
   `;
 
-  const raw = await linearGraphql(apiKey, mutation, { teamId, name: label });
+  const raw = await linearGraphql({
+    apiKey,
+    query: mutation,
+    variables: { teamId, name: label },
+  });
   const parsed = linearLabelCreateResponseSchema.safeParse(raw);
   return parsed.success
     ? parsed.data.data?.issueLabelCreate?.issueLabel?.id
@@ -221,7 +233,11 @@ async function fetchIssueLabelIds(
     }
   `;
 
-  const raw = await linearGraphql(apiKey, query, { identifier: issueKey });
+  const raw = await linearGraphql({
+    apiKey,
+    query,
+    variables: { identifier: issueKey },
+  });
   const parsed = linearIssueLabelSearchResponseSchema.safeParse(raw);
   if (!parsed.success) return undefined;
   const node = parsed.data.data?.issueSearch?.nodes?.[0];
@@ -250,5 +266,9 @@ async function updateIssueLabels(
     }
   `;
 
-  await linearGraphql(apiKey, mutation, { issueId, labelIds });
+  await linearGraphql({
+    apiKey,
+    query: mutation,
+    variables: { issueId, labelIds },
+  });
 }

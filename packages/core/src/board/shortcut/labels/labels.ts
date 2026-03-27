@@ -7,6 +7,7 @@
  */
 import type { ShortcutLabelsResponse } from '~/c/schemas/index.js';
 import type { Cached } from '~/c/shared/cache/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 
 import {
   shortcutLabelCreateResponseSchema,
@@ -25,18 +26,25 @@ import { SHORTCUT_API, shortcutHeaders } from '../api/index.js';
  * @param cache - The label cache instance.
  * @returns The labels array, or an empty array on failure.
  */
+/** Options for {@link fetchLabels}. */
+type FetchLabelsOpts = {
+  readonly token: string;
+  readonly cache: Cached<ShortcutLabelsResponse>;
+  readonly refresh?: boolean;
+  readonly fetcher?: Fetcher;
+};
+
 export async function fetchLabels(
-  token: string,
-  cache: Cached<ShortcutLabelsResponse>,
-  refresh?: boolean,
+  opts: FetchLabelsOpts,
 ): Promise<ShortcutLabelsResponse> {
+  const { token, cache, refresh, fetcher } = opts;
   const cached = cache.get();
   if (cached && !refresh) return cached;
 
   const data = await fetchAndParse(
     `${SHORTCUT_API}/labels`,
     { headers: shortcutHeaders(token) },
-    { schema: shortcutLabelsResponseSchema, label: 'Shortcut labels' },
+    { schema: shortcutLabelsResponseSchema, label: 'Shortcut labels', fetcher },
   );
 
   if (data) cache.store(data);
@@ -48,11 +56,13 @@ export async function fetchLabels(
  *
  * @param token - The Shortcut API token.
  * @param name - The label name to create.
+ * @param fetcher - Optional custom fetch function.
  * @returns The created label's numeric ID, or `undefined` on failure.
  */
 export async function createLabel(
   token: string,
   name: string,
+  fetcher?: Fetcher,
 ): Promise<number | undefined> {
   const data = await fetchAndParse(
     `${SHORTCUT_API}/labels`,
@@ -64,6 +74,7 @@ export async function createLabel(
     {
       schema: shortcutLabelCreateResponseSchema,
       label: 'Shortcut label create',
+      fetcher,
     },
   );
 
@@ -82,11 +93,16 @@ export async function createLabel(
 export async function getStoryLabelIds(
   token: string,
   storyId: number,
+  fetcher?: Fetcher,
 ): Promise<readonly number[] | undefined> {
   const data = await fetchAndParse(
     `${SHORTCUT_API}/stories/${String(storyId)}`,
     { headers: shortcutHeaders(token) },
-    { schema: shortcutStoryDetailResponseSchema, label: 'Shortcut story' },
+    {
+      schema: shortcutStoryDetailResponseSchema,
+      label: 'Shortcut story',
+      fetcher,
+    },
   );
 
   return data ? (data.label_ids ?? []) : undefined;
@@ -129,6 +145,7 @@ type EnsureLabelOpts = {
   readonly token: string;
   readonly labelCache: Cached<ShortcutLabelsResponse>;
   readonly label: string;
+  readonly fetcher?: Fetcher;
 };
 
 /**
@@ -138,25 +155,23 @@ type EnsureLabelOpts = {
  * @returns Resolves when complete (best-effort — never throws).
  */
 export async function ensureLabel(opts: EnsureLabelOpts): Promise<void> {
-  const { token, labelCache, label } = opts;
+  const { token, labelCache, label, fetcher } = opts;
 
   await safeLabel(async () => {
-    const labels = await fetchLabels(token, labelCache);
+    const labels = await fetchLabels({ token, cache: labelCache, fetcher });
     const existing = labels.find((l) => l.name === label);
     if (existing) return;
-    await createLabel(token, label);
-    // Refresh cache so subsequent resolveLabelId finds the new label
-    await fetchLabels(token, labelCache, true);
+    await createLabel(token, label, fetcher);
+    await fetchLabels({ token, cache: labelCache, refresh: true, fetcher });
   }, 'ensureLabel');
 }
 
 /** Resolve a label name to its numeric ID. */
 async function resolveLabelId(
-  token: string,
-  labelCache: Cached<ShortcutLabelsResponse>,
-  label: string,
+  opts: Pick<ModifyLabelOpts, 'token' | 'labelCache' | 'label' | 'fetcher'>,
 ): Promise<number | undefined> {
-  const labels = await fetchLabels(token, labelCache);
+  const { token, labelCache, label, fetcher } = opts;
+  const labels = await fetchLabels({ token, cache: labelCache, fetcher });
   return labels.find((l) => l.name === label)?.id;
 }
 
@@ -172,6 +187,7 @@ type ModifyLabelOpts = {
   readonly labelCache: Cached<ShortcutLabelsResponse>;
   readonly issueKey: string;
   readonly label: string;
+  readonly fetcher?: Fetcher;
 };
 
 /**
@@ -181,17 +197,17 @@ type ModifyLabelOpts = {
  * @returns Resolves when complete (best-effort — never throws).
  */
 export async function addLabel(opts: ModifyLabelOpts): Promise<void> {
-  const { token, labelCache, issueKey, label } = opts;
+  const { token, labelCache, issueKey, label, fetcher } = opts;
 
   await safeLabel(async () => {
     const storyId = parseStoryId(issueKey);
     if (storyId === undefined) return;
 
-    const labelId = await resolveLabelId(token, labelCache, label);
+    const labelId = await resolveLabelId({ token, labelCache, label, fetcher });
     if (labelId === undefined) return;
 
     await modifyLabelList({
-      fetchCurrent: () => getStoryLabelIds(token, storyId),
+      fetchCurrent: () => getStoryLabelIds(token, storyId, fetcher),
       writeUpdated: (ids) => updateStoryLabelIds(token, storyId, ids),
       target: labelId,
       mode: 'add',
@@ -206,17 +222,17 @@ export async function addLabel(opts: ModifyLabelOpts): Promise<void> {
  * @returns Resolves when complete (best-effort — never throws).
  */
 export async function removeLabel(opts: ModifyLabelOpts): Promise<void> {
-  const { token, labelCache, issueKey, label } = opts;
+  const { token, labelCache, issueKey, label, fetcher } = opts;
 
   await safeLabel(async () => {
     const storyId = parseStoryId(issueKey);
     if (storyId === undefined) return;
 
-    const labelId = await resolveLabelId(token, labelCache, label);
+    const labelId = await resolveLabelId({ token, labelCache, label, fetcher });
     if (labelId === undefined) return;
 
     await modifyLabelList({
-      fetchCurrent: () => getStoryLabelIds(token, storyId),
+      fetchCurrent: () => getStoryLabelIds(token, storyId, fetcher),
       writeUpdated: (ids) => updateStoryLabelIds(token, storyId, ids),
       target: labelId,
       mode: 'remove',

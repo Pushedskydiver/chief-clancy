@@ -4,6 +4,7 @@
  * Low-level functions for interacting with the GitHub REST API.
  * Used by the GitHub board adapter ({@link ../github-board.ts}).
  */
+import type { Fetcher } from '~/c/shared/http/index.js';
 import type { PingResult } from '~/c/types/index.js';
 
 import { githubIssuesResponseSchema } from '~/c/schemas/index.js';
@@ -135,6 +136,7 @@ type FetchIssuesOpts = {
   readonly username?: string;
   readonly excludeHitl?: boolean;
   readonly limit?: number;
+  readonly fetcher?: Fetcher;
 };
 
 /**
@@ -149,7 +151,15 @@ type FetchIssuesOpts = {
 export async function fetchIssues(
   opts: FetchIssuesOpts,
 ): Promise<readonly GitHubTicket[]> {
-  const { token, repo, label, username, excludeHitl, limit = 5 } = opts;
+  const {
+    token,
+    repo,
+    label,
+    username,
+    excludeHitl,
+    limit = 5,
+    fetcher,
+  } = opts;
   if (!isValidRepo(repo)) return [];
 
   const params = new URLSearchParams({
@@ -162,7 +172,7 @@ export async function fetchIssues(
   const data = await fetchAndParse(
     `${GITHUB_API}/repos/${repo}/issues?${params}`,
     { headers: githubHeaders(token) },
-    { schema: githubIssuesResponseSchema, label: 'GitHub Issues API' },
+    { schema: githubIssuesResponseSchema, label: 'GitHub Issues API', fetcher },
   );
 
   if (!data) return [];

@@ -61,7 +61,7 @@ describe('fetchLabels', () => {
     );
 
     const cache = makeLabelCache();
-    const labels = await fetchLabels('tok', cache);
+    const labels = await fetchLabels({ token: 'tok', cache });
     expect(labels).toHaveLength(2);
   });
 
@@ -73,8 +73,8 @@ describe('fetchLabels', () => {
     vi.stubGlobal('fetch', mockFetch);
 
     const cache = makeLabelCache();
-    await fetchLabels('tok', cache);
-    await fetchLabels('tok', cache);
+    await fetchLabels({ token: 'tok', cache });
+    await fetchLabels({ token: 'tok', cache });
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 });

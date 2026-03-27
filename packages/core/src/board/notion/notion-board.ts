@@ -9,6 +9,7 @@
  */
 import type { NotionCtx } from './api/index.js';
 import type { NotionEnv, NotionPage } from '~/c/schemas/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/index.js';
 
 import {
@@ -137,8 +138,12 @@ async function doTransition(opts: TransitionOpts): Promise<boolean> {
 }
 
 /** Build connection context from env. */
-function buildCtx(env: NotionEnv): NotionCtx {
-  return { token: env.NOTION_TOKEN, databaseId: env.NOTION_DATABASE_ID };
+function buildCtx(env: NotionEnv, fetcher?: Fetcher): NotionCtx {
+  return {
+    token: env.NOTION_TOKEN,
+    databaseId: env.NOTION_DATABASE_ID,
+    fetcher,
+  };
 }
 
 /** Resolve property names from env with defaults. */
@@ -157,8 +162,8 @@ function buildProps(env: NotionEnv): NotionProps {
  * @param env - The validated Notion environment variables.
  * @returns A Board object that delegates to Notion API functions.
  */
-export function createNotionBoard(env: NotionEnv): Board {
-  const ctx = buildCtx(env);
+export function createNotionBoard(env: NotionEnv, fetcher?: Fetcher): Board {
+  const ctx = buildCtx(env, fetcher);
   const props = buildProps(env);
   const doFetch = (fetchOpts: FetchTicketOpts) =>
     fetchNotionTickets({
