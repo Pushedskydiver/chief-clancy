@@ -31,14 +31,14 @@
 
 #### Cleanup PRs
 
-| PR  | Theme                          | Scope                                                                                                                            |
-| --- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| C31 | Notification regressions       | AppleScript double-quote escaping, `-NoProfile`, `windowsHide`, `[Clancy]` prefix, `hookSpecificOutput.message` check            |
-| C32 | Post-compact + branch-guard    | `ticketTitle` default `'Unknown'`, empty `parentKey` guard, actionable error messages                                            |
-| C33 | NaN guard + TOCTOU removal     | `parseBridgeMetrics` `Number.isFinite` check, remove `existsSync` in `findInstallDir`/`countStaleBriefs`, catch block comments   |
-| C34 | Cast/assertion comments + JSDoc | All 8 `as` cast comments, `!` assertion comment, stale line count, missing `@param` tags                                        |
-| C35 | Test gaps — high priority      | NaN metrics, boundary values (36%/26%/80%/100%), empty parentKey/title, brief date boundary, escape verification, mixed briefs   |
-| C36 | Test gaps — lower priority     | stdin wrong-shape JSON, `isPlainObject` with class instances, empty session IDs, interaction tests (parse→guard pipeline)         |
+| PR  | Theme                           | Scope                                                                                                                          |
+| --- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| C31 | Notification regressions        | AppleScript double-quote escaping, `-NoProfile`, `windowsHide`, `[Clancy]` prefix, `hookSpecificOutput.message` check          |
+| C32 | Post-compact + branch-guard     | `ticketTitle` default `'Unknown'`, empty `parentKey` guard, actionable error messages                                          |
+| C33 | NaN guard + TOCTOU removal      | `parseBridgeMetrics` `Number.isFinite` check, remove `existsSync` in `findInstallDir`/`countStaleBriefs`, catch block comments |
+| C34 | Cast/assertion comments + JSDoc | All 8 `as` cast comments, `!` assertion comment, stale line count, missing `@param` tags                                       |
+| C35 | Test gaps — high priority       | NaN metrics, boundary values (36%/26%/80%/100%), empty parentKey/title, brief date boundary, escape verification, mixed briefs |
+| C36 | Test gaps — lower priority      | stdin wrong-shape JSON, `isPlainObject` with class instances, empty session IDs, interaction tests (parse→guard pipeline)      |
 
 ### Next up
 
