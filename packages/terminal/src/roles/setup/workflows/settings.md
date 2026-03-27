@@ -106,7 +106,7 @@ Planner
 {If Jira:}
   [P1] Plan queue status  {CLANCY_PLAN_STATUS:-Backlog}
 {If GitHub:}
-  [P1] Plan label         {CLANCY_PLAN_LABEL:-needs-refinement}
+  [P1] Plan label         {CLANCY_LABEL_PLAN:-needs-refinement}
 {If Linear:}
   [P1] Plan state type    {CLANCY_PLAN_STATE_TYPE:-backlog}
 {If Jira:}
@@ -670,8 +670,8 @@ Create this label in GitHub first if it doesn't exist.
 [2] Enter a different label name
 ```
 
-If [1]: remove `CLANCY_PLAN_LABEL` from `.clancy/.env` (uses default).
-If [2]: prompt `What label should /clancy:plan filter by?` then write `CLANCY_PLAN_LABEL=<value>` to `.clancy/.env`.
+If [1]: remove `CLANCY_LABEL_PLAN` from `.clancy/.env` (uses default).
+If [2]: prompt `What label should /clancy:plan filter by?` then write `CLANCY_LABEL_PLAN=<value>` to `.clancy/.env`.
 
 ---
 
