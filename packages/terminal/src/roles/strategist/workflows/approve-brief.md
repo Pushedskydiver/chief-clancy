@@ -1322,8 +1322,11 @@ curl -s \
 
 ### On failure
 
+If adding the plan label fails, **re-add the brief label** so the ticket isn't orphaned without any pipeline label. Use the same platform-specific API calls from Step 11a (but adding instead of removing). Then warn:
+
 ```
-⚠️  Could not add plan label to {PARENT_KEY}. Add it manually so the ticket enters the planning queue.
+⚠️  Could not add plan label to {PARENT_KEY}. Re-added brief label as fallback.
+     Add the plan label manually so the ticket enters the planning queue.
 ```
 
 Continue — do not stop.
