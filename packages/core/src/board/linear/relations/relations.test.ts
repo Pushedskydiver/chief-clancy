@@ -173,7 +173,11 @@ describe('fetchChildrenStatus', () => {
     } as Response);
     vi.stubGlobal('fetch', mockFetch);
 
-    const result = await fetchChildrenStatus('key', 'parent-uuid', 'ENG-42');
+    const result = await fetchChildrenStatus({
+      apiKey: 'key',
+      parentId: 'parent-uuid',
+      parentIdentifier: 'ENG-42',
+    });
 
     expect(result).toEqual({ total: 2, incomplete: 1 });
 
@@ -214,7 +218,11 @@ describe('fetchChildrenStatus', () => {
       } as Response);
     vi.stubGlobal('fetch', mockFetch);
 
-    const result = await fetchChildrenStatus('key', 'parent-uuid', 'ENG-42');
+    const result = await fetchChildrenStatus({
+      apiKey: 'key',
+      parentId: 'parent-uuid',
+      parentIdentifier: 'ENG-42',
+    });
 
     expect(result).toEqual({ total: 3, incomplete: 2 });
     expect(mockFetch).toHaveBeenCalledTimes(2);
@@ -236,7 +244,10 @@ describe('fetchChildrenStatus', () => {
     } as Response);
     vi.stubGlobal('fetch', mockFetch);
 
-    const result = await fetchChildrenStatus('key', 'parent-uuid');
+    const result = await fetchChildrenStatus({
+      apiKey: 'key',
+      parentId: 'parent-uuid',
+    });
 
     expect(result).toEqual({ total: 1, incomplete: 0 });
     // Should only make one call (native API), not two
@@ -249,7 +260,11 @@ describe('fetchChildrenStatus', () => {
       vi.fn().mockRejectedValue(new Error('network error')),
     );
 
-    const result = await fetchChildrenStatus('key', 'parent-uuid', 'ENG-42');
+    const result = await fetchChildrenStatus({
+      apiKey: 'key',
+      parentId: 'parent-uuid',
+      parentIdentifier: 'ENG-42',
+    });
     expect(result).toBeUndefined();
   });
 });
@@ -277,7 +292,11 @@ describe('lookupWorkflowStateId', () => {
       } as Response),
     );
 
-    const result = await lookupWorkflowStateId('key', 'team-1', 'In Progress');
+    const result = await lookupWorkflowStateId({
+      apiKey: 'key',
+      teamId: 'team-1',
+      stateName: 'In Progress',
+    });
     expect(result).toBe('state-uuid');
   });
 
@@ -293,7 +312,11 @@ describe('lookupWorkflowStateId', () => {
       } as Response),
     );
 
-    const result = await lookupWorkflowStateId('key', 'team-1', 'NonExistent');
+    const result = await lookupWorkflowStateId({
+      apiKey: 'key',
+      teamId: 'team-1',
+      stateName: 'NonExistent',
+    });
     expect(result).toBeUndefined();
   });
 });

@@ -78,6 +78,7 @@ async function doTransition(
     teamId: ctx.teamId,
     issueId: ticket.linearIssueId,
     stateName: status,
+    fetcher: ctx.fetcher,
   });
 
   if (ok) console.log(`  → Transitioned to ${status}`);
@@ -95,12 +96,14 @@ async function ensureAndAddLabel(
     teamId: ctx.teamId,
     labelCache: ctx.labelCache,
     label,
+    fetcher: ctx.fetcher,
   });
   await addLabel({
     apiKey: ctx.apiKey,
     labelCache: ctx.labelCache,
     issueKey,
     label,
+    fetcher: ctx.fetcher,
   });
 }
 
@@ -136,11 +139,16 @@ export function createLinearBoard(env: LinearEnv, fetcher?: Fetcher): Board {
 
     async fetchBlockerStatus(ticket) {
       if (!ticket.issueId) return false;
-      return fetchBlockerStatus(ctx.apiKey, ticket.issueId);
+      return fetchBlockerStatus(ctx.apiKey, ticket.issueId, ctx.fetcher);
     },
 
     fetchChildrenStatus: (parentKey, parentId?) =>
-      fetchChildrenStatus(ctx.apiKey, parentId ?? parentKey, parentKey),
+      fetchChildrenStatus({
+        apiKey: ctx.apiKey,
+        parentId: parentId ?? parentKey,
+        parentIdentifier: parentKey,
+        fetcher: ctx.fetcher,
+      }),
 
     transitionTicket: (ticket, status) => doTransition(ctx, ticket, status),
 
@@ -150,6 +158,7 @@ export function createLinearBoard(env: LinearEnv, fetcher?: Fetcher): Board {
         teamId: ctx.teamId,
         labelCache: ctx.labelCache,
         label,
+        fetcher: ctx.fetcher,
       }),
 
     addLabel: (issueKey, label) => ensureAndAddLabel(ctx, issueKey, label),
@@ -160,6 +169,7 @@ export function createLinearBoard(env: LinearEnv, fetcher?: Fetcher): Board {
         labelCache: ctx.labelCache,
         issueKey,
         label,
+        fetcher: ctx.fetcher,
       }),
 
     sharedEnv: () => env,

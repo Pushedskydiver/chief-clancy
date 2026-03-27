@@ -5,6 +5,7 @@
  * (via Epic: text convention + native children API), and issue
  * state transitions via GraphQL mutations.
  */
+import type { Fetcher } from '~/c/shared/http/index.js';
 import type { ChildrenStatus } from '~/c/types/index.js';
 
 import {
@@ -30,6 +31,7 @@ const DONE_TYPES = new Set(['completed', 'canceled']);
 export async function fetchBlockerStatus(
   apiKey: string,
   issueId: string,
+  fetcher?: Fetcher,
 ): Promise<boolean> {
   const query = `
     query($issueId: String!) {
@@ -46,7 +48,12 @@ export async function fetchBlockerStatus(
     }
   `;
 
-  const raw = await linearGraphql({ apiKey, query, variables: { issueId } });
+  const raw = await linearGraphql({
+    apiKey,
+    query,
+    variables: { issueId },
+    fetcher,
+  });
   const parsed = linearIssueRelationsResponseSchema.safeParse(raw);
   if (!parsed.success) return false;
 
@@ -71,22 +78,30 @@ export async function fetchBlockerStatus(
  * @param parentIdentifier - The parent identifier (e.g., `'ENG-42'`).
  * @returns The children status, or `undefined` on failure.
  */
+/** Options for {@link fetchChildrenStatus}. */
+type FetchChildrenOpts = {
+  readonly apiKey: string;
+  readonly parentId: string;
+  readonly parentIdentifier?: string;
+  readonly fetcher?: Fetcher;
+};
+
 export async function fetchChildrenStatus(
-  apiKey: string,
-  parentId: string,
-  parentIdentifier?: string,
+  opts: FetchChildrenOpts,
 ): Promise<ChildrenStatus | undefined> {
+  const { apiKey, parentId, parentIdentifier, fetcher } = opts;
   try {
     if (parentIdentifier) {
       const epicResult = await fetchChildrenByDescription(
         apiKey,
         `Epic: ${parentIdentifier}`,
+        fetcher,
       );
 
       if (epicResult && epicResult.total > 0) return epicResult;
     }
 
-    return await fetchChildrenByNativeApi(apiKey, parentId);
+    return await fetchChildrenByNativeApi(apiKey, parentId, fetcher);
   } catch {
     return undefined;
   }
@@ -107,6 +122,7 @@ function countChildrenStatus(
 async function fetchChildrenByDescription(
   apiKey: string,
   descriptionRef: string,
+  fetcher?: Fetcher,
 ): Promise<ChildrenStatus | undefined> {
   const query = `
     query($filter: String!) {
@@ -122,6 +138,7 @@ async function fetchChildrenByDescription(
     apiKey,
     query,
     variables: { filter: descriptionRef },
+    fetcher,
   });
   const parsed = linearIssueSearchResponseSchema.safeParse(raw);
   if (!parsed.success) return undefined;
@@ -134,6 +151,7 @@ async function fetchChildrenByDescription(
 async function fetchChildrenByNativeApi(
   apiKey: string,
   parentId: string,
+  fetcher?: Fetcher,
 ): Promise<ChildrenStatus | undefined> {
   const query = `
     query($issueId: String!) {
@@ -151,6 +169,7 @@ async function fetchChildrenByNativeApi(
     apiKey,
     query,
     variables: { issueId: parentId },
+    fetcher,
   });
   const parsed = linearIssueChildrenResponseSchema.safeParse(raw);
   if (!parsed.success) return undefined;
@@ -167,11 +186,18 @@ async function fetchChildrenByNativeApi(
  * @param stateName - The workflow state name (e.g., `'In Progress'`).
  * @returns The state ID, or `undefined` if not found.
  */
+/** Options for {@link lookupWorkflowStateId}. */
+type LookupStateOpts = {
+  readonly apiKey: string;
+  readonly teamId: string;
+  readonly stateName: string;
+  readonly fetcher?: Fetcher;
+};
+
 export async function lookupWorkflowStateId(
-  apiKey: string,
-  teamId: string,
-  stateName: string,
+  opts: LookupStateOpts,
 ): Promise<string | undefined> {
+  const { apiKey, teamId, stateName, fetcher } = opts;
   const query = `
     query($teamId: String!, $name: String!) {
       workflowStates(filter: {
@@ -187,6 +213,7 @@ export async function lookupWorkflowStateId(
     apiKey,
     query,
     variables: { teamId, name: stateName },
+    fetcher,
   });
   const parsed = linearWorkflowStatesResponseSchema.safeParse(raw);
   if (!parsed.success) return undefined;
@@ -200,6 +227,7 @@ type TransitionOpts = {
   readonly teamId: string;
   readonly issueId: string;
   readonly stateName: string;
+  readonly fetcher?: Fetcher;
 };
 
 /**
@@ -211,10 +239,15 @@ type TransitionOpts = {
  * @returns `true` if the transition succeeded.
  */
 export async function transitionIssue(opts: TransitionOpts): Promise<boolean> {
-  const { apiKey, teamId, issueId, stateName } = opts;
+  const { apiKey, teamId, issueId, stateName, fetcher } = opts;
 
   try {
-    const stateId = await lookupWorkflowStateId(apiKey, teamId, stateName);
+    const stateId = await lookupWorkflowStateId({
+      apiKey,
+      teamId,
+      stateName,
+      fetcher,
+    });
 
     if (!stateId) {
       console.warn(
@@ -235,6 +268,7 @@ export async function transitionIssue(opts: TransitionOpts): Promise<boolean> {
       apiKey,
       query: mutation,
       variables: { issueId, stateId },
+      fetcher,
     });
     const parsed = linearIssueUpdateResponseSchema.safeParse(raw);
     if (!parsed.success) return false;

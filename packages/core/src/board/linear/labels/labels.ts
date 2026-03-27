@@ -8,6 +8,7 @@
  * The 3-step {@link ensureLabel} flow: team labels → workspace labels → create.
  */
 import type { CachedMap } from '~/c/shared/cache/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 
 import {
   linearIssueLabelSearchResponseSchema,
@@ -25,14 +26,22 @@ type EnsureLabelOpts = {
   readonly teamId: string;
   readonly labelCache: CachedMap<string, string>;
   readonly label: string;
+  readonly fetcher?: Fetcher;
+};
+
+/** Internal label lookup opts (shared by team/workspace/create helpers). */
+type LabelLookupOpts = {
+  readonly apiKey: string;
+  readonly teamId?: string;
+  readonly label: string;
+  readonly fetcher?: Fetcher;
 };
 
 /** Search team labels for a match by name and return its ID. */
 async function findTeamLabel(
-  apiKey: string,
-  teamId: string,
-  label: string,
+  opts: LabelLookupOpts,
 ): Promise<string | undefined> {
+  const { apiKey, teamId, label, fetcher } = opts;
   const query = `
     query($teamId: String!, $name: String!) {
       team(id: $teamId) {
@@ -45,6 +54,7 @@ async function findTeamLabel(
     apiKey,
     query,
     variables: { teamId, name: label },
+    fetcher,
   });
   const parsed = linearTeamLabelsResponseSchema.safeParse(raw);
   return parsed.success
@@ -54,9 +64,9 @@ async function findTeamLabel(
 
 /** Search workspace labels for a match and return its ID. */
 async function findWorkspaceLabel(
-  apiKey: string,
-  label: string,
+  opts: Pick<LabelLookupOpts, 'apiKey' | 'label' | 'fetcher'>,
 ): Promise<string | undefined> {
+  const { apiKey, label, fetcher } = opts;
   const query = `
     query($name: String!) {
       issueLabels(filter: { name: { eq: $name } }) {
@@ -69,6 +79,7 @@ async function findWorkspaceLabel(
     apiKey,
     query,
     variables: { name: label },
+    fetcher,
   });
   const parsed = linearWorkspaceLabelsResponseSchema.safeParse(raw);
   return parsed.success
@@ -78,10 +89,9 @@ async function findWorkspaceLabel(
 
 /** Create a new team-scoped label and return its ID. */
 async function createTeamLabel(
-  apiKey: string,
-  teamId: string,
-  label: string,
+  opts: LabelLookupOpts,
 ): Promise<string | undefined> {
+  const { apiKey, teamId, label, fetcher } = opts;
   const mutation = `
     mutation($teamId: String!, $name: String!) {
       issueLabelCreate(input: { teamId: $teamId, name: $name, color: "#0075ca" }) {
@@ -95,6 +105,7 @@ async function createTeamLabel(
     apiKey,
     query: mutation,
     variables: { teamId, name: label },
+    fetcher,
   });
   const parsed = linearLabelCreateResponseSchema.safeParse(raw);
   return parsed.success
@@ -114,24 +125,25 @@ async function createTeamLabel(
  * @returns Resolves when complete (best-effort — never throws).
  */
 export async function ensureLabel(opts: EnsureLabelOpts): Promise<void> {
-  const { apiKey, teamId, labelCache, label } = opts;
+  const { apiKey, teamId, labelCache, label, fetcher } = opts;
+  const lookup: LabelLookupOpts = { apiKey, teamId, label, fetcher };
 
   await safeLabel(async () => {
     if (labelCache.has(label)) return;
 
-    const teamId_ = await findTeamLabel(apiKey, teamId, label);
+    const teamId_ = await findTeamLabel(lookup);
     if (teamId_) {
       labelCache.store(label, teamId_);
       return;
     }
 
-    const wsId = await findWorkspaceLabel(apiKey, label);
+    const wsId = await findWorkspaceLabel(lookup);
     if (wsId) {
       labelCache.store(label, wsId);
       return;
     }
 
-    const newId = await createTeamLabel(apiKey, teamId, label);
+    const newId = await createTeamLabel(lookup);
     if (newId) labelCache.store(label, newId);
   }, 'ensureLabel');
 }
@@ -142,6 +154,7 @@ type AddLabelOpts = {
   readonly labelCache: CachedMap<string, string>;
   readonly issueKey: string;
   readonly label: string;
+  readonly fetcher?: Fetcher;
 };
 
 /**
@@ -151,19 +164,24 @@ type AddLabelOpts = {
  * @returns Resolves when complete (best-effort — never throws).
  */
 export async function addLabel(opts: AddLabelOpts): Promise<void> {
-  const { apiKey, labelCache, issueKey, label } = opts;
+  const { apiKey, labelCache, issueKey, label, fetcher } = opts;
 
   await safeLabel(async () => {
     const labelId = labelCache.get(label);
     if (!labelId) return;
 
-    const issue = await fetchIssueLabelIds(apiKey, issueKey);
+    const issue = await fetchIssueLabelIds(apiKey, issueKey, fetcher);
     if (!issue) return;
 
     const currentIds = issue.labelIds;
     if (currentIds.includes(labelId)) return;
 
-    await updateIssueLabels(apiKey, issue.id, [...currentIds, labelId]);
+    await updateIssueLabels({
+      apiKey,
+      issueId: issue.id,
+      labelIds: [...currentIds, labelId],
+      fetcher,
+    });
   }, 'addLabel');
 }
 
@@ -173,6 +191,7 @@ type RemoveLabelOpts = {
   readonly labelCache: CachedMap<string, string>;
   readonly issueKey: string;
   readonly label: string;
+  readonly fetcher?: Fetcher;
 };
 
 /**
@@ -182,10 +201,10 @@ type RemoveLabelOpts = {
  * @returns Resolves when complete (best-effort — never throws).
  */
 export async function removeLabel(opts: RemoveLabelOpts): Promise<void> {
-  const { apiKey, labelCache, issueKey, label } = opts;
+  const { apiKey, labelCache, issueKey, label, fetcher } = opts;
 
   await safeLabel(async () => {
-    const issue = await fetchIssueLabelIds(apiKey, issueKey);
+    const issue = await fetchIssueLabelIds(apiKey, issueKey, fetcher);
     if (!issue) return;
 
     const cachedId = labelCache.get(label);
@@ -201,7 +220,12 @@ export async function removeLabel(opts: RemoveLabelOpts): Promise<void> {
 
     if (updatedIds.length === currentLabels.length) return;
 
-    await updateIssueLabels(apiKey, issue.id, updatedIds);
+    await updateIssueLabels({
+      apiKey,
+      issueId: issue.id,
+      labelIds: updatedIds,
+      fetcher,
+    });
   }, 'removeLabel');
 }
 
@@ -221,6 +245,7 @@ type ResolvedIssue = {
 async function fetchIssueLabelIds(
   apiKey: string,
   issueKey: string,
+  fetcher?: Fetcher,
 ): Promise<ResolvedIssue | undefined> {
   const query = `
     query($identifier: String!) {
@@ -237,6 +262,7 @@ async function fetchIssueLabelIds(
     apiKey,
     query,
     variables: { identifier: issueKey },
+    fetcher,
   });
   const parsed = linearIssueLabelSearchResponseSchema.safeParse(raw);
   if (!parsed.success) return undefined;
@@ -252,12 +278,17 @@ async function fetchIssueLabelIds(
   };
 }
 
+/** Options for {@link updateIssueLabels}. */
+type UpdateLabelsOpts = {
+  readonly apiKey: string;
+  readonly issueId: string;
+  readonly labelIds: readonly string[];
+  readonly fetcher?: Fetcher;
+};
+
 /** Update an issue's labels via GraphQL mutation. */
-async function updateIssueLabels(
-  apiKey: string,
-  issueId: string,
-  labelIds: readonly string[],
-): Promise<void> {
+async function updateIssueLabels(opts: UpdateLabelsOpts): Promise<void> {
+  const { apiKey, issueId, labelIds, fetcher } = opts;
   const mutation = `
     mutation($issueId: String!, $labelIds: [String!]!) {
       issueUpdate(id: $issueId, input: { labelIds: $labelIds }) {
@@ -270,5 +301,6 @@ async function updateIssueLabels(
     apiKey,
     query: mutation,
     variables: { issueId, labelIds },
+    fetcher,
   });
 }
