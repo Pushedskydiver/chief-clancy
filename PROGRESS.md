@@ -23,7 +23,7 @@ All 6 cleanup PRs (C31–C36) merged. 8 regressions fixed, 3 bugs fixed, 12 conv
 
 4 parallel validation agents audited the brief's 6-PR plan against the actual codebase. Key findings:
 
-- **11.1 too large** — split into 11.1a (Claude simulator + shared fixtures), 11.1b (temp repo + env fixtures + DI fetcher wiring), 11.1c dropped (MSW unnecessary — DI injection via existing `fetchAndParse` fetcher parameter is sufficient and aligns with conventions)
+- **11.1 too large** — split into 11.1a (Claude simulator + shared fixtures), 11.1b (temp repo + env fixtures), 11.1c (DI fetcher wiring on board constructors). MSW unnecessary — DI injection via existing `fetchAndParse` fetcher parameter is sufficient and aligns with conventions
 - **11.5 redundant** — 610 hook unit tests + installer integration test already cover hooks comprehensively. Hooks are pure functions with thin I/O entry points; subprocess testing adds no value
 - **11.6 phantom scope** — label transitions (brief → plan → build) happen at the agent/workflow level (Claude executing `.md` files), not in TypeScript pipeline phases. Label CRUD is already covered by 11.3. C37 fixed the workflow gaps
 - **DI over MSW** — all boards use `fetchAndParse` which accepts injectable `fetcher`. Extend board constructors with optional fetcher param (Notion already does this). Zero new dependencies, consistent with CONVENTIONS.md
@@ -33,7 +33,8 @@ All 6 cleanup PRs (C31–C36) merged. 8 regressions fixed, 3 bugs fixed, 12 conv
 | PR    | Theme                                     | Scope                                                                                                |
 | ----- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------- |
 | 11.1a | Test infra: Claude simulator + fixtures   | Mock `spawnSync('claude')`, extract `makeCtx`/`makeBoard` into shared module                         |
-| 11.1b | Test infra: temp repo + env + DI fetcher  | Git ops helper, `.clancy/.env` builders, optional `fetcher` param on board constructors              |
+| 11.1b | Test infra: temp repo + env fixtures      | Git ops helper, `.clancy/.env` builders                                                              |
+| 11.1c | DI fetcher wiring on board constructors   | Optional `fetcher` param on all 6 board constructors + factory, threaded to `fetchAndParse`          |
 | 11.2  | Implementer lifecycle: happy path + exits | Per-board integration (13-phase pipeline, fatal/non-fatal aborts, rework path, ~60 tests)            |
 | 11.3  | Board write ops: label CRUD + transitions | ensureLabel/addLabel/removeLabel per board via DI fetcher, transitionTicket, idempotence (~54 tests) |
 | 11.4  | Advanced scenarios                        | Blocked ticket recursion, stale lock recovery, partial-push recovery, autopilot multi-iteration      |
@@ -44,7 +45,7 @@ All 6 cleanup PRs (C31–C36) merged. 8 regressions fixed, 3 bugs fixed, 12 conv
 
 ### Next up
 
-Phase 11.1b — Temp repo + env fixtures + DI fetcher wiring on board constructors.
+Phase 11.1b — Temp git repo helper + env file builder (test helpers only, no source changes).
 
 ---
 
