@@ -53,9 +53,11 @@
 
 - **10.3** (#103): PreToolUse guards — credential-guard (`scan-credentials.ts`: 15 regex patterns with `assignment()` builder, `extractContent`, `isAllowedPath`, `extractNewString`) and branch-guard (`check-command.ts`: 7 decomposed check functions with named regex/message constants, `buildProtectedBranches`, `gitPushSegment`). Replaced dynamic regex in protected-branch check with string splitting (ReDoS fix). Removed `process.env` read from pure `checkCommand` — entry point passes branches. Property-based tests for both scanners. DA review: 4 MEDIUM (process.env in pure fn — fixed, property-based tests — added, ReDoS — fixed with string splitting, property tests for checkCommand — added), 5 LOW (cast comments — added, suffix matching — acceptable, restore --staged — tested as intentionally allowed, -f false positive — fixed with `gitPushSegment`, extractNewString — extracted). 443 terminal tests (+62).
 
+- **10.4** (#104): Simple hooks — post-compact (`build-context.ts`: builds context restoration from lock file, immutable line assembly) and drift-detector (`detect-drift.ts`: `versionsDiffer`, `readInstalledVersion`, `readPackageVersion`, `buildDriftWarning` with DI). Unified `COMMANDS_VERSION` constant (was duplicate `LOCAL_VERSION`/`GLOBAL_VERSION`). Atomic session debounce via `writeFileSync` with `{ flag: 'wx' }` (no TOCTOU). DA review: 3 MEDIUM (duplicate constant — unified, TOCTOU — fixed with exclusive create, test stubs don't verify paths — fixed), 4 LOW (all addressed with edge-case tests). 468 terminal tests (+25).
+
 ### Next up
 
-- **10.4**: Simple hooks (post-compact, drift-detector).
+- **10.5**: Context monitor (complex — dual debounce, context + time guards).
 
 ## Session 33 Handoff
 
