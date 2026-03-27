@@ -51,9 +51,11 @@
 
 - **10.2** (#102): Hook build infrastructure — esbuild CJS config (`src/hooks/esbuild.hooks.ts`), 4 shared utility modules (hook-output, tmpdir, lock-file, stdin-reader), 8 entry point stubs, `isPlainObject` type guard. Build pipeline: `tsc → tsc-alias → node dist/hooks/esbuild.hooks.js`. Fixed ESLint `**/hooks/` global ignore that would have blocked linting of `src/hooks/`. Added knip entry points for standalone hook bundles. Cross-platform stdin (fd 0 instead of `/dev/stdin`). DA review: 3 MEDIUM (TOCTOU race — fixed by removing `existsSync`, `/dev/stdin` — fixed with fd 0, unjustified `as` casts — fixed with comments + `isPlainObject`), 5 LOW (all addressed). 381 terminal tests (+28).
 
+- **10.3** (#TBD): PreToolUse guards — credential-guard (`scan-credentials.ts`: 15 regex patterns with `assignment()` builder, `extractContent`, `isAllowedPath`, `extractNewString`) and branch-guard (`check-command.ts`: 7 decomposed check functions with named regex/message constants, `buildProtectedBranches`, `gitPushSegment`). Replaced dynamic regex in protected-branch check with string splitting (ReDoS fix). Removed `process.env` read from pure `checkCommand` — entry point passes branches. Property-based tests for both scanners. DA review: 4 MEDIUM (process.env in pure fn — fixed, property-based tests — added, ReDoS — fixed with string splitting, property tests for checkCommand — added), 5 LOW (cast comments — added, suffix matching — acceptable, restore --staged — tested as intentionally allowed, -f false positive — fixed with `gitPushSegment`, extractNewString — extracted). 443 terminal tests (+62).
+
 ### Next up
 
-- **10.3**: PreToolUse guards (credential-guard, branch-guard).
+- **10.4**: Simple hooks (post-compact, drift-detector).
 
 ## Session 33 Handoff
 

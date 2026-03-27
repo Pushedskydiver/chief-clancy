@@ -1,2 +1,50 @@
-/** Stub entry point — hook logic added in PR 10.3. */
-process.exit(0);
+/**
+ * PreToolUse hook: branch guard.
+ *
+ * Checks Bash tool commands for dangerous git operations: force push,
+ * push to protected branches, reset --hard, clean -f, checkout -- .,
+ * restore ., and branch -D. Blocks the tool call with a reason if
+ * a dangerous operation is detected.
+ *
+ * Disabled when `CLANCY_BRANCH_GUARD=false`.
+ * Best-effort: any failure approves silently.
+ */
+import { readFileSync } from 'node:fs';
+
+import { approve, block } from '../shared/hook-output/index.js';
+import { readPreToolUseInput } from '../shared/stdin-reader/index.js';
+import { buildProtectedBranches, checkCommand } from './check-command.js';
+
+try {
+  const guardDisabled = process.env.CLANCY_BRANCH_GUARD === 'false';
+
+  if (guardDisabled) {
+    console.log(JSON.stringify(approve()));
+    process.exit(0);
+  }
+
+  const event = readPreToolUseInput({ argv: process.argv, readFileSync });
+  const toolName = event.tool_name ?? '';
+  // HookEvent.tool_input is Record<string, unknown>; fields validated individually below
+  const toolInput = (event.tool_input ?? {}) as Record<string, unknown>;
+  const command =
+    typeof toolInput.command === 'string' ? toolInput.command : '';
+
+  const isBashTool = toolName === 'Bash';
+
+  if (!isBashTool) {
+    console.log(JSON.stringify(approve()));
+    process.exit(0);
+  }
+
+  const branches = buildProtectedBranches(process.env.CLANCY_BASE_BRANCH);
+  const reason = checkCommand(command, branches);
+
+  if (reason) {
+    console.log(JSON.stringify(block(reason)));
+  } else {
+    console.log(JSON.stringify(approve()));
+  }
+} catch {
+  console.log(JSON.stringify(approve()));
+}
