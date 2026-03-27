@@ -3,7 +3,8 @@
   "compilerOptions": {
     "outDir": "dist",
     "paths": {
-      "~/t/*": ["./src/*"]
+      "~/t/*": ["./src/*"],
+      "~/c/*": ["../core/src/*"]
     }
   },
   "include": ["src", "test"],
