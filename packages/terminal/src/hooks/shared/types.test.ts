@@ -30,4 +30,12 @@ describe('isPlainObject', () => {
   it('returns false for undefined', () => {
     expect(isPlainObject(undefined)).toBe(false);
   });
+
+  // Class instances pass because the check is typeof + null + Array.
+  // This is fine — isPlainObject only validates JSON.parse output,
+  // which can never produce class instances.
+  it('returns true for class instances (no prototype check)', () => {
+    expect(isPlainObject(new Date())).toBe(true);
+    expect(isPlainObject(new Map())).toBe(true);
+  });
 });

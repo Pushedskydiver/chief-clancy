@@ -507,3 +507,70 @@ describe('resolveTimeLimit', () => {
     expect(resolveTimeLimit('Infinity')).toBe(DEFAULT_TIME_LIMIT);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Integration: parse → guard pipeline
+// ---------------------------------------------------------------------------
+
+describe('parseBridgeMetrics → runContextGuard', () => {
+  it('fires warning when raw JSON has low remaining percentage', () => {
+    const raw = JSON.stringify({
+      remaining_percentage: 30,
+      used_pct: 70,
+      timestamp: NOW_SECONDS - 5,
+    });
+
+    const metrics = parseBridgeMetrics(raw);
+    const result = runContextGuard(metrics, freshDebounce, NOW_SECONDS);
+
+    expect(result.message).toContain('CONTEXT WARNING');
+  });
+
+  it('returns null when raw JSON is malformed', () => {
+    const metrics = parseBridgeMetrics('not json');
+    const result = runContextGuard(metrics, freshDebounce, NOW_SECONDS);
+
+    expect(result.message).toBeNull();
+  });
+
+  it('returns null when raw JSON has wrong shape', () => {
+    const metrics = parseBridgeMetrics(JSON.stringify([1, 2, 3]));
+    const result = runContextGuard(metrics, freshDebounce, NOW_SECONDS);
+
+    expect(result.message).toBeNull();
+  });
+});
+
+describe('parseDebounceState → runContextGuard', () => {
+  it('escalates from parsed warning state to critical', () => {
+    const debounceJson = JSON.stringify({
+      context: { callsSinceWarn: 0, lastLevel: 'warning' },
+      time: { callsSinceWarn: 0, lastLevel: null },
+    });
+
+    const debounce = parseDebounceState(debounceJson);
+    const metrics: BridgeMetrics = {
+      remaining_percentage: 20,
+      used_pct: 80,
+      timestamp: NOW_SECONDS - 5,
+    };
+
+    const result = runContextGuard(metrics, debounce.context, NOW_SECONDS);
+
+    expect(result.message).toContain('CONTEXT CRITICAL');
+  });
+
+  it('falls back to empty debounce on corrupt JSON', () => {
+    const debounce = parseDebounceState('{corrupt');
+    const metrics: BridgeMetrics = {
+      remaining_percentage: 30,
+      used_pct: 70,
+      timestamp: NOW_SECONDS - 5,
+    };
+
+    // Empty debounce means first breach → fires immediately
+    const result = runContextGuard(metrics, debounce.context, NOW_SECONDS);
+
+    expect(result.message).toContain('CONTEXT WARNING');
+  });
+});
