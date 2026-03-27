@@ -2,7 +2,7 @@
 
 ## Session 37 Handoff
 
-**Phase 10 audit complete.** 4 PRs this session: C33–C36. 610 terminal tests, 1566 core tests (was 592 + 1566 after session 36's C31–C32).
+**Phase 10 audit complete + Phase 11 validated.** 5 PRs this session: C33–C37. 610 terminal tests, 1566 core tests.
 
 ### What was done
 
@@ -10,14 +10,34 @@
 - **C34** (#111): Cast/assertion comments + JSDoc — "Safe:" comments on all 9 `as` casts and 1 `!` non-null assertion across hooks. Added `@param` and `@returns` tags to 4 exported functions in `monitor-guards.ts`.
 - **C35** (#112): Test gaps (high priority) — Boundary value tests for context guard (36%/26%), time guard (79%/80%/99%/100%), 7-day stale brief boundary, mixed brief types, empty string escape edge cases. Fixed existing 80% test that used 85%. +8 tests.
 - **C36** (#113): Test gaps (lower priority) — Wrong-shape JSON for stdin reader (number/string/array). `isPlainObject` class instance documentation test. Integration tests: `parseBridgeMetrics`→`runContextGuard` pipeline, `parseDebounceState`→`runContextGuard` escalation. +9 tests.
+- **C37** (#114): Workflow label transition gaps — Added Step 11b to approve-brief.md (add plan label to parent after removing brief label). Replaced vague Linear stub with full GraphQL mutations. Fixed setup workflows to use `CLANCY_LABEL_PLAN` as primary var name. Removed phantom `CLANCY_PLAN_LABEL` fallback from approve-plan.md.
 
 ### Phase 10 Audit — Complete
 
 All 6 cleanup PRs (C31–C36) merged. 8 regressions fixed, 3 bugs fixed, 12 convention violations resolved, 18 test gaps closed. Phase 10 hooks are production-ready.
 
+### Phase 11 Validation — Complete
+
+4 parallel validation agents audited the brief's 6-PR plan against the actual codebase. Key findings:
+
+- **11.1 too large** — split into 11.1a (Claude simulator + shared fixtures), 11.1b (temp repo + env fixtures + DI fetcher wiring), 11.1c dropped (MSW unnecessary — DI injection via existing `fetchAndParse` fetcher parameter is sufficient and aligns with conventions)
+- **11.5 redundant** — 610 hook unit tests + installer integration test already cover hooks comprehensively. Hooks are pure functions with thin I/O entry points; subprocess testing adds no value
+- **11.6 phantom scope** — label transitions (brief → plan → build) happen at the agent/workflow level (Claude executing `.md` files), not in TypeScript pipeline phases. Label CRUD is already covered by 11.3. C37 fixed the workflow gaps
+- **DI over MSW** — all boards use `fetchAndParse` which accepts injectable `fetcher`. Extend board constructors with optional fetcher param (Notion already does this). Zero new dependencies, consistent with CONVENTIONS.md
+
+### Phase 11 — Revised Plan
+
+| PR    | Theme                                     | Scope                                                                                               |
+| ----- | ----------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| 11.1a | Test infra: Claude simulator + fixtures   | Mock `spawnSync('claude')`, extract `makeCtx`/`makeBoard` into shared module                        |
+| 11.1b | Test infra: temp repo + env + DI fetcher  | Git ops helper, `.clancy/.env` builders, optional `fetcher` param on board constructors              |
+| 11.2  | Implementer lifecycle: happy path + exits | Per-board integration (13-phase pipeline, fatal/non-fatal aborts, rework path, ~60 tests)           |
+| 11.3  | Board write ops: label CRUD + transitions | ensureLabel/addLabel/removeLabel per board via DI fetcher, transitionTicket, idempotence (~54 tests) |
+| 11.4  | Advanced scenarios                        | Blocked ticket recursion, stale lock recovery, partial-push recovery, autopilot multi-iteration      |
+
 ### Next up
 
-Phase 10 is fully complete. Next phase TBD.
+Phase 11.1a — Claude simulator + shared test fixture extraction.
 
 ---
 
