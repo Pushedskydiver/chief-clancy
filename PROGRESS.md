@@ -38,9 +38,13 @@ All 6 cleanup PRs (C31–C36) merged. 8 regressions fixed, 3 bugs fixed, 12 conv
 | 11.3  | Board write ops: label CRUD + transitions | ensureLabel/addLabel/removeLabel per board via DI fetcher, transitionTicket, idempotence (~54 tests) |
 | 11.4  | Advanced scenarios                        | Blocked ticket recursion, stale lock recovery, partial-push recovery, autopilot multi-iteration      |
 
+### Phase 11 Progress
+
+- **11.1a**: Claude simulator + shared fixtures — `createClaudeSimulator` (configurable mock `SpawnSyncFn` with call recording + response sequences), exported `makeBoard`/`makeBoardConfig` from core test-helpers, re-export barrel in `terminal/test/helpers/fixtures.ts`. Knip config updated for terminal test scope. +13 tests.
+
 ### Next up
 
-Phase 11.1a — Claude simulator + shared test fixture extraction.
+Phase 11.1b — Temp repo + env fixtures + DI fetcher wiring on board constructors.
 
 ---
 

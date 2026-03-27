@@ -7,7 +7,7 @@
 import type { ProgressStatus } from '@chief-clancy/core';
 import type { SpawnSyncReturns } from 'node:child_process';
 
-type StdioValue = 'inherit' | 'ignore' | 'pipe' | number;
+export type StdioValue = 'inherit' | 'ignore' | 'pipe' | number;
 
 /** Synchronous process spawner with narrowed stdio options. */
 export type SpawnSyncFn = (
