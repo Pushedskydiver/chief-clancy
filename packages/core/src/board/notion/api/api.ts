@@ -169,13 +169,19 @@ export async function fetchPage(
  * @param properties - The properties to update.
  * @returns `true` if the update succeeded.
  */
-export async function updatePage(
-  token: string,
-  pageId: string,
-  properties: Record<string, unknown>,
-): Promise<boolean> {
+/** Options for {@link updatePage}. */
+type UpdatePageOpts = {
+  readonly token: string;
+  readonly pageId: string;
+  readonly properties: Record<string, unknown>;
+  readonly fetcher?: Fetcher;
+};
+
+export async function updatePage(opts: UpdatePageOpts): Promise<boolean> {
+  const { token, pageId, properties, fetcher } = opts;
+  const doFetch = fetcher ?? retryFetch;
   try {
-    const response = await retryFetch(`${NOTION_API}/pages/${pageId}`, {
+    const response = await doFetch(`${NOTION_API}/pages/${pageId}`, {
       method: 'PATCH',
       headers: notionHeaders(token),
       body: JSON.stringify({ properties }),
