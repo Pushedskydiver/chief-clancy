@@ -73,11 +73,11 @@ describe('fetchBlockerStatus', () => {
   });
 
   it('returns false for invalid issue key', async () => {
-    const result = await fetchBlockerStatus(
-      'https://example.atlassian.net',
-      'auth',
-      'invalid',
-    );
+    const result = await fetchBlockerStatus({
+      baseUrl: 'https://example.atlassian.net',
+      auth: 'auth',
+      key: 'invalid',
+    });
     expect(result).toBe(false);
   });
 
@@ -153,11 +153,11 @@ describe('fetchChildrenStatus', () => {
   });
 
   it('returns undefined for invalid issue key', async () => {
-    const result = await fetchChildrenStatus(
-      'https://example.atlassian.net',
-      'auth',
-      'invalid',
-    );
+    const result = await fetchChildrenStatus({
+      baseUrl: 'https://example.atlassian.net',
+      auth: 'auth',
+      parentKey: 'invalid',
+    });
     expect(result).toBeUndefined();
   });
 
