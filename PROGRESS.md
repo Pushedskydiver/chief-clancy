@@ -2,7 +2,7 @@
 
 ## Session 35 Handoff
 
-**Phase 10 hooks progressing.** 4 PRs this session: 10.2–10.5. 512 terminal tests, 1566 core tests (was 443 + 1566 after session 34's 10.1).
+**Phase 10 complete.** 7 PRs this session: 10.2–10.7 (10.8 was already wired). 584 terminal tests, 1566 core tests (was 443 + 1566 after session 34's 10.1).
 
 ### What was done
 
@@ -27,8 +27,8 @@
 
 ### Next up
 
-- **10.6**: Statusline — writes bridge file for context-monitor. Extract duplicate `normalizeContextUsage` logic. ANSI context bar builder.
-- After 10.6: 10.7 (notification + check-update) → 10.8 (verification gate).
+- Phase 10 complete — all 8 hooks + verification gate implemented.
+- **10.8** (verification gate) required no new code — the agent prompt (`verification-gate.md`) and installer wiring (`buildDesiredHooks` Stop hook registration) were already implemented and tested in earlier phases.
 
 ## Session 34 Handoff
 
@@ -86,6 +86,12 @@
 - **10.4** (#104): Simple hooks — post-compact (`build-context.ts`: builds context restoration from lock file, immutable line assembly) and drift-detector (`detect-drift.ts`: `versionsDiffer`, `readInstalledVersion`, `readPackageVersion`, `buildDriftWarning` with DI). Unified `COMMANDS_VERSION` constant (was duplicate `LOCAL_VERSION`/`GLOBAL_VERSION`). Atomic session debounce via `writeFileSync` with `{ flag: 'wx' }` (no TOCTOU). DA review: 3 MEDIUM (duplicate constant — unified, TOCTOU — fixed with exclusive create, test stubs don't verify paths — fixed), 4 LOW (all addressed with edge-case tests). 468 terminal tests (+25).
 
 - **10.5** (#105): Context monitor — decomposed 190-line JS hook (complexity 16) into pure functions with independent debounce state machines. `runContextGuard` (warning 35% / critical 25%), `runTimeGuard` (warning 80% / critical 100% of `CLANCY_TIME_LIMIT`), `shouldFireWarning` (shared debounce: first breach, every 5th, or escalation). `parseBridgeMetrics`, `parseDebounceState`, `resolveTimeLimit` (NaN-safe). Entry point: async stdin → guards → persist → emit. DA review: 1 HIGH (NaN passthrough in `resolveTimeLimit` — fixed with `Number.isNaN` guard), 2 MEDIUM (entry-point helpers untested — moved `resolveTimeLimit` to testable module; `as` cast replaced with type predicate), 2 LOW (return type annotation, staleness boundary consistent). 512 terminal tests (+44).
+
+- **10.6** (#106): Statusline — rewrote 83-line JS hook. `normalizeContextUsage` (auto-compact buffer rescaling, was duplicated in old hook), `buildBridgeData`, `buildContextBar` (4-tier ANSI colour thresholds with bar width clamping), `checkUpdateAvailable` (strict boolean, DI reader), `resolveCachePath` (DI for env + homedir), `buildStatusline` (declarative composition). DA review: 2 HIGH (resolveCachePath DI — moved to testable module; handleEvent untested — all logic in testable module), 1 MEDIUM (bar width clamping — added), 1 LOW (remaining=0 — tested). 542 terminal tests (+30).
+
+- **10.7** (#107): Notification + check-update. Notification: `extractMessage` (multi-shape cascade), `sendNotification` (platform dispatch: macOS/Linux/Windows with DI), `escapeAppleScript`/`escapePowerShell`, `CLANCY_DESKTOP_NOTIFY=false` suppression. Check-update: `findInstallDir` (local/global), `readInstalledVersion`, `fetchLatestVersion`, `buildUpdateCache`, `parseBriefDate`, `countStaleBriefs` (functional filter via `isStaleBrief`), detached spawn for non-blocking npm check. DA review: 1 HIGH (Windows MessageBox is blocking modal — documented as known limitation), 3 MEDIUM (stale JSDoc — fixed, no semver — documented, child script duplication — cross-referenced), 2 LOW (cascade tests — added). 584 terminal tests (+42).
+
+- **10.8**: Verification gate — no new code needed. Agent prompt (`verification-gate.md`) and installer wiring (`buildDesiredHooks` Stop hook registration with 120s timeout) were already implemented and tested in earlier phases.
 
 ## Session 33 Handoff
 
