@@ -43,8 +43,8 @@ const EXEC_TIMEOUT_MS = 5000;
 /**
  * Extract the notification message from the event payload.
  *
- * Checks multiple possible shapes — `message`, `notification`, and
- * `text` — falling back to a default.
+ * Checks multiple possible shapes — `message`, `notification`, `text`,
+ * and nested `hookSpecificOutput.message` — falling back to a default.
  *
  * @param event - Raw hook event data.
  * @returns The notification message string.
@@ -58,11 +58,29 @@ export function extractMessage(event: HookEvent): string {
     return event.notification;
   }
 
-  const text = (event as Record<string, unknown>).text;
+  // Safe: HookEvent doesn't type these fields — access via Record cast
+  const record = event as Record<string, unknown>;
+
+  return extractFallbackMessage(record) ?? DEFAULT_MESSAGE;
+}
+
+/** Check `text` and nested `hookSpecificOutput.message` fields. */
+function extractFallbackMessage(
+  record: Record<string, unknown>,
+): string | undefined {
+  const text = record.text;
 
   if (typeof text === 'string' && text !== '') return text;
 
-  return DEFAULT_MESSAGE;
+  const nested = record.hookSpecificOutput;
+  const isObject = typeof nested === 'object' && nested !== null;
+  const nestedMsg = isObject
+    ? (nested as Record<string, unknown>).message
+    : undefined;
+
+  if (typeof nestedMsg === 'string' && nestedMsg !== '') return nestedMsg;
+
+  return undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -70,13 +88,13 @@ export function extractMessage(event: HookEvent): string {
 // ---------------------------------------------------------------------------
 
 /**
- * Escape a string for use inside AppleScript single quotes.
+ * Escape a string for use inside AppleScript double-quoted strings.
  *
  * @param s - The raw string.
  * @returns Escaped string safe for `osascript -e`.
  */
 export function escapeAppleScript(s: string): string {
-  return s.replaceAll("'", "'\"'\"'");
+  return s.replaceAll('\\', '\\\\').replaceAll('"', '\\"');
 }
 
 /**
@@ -97,7 +115,7 @@ export function escapePowerShell(s: string): string {
  */
 function notifyDarwin(message: string, exec: ExecFn): void {
   const escaped = escapeAppleScript(message);
-  const script = `display notification '${escaped}' with title "Clancy"`;
+  const script = `display notification "${escaped}" with title "Clancy"`;
 
   exec('osascript', ['-e', script], {
     timeout: EXEC_TIMEOUT_MS,
@@ -136,7 +154,7 @@ function notifyWindows(message: string, exec: ExecFn): void {
     'Add-Type -AssemblyName System.Windows.Forms; ' +
     `[System.Windows.Forms.MessageBox]::Show("${escaped}", "Clancy")`;
 
-  exec('powershell', ['-Command', cmd], {
+  exec('powershell', ['-NoProfile', '-Command', cmd], {
     timeout: EXEC_TIMEOUT_MS,
     windowsHide: true,
   });
@@ -166,7 +184,7 @@ export function sendNotification(message: string, deps: NotifyDeps): void {
   const notifier = NOTIFIERS[deps.platform as Platform];
 
   if (!notifier) {
-    deps.log(message);
+    deps.log(`[Clancy] ${message}`);
 
     return;
   }
@@ -174,6 +192,6 @@ export function sendNotification(message: string, deps: NotifyDeps): void {
   try {
     notifier(message, deps.exec);
   } catch {
-    deps.log(message);
+    deps.log(`[Clancy] ${message}`);
   }
 }

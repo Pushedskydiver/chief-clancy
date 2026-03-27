@@ -55,6 +55,23 @@ describe('extractMessage', () => {
 
     expect(extractMessage(event)).toBe('Clancy notification');
   });
+
+  it('returns hookSpecificOutput.message when other fields are absent', () => {
+    const event = {
+      hookSpecificOutput: { message: 'nested msg' },
+    } as HookEvent;
+
+    expect(extractMessage(event)).toBe('nested msg');
+  });
+
+  it('prefers message over hookSpecificOutput.message', () => {
+    const event = {
+      message: 'top level',
+      hookSpecificOutput: { message: 'nested' },
+    } as HookEvent;
+
+    expect(extractMessage(event)).toBe('top level');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -62,12 +79,24 @@ describe('extractMessage', () => {
 // ---------------------------------------------------------------------------
 
 describe('escapeAppleScript', () => {
-  it('escapes single quotes', () => {
-    expect(escapeAppleScript("it's done")).toBe("it'\"'\"'s done");
+  it('escapes double quotes', () => {
+    expect(escapeAppleScript('say "hi"')).toBe('say \\"hi\\"');
   });
 
-  it('returns unchanged string without quotes', () => {
+  it('escapes backslashes', () => {
+    expect(escapeAppleScript('path\\to')).toBe('path\\\\to');
+  });
+
+  it('escapes backslash before double quote', () => {
+    expect(escapeAppleScript('a\\"b')).toBe('a\\\\\\"b');
+  });
+
+  it('returns unchanged string without special chars', () => {
     expect(escapeAppleScript('hello')).toBe('hello');
+  });
+
+  it('preserves single quotes (no escaping needed in double-quoted AppleScript)', () => {
+    expect(escapeAppleScript("it's done")).toBe("it's done");
   });
 });
 
@@ -98,14 +127,18 @@ describe('escapePowerShell', () => {
 // ---------------------------------------------------------------------------
 
 describe('sendNotification', () => {
-  it('calls osascript on darwin', () => {
+  it('calls osascript on darwin with double-quoted AppleScript', () => {
     const exec = vi.fn();
     const log = vi.fn();
 
-    sendNotification('test', { platform: 'darwin', exec, log });
+    sendNotification('say "hi"', { platform: 'darwin', exec, log });
 
     expect(exec).toHaveBeenCalledOnce();
     expect(exec.mock.calls[0]?.[0]).toBe('osascript');
+
+    const script = (exec.mock.calls[0]?.[1] as readonly string[])[1];
+
+    expect(script).toContain('display notification "say \\"hi\\""');
     expect(log).not.toHaveBeenCalled();
   });
 
@@ -120,7 +153,7 @@ describe('sendNotification', () => {
     expect(exec.mock.calls[0]?.[1]).toEqual(['Clancy', 'test']);
   });
 
-  it('calls powershell on win32', () => {
+  it('calls powershell with -NoProfile on win32', () => {
     const exec = vi.fn();
     const log = vi.fn();
 
@@ -128,6 +161,11 @@ describe('sendNotification', () => {
 
     expect(exec).toHaveBeenCalledOnce();
     expect(exec.mock.calls[0]?.[0]).toBe('powershell');
+
+    const args = exec.mock.calls[0]?.[1] as readonly string[];
+
+    expect(args[0]).toBe('-NoProfile');
+    expect(args[1]).toBe('-Command');
   });
 
   it('falls back to log on unsupported platform', () => {
@@ -137,7 +175,7 @@ describe('sendNotification', () => {
     sendNotification('test', { platform: 'freebsd', exec, log });
 
     expect(exec).not.toHaveBeenCalled();
-    expect(log).toHaveBeenCalledWith('test');
+    expect(log).toHaveBeenCalledWith('[Clancy] test');
   });
 
   it('falls back to log when exec throws', () => {
@@ -148,7 +186,7 @@ describe('sendNotification', () => {
 
     sendNotification('test', { platform: 'darwin', exec, log });
 
-    expect(log).toHaveBeenCalledWith('test');
+    expect(log).toHaveBeenCalledWith('[Clancy] test');
   });
 
   it('passes timeout and windowsHide to exec', () => {
