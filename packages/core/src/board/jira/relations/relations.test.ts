@@ -33,11 +33,11 @@ describe('fetchBlockerStatus', () => {
         ),
     );
 
-    const result = await fetchBlockerStatus(
-      'https://example.atlassian.net',
-      'auth',
-      'PROJ-42',
-    );
+    const result = await fetchBlockerStatus({
+      baseUrl: 'https://example.atlassian.net',
+      auth: 'auth',
+      key: 'PROJ-42',
+    });
     expect(result).toBe(true);
   });
 
@@ -64,11 +64,11 @@ describe('fetchBlockerStatus', () => {
         ),
     );
 
-    const result = await fetchBlockerStatus(
-      'https://example.atlassian.net',
-      'auth',
-      'PROJ-42',
-    );
+    const result = await fetchBlockerStatus({
+      baseUrl: 'https://example.atlassian.net',
+      auth: 'auth',
+      key: 'PROJ-42',
+    });
     expect(result).toBe(false);
   });
 
@@ -85,11 +85,11 @@ describe('fetchBlockerStatus', () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network')));
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    const result = await fetchBlockerStatus(
-      'https://example.atlassian.net',
-      'auth',
-      'PROJ-42',
-    );
+    const result = await fetchBlockerStatus({
+      baseUrl: 'https://example.atlassian.net',
+      auth: 'auth',
+      key: 'PROJ-42',
+    });
     expect(result).toBe(false);
   });
 });
@@ -117,11 +117,11 @@ describe('fetchChildrenStatus', () => {
         ),
     );
 
-    const result = await fetchChildrenStatus(
-      'https://example.atlassian.net',
-      'auth',
-      'PROJ-100',
-    );
+    const result = await fetchChildrenStatus({
+      baseUrl: 'https://example.atlassian.net',
+      auth: 'auth',
+      parentKey: 'PROJ-100',
+    });
     expect(result).toEqual({ total: 3, incomplete: 1 });
   });
 
@@ -144,11 +144,11 @@ describe('fetchChildrenStatus', () => {
         ),
     );
 
-    const result = await fetchChildrenStatus(
-      'https://example.atlassian.net',
-      'auth',
-      'PROJ-100',
-    );
+    const result = await fetchChildrenStatus({
+      baseUrl: 'https://example.atlassian.net',
+      auth: 'auth',
+      parentKey: 'PROJ-100',
+    });
     expect(result).toEqual({ total: 2, incomplete: 1 });
   });
 
@@ -165,11 +165,11 @@ describe('fetchChildrenStatus', () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network')));
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    const result = await fetchChildrenStatus(
-      'https://example.atlassian.net',
-      'auth',
-      'PROJ-100',
-    );
+    const result = await fetchChildrenStatus({
+      baseUrl: 'https://example.atlassian.net',
+      auth: 'auth',
+      parentKey: 'PROJ-100',
+    });
     expect(result).toBeUndefined();
   });
 });

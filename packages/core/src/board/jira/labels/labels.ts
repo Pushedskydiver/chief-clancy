@@ -5,6 +5,8 @@
  * label API requires reading the current labels and writing the full
  * list back. Wrapped in {@link safeLabel} for best-effort error handling.
  */
+import type { Fetcher } from '~/c/shared/http/index.js';
+
 import { jiraIssueLabelsResponseSchema } from '~/c/schemas/index.js';
 import { modifyLabelList, safeLabel } from '~/c/shared/label-helpers/index.js';
 
@@ -14,6 +16,7 @@ import { isValidIssueKey, jiraHeaders } from '../api/index.js';
 type JiraLabelContext = {
   readonly baseUrl: string;
   readonly auth: string;
+  readonly fetcher?: Fetcher;
 };
 
 /** Fetch current labels for a Jira issue. */
@@ -21,7 +24,8 @@ async function fetchLabels(
   ctx: JiraLabelContext,
   issueKey: string,
 ): Promise<readonly string[] | undefined> {
-  const res = await fetch(
+  const doFetch = ctx.fetcher ?? fetch;
+  const res = await doFetch(
     `${ctx.baseUrl}/rest/api/3/issue/${encodeURIComponent(issueKey)}?fields=labels`,
     { headers: jiraHeaders(ctx.auth) },
   );
@@ -42,7 +46,8 @@ async function writeLabels(
   issueKey: string,
   labels: readonly string[],
 ): Promise<void> {
-  const res = await fetch(
+  const doFetch = ctx.fetcher ?? fetch;
+  const res = await doFetch(
     `${ctx.baseUrl}/rest/api/3/issue/${encodeURIComponent(issueKey)}`,
     {
       method: 'PUT',

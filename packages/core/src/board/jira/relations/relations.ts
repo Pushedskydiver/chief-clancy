@@ -4,6 +4,7 @@
  * Checks blocker status (via issue links) and children status
  * (via Epic: text convention + native parent JQL).
  */
+import type { Fetcher } from '~/c/shared/http/index.js';
 import type { ChildrenStatus } from '~/c/types/index.js';
 
 import { jiraIssueLinksResponseSchema } from '~/c/schemas/index.js';
@@ -24,15 +25,23 @@ const jiraSearchCountSchema = z.object({ total: z.optional(z.number()) });
  * @param key - The Jira issue key (e.g., `'PROJ-123'`).
  * @returns `true` if any blocker is unresolved, `false` otherwise.
  */
+/** Options for {@link fetchBlockerStatus}. */
+type FetchBlockerOpts = {
+  readonly baseUrl: string;
+  readonly auth: string;
+  readonly key: string;
+  readonly fetcher?: Fetcher;
+};
+
 export async function fetchBlockerStatus(
-  baseUrl: string,
-  auth: string,
-  key: string,
+  opts: FetchBlockerOpts,
 ): Promise<boolean> {
+  const { baseUrl, auth, key, fetcher } = opts;
   if (!isValidIssueKey(key)) return false;
 
+  const doFetch = fetcher ?? fetch;
   try {
-    const response = await fetch(
+    const response = await doFetch(
       `${baseUrl}/rest/api/3/issue/${key}?fields=issuelinks`,
       { headers: jiraHeaders(auth) },
     );
@@ -70,24 +79,34 @@ export async function fetchBlockerStatus(
  * @param parentKey - The parent issue key (e.g., `'PROJ-100'`).
  * @returns The children status, or `undefined` on failure.
  */
+/** Options for {@link fetchChildrenStatus}. */
+type FetchChildrenOpts = {
+  readonly baseUrl: string;
+  readonly auth: string;
+  readonly parentKey: string;
+  readonly fetcher?: Fetcher;
+};
+
 export async function fetchChildrenStatus(
-  baseUrl: string,
-  auth: string,
-  parentKey: string,
+  opts: FetchChildrenOpts,
 ): Promise<ChildrenStatus | undefined> {
+  const { baseUrl, auth, parentKey, fetcher } = opts;
   if (!isValidIssueKey(parentKey)) return undefined;
 
   try {
     const projectPrefix = parentKey.split('-')[0];
-    const epicResult = await fetchChildrenByJql(
-      baseUrl,
-      auth,
-      `project = "${projectPrefix}" AND description ~ "Epic: ${parentKey}"`,
-    );
+    const shared = { baseUrl, auth, fetcher };
+    const epicResult = await fetchChildrenByJql({
+      ...shared,
+      jql: `project = "${projectPrefix}" AND description ~ "Epic: ${parentKey}"`,
+    });
 
     if (epicResult && epicResult.total > 0) return epicResult;
 
-    return await fetchChildrenByJql(baseUrl, auth, `parent = ${parentKey}`);
+    return await fetchChildrenByJql({
+      ...shared,
+      jql: `parent = ${parentKey}`,
+    });
   } catch (err) {
     console.warn(
       `⚠ fetchChildrenStatus failed: ${err instanceof Error ? err.message : String(err)}`,
@@ -96,18 +115,26 @@ export async function fetchChildrenStatus(
   }
 }
 
+/** Options for {@link fetchChildrenByJql}. */
+type JqlChildrenOpts = {
+  readonly baseUrl: string;
+  readonly auth: string;
+  readonly jql: string;
+  readonly fetcher?: Fetcher;
+};
+
 /** Fetch children status using a JQL query. */
 async function fetchChildrenByJql(
-  baseUrl: string,
-  auth: string,
-  jql: string,
+  opts: JqlChildrenOpts,
 ): Promise<ChildrenStatus | undefined> {
+  const { baseUrl, auth, jql, fetcher } = opts;
   const headers = {
     ...jiraHeaders(auth),
     'Content-Type': 'application/json',
   };
+  const doFetch = fetcher ?? fetch;
 
-  const totalResponse = await fetch(`${baseUrl}/rest/api/3/search/jql`, {
+  const totalResponse = await doFetch(`${baseUrl}/rest/api/3/search/jql`, {
     method: 'POST',
     headers,
     body: JSON.stringify({ jql, maxResults: 0 }),
@@ -123,7 +150,7 @@ async function fetchChildrenByJql(
 
   if (total === 0) return { total: 0, incomplete: 0 };
 
-  const incompleteResponse = await fetch(`${baseUrl}/rest/api/3/search/jql`, {
+  const incompleteResponse = await doFetch(`${baseUrl}/rest/api/3/search/jql`, {
     method: 'POST',
     headers,
     body: JSON.stringify({

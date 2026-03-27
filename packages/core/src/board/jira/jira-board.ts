@@ -114,7 +114,11 @@ export function createJiraBoard(env: JiraEnv, fetcher?: Fetcher): Board {
     statusName: env.CLANCY_JQL_STATUS ?? 'To Do',
     fetcher,
   };
-  const labelCtx = { baseUrl: ctx.baseUrl, auth: ctx.auth };
+  const labelCtx = {
+    baseUrl: ctx.baseUrl,
+    auth: ctx.auth,
+    fetcher: ctx.fetcher,
+  };
   const fetch = (opts: FetchTicketOpts) => fetchJiraTickets(ctx, opts, env);
 
   return {
@@ -125,10 +129,20 @@ export function createJiraBoard(env: JiraEnv, fetcher?: Fetcher): Board {
     fetchTickets: fetch,
 
     fetchBlockerStatus: (ticket) =>
-      fetchBlockerStatus(ctx.baseUrl, ctx.auth, ticket.key),
+      fetchBlockerStatus({
+        baseUrl: ctx.baseUrl,
+        auth: ctx.auth,
+        key: ticket.key,
+        fetcher: ctx.fetcher,
+      }),
 
     fetchChildrenStatus: (parentKey) =>
-      fetchChildrenStatus(ctx.baseUrl, ctx.auth, parentKey),
+      fetchChildrenStatus({
+        baseUrl: ctx.baseUrl,
+        auth: ctx.auth,
+        parentKey,
+        fetcher: ctx.fetcher,
+      }),
 
     transitionTicket: (ticket, status) => doTransition(ctx, ticket, status),
 

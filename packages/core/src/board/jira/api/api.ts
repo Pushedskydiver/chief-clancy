@@ -290,7 +290,7 @@ export async function lookupTransitionId(
  * @returns `true` if the transition succeeded.
  */
 export async function transitionIssue(opts: TransitionOpts): Promise<boolean> {
-  const { baseUrl, auth, issueKey, statusName } = opts;
+  const { baseUrl, auth, issueKey, statusName, fetcher } = opts;
 
   try {
     const transitionId = await lookupTransitionId(opts);
@@ -302,7 +302,8 @@ export async function transitionIssue(opts: TransitionOpts): Promise<boolean> {
       return false;
     }
 
-    const response = await fetch(
+    const doFetch = fetcher ?? fetch;
+    const response = await doFetch(
       `${baseUrl}/rest/api/3/issue/${issueKey}/transitions`,
       {
         method: 'POST',
