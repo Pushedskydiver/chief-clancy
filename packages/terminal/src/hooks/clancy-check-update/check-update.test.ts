@@ -230,6 +230,47 @@ describe('countStaleBriefs', () => {
     expect(countStaleBriefs('/project', Date.now(), deps)).toBe(0);
   });
 
+  it('excludes brief at exactly the 7-day boundary', () => {
+    // Use midnight-aligned now so the date prefix matches exactly
+    const now = new Date('2026-03-27T00:00:00Z').getTime();
+    const boundaryFile = '2026-03-20-boundary.md'; // exactly 7 days before now
+    const deps = {
+      existsSync: (p: string) => !p.endsWith('.approved'),
+      readdirSync: () => [boundaryFile],
+    };
+
+    // parseBriefDate('2026-03-20-...') → 2026-03-20T00:00:00Z
+    // threshold = now - 7 * 86_400_000 = 2026-03-20T00:00:00Z
+    // date.getTime() < threshold → equal, not less-than → NOT stale
+    expect(countStaleBriefs('/project', now, deps)).toBe(0);
+  });
+
+  it('counts correctly with mixed file types', () => {
+    const now = Date.now();
+    const staleFile = `${dateStr(EIGHT_DAYS_AGO)}-stale.md`;
+    const recentFile = `${dateStr(TWO_DAYS_AGO)}-recent.md`;
+    const feedbackFile = `${dateStr(EIGHT_DAYS_AGO)}-old.feedback.md`;
+    const approvedFile = `${dateStr(EIGHT_DAYS_AGO)}-approved.md`;
+
+    const deps = {
+      existsSync: (p: string) => {
+        // Only the approved file has an .approved marker
+        return p.endsWith(`${approvedFile}.approved`);
+      },
+      readdirSync: () => [
+        staleFile,
+        recentFile,
+        feedbackFile,
+        approvedFile,
+        'readme.txt',
+      ],
+    };
+
+    // Only staleFile should count — recent is fresh, feedback excluded,
+    // approved has marker, readme.txt is not .md
+    expect(countStaleBriefs('/project', now, deps)).toBe(1);
+  });
+
   it('returns null on readdir failure', () => {
     const deps = {
       existsSync: () => true,
