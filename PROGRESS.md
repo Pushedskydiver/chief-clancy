@@ -25,10 +25,24 @@
 - Core's `test-helpers.ts` excluded from build tsconfig (was leaking vitest into published dist).
 - esbuild script cleans up tsc intermediates after bundling — only flat CJS files remain in `dist/hooks/`.
 
+### Phase 10 Audit
+
+6 audit agents ran in parallel (conventions, test coverage, entry points, security, build, behavioral parity). 8 regressions, 3 bugs, 12 convention violations, 10+ test gaps found. 6 cleanup PRs planned (C31–C36).
+
+#### Cleanup PRs
+
+| PR  | Theme                          | Scope                                                                                                                            |
+| --- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| C31 | Notification regressions       | AppleScript double-quote escaping, `-NoProfile`, `windowsHide`, `[Clancy]` prefix, `hookSpecificOutput.message` check            |
+| C32 | Post-compact + branch-guard    | `ticketTitle` default `'Unknown'`, empty `parentKey` guard, actionable error messages                                            |
+| C33 | NaN guard + TOCTOU removal     | `parseBridgeMetrics` `Number.isFinite` check, remove `existsSync` in `findInstallDir`/`countStaleBriefs`, catch block comments   |
+| C34 | Cast/assertion comments + JSDoc | All 8 `as` cast comments, `!` assertion comment, stale line count, missing `@param` tags                                        |
+| C35 | Test gaps — high priority      | NaN metrics, boundary values (36%/26%/80%/100%), empty parentKey/title, brief date boundary, escape verification, mixed briefs   |
+| C36 | Test gaps — lower priority     | stdin wrong-shape JSON, `isPlainObject` with class instances, empty session IDs, interaction tests (parse→guard pipeline)         |
+
 ### Next up
 
-- Phase 10 complete — all 8 hooks + verification gate implemented.
-- **10.8** (verification gate) required no new code — the agent prompt (`verification-gate.md`) and installer wiring (`buildDesiredHooks` Stop hook registration) were already implemented and tested in earlier phases.
+- **C31**: Notification regressions — first cleanup PR.
 
 ## Session 34 Handoff
 
