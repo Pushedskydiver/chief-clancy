@@ -547,6 +547,8 @@ Transition the ticket from the planning queue to the implementation queue via pi
 
 **This label transition is mandatory — always apply and remove.** Use `CLANCY_LABEL_BUILD` from `.clancy/.env` if set, otherwise `clancy:build`. Use `CLANCY_LABEL_PLAN` from `.clancy/.env` if set, otherwise `clancy:plan`. Ensure the build label exists on the board (create if missing), add it to the ticket, then remove the plan label.
 
+**If build label creation fails** (GitHub/Linear/Shortcut require explicit creation): warn and **do not remove the plan label**. The ticket must keep at least one pipeline label — removing the plan label without a build label would orphan the ticket from both queues.
+
 ### GitHub
 
 1. **Add build label** (ensure it exists first):
