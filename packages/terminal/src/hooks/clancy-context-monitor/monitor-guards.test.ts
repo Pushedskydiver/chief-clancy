@@ -455,4 +455,8 @@ describe('resolveTimeLimit', () => {
   it('accepts zero as a valid value', () => {
     expect(resolveTimeLimit('0')).toBe(0);
   });
+
+  it('returns default for Infinity', () => {
+    expect(resolveTimeLimit('Infinity')).toBe(DEFAULT_TIME_LIMIT);
+  });
 });
