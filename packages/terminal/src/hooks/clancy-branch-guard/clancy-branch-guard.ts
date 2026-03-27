@@ -46,5 +46,7 @@ try {
     console.log(JSON.stringify(approve()));
   }
 } catch {
+  // Hooks must never crash — an unhandled error here would surface as
+  // a Claude Code failure. Approve silently so the tool call proceeds.
   console.log(JSON.stringify(approve()));
 }

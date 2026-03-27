@@ -34,14 +34,15 @@ try {
   handleStaleBriefs(cwd);
 
   // ── Find install dir ─────────────────────────────────────────────
-  const installDir = findInstallDir(cwd, { existsSync, homedir });
+  const installDir = findInstallDir(cwd, { readFileSync, homedir });
 
   if (!installDir) process.exit(0);
 
   // ── Spawn detached update check ──────────────────────────────────
   spawnUpdateCheck(installDir, home);
 } catch {
-  /* best-effort: silent exit */
+  // Hooks must never crash — an unhandled error here would surface as
+  // a Claude Code failure. Silent exit is the correct fallback.
 }
 
 // ---------------------------------------------------------------------------

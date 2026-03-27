@@ -34,7 +34,7 @@ type UpdateCache = {
 
 /** Dependencies for finding the install directory. */
 type FindInstallDeps = {
-  readonly existsSync: (path: string) => boolean;
+  readonly readFileSync: (path: string, encoding: 'utf8') => string;
   readonly homedir: () => string;
 };
 
@@ -72,14 +72,22 @@ export function findInstallDir(
   deps: FindInstallDeps,
 ): string | null {
   const localDir = join(cwd, COMMANDS_PATH);
-  const localVersionExists = deps.existsSync(join(localDir, VERSION_FILE));
 
-  if (localVersionExists) return localDir;
+  if (canReadVersion(localDir, deps)) return localDir;
 
   const globalDir = join(deps.homedir(), COMMANDS_PATH);
-  const globalVersionExists = deps.existsSync(join(globalDir, VERSION_FILE));
 
-  return globalVersionExists ? globalDir : null;
+  return canReadVersion(globalDir, deps) ? globalDir : null;
+}
+
+function canReadVersion(dir: string, deps: FindInstallDeps): boolean {
+  try {
+    deps.readFileSync(join(dir, VERSION_FILE), 'utf8');
+
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -214,9 +222,6 @@ export function countStaleBriefs(
   deps: StaleBriefDeps,
 ): number | null {
   const briefsPath = join(cwd, BRIEFS_DIR);
-  const dirExists = deps.existsSync(briefsPath);
-
-  if (!dirExists) return null;
 
   try {
     const files = deps.readdirSync(briefsPath);

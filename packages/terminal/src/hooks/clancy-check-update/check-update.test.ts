@@ -16,9 +16,12 @@ import {
 // ---------------------------------------------------------------------------
 
 describe('findInstallDir', () => {
-  it('returns local dir when local VERSION exists', () => {
+  it('returns local dir when local VERSION is readable', () => {
     const deps = {
-      existsSync: (p: string) => p.includes('/project/'),
+      readFileSync: (p: string) => {
+        if (p.includes('/project/')) return '1.0.0';
+        throw new Error('ENOENT');
+      },
       homedir: () => '/home/user',
     };
 
@@ -30,7 +33,10 @@ describe('findInstallDir', () => {
 
   it('returns global dir when local is missing', () => {
     const deps = {
-      existsSync: (p: string) => p.includes('/home/user/'),
+      readFileSync: (p: string) => {
+        if (p.includes('/home/user/')) return '1.0.0';
+        throw new Error('ENOENT');
+      },
       homedir: () => '/home/user',
     };
 
@@ -39,9 +45,11 @@ describe('findInstallDir', () => {
     expect(result).toContain('/home/user/');
   });
 
-  it('returns null when neither exists', () => {
+  it('returns null when neither is readable', () => {
     const deps = {
-      existsSync: () => false,
+      readFileSync: () => {
+        throw new Error('ENOENT');
+      },
       homedir: () => '/home/user',
     };
 
@@ -164,9 +172,12 @@ describe('countStaleBriefs', () => {
   it('returns null when briefs dir does not exist', () => {
     const deps = {
       existsSync: () => false,
-      readdirSync: () => [],
+      readdirSync: (): readonly string[] => {
+        throw new Error('ENOENT');
+      },
     };
 
+    // readdirSync throwing (not existsSync) drives the null return
     expect(countStaleBriefs('/project', Date.now(), deps)).toBeNull();
   });
 

@@ -264,7 +264,10 @@ export function parseBridgeMetrics(raw: string): BridgeMetrics | null {
     const used = parsed.used_pct;
 
     const hasRequired =
-      typeof remaining === 'number' && typeof used === 'number';
+      typeof remaining === 'number' &&
+      typeof used === 'number' &&
+      Number.isFinite(remaining) &&
+      Number.isFinite(used);
 
     if (!hasRequired) return null;
 
@@ -273,7 +276,8 @@ export function parseBridgeMetrics(raw: string): BridgeMetrics | null {
       used_pct: used,
     };
 
-    const hasTimestamp = typeof parsed.timestamp === 'number';
+    const hasTimestamp =
+      typeof parsed.timestamp === 'number' && Number.isFinite(parsed.timestamp);
 
     return hasTimestamp
       ? { ...result, timestamp: parsed.timestamp as number }
@@ -293,7 +297,7 @@ export function resolveTimeLimit(env: string | undefined): number {
   if (env === undefined) return DEFAULT_TIME_LIMIT;
 
   const parsed = Number(env);
-  const isValid = !Number.isNaN(parsed);
+  const isValid = Number.isFinite(parsed);
 
   return isValid ? parsed : DEFAULT_TIME_LIMIT;
 }

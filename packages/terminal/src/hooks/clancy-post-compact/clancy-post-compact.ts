@@ -29,5 +29,6 @@ readAsyncInput({ stdin: process.stdin })
     process.stdout.write(JSON.stringify(output));
   })
   .catch(() => {
-    /* best-effort: silent exit */
+    // Hooks must never crash — an unhandled error here would surface as
+    // a Claude Code failure. Silent exit is the correct fallback.
   });
