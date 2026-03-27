@@ -85,7 +85,7 @@ function spawnUpdateCheck(installDir: string, home: string): void {
   const child = spawn(
     process.execPath,
     ['-e', buildChildScript(installed, cache.file)],
-    { detached: true, stdio: 'ignore' },
+    { detached: true, stdio: 'ignore', windowsHide: true },
   );
 
   child.unref();
