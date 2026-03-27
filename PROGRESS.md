@@ -49,9 +49,11 @@
 
 - **10.1** (#101): Wire `retryEntry` stub — replaced `async () => undefined` in dep-factory with `makeRetryEntry` that delegates to `attemptPrCreation`. Recomputes branches via `computeTicketBranch`/`computeTargetBranch`, builds PR title/body. Added `ticketType` to progress format (`type:VALUE` suffix) so retried PRs get correct commit type. New core barrel exports: `attemptPrCreation`, `resolveCommitType`, `buildPrBody`. DA review: 1 HIGH (resolved by adding ticketType), 5 MEDIUM (all addressed).
 
+- **10.2** (#102): Hook build infrastructure — esbuild CJS config (`src/hooks/esbuild.hooks.ts`), 4 shared utility modules (hook-output, tmpdir, lock-file, stdin-reader), 8 entry point stubs, `isPlainObject` type guard. Build pipeline: `tsc → tsc-alias → node dist/hooks/esbuild.hooks.js`. Fixed ESLint `**/hooks/` global ignore that would have blocked linting of `src/hooks/`. Added knip entry points for standalone hook bundles. Cross-platform stdin (fd 0 instead of `/dev/stdin`). DA review: 3 MEDIUM (TOCTOU race — fixed by removing `existsSync`, `/dev/stdin` — fixed with fd 0, unjustified `as` casts — fixed with comments + `isPlainObject`), 5 LOW (all addressed). 381 terminal tests (+28).
+
 ### Next up
 
-- **10.2**: Hook build infrastructure (esbuild CJS config, shared utilities).
+- **10.3**: PreToolUse guards (credential-guard, branch-guard).
 
 ## Session 33 Handoff
 

@@ -25,6 +25,11 @@
   "volta": {
     "node": "24.14.0"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
   "lint-staged": {
     "*.ts": [
       "eslint --fix",

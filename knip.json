@@ -6,7 +6,12 @@
       "project": ["src/**/*.ts"]
     },
     "packages/terminal": {
-      "project": ["src/**/*.ts"]
+      "project": ["src/**/*.ts"],
+      "entry": [
+        "src/hooks/esbuild.hooks.ts",
+        "src/hooks/clancy-*/clancy-*.ts",
+        "src/hooks/shared/*/index.ts"
+      ]
     }
   }
 }
