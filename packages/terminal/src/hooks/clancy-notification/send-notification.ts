@@ -74,6 +74,7 @@ function extractFallbackMessage(
 
   const nested = record.hookSpecificOutput;
   const isObject = typeof nested === 'object' && nested !== null;
+  // Safe: isObject confirms nested is a non-null object
   const nestedMsg = isObject
     ? (nested as Record<string, unknown>).message
     : undefined;
@@ -181,6 +182,7 @@ const NOTIFIERS: Readonly<Record<Platform, typeof notifyDarwin>> = {
  * @param deps - Platform, executor, and logger (injected).
  */
 export function sendNotification(message: string, deps: NotifyDeps): void {
+  // Safe: unrecognised platforms fall through to the !notifier fallback below
   const notifier = NOTIFIERS[deps.platform as Platform];
 
   if (!notifier) {

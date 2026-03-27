@@ -60,6 +60,7 @@ export function buildProtectedBranches(
 ): readonly string[] {
   if (!envBranch) return [...DEFAULT_BRANCHES];
 
+  // Safe: includes() accepts any string — cast satisfies the readonly tuple type
   const alreadyIncluded = DEFAULT_BRANCHES.includes(
     envBranch as (typeof DEFAULT_BRANCHES)[number],
   );

@@ -109,6 +109,7 @@ function extractNewString(entry: unknown): string | undefined {
 
   if (!isObject) return undefined;
 
+  // Safe: isObject confirms entry is a non-null object
   const value = (entry as Record<string, unknown>).new_string;
 
   return typeof value === 'string' ? value : undefined;
