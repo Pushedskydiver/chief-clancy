@@ -6,6 +6,7 @@
  */
 import type { AzdoCtx, AzdoTicket } from './api/index.js';
 import type { AzdoEnv } from '~/c/schemas/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/index.js';
 
 import {
@@ -99,13 +100,15 @@ async function doTransition(
  * Create a Board implementation for Azure DevOps.
  *
  * @param env - The validated Azure DevOps environment variables.
+ * @param fetcher - Optional custom fetch function for DI in tests.
  * @returns A Board object that delegates to Azure DevOps API functions.
  */
-export function createAzdoBoard(env: AzdoEnv): Board {
+export function createAzdoBoard(env: AzdoEnv, fetcher?: Fetcher): Board {
   const ctx: AzdoCtx = {
     org: env.AZDO_ORG,
     project: env.AZDO_PROJECT,
     pat: env.AZDO_PAT,
+    fetcher,
   };
   const doFetch = (opts: FetchTicketOpts) => fetchAzdoTickets(ctx, opts, env);
 

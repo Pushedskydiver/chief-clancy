@@ -217,8 +217,10 @@ describe('notion api', () => {
     it('returns true on success', async () => {
       vi.mocked(retryFetch).mockResolvedValue(mockResponse({}));
 
-      const result = await updatePage(TOKEN, PAGE_ID, {
-        Status: { status: { name: 'In Progress' } },
+      const result = await updatePage({
+        token: TOKEN,
+        pageId: PAGE_ID,
+        properties: { Status: { status: { name: 'In Progress' } } },
       });
       expect(result).toBe(true);
     });
@@ -227,7 +229,7 @@ describe('notion api', () => {
       vi.mocked(retryFetch).mockResolvedValue(mockResponse({}));
 
       const props = { Status: { status: { name: 'Done' } } };
-      await updatePage(TOKEN, PAGE_ID, props);
+      await updatePage({ token: TOKEN, pageId: PAGE_ID, properties: props });
 
       expect(retryFetch).toHaveBeenCalledWith(
         `https://api.notion.com/v1/pages/${PAGE_ID}`,
@@ -241,14 +243,22 @@ describe('notion api', () => {
     it('returns false on HTTP error', async () => {
       vi.mocked(retryFetch).mockResolvedValue(mockResponse({}, 400));
 
-      const result = await updatePage(TOKEN, PAGE_ID, {});
+      const result = await updatePage({
+        token: TOKEN,
+        pageId: PAGE_ID,
+        properties: {},
+      });
       expect(result).toBe(false);
     });
 
     it('returns false on network failure', async () => {
       vi.mocked(retryFetch).mockRejectedValue(new Error('network'));
 
-      const result = await updatePage(TOKEN, PAGE_ID, {});
+      const result = await updatePage({
+        token: TOKEN,
+        pageId: PAGE_ID,
+        properties: {},
+      });
       expect(result).toBe(false);
     });
   });

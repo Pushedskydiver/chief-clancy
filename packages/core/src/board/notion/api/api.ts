@@ -6,6 +6,7 @@
  */
 import type { NotionCtx } from './helpers.js';
 import type { NotionPage } from '~/c/schemas/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 import type { PingResult } from '~/c/types/index.js';
 
 import {
@@ -83,7 +84,7 @@ export async function queryDatabase(
     {
       schema: notionDatabaseQueryResponseSchema,
       label: 'Notion API',
-      fetcher: retryFetch,
+      fetcher: ctx.fetcher ?? retryFetch,
     },
   );
 }
@@ -145,11 +146,16 @@ async function collectPages(
 export async function fetchPage(
   token: string,
   pageId: string,
+  fetcher?: Fetcher,
 ): Promise<NotionPage | undefined> {
   return fetchAndParse(
     `${NOTION_API}/pages/${pageId}`,
     { headers: notionHeaders(token) },
-    { schema: notionPageSchema, label: 'Notion page', fetcher: retryFetch },
+    {
+      schema: notionPageSchema,
+      label: 'Notion page',
+      fetcher: fetcher ?? retryFetch,
+    },
   );
 }
 
@@ -163,13 +169,19 @@ export async function fetchPage(
  * @param properties - The properties to update.
  * @returns `true` if the update succeeded.
  */
-export async function updatePage(
-  token: string,
-  pageId: string,
-  properties: Record<string, unknown>,
-): Promise<boolean> {
+/** Options for {@link updatePage}. */
+type UpdatePageOpts = {
+  readonly token: string;
+  readonly pageId: string;
+  readonly properties: Record<string, unknown>;
+  readonly fetcher?: Fetcher;
+};
+
+export async function updatePage(opts: UpdatePageOpts): Promise<boolean> {
+  const { token, pageId, properties, fetcher } = opts;
+  const doFetch = fetcher ?? retryFetch;
   try {
-    const response = await retryFetch(`${NOTION_API}/pages/${pageId}`, {
+    const response = await doFetch(`${NOTION_API}/pages/${pageId}`, {
       method: 'PATCH',
       headers: notionHeaders(token),
       body: JSON.stringify({ properties }),

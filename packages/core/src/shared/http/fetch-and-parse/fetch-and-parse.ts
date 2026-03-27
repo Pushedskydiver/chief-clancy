@@ -6,6 +6,9 @@
  */
 import type { ZodMiniType } from 'zod/mini';
 
+/** Injectable fetch function for dependency injection in tests. */
+export type Fetcher = (url: string, init?: RequestInit) => Promise<Response>;
+
 /** Options for {@link fetchAndParse}. */
 export type FetchAndParseOptions<T> = {
   /** Zod schema to validate the response body against. */
@@ -13,7 +16,7 @@ export type FetchAndParseOptions<T> = {
   /** Human-readable label for error messages (e.g., `'Jira API'`). */
   readonly label: string;
   /** Custom fetch function (e.g., `retryFetch`). Defaults to global `fetch`. */
-  readonly fetcher?: (url: string, init?: RequestInit) => Promise<Response>;
+  readonly fetcher?: Fetcher;
 };
 
 /** Read a response body snippet for error messages (max 200 chars). */

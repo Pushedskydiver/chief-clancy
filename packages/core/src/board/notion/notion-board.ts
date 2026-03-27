@@ -9,6 +9,7 @@
  */
 import type { NotionCtx } from './api/index.js';
 import type { NotionEnv, NotionPage } from '~/c/schemas/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/index.js';
 
 import {
@@ -111,16 +112,20 @@ type TransitionOpts = {
   readonly ticket: FetchedTicket;
   readonly status: string;
   readonly statusProp: string;
+  readonly fetcher?: Fetcher;
 };
 
 /** Transition a page's status (tries status type, falls back to select). */
 async function doTransition(opts: TransitionOpts): Promise<boolean> {
-  const { token, ticket, status, statusProp } = opts;
+  const { token, ticket, status, statusProp, fetcher } = opts;
   const pageId = ticket.issueId;
   if (!pageId) return false;
 
-  const ok = await updatePage(token, pageId, {
-    [statusProp]: { status: { name: status } },
+  const ok = await updatePage({
+    token,
+    pageId,
+    properties: { [statusProp]: { status: { name: status } } },
+    fetcher,
   });
 
   if (ok) {
@@ -128,17 +133,36 @@ async function doTransition(opts: TransitionOpts): Promise<boolean> {
     return true;
   }
 
-  const fallbackOk = await updatePage(token, pageId, {
-    [statusProp]: { select: { name: status } },
+  const fallbackOk = await updatePage({
+    token,
+    pageId,
+    properties: { [statusProp]: { select: { name: status } } },
+    fetcher,
   });
 
   if (fallbackOk) console.log(`  → Transitioned to ${status}`);
   return fallbackOk;
 }
 
+/** Build transition opts from context and props. */
+function buildTransitionOpts(
+  ctx: NotionCtx,
+  props: NotionProps,
+): Pick<TransitionOpts, 'token' | 'statusProp' | 'fetcher'> {
+  return {
+    token: ctx.token,
+    statusProp: props.statusProp,
+    fetcher: ctx.fetcher,
+  };
+}
+
 /** Build connection context from env. */
-function buildCtx(env: NotionEnv): NotionCtx {
-  return { token: env.NOTION_TOKEN, databaseId: env.NOTION_DATABASE_ID };
+function buildCtx(env: NotionEnv, fetcher?: Fetcher): NotionCtx {
+  return {
+    token: env.NOTION_TOKEN,
+    databaseId: env.NOTION_DATABASE_ID,
+    fetcher,
+  };
 }
 
 /** Resolve property names from env with defaults. */
@@ -155,11 +179,13 @@ function buildProps(env: NotionEnv): NotionProps {
  * Create a Board implementation for Notion.
  *
  * @param env - The validated Notion environment variables.
+ * @param fetcher - Optional custom fetch function for DI in tests.
  * @returns A Board object that delegates to Notion API functions.
  */
-export function createNotionBoard(env: NotionEnv): Board {
-  const ctx = buildCtx(env);
+export function createNotionBoard(env: NotionEnv, fetcher?: Fetcher): Board {
+  const ctx = buildCtx(env, fetcher);
   const props = buildProps(env);
+  const transitionOpts = buildTransitionOpts(ctx, props);
   const doFetch = (fetchOpts: FetchTicketOpts) =>
     fetchNotionTickets({
       ctx,
@@ -181,29 +207,25 @@ export function createNotionBoard(env: NotionEnv): Board {
     fetchTicket: async (opts) => (await doFetch(opts))[0],
     fetchTickets: doFetch,
 
-    fetchBlockerStatus(ticket) {
-      const pageId = ticket.issueId;
-      return pageId
-        ? fetchBlockerStatus({ ctx, pageId, statusProp: props.statusProp })
-        : Promise.resolve(false);
-    },
+    fetchBlockerStatus: (ticket) =>
+      ticket.issueId
+        ? fetchBlockerStatus({
+            ctx,
+            pageId: ticket.issueId,
+            statusProp: props.statusProp,
+          })
+        : Promise.resolve(false),
 
-    fetchChildrenStatus(parentKey) {
-      return fetchChildrenStatus({
+    fetchChildrenStatus: (parentKey) =>
+      fetchChildrenStatus({
         ctx,
         parentKey,
         parentProp: props.parentProp,
         statusProp: props.statusProp,
-      });
-    },
+      }),
 
     transitionTicket: (ticket, status) =>
-      doTransition({
-        token: ctx.token,
-        ticket,
-        status,
-        statusProp: props.statusProp,
-      }),
+      doTransition({ ...transitionOpts, ticket, status }),
 
     ensureLabel: async () => {
       // No-op — Notion multi_select options auto-create on first PATCH.

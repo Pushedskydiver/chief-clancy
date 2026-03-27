@@ -5,6 +5,7 @@
  * Personal API keys are passed directly (no "Bearer" prefix) per
  * Linear's documentation.
  */
+import type { Fetcher } from '~/c/shared/http/index.js';
 import type { PingResult } from '~/c/types/index.js';
 
 import {
@@ -55,20 +56,24 @@ function graphqlInit(
   };
 }
 
+/** Options for {@link linearGraphql}. */
+type LinearGraphqlOpts = {
+  readonly apiKey: string;
+  readonly query: string;
+  readonly variables?: Record<string, unknown>;
+  readonly fetcher?: Fetcher;
+};
+
 /**
  * Make a GraphQL request to the Linear API.
  *
- * @param apiKey - The Linear personal API key.
- * @param query - The GraphQL query string.
- * @param variables - Optional GraphQL variables object.
+ * @param opts - API key, query, optional variables, and optional fetcher.
  * @returns The raw JSON response, or `undefined` on failure.
  */
-export async function linearGraphql(
-  apiKey: string,
-  query: string,
-  variables?: Record<string, unknown>,
-): Promise<unknown> {
-  const response = await fetch(
+export async function linearGraphql(opts: LinearGraphqlOpts): Promise<unknown> {
+  const { apiKey, query, variables, fetcher } = opts;
+  const doFetch = fetcher ?? fetch;
+  const response = await doFetch(
     LINEAR_API,
     graphqlInit(apiKey, query, variables),
   ).catch((err: unknown) => {
@@ -144,6 +149,7 @@ type FetchIssuesOpts = {
   readonly label?: string;
   readonly excludeHitl?: boolean;
   readonly limit?: number;
+  readonly fetcher?: Fetcher;
 };
 
 /** Build the GraphQL query for fetching assigned issues. */
@@ -217,7 +223,12 @@ export async function fetchIssues(
   const { apiKey, excludeHitl, limit = 5 } = opts;
   const { query, variables } = buildIssuesQuery(opts);
 
-  const raw = await linearGraphql(apiKey, query, variables);
+  const raw = await linearGraphql({
+    apiKey,
+    query,
+    variables,
+    fetcher: opts.fetcher,
+  });
   const parsed = linearIssuesResponseSchema.safeParse(raw);
   if (!parsed.success) return [];
 

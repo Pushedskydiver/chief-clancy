@@ -317,7 +317,11 @@ describe('closeIssue', () => {
   it('returns true on successful close', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true } as Response));
 
-    const result = await closeIssue('tok', 'owner/repo', 42);
+    const result = await closeIssue({
+      token: 'tok',
+      repo: 'owner/repo',
+      issueNumber: 42,
+    });
     expect(result).toBe(true);
   });
 
@@ -325,7 +329,7 @@ describe('closeIssue', () => {
     const mockFetch = vi.fn().mockResolvedValue({ ok: true } as Response);
     vi.stubGlobal('fetch', mockFetch);
 
-    await closeIssue('tok', 'owner/repo', 42);
+    await closeIssue({ token: 'tok', repo: 'owner/repo', issueNumber: 42 });
 
     expect(mockFetch).toHaveBeenCalledWith(
       'https://api.github.com/repos/owner/repo/issues/42',
@@ -337,14 +341,22 @@ describe('closeIssue', () => {
   });
 
   it('returns false for invalid repo', async () => {
-    const result = await closeIssue('tok', 'invalid', 42);
+    const result = await closeIssue({
+      token: 'tok',
+      repo: 'invalid',
+      issueNumber: 42,
+    });
     expect(result).toBe(false);
   });
 
   it('returns false on network error', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network')));
 
-    const result = await closeIssue('tok', 'owner/repo', 42);
+    const result = await closeIssue({
+      token: 'tok',
+      repo: 'owner/repo',
+      issueNumber: 42,
+    });
     expect(result).toBe(false);
   });
 });

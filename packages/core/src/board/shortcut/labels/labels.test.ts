@@ -61,7 +61,7 @@ describe('fetchLabels', () => {
     );
 
     const cache = makeLabelCache();
-    const labels = await fetchLabels('tok', cache);
+    const labels = await fetchLabels({ token: 'tok', cache });
     expect(labels).toHaveLength(2);
   });
 
@@ -73,8 +73,8 @@ describe('fetchLabels', () => {
     vi.stubGlobal('fetch', mockFetch);
 
     const cache = makeLabelCache();
-    await fetchLabels('tok', cache);
-    await fetchLabels('tok', cache);
+    await fetchLabels({ token: 'tok', cache });
+    await fetchLabels({ token: 'tok', cache });
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 });
@@ -174,7 +174,11 @@ describe('updateStoryLabelIds', () => {
     const mockFetch = vi.fn().mockResolvedValue({ ok: true } as Response);
     vi.stubGlobal('fetch', mockFetch);
 
-    await updateStoryLabelIds('tok', 42, [1, 2, 3]);
+    await updateStoryLabelIds({
+      token: 'tok',
+      storyId: 42,
+      labelIds: [1, 2, 3],
+    });
 
     const body = JSON.parse(
       (mockFetch.mock.calls[0]?.[1] as RequestInit).body as string,

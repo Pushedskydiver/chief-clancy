@@ -5,6 +5,7 @@
  * to the Linear API, relations, and label functions.
  */
 import type { LinearEnv } from '~/c/schemas/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/index.js';
 
 import { CachedMap } from '~/c/shared/cache/index.js';
@@ -23,6 +24,7 @@ type LinearCtx = {
   readonly teamId: string;
   readonly defaultLabel?: string;
   readonly labelCache: CachedMap<string, string>;
+  readonly fetcher?: Fetcher;
 };
 
 /** Map a Linear ticket to the normalised FetchedTicket shape. */
@@ -57,6 +59,7 @@ async function fetchLinearTickets(
     teamId: ctx.teamId,
     label: opts.buildLabel ?? ctx.defaultLabel,
     excludeHitl: opts.excludeHitl,
+    fetcher: ctx.fetcher,
   });
 
   return tickets.map(toFetchedTicket);
@@ -75,6 +78,7 @@ async function doTransition(
     teamId: ctx.teamId,
     issueId: ticket.linearIssueId,
     stateName: status,
+    fetcher: ctx.fetcher,
   });
 
   if (ok) console.log(`  → Transitioned to ${status}`);
@@ -92,12 +96,14 @@ async function ensureAndAddLabel(
     teamId: ctx.teamId,
     labelCache: ctx.labelCache,
     label,
+    fetcher: ctx.fetcher,
   });
   await addLabel({
     apiKey: ctx.apiKey,
     labelCache: ctx.labelCache,
     issueKey,
     label,
+    fetcher: ctx.fetcher,
   });
 }
 
@@ -105,14 +111,16 @@ async function ensureAndAddLabel(
  * Create a Board implementation for Linear.
  *
  * @param env - The validated Linear environment variables.
+ * @param fetcher - Optional custom fetch function for DI in tests.
  * @returns A Board object that delegates to Linear API functions.
  */
-export function createLinearBoard(env: LinearEnv): Board {
+export function createLinearBoard(env: LinearEnv, fetcher?: Fetcher): Board {
   const ctx: LinearCtx = {
     apiKey: env.LINEAR_API_KEY,
     teamId: env.LINEAR_TEAM_ID,
     defaultLabel: env.CLANCY_LABEL,
     labelCache: new CachedMap<string, string>(),
+    fetcher,
   };
 
   const fetch = (opts: FetchTicketOpts) => fetchLinearTickets(ctx, opts);
@@ -131,11 +139,16 @@ export function createLinearBoard(env: LinearEnv): Board {
 
     async fetchBlockerStatus(ticket) {
       if (!ticket.issueId) return false;
-      return fetchBlockerStatus(ctx.apiKey, ticket.issueId);
+      return fetchBlockerStatus(ctx.apiKey, ticket.issueId, ctx.fetcher);
     },
 
     fetchChildrenStatus: (parentKey, parentId?) =>
-      fetchChildrenStatus(ctx.apiKey, parentId ?? parentKey, parentKey),
+      fetchChildrenStatus({
+        apiKey: ctx.apiKey,
+        parentId: parentId ?? parentKey,
+        parentIdentifier: parentKey,
+        fetcher: ctx.fetcher,
+      }),
 
     transitionTicket: (ticket, status) => doTransition(ctx, ticket, status),
 
@@ -145,6 +158,7 @@ export function createLinearBoard(env: LinearEnv): Board {
         teamId: ctx.teamId,
         labelCache: ctx.labelCache,
         label,
+        fetcher: ctx.fetcher,
       }),
 
     addLabel: (issueKey, label) => ensureAndAddLabel(ctx, issueKey, label),
@@ -155,6 +169,7 @@ export function createLinearBoard(env: LinearEnv): Board {
         labelCache: ctx.labelCache,
         issueKey,
         label,
+        fetcher: ctx.fetcher,
       }),
 
     sharedEnv: () => env,

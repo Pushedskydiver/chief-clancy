@@ -4,6 +4,7 @@
  * Low-level functions for interacting with the GitHub REST API.
  * Used by the GitHub board adapter ({@link ../github-board.ts}).
  */
+import type { Fetcher } from '~/c/shared/http/index.js';
 import type { PingResult } from '~/c/types/index.js';
 
 import { githubIssuesResponseSchema } from '~/c/schemas/index.js';
@@ -83,12 +84,14 @@ export async function pingGitHub(
 export async function resolveUsername(
   token: string,
   cache: { get(): string | undefined; store(v: string): void },
+  fetcher?: Fetcher,
 ): Promise<string> {
   const cached = cache.get();
   if (cached) return cached;
 
+  const doFetch = fetcher ?? fetch;
   try {
-    const response = await fetch(`${GITHUB_API}/user`, {
+    const response = await doFetch(`${GITHUB_API}/user`, {
       headers: githubHeaders(token),
     });
 
@@ -135,6 +138,7 @@ type FetchIssuesOpts = {
   readonly username?: string;
   readonly excludeHitl?: boolean;
   readonly limit?: number;
+  readonly fetcher?: Fetcher;
 };
 
 /**
@@ -149,7 +153,15 @@ type FetchIssuesOpts = {
 export async function fetchIssues(
   opts: FetchIssuesOpts,
 ): Promise<readonly GitHubTicket[]> {
-  const { token, repo, label, username, excludeHitl, limit = 5 } = opts;
+  const {
+    token,
+    repo,
+    label,
+    username,
+    excludeHitl,
+    limit = 5,
+    fetcher,
+  } = opts;
   if (!isValidRepo(repo)) return [];
 
   const params = new URLSearchParams({
@@ -162,7 +174,7 @@ export async function fetchIssues(
   const data = await fetchAndParse(
     `${GITHUB_API}/repos/${repo}/issues?${params}`,
     { headers: githubHeaders(token) },
-    { schema: githubIssuesResponseSchema, label: 'GitHub Issues API' },
+    { schema: githubIssuesResponseSchema, label: 'GitHub Issues API', fetcher },
   );
 
   if (!data) return [];
@@ -197,15 +209,21 @@ export async function fetchIssues(
  * @param issueNumber - The issue number to close.
  * @returns `true` if the issue was closed successfully.
  */
-export async function closeIssue(
-  token: string,
-  repo: string,
-  issueNumber: number,
-): Promise<boolean> {
+/** Options for {@link closeIssue}. */
+type CloseIssueOpts = {
+  readonly token: string;
+  readonly repo: string;
+  readonly issueNumber: number;
+  readonly fetcher?: Fetcher;
+};
+
+export async function closeIssue(opts: CloseIssueOpts): Promise<boolean> {
+  const { token, repo, issueNumber, fetcher } = opts;
   if (!isValidRepo(repo)) return false;
 
+  const doFetch = fetcher ?? fetch;
   try {
-    const response = await fetch(
+    const response = await doFetch(
       `${GITHUB_API}/repos/${repo}/issues/${issueNumber}`,
       {
         method: 'PATCH',

@@ -50,10 +50,10 @@ export async function fetchBlockerStatus(
   const { ctx, pageId, statusProp } = opts;
 
   try {
-    const page = await fetchPage(ctx.token, pageId);
+    const page = await fetchPage(ctx.token, pageId, ctx.fetcher);
     if (!page) return false;
 
-    const blocked = await checkRelationBlockers(ctx.token, page, statusProp);
+    const blocked = await checkRelationBlockers(ctx, page, statusProp);
     if (blocked !== undefined) return blocked;
 
     return checkDescriptionBlockers({ ctx, page, pageId, statusProp });
@@ -64,7 +64,7 @@ export async function fetchBlockerStatus(
 
 /** Check blockers via "Blocked by" relation property. */
 async function checkRelationBlockers(
-  token: string,
+  ctx: NotionCtx,
   page: NotionPage,
   statusProp: string,
 ): Promise<boolean | undefined> {
@@ -79,7 +79,7 @@ async function checkRelationBlockers(
   if (!relations.length) return false;
 
   const blockerPages = await Promise.all(
-    relations.map((rel) => fetchPage(token, rel.id)),
+    relations.map((rel) => fetchPage(ctx.token, rel.id, ctx.fetcher)),
   );
 
   return blockerPages.some(

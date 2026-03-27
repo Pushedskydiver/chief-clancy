@@ -20,17 +20,21 @@ type LabelOpts = {
 
 /** Write updated labels to a page via PATCH. */
 async function writeLabels(
-  opts: {
-    readonly token: string;
+  opts: Pick<LabelOpts, 'ctx'> & {
     readonly pageId: string;
     readonly labelsProp: string;
   },
   labels: readonly string[],
 ): Promise<void> {
-  await updatePage(opts.token, opts.pageId, {
-    [opts.labelsProp]: {
-      multi_select: labels.map((name) => ({ name })),
+  await updatePage({
+    token: opts.ctx.token,
+    pageId: opts.pageId,
+    properties: {
+      [opts.labelsProp]: {
+        multi_select: labels.map((name) => ({ name })),
+      },
     },
+    fetcher: opts.ctx.fetcher,
   });
 }
 
@@ -53,7 +57,7 @@ export async function addLabel(opts: LabelOpts): Promise<void> {
           getArrayProperty(page, labelsProp, 'multi_select') ?? [],
         ),
       writeUpdated: (labels) =>
-        writeLabels({ token: ctx.token, pageId: page.id, labelsProp }, labels),
+        writeLabels({ ctx, pageId: page.id, labelsProp }, labels),
       target: label,
       mode: 'add',
     });
@@ -79,7 +83,7 @@ export async function removeLabel(opts: LabelOpts): Promise<void> {
           getArrayProperty(page, labelsProp, 'multi_select') ?? [],
         ),
       writeUpdated: (labels) =>
-        writeLabels({ token: ctx.token, pageId: page.id, labelsProp }, labels),
+        writeLabels({ ctx, pageId: page.id, labelsProp }, labels),
       target: label,
       mode: 'remove',
     });

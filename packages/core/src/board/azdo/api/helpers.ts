@@ -1,3 +1,5 @@
+import type { Fetcher } from '~/c/shared/http/index.js';
+
 /**
  * Azure DevOps pure helper functions.
  *
@@ -13,6 +15,7 @@ export type AzdoCtx = {
   readonly org: string;
   readonly project: string;
   readonly pat: string;
+  readonly fetcher?: Fetcher;
 };
 
 // ─── Auth ────────────────────────────────────────────────────────────────────

@@ -5,6 +5,7 @@
  * All pure — no I/O.
  */
 import type { NotionPage } from '~/c/schemas/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 
 /** Notion REST API base URL. */
 export const NOTION_API = 'https://api.notion.com/v1';
@@ -16,6 +17,7 @@ const NOTION_VERSION = '2022-06-28';
 export type NotionCtx = {
   readonly token: string;
   readonly databaseId: string;
+  readonly fetcher?: Fetcher;
 };
 
 /**
