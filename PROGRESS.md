@@ -2,7 +2,7 @@
 
 ## Session 37 Handoff
 
-**Phase 10 audit complete + Phase 11 validated.** 5 PRs this session: C33–C37. 610 terminal tests, 1566 core tests.
+**Phase 10 audit complete + Phase 11 validated + lifecycle robustness.** 8 PRs this session: C33–C40. 610 terminal tests, 1570 core tests.
 
 ### What was done
 
@@ -11,6 +11,9 @@
 - **C35** (#112): Test gaps (high priority) — Boundary value tests for context guard (36%/26%), time guard (79%/80%/99%/100%), 7-day stale brief boundary, mixed brief types, empty string escape edge cases. Fixed existing 80% test that used 85%. +8 tests.
 - **C36** (#113): Test gaps (lower priority) — Wrong-shape JSON for stdin reader (number/string/array). `isPlainObject` class instance documentation test. Integration tests: `parseBridgeMetrics`→`runContextGuard` pipeline, `parseDebounceState`→`runContextGuard` escalation. +9 tests.
 - **C37** (#114): Workflow label transition gaps — Added Step 11b to approve-brief.md (add plan label to parent after removing brief label). Replaced vague Linear stub with full GraphQL mutations. Fixed setup workflows to use `CLANCY_LABEL_PLAN` as primary var name. Removed phantom `CLANCY_PLAN_LABEL` fallback from approve-plan.md.
+- **C38** (#115): `CLANCY_LABEL_BUILD` as primary in all workflows — Fixed review.md, status.md, init.md, settings.md to use `CLANCY_LABEL_BUILD` instead of deprecated `CLANCY_LABEL`. Fixed hardcoded `labels=clancy` in GitHub URLs.
+- **C39** (#116): Label transition failure recovery — approve-brief Step 11b re-adds brief label if plan label add fails. approve-plan Step 6 guards against removing plan label when build label creation fails.
+- **C40** (#117): Deliver-phase label cleanup — `removeBuildLabel` added to deliver phase deps. Removes build label from ticket after successful delivery (fresh or rework). Best-effort, never blocks. +4 core tests.
 
 ### Phase 10 Audit — Complete
 
