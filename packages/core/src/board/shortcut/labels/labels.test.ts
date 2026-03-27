@@ -174,7 +174,11 @@ describe('updateStoryLabelIds', () => {
     const mockFetch = vi.fn().mockResolvedValue({ ok: true } as Response);
     vi.stubGlobal('fetch', mockFetch);
 
-    await updateStoryLabelIds('tok', 42, [1, 2, 3]);
+    await updateStoryLabelIds({
+      token: 'tok',
+      storyId: 42,
+      labelIds: [1, 2, 3],
+    });
 
     const body = JSON.parse(
       (mockFetch.mock.calls[0]?.[1] as RequestInit).body as string,

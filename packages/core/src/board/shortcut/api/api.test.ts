@@ -435,7 +435,11 @@ describe('transitionStory', () => {
   it('returns true on successful transition', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true } as Response));
 
-    const result = await transitionStory('tok', 42, 101);
+    const result = await transitionStory({
+      token: 'tok',
+      storyId: 42,
+      workflowStateId: 101,
+    });
     expect(result).toBe(true);
   });
 
@@ -445,14 +449,22 @@ describe('transitionStory', () => {
       vi.fn().mockResolvedValue({ ok: false, status: 404 } as Response),
     );
 
-    const result = await transitionStory('tok', 42, 101);
+    const result = await transitionStory({
+      token: 'tok',
+      storyId: 42,
+      workflowStateId: 101,
+    });
     expect(result).toBe(false);
   });
 
   it('returns false on network error', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
 
-    const result = await transitionStory('tok', 42, 101);
+    const result = await transitionStory({
+      token: 'tok',
+      storyId: 42,
+      workflowStateId: 101,
+    });
     expect(result).toBe(false);
   });
 });

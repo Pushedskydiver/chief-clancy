@@ -109,7 +109,12 @@ async function doTransition(
     return false;
   }
 
-  const ok = await transitionStory(ctx.token, storyId, stateId);
+  const ok = await transitionStory({
+    token: ctx.token,
+    storyId,
+    workflowStateId: stateId,
+    fetcher: ctx.fetcher,
+  });
   if (ok) console.log(`  → Transitioned to ${status}`);
   return ok;
 }

@@ -44,12 +44,16 @@ export function shortcutHeaders(token: string): Record<string, string> {
  * @param token - The Shortcut API token.
  * @returns Ping result with `ok` and optional `error`.
  */
-export async function pingShortcut(token: string): Promise<PingResult> {
+export async function pingShortcut(
+  token: string,
+  fetcher?: Fetcher,
+): Promise<PingResult> {
   const headers = shortcutHeaders(token);
+  const doFetch = fetcher ?? fetch;
 
-  const response = await fetch(`${SHORTCUT_API}/member-info`, { headers })
+  const response = await doFetch(`${SHORTCUT_API}/member-info`, { headers })
     .then(async (res) =>
-      res.ok ? res : fetch(`${SHORTCUT_API}/workflows`, { headers }),
+      res.ok ? res : doFetch(`${SHORTCUT_API}/workflows`, { headers }),
     )
     .catch(() => undefined);
 
@@ -288,25 +292,34 @@ export async function fetchStories(
   return filtered.slice(0, limit).map(toShortcutTicket);
 }
 
+/** Options for {@link transitionStory}. */
+type TransitionStoryOpts = {
+  readonly token: string;
+  readonly storyId: number;
+  readonly workflowStateId: number;
+  readonly fetcher?: Fetcher;
+};
+
 /**
  * Transition a Shortcut story to a new workflow state.
  *
- * @param token - The Shortcut API token.
- * @param storyId - The story numeric ID.
- * @param workflowStateId - The target workflow state ID.
+ * @param opts - Token, story ID, target state ID, and optional fetcher.
  * @returns `true` if the transition succeeded.
  */
 export async function transitionStory(
-  token: string,
-  storyId: number,
-  workflowStateId: number,
+  opts: TransitionStoryOpts,
 ): Promise<boolean> {
+  const { token, storyId, workflowStateId, fetcher } = opts;
+  const doFetch = fetcher ?? fetch;
   try {
-    const response = await fetch(`${SHORTCUT_API}/stories/${String(storyId)}`, {
-      method: 'PUT',
-      headers: shortcutHeaders(token),
-      body: JSON.stringify({ workflow_state_id: workflowStateId }),
-    });
+    const response = await doFetch(
+      `${SHORTCUT_API}/stories/${String(storyId)}`,
+      {
+        method: 'PUT',
+        headers: shortcutHeaders(token),
+        body: JSON.stringify({ workflow_state_id: workflowStateId }),
+      },
+    );
 
     return response.ok;
   } catch {

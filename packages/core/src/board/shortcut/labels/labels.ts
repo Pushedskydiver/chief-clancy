@@ -115,17 +115,28 @@ export async function getStoryLabelIds(
  * @param labelIds - The new label IDs array.
  * @returns Resolves when complete (best-effort — never throws).
  */
+/** Options for {@link updateStoryLabelIds}. */
+type UpdateStoryLabelsOpts = {
+  readonly token: string;
+  readonly storyId: number;
+  readonly labelIds: readonly number[];
+  readonly fetcher?: Fetcher;
+};
+
 export async function updateStoryLabelIds(
-  token: string,
-  storyId: number,
-  labelIds: readonly number[],
+  opts: UpdateStoryLabelsOpts,
 ): Promise<void> {
+  const { token, storyId, labelIds, fetcher } = opts;
+  const doFetch = fetcher ?? fetch;
   try {
-    const response = await fetch(`${SHORTCUT_API}/stories/${String(storyId)}`, {
-      method: 'PUT',
-      headers: shortcutHeaders(token),
-      body: JSON.stringify({ label_ids: labelIds }),
-    });
+    const response = await doFetch(
+      `${SHORTCUT_API}/stories/${String(storyId)}`,
+      {
+        method: 'PUT',
+        headers: shortcutHeaders(token),
+        body: JSON.stringify({ label_ids: labelIds }),
+      },
+    );
 
     if (!response.ok) {
       console.warn(
@@ -207,7 +218,8 @@ export async function addLabel(opts: ModifyLabelOpts): Promise<void> {
 
     await modifyLabelList({
       fetchCurrent: () => getStoryLabelIds(token, storyId, fetcher),
-      writeUpdated: (ids) => updateStoryLabelIds(token, storyId, ids),
+      writeUpdated: (ids) =>
+        updateStoryLabelIds({ token, storyId, labelIds: ids, fetcher }),
       target: labelId,
       mode: 'add',
     });
@@ -232,7 +244,8 @@ export async function removeLabel(opts: ModifyLabelOpts): Promise<void> {
 
     await modifyLabelList({
       fetchCurrent: () => getStoryLabelIds(token, storyId, fetcher),
-      writeUpdated: (ids) => updateStoryLabelIds(token, storyId, ids),
+      writeUpdated: (ids) =>
+        updateStoryLabelIds({ token, storyId, labelIds: ids, fetcher }),
       target: labelId,
       mode: 'remove',
     });

@@ -119,9 +119,10 @@ export async function updateWorkItem(
   opts: UpdateWorkItemOpts,
 ): Promise<boolean> {
   const { ctx, id, patchOps } = opts;
+  const doFetch = ctx.fetcher ?? fetch;
 
   try {
-    const response = await fetch(
+    const response = await doFetch(
       `${apiBase(ctx.org, ctx.project)}/wit/workitems/${String(id)}?api-version=${AZDO_API_VERSION}`,
       {
         method: 'PATCH',
