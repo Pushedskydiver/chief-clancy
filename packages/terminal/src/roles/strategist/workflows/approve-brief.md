@@ -1108,7 +1108,12 @@ query {
   issues(filter: { identifier: { eq: "$PARENT_KEY" } }) {
     nodes {
       id
-      labels { nodes { id name } }
+      labels {
+        nodes {
+          id
+          name
+        }
+      }
     }
   }
 }
@@ -1118,7 +1123,9 @@ mutation {
   issueUpdate(
     id: "$PARENT_ISSUE_UUID"
     input: { labelIds: [currentLabelIds, without, briefLabelId] }
-  ) { success }
+  ) {
+    success
+  }
 }
 ```
 
