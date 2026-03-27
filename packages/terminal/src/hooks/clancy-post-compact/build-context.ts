@@ -23,9 +23,12 @@ export function buildCompactContext(lock: LockData): string | null {
 
   if (!ticketKey || !ticketBranch) return null;
 
-  const title = lock.ticketTitle ?? '';
+  const title = lock.ticketTitle || 'Unknown';
   const target = lock.targetBranch ?? 'main';
-  const hasParent = lock.parentKey !== undefined && lock.parentKey !== 'none';
+  const hasParent =
+    lock.parentKey !== undefined &&
+    lock.parentKey !== 'none' &&
+    lock.parentKey !== '';
 
   const parentLine = hasParent ? `Parent: ${lock.parentKey}.` : undefined;
   const descriptionLine = lock.description

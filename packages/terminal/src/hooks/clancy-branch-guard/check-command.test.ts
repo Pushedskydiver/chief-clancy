@@ -37,13 +37,13 @@ describe('buildProtectedBranches', () => {
 describe('checkCommand — force push', () => {
   it('blocks git push --force', () => {
     expect(checkCommand('git push --force', DEFAULT_BRANCHES)).toContain(
-      'force push',
+      '--force destroys remote history',
     );
   });
 
   it('blocks git push -f', () => {
     expect(checkCommand('git push -f', DEFAULT_BRANCHES)).toContain(
-      'force push',
+      '--force destroys remote history',
     );
   });
 
@@ -233,7 +233,7 @@ describe('checkCommand — property-based', () => {
         const isForceWithLease = suffix.includes('--force-with-lease');
 
         if (!isForceWithLease) {
-          expect(result).toContain('force push');
+          expect(result).toContain('--force destroys remote history');
         }
       }),
     );

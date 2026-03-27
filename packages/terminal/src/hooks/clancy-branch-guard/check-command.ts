@@ -1,9 +1,9 @@
 /**
  * Branch guard command checking logic.
  *
- * Decomposes the old 67-line `checkCommand` into focused check functions,
- * each targeting a specific dangerous git operation. Returns a rejection
- * reason string or `null` (allowed).
+ * Focused check functions for dangerous git operations. Each targets a
+ * specific operation and returns a rejection reason string with
+ * actionable advice, or `null` (allowed).
  */
 
 const DEFAULT_BRANCHES = ['main', 'master', 'develop'] as const;
@@ -28,15 +28,19 @@ const BRANCH_FORCE_DELETE = /\bgit\s+branch\s+.*-D\b/;
 // Messages
 // ---------------------------------------------------------------------------
 
-const MSG_FORCE_PUSH = 'Blocked: force push is dangerous';
+const MSG_FORCE_PUSH =
+  'Blocked: git push --force destroys remote history. Use --force-with-lease instead.';
 const MSG_PROTECTED_BRANCH = (branch: string): string =>
-  `Blocked: push to protected branch '${branch}'`;
-const MSG_RESET_HARD = 'Blocked: reset --hard discards changes';
-const MSG_CLEAN_FORCE = 'Blocked: git clean -f without dry-run';
-const MSG_CHECKOUT_DISCARD = 'Blocked: checkout -- . discards all changes';
-const MSG_RESTORE_ALL = 'Blocked: restore . discards all changes';
+  `Blocked: direct push to protected branch '${branch}'. Create a PR instead.`;
+const MSG_RESET_HARD =
+  'Blocked: git reset --hard discards all uncommitted changes.';
+const MSG_CLEAN_FORCE =
+  'Blocked: git clean -f deletes untracked files. Use -n for a dry run first.';
+const MSG_CHECKOUT_DISCARD =
+  'Blocked: git checkout -- . discards all unstaged changes.';
+const MSG_RESTORE_ALL = 'Blocked: git restore . discards all unstaged changes.';
 const MSG_BRANCH_DELETE =
-  'Blocked: branch -D force-deletes without merge check';
+  'Blocked: git branch -D force-deletes without merge check. Use -d for safe deletion.';
 
 // ---------------------------------------------------------------------------
 // Pure helpers
