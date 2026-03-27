@@ -1,5 +1,35 @@
 # Monorepo Progress
 
+## Session 35 Handoff
+
+**Phase 10 hooks progressing.** 3 PRs this session: 10.2–10.4. 468 terminal tests, 1566 core tests (was 443 + 1566 after session 34's 10.1).
+
+### What was done
+
+- **10.2** (#102): Hook build infrastructure — esbuild CJS config, shared utilities, 8 entry stubs. Also: clean dist before build (`rm -rf dist tsconfig.build.tsbuildinfo`), exclude `test-helpers.ts` from core build, esbuild intermediate cleanup.
+- **10.3** (#103): PreToolUse guards — credential-guard (15 patterns, `assignment()` builder, `extractContent`) + branch-guard (7 check functions, string splitting for ReDoS fix, `gitPushSegment`). Property-based tests for both.
+- **10.4** (#104): Simple hooks — post-compact (context restoration from lock file) + drift-detector (version comparison with atomic session debounce via `{ flag: 'wx' }`).
+
+### Patterns established this session
+
+- Hook entry points are thin wiring: read input → call pure logic → output JSON. All I/O at the boundary.
+- `assignment()` builder for DRYing credential regex patterns.
+- String splitting over dynamic regex for branch matching (ReDoS-safe).
+- Atomic debounce via `writeFileSync` with `{ flag: 'wx' }` — no TOCTOU.
+- Test credential values constructed at runtime (`fakeKey()`) to avoid triggering the live credential-guard hook.
+- `isPlainObject` from shared types replaces inline `typeof`+`null`+`Array.isArray` checks.
+
+### Build hygiene fixes (included in 10.2)
+
+- Both packages now clean `dist/` and `tsconfig.build.tsbuildinfo` before building.
+- Core's `test-helpers.ts` excluded from build tsconfig (was leaking vitest into published dist).
+- esbuild script cleans up tsc intermediates after bundling — only flat CJS files remain in `dist/hooks/`.
+
+### Next up
+
+- **10.5**: Context monitor — most complex hook (190 lines, complexity 16). Decompose into `runContextGuard`, `runTimeGuard`, `shouldFireWarning` pure functions + debounce state machine. Uses shared tmpdir (bridgePath, debouncePath) and lock-file. Old hook at `~/Desktop/alex/clancy/hooks/clancy-context-monitor.js` is READ-ONLY reference.
+- After 10.5: 10.6 (statusline) → 10.7 (notification + check-update) → 10.8 (verification gate).
+
 ## Session 34 Handoff
 
 **Phase 9 cleanup complete + Phase 10 started.** 7 PRs this session: C25–C30 + 10.1. 353 terminal tests, 1566 core tests (was 322 + 1562).
@@ -54,10 +84,6 @@
 - **10.3** (#103): PreToolUse guards — credential-guard (`scan-credentials.ts`: 15 regex patterns with `assignment()` builder, `extractContent`, `isAllowedPath`, `extractNewString`) and branch-guard (`check-command.ts`: 7 decomposed check functions with named regex/message constants, `buildProtectedBranches`, `gitPushSegment`). Replaced dynamic regex in protected-branch check with string splitting (ReDoS fix). Removed `process.env` read from pure `checkCommand` — entry point passes branches. Property-based tests for both scanners. DA review: 4 MEDIUM (process.env in pure fn — fixed, property-based tests — added, ReDoS — fixed with string splitting, property tests for checkCommand — added), 5 LOW (cast comments — added, suffix matching — acceptable, restore --staged — tested as intentionally allowed, -f false positive — fixed with `gitPushSegment`, extractNewString — extracted). 443 terminal tests (+62).
 
 - **10.4** (#104): Simple hooks — post-compact (`build-context.ts`: builds context restoration from lock file, immutable line assembly) and drift-detector (`detect-drift.ts`: `versionsDiffer`, `readInstalledVersion`, `readPackageVersion`, `buildDriftWarning` with DI). Unified `COMMANDS_VERSION` constant (was duplicate `LOCAL_VERSION`/`GLOBAL_VERSION`). Atomic session debounce via `writeFileSync` with `{ flag: 'wx' }` (no TOCTOU). DA review: 3 MEDIUM (duplicate constant — unified, TOCTOU — fixed with exclusive create, test stubs don't verify paths — fixed), 4 LOW (all addressed with edge-case tests). 468 terminal tests (+25).
-
-### Next up
-
-- **10.5**: Context monitor (complex — dual debounce, context + time guards).
 
 ## Session 33 Handoff
 
