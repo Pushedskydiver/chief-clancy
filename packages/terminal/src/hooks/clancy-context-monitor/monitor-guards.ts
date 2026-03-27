@@ -305,13 +305,13 @@ export function resolveTimeLimit(env: string | undefined): number {
 function parseGuardDebounce(value: unknown): GuardDebounce {
   if (!isPlainObject(value)) return EMPTY_GUARD;
 
-  const calls =
-    typeof value.callsSinceWarn === 'number' ? value.callsSinceWarn : 0;
+  const rawCalls = value.callsSinceWarn;
+  const callsSinceWarn = typeof rawCalls === 'number' ? rawCalls : 0;
   const level = value.lastLevel;
   const validLevel = level === 'warning' || level === 'critical';
 
   return {
-    callsSinceWarn: calls,
+    callsSinceWarn,
     lastLevel: validLevel ? level : null,
   };
 }
