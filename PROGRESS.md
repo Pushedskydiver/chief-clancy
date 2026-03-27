@@ -43,7 +43,7 @@ All 6 cleanup PRs (C31–C36) merged. 8 regressions fixed, 3 bugs fixed, 12 conv
 
 - **11.1a** (#118): Claude simulator + shared fixtures — `createClaudeSimulator` (configurable mock `SpawnSyncFn` with call recording + response sequences), exported `makeBoard`/`makeBoardConfig` from core test-helpers, re-export barrel in `terminal/test/helpers/fixtures.ts`. Knip config updated for terminal test scope. +13 tests.
 - **11.1b** (#119): Temp repo + env fixtures — `createTempRepo` (real git repo in temp dir with `ExecGit` executor via `execFileSync`), `createEnvBuilder` (`.clancy/.env` writer with `EnvFileSystem` adapter). Added `~/c/*` path alias to terminal tsconfig. +12 tests.
-- **11.1c**: DI fetcher wiring — exported `Fetcher` type, optional `fetcher?` param on all 6 board constructors + factory, threaded to all `fetchAndParse` call sites. Linear's `linearGraphql` converted to opts object. Shortcut functions refactored to opts objects (max-params). Notion's hardcoded `retryFetch` now falls back via `ctx.fetcher ?? retryFetch`.
+- **11.1c**: DI fetcher wiring — exported `Fetcher` type, optional `fetcher?` param on all 6 board constructors + factory, threaded to every HTTP call site (fetchAndParse, raw fetch, linearGraphql). Zero raw `fetch()` calls remaining in board source. Functions refactored to opts objects where max-params exceeded. Notion's `retryFetch` falls back via `ctx.fetcher ?? retryFetch`.
 
 ### Next up
 
