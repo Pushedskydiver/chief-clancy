@@ -4,6 +4,7 @@
  * Checks blocker status (via `Blocked by #N` in issue bodies) and
  * children status (via `Epic: #N` / `Parent: #N` text search).
  */
+import type { Fetcher } from '~/c/shared/http/index.js';
 import type { ChildrenStatus } from '~/c/types/index.js';
 
 import { z } from 'zod/mini';
@@ -13,15 +14,21 @@ import { GITHUB_API, githubHeaders, isValidRepo } from '../api/index.js';
 const issueStateSchema = z.object({ state: z.optional(z.string()) });
 const searchCountSchema = z.object({ total_count: z.optional(z.number()) });
 
+/** Options for {@link checkAnyBlockerOpen}. */
+type BlockerCheckOpts = {
+  readonly headers: Record<string, string>;
+  readonly repo: string;
+  readonly blockerNumbers: readonly number[];
+  readonly fetcher?: Fetcher;
+};
+
 /** Check if any blocker issue is still open (parallel fetch + short-circuit). */
-async function checkAnyBlockerOpen(
-  headers: Record<string, string>,
-  repo: string,
-  blockerNumbers: readonly number[],
-): Promise<boolean> {
+async function checkAnyBlockerOpen(opts: BlockerCheckOpts): Promise<boolean> {
+  const { headers, repo, blockerNumbers, fetcher } = opts;
+  const doFetch = fetcher ?? fetch;
   const responses = await Promise.all(
     blockerNumbers.map(async (num) => {
-      const response = await fetch(
+      const response = await doFetch(
         `${GITHUB_API}/repos/${repo}/issues/${num}`,
         { headers },
       );
@@ -40,6 +47,7 @@ type FetchBlockerOpts = {
   readonly repo: string;
   readonly issueNumber: number;
   readonly body: string;
+  readonly fetcher?: Fetcher;
 };
 
 /**
@@ -54,7 +62,7 @@ type FetchBlockerOpts = {
 export async function fetchBlockerStatus(
   opts: FetchBlockerOpts,
 ): Promise<boolean> {
-  const { token, repo, issueNumber, body } = opts;
+  const { token, repo, issueNumber, body, fetcher } = opts;
   if (!isValidRepo(repo)) return false;
 
   const blockerNumbers = parseBlockerRefs(body, issueNumber);
@@ -62,7 +70,12 @@ export async function fetchBlockerStatus(
 
   try {
     const headers = githubHeaders(token);
-    const isOpen = await checkAnyBlockerOpen(headers, repo, blockerNumbers);
+    const isOpen = await checkAnyBlockerOpen({
+      headers,
+      repo,
+      blockerNumbers,
+      fetcher,
+    });
     return isOpen;
   } catch (err) {
     console.warn(
@@ -94,29 +107,34 @@ type FetchChildrenOpts = {
   readonly repo: string;
   readonly parentNumber: number;
   readonly currentTicketKey?: string;
+  readonly fetcher?: Fetcher;
+};
+
+/** Options for {@link searchBothConventions}. */
+type SearchConventionsOpts = {
+  readonly token: string;
+  readonly repo: string;
+  readonly parentNumber: number;
+  readonly fetcher?: Fetcher;
 };
 
 /** Try both Epic: and Parent: conventions, return the first with results. */
-async function searchBothConventions(
-  token: string,
-  repo: string,
-  parentNumber: number,
-): Promise<{
+async function searchBothConventions(opts: SearchConventionsOpts): Promise<{
   readonly epic: ChildrenStatus | undefined;
   readonly parent: ChildrenStatus | undefined;
 }> {
-  const epic = await fetchChildrenByBodyRef(
-    token,
-    repo,
-    `Epic: #${parentNumber}`,
-  );
+  const { token, repo, parentNumber, fetcher } = opts;
+  const shared = { token, repo, fetcher };
+  const epic = await fetchChildrenByBodyRef({
+    ...shared,
+    bodyRef: `Epic: #${parentNumber}`,
+  });
   if (epic && epic.total > 0) return { epic, parent: undefined };
 
-  const parent = await fetchChildrenByBodyRef(
-    token,
-    repo,
-    `Parent: #${parentNumber}`,
-  );
+  const parent = await fetchChildrenByBodyRef({
+    ...shared,
+    bodyRef: `Parent: #${parentNumber}`,
+  });
   return { epic, parent };
 }
 
@@ -132,15 +150,16 @@ async function searchBothConventions(
 export async function fetchChildrenStatus(
   opts: FetchChildrenOpts,
 ): Promise<ChildrenStatus | undefined> {
-  const { token, repo, parentNumber, currentTicketKey } = opts;
+  const { token, repo, parentNumber, currentTicketKey, fetcher } = opts;
   if (!isValidRepo(repo)) return undefined;
 
   try {
-    const { epic, parent } = await searchBothConventions(
+    const { epic, parent } = await searchBothConventions({
       token,
       repo,
       parentNumber,
-    );
+      fetcher,
+    });
 
     // Return whichever convention found children
     const withChildren = [epic, parent].find((r) => r && r.total > 0);
@@ -170,18 +189,29 @@ export async function fetchChildrenStatus(
  * @param bodyRef - The body reference string to search for.
  * @returns The children status, or `undefined` on failure.
  */
+/** Options for {@link fetchChildrenByBodyRef}. */
+type BodyRefOpts = {
+  readonly token: string;
+  readonly repo: string;
+  readonly bodyRef: string;
+  readonly fetcher?: Fetcher;
+};
+
 async function fetchChildrenByBodyRef(
-  token: string,
-  repo: string,
-  bodyRef: string,
+  opts: BodyRefOpts,
 ): Promise<ChildrenStatus | undefined> {
+  const { token, repo, bodyRef, fetcher } = opts;
   const headers = githubHeaders(token);
+  const doFetch = fetcher ?? fetch;
 
   const allQuery = `"${bodyRef}" repo:${repo} is:issue`;
   const allParams = new URLSearchParams({ q: allQuery, per_page: '1' });
-  const allResponse = await fetch(`${GITHUB_API}/search/issues?${allParams}`, {
-    headers,
-  });
+  const allResponse = await doFetch(
+    `${GITHUB_API}/search/issues?${allParams}`,
+    {
+      headers,
+    },
+  );
   if (!allResponse.ok) return undefined;
 
   const allParsed = searchCountSchema.safeParse(await allResponse.json());
@@ -195,7 +225,7 @@ async function fetchChildrenByBodyRef(
     q: openQuery,
     per_page: '1',
   });
-  const openResponse = await fetch(
+  const openResponse = await doFetch(
     `${GITHUB_API}/search/issues?${openParams}`,
     { headers },
   );

@@ -84,12 +84,14 @@ export async function pingGitHub(
 export async function resolveUsername(
   token: string,
   cache: { get(): string | undefined; store(v: string): void },
+  fetcher?: Fetcher,
 ): Promise<string> {
   const cached = cache.get();
   if (cached) return cached;
 
+  const doFetch = fetcher ?? fetch;
   try {
-    const response = await fetch(`${GITHUB_API}/user`, {
+    const response = await doFetch(`${GITHUB_API}/user`, {
       headers: githubHeaders(token),
     });
 
@@ -207,15 +209,21 @@ export async function fetchIssues(
  * @param issueNumber - The issue number to close.
  * @returns `true` if the issue was closed successfully.
  */
-export async function closeIssue(
-  token: string,
-  repo: string,
-  issueNumber: number,
-): Promise<boolean> {
+/** Options for {@link closeIssue}. */
+type CloseIssueOpts = {
+  readonly token: string;
+  readonly repo: string;
+  readonly issueNumber: number;
+  readonly fetcher?: Fetcher;
+};
+
+export async function closeIssue(opts: CloseIssueOpts): Promise<boolean> {
+  const { token, repo, issueNumber, fetcher } = opts;
   if (!isValidRepo(repo)) return false;
 
+  const doFetch = fetcher ?? fetch;
   try {
-    const response = await fetch(
+    const response = await doFetch(
       `${GITHUB_API}/repos/${repo}/issues/${issueNumber}`,
       {
         method: 'PATCH',

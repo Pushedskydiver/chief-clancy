@@ -5,12 +5,15 @@
  * read-modify-write via modifyLabelList). All operations are
  * best-effort — they log warnings but never throw.
  */
+import type { Fetcher } from '~/c/shared/http/index.js';
+
 import { GITHUB_API, githubHeaders } from '../api/index.js';
 
 /** Context for GitHub label operations. */
 type GitHubLabelContext = {
   readonly token: string;
   readonly repo: string;
+  readonly fetcher?: Fetcher;
 };
 
 /** Format a caught error value into a warning message. */
@@ -31,8 +34,9 @@ export async function ensureLabel(
 ): Promise<void> {
   try {
     const headers = githubHeaders(ctx.token);
+    const doFetch = ctx.fetcher ?? fetch;
     const url = `${GITHUB_API}/repos/${ctx.repo}/labels/${encodeURIComponent(label)}`;
-    const res = await fetch(url, { headers });
+    const res = await doFetch(url, { headers });
 
     if (res.ok) return;
 
@@ -52,7 +56,8 @@ async function createLabel(
   label: string,
   headers: Record<string, string>,
 ): Promise<void> {
-  const res = await fetch(`${GITHUB_API}/repos/${ctx.repo}/labels`, {
+  const doFetch = ctx.fetcher ?? fetch;
+  const res = await doFetch(`${GITHUB_API}/repos/${ctx.repo}/labels`, {
     method: 'POST',
     headers: { ...headers, 'Content-Type': 'application/json' },
     body: JSON.stringify({ name: label, color: '0075ca' }),
@@ -79,7 +84,8 @@ export async function addLabel(
 ): Promise<void> {
   try {
     const headers = githubHeaders(ctx.token);
-    const res = await fetch(
+    const doFetch = ctx.fetcher ?? fetch;
+    const res = await doFetch(
       `${GITHUB_API}/repos/${ctx.repo}/issues/${issueNumber}/labels`,
       {
         method: 'POST',
@@ -111,8 +117,9 @@ export async function removeLabel(
 ): Promise<void> {
   try {
     const headers = githubHeaders(ctx.token);
+    const doFetch = ctx.fetcher ?? fetch;
     const url = `${GITHUB_API}/repos/${ctx.repo}/issues/${issueNumber}/labels/${encodeURIComponent(label)}`;
-    const res = await fetch(url, { method: 'DELETE', headers });
+    const res = await doFetch(url, { method: 'DELETE', headers });
 
     // 404 = label not on the issue, ignore
     if (!res.ok && res.status !== 404) {

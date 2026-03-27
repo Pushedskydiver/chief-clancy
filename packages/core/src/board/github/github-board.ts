@@ -67,7 +67,11 @@ async function fetchGitHubTickets(
   ctx: GitHubCtx,
   opts: FetchTicketOpts,
 ): Promise<readonly FetchedTicket[]> {
-  const username = await resolveUsername(ctx.token, ctx.usernameCache);
+  const username = await resolveUsername(
+    ctx.token,
+    ctx.usernameCache,
+    ctx.fetcher,
+  );
   const tickets = await fetchIssues({
     token: ctx.token,
     repo: ctx.repo,
@@ -109,7 +113,7 @@ export function createGitHubBoard(env: GitHubEnv, fetcher?: Fetcher): Board {
 
     async fetchBlockerStatus(ticket) {
       const n = parseIssueNumber(ticket.key);
-      const conn = { token: ctx.token, repo: ctx.repo };
+      const conn = { token: ctx.token, repo: ctx.repo, fetcher: ctx.fetcher };
       return n
         ? fetchBlockerStatus({
             ...conn,
@@ -121,7 +125,7 @@ export function createGitHubBoard(env: GitHubEnv, fetcher?: Fetcher): Board {
 
     async fetchChildrenStatus(parentKey, _parentId?, currentTicketKey?) {
       const n = parseIssueNumber(parentKey);
-      const conn = { token: ctx.token, repo: ctx.repo };
+      const conn = { token: ctx.token, repo: ctx.repo, fetcher: ctx.fetcher };
       return n
         ? fetchChildrenStatus({ ...conn, parentNumber: n, currentTicketKey })
         : undefined;
