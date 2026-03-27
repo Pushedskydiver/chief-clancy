@@ -125,8 +125,8 @@ export function runContextGuard(
   const isCritical = remaining <= CRITICAL_THRESHOLD;
   const currentLevel: Severity = isCritical ? 'critical' : 'warning';
   const isFirst = debounce.lastLevel === null;
-  const severityEscalated =
-    currentLevel === 'critical' && debounce.lastLevel === 'warning';
+  const wasWarning = debounce.lastLevel === 'warning';
+  const severityEscalated = isCritical && wasWarning;
 
   const shouldFire = shouldFireWarning(
     isFirst,
@@ -189,8 +189,8 @@ export function runTimeGuard(
   const isCritical = pct >= TIME_CRITICAL_PCT;
   const currentLevel: Severity = isCritical ? 'critical' : 'warning';
   const isFirst = debounce.lastLevel === null;
-  const severityEscalated =
-    currentLevel === 'critical' && debounce.lastLevel === 'warning';
+  const wasWarning = debounce.lastLevel === 'warning';
+  const severityEscalated = isCritical && wasWarning;
 
   const shouldFire = shouldFireWarning(
     isFirst,
