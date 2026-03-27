@@ -38,6 +38,30 @@ describe('readPreToolUseInput', () => {
 
     expect(readPreToolUseInput(deps)).toStrictEqual({});
   });
+
+  it('returns empty object for JSON number', () => {
+    const deps = { argv: ['node', 'hook.js', '42'], readFileSync: () => '' };
+
+    expect(readPreToolUseInput(deps)).toStrictEqual({});
+  });
+
+  it('returns empty object for JSON string', () => {
+    const deps = {
+      argv: ['node', 'hook.js', '"hello"'],
+      readFileSync: () => '',
+    };
+
+    expect(readPreToolUseInput(deps)).toStrictEqual({});
+  });
+
+  it('returns empty object for JSON array', () => {
+    const deps = {
+      argv: ['node', 'hook.js', '[1,2,3]'],
+      readFileSync: () => '',
+    };
+
+    expect(readPreToolUseInput(deps)).toStrictEqual({});
+  });
 });
 
 describe('readAsyncInput', () => {
