@@ -7,5 +7,6 @@
     }
   },
   "include": ["src", "test"],
+  "exclude": ["test/helpers/fixtures.ts", "test/helpers/fixtures.test.ts"],
   "references": [{ "path": "../core" }]
 }

@@ -11,7 +11,7 @@ import { vi } from 'vitest';
 import { RunContext } from '../context.js';
 
 /** Create a stub Board with all methods mocked. */
-function makeBoard(): Board {
+export function makeBoard(): Board {
   return {
     fetchChildrenStatus: vi.fn(),
     fetchTicket: vi.fn(),
@@ -28,7 +28,7 @@ function makeBoard(): Board {
 }
 
 /** Build a minimal valid BoardConfig for the given provider. */
-function makeBoardConfig(
+export function makeBoardConfig(
   provider: BoardConfig['provider'],
   envOverrides?: Record<string, string>,
 ): BoardConfig {
