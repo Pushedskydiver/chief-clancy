@@ -1,8 +1,38 @@
 # Monorepo Progress
 
+## Session 36 Handoff
+
+**Phase 10 complete + audit in progress.** 9 PRs this session: 10.5–10.7 + C31–C32. 592 terminal tests, 1566 core tests (was 468 + 1566 after session 35's 10.4).
+
+### What was done
+
+- **10.5** (#105): Context monitor — decomposed 190-line hook into pure functions with independent debounce state machines (`runContextGuard`, `runTimeGuard`, `shouldFireWarning`). NaN-safe `resolveTimeLimit`. 44 tests.
+- **10.6** (#106): Statusline — `normalizeContextUsage` (deduplicated auto-compact buffer math), `buildContextBar` (4-tier ANSI colour), `buildBridgeData`, `resolveCachePath` (DI). 30 tests.
+- **10.7** (#107): Notification + check-update — platform dispatch (macOS/Linux/Windows), `extractMessage`, `escapeAppleScript`/`escapePowerShell`. Detached npm version check, stale brief detection. 42 tests.
+- **10.8**: No new code — agent prompt and installer wiring already existed.
+- **C31** (#108): Notification regressions — AppleScript double-quote escaping, `-NoProfile`, `windowsHide`, `[Clancy]` prefix, `hookSpecificOutput.message` check.
+- **C32** (#109): Post-compact + branch-guard — `ticketTitle` default `'Unknown'`, empty `parentKey` guard, actionable error messages with advice.
+
+### Phase 10 Audit
+
+6 audit agents ran in parallel (conventions, test coverage, entry points, security, build, behavioral parity). 8 regressions, 3 bugs, 12 convention violations, 10+ test gaps found. 6 cleanup PRs planned (C31–C36). C31–C32 merged. C33–C36 remain.
+
+### Next up
+
+C33–C36 cleanup PRs in order. Each is small and focused.
+
+| PR  | Theme                           | Scope                                                                                                                          |
+| --- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| C33 | NaN guard + TOCTOU removal      | `parseBridgeMetrics` `Number.isFinite` check, remove `existsSync` in `findInstallDir`/`countStaleBriefs`, catch block comments |
+| C34 | Cast/assertion comments + JSDoc | All 8 `as` cast comments, `!` assertion comment, missing `@param` tags                                                         |
+| C35 | Test gaps — high priority       | NaN metrics, boundary values (36%/26%/80%/100%), empty parentKey/title, brief date boundary, escape verification, mixed briefs |
+| C36 | Test gaps — lower priority      | stdin wrong-shape JSON, `isPlainObject` with class instances, empty session IDs, interaction tests (parse→guard pipeline)      |
+
+---
+
 ## Session 35 Handoff
 
-**Phase 10 complete.** 7 PRs this session: 10.2–10.7 (10.8 was already wired). 584 terminal tests, 1566 core tests (was 443 + 1566 after session 34's 10.1).
+**Phase 10 hooks progressing.** 5 PRs: 10.2–10.4 + session 35 progress commits. 468 terminal tests, 1566 core tests (was 443 + 1566 after session 34's 10.1).
 
 ### What was done
 
