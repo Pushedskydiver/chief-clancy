@@ -25,6 +25,7 @@ function makeDeps(overrides: Partial<DeliverPhaseDeps> = {}): DeliverPhaseDeps {
     recordDelivery: vi.fn(),
     recordRework: vi.fn(),
     postReworkActions: vi.fn().mockResolvedValue(undefined),
+    removeBuildLabel: vi.fn().mockResolvedValue(undefined),
     ...overrides,
   };
 }
@@ -186,6 +187,36 @@ describe('deliverPhase — fresh delivery', () => {
     );
   });
 
+  it('removes build label after successful delivery', async () => {
+    const ctx = setupCtx({ isRework: false });
+    const deps = makeDeps();
+    await deliverPhase(ctx, deps);
+
+    expect(deps.removeBuildLabel).toHaveBeenCalledWith('PROJ-1');
+  });
+
+  it('does not remove build label when push fails', async () => {
+    const ctx = setupCtx({ isRework: false });
+    const deps = makeDeps({
+      deliverViaPullRequest: vi
+        .fn()
+        .mockResolvedValue({ pushed: false, outcome: { type: 'local' } }),
+    });
+    await deliverPhase(ctx, deps);
+
+    expect(deps.removeBuildLabel).not.toHaveBeenCalled();
+  });
+
+  it('returns ok: true even when removeBuildLabel throws', async () => {
+    const ctx = setupCtx({ isRework: false });
+    const deps = makeDeps({
+      removeBuildLabel: vi.fn().mockRejectedValue(new Error('API error')),
+    });
+    const result = await deliverPhase(ctx, deps);
+
+    expect(result.ok).toBe(true);
+  });
+
   it('sets no parent when hasParent is false', async () => {
     const ctx = setupCtx({ hasParent: false });
     const deps = makeDeps();
@@ -289,6 +320,14 @@ describe('deliverPhase — rework delivery', () => {
 
     expect(result.ok).toBe(false);
     expect(deps.recordRework).not.toHaveBeenCalled();
+  });
+
+  it('removes build label after successful rework delivery', async () => {
+    const ctx = setupCtx({ isRework: true });
+    const deps = makeDeps();
+    await deliverPhase(ctx, deps);
+
+    expect(deps.removeBuildLabel).toHaveBeenCalledWith('PROJ-1');
   });
 
   it('returns ok: true when postReworkActions throws', async () => {

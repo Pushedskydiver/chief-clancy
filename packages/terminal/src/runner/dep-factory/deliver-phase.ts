@@ -72,6 +72,15 @@ export function wireDeliver(
         recordRework: () =>
           // Safe: recordRework runs after ticketFetch, which sets ticket
           recordRework(qualityFs, projectRoot, ctx.ticket!.key),
+        removeBuildLabel: async (ticketKey) => {
+          // Safe: deliver runs after preflight (config + board populated)
+          const env = ctx.config!.env;
+          const label = env.CLANCY_LABEL_BUILD ?? env.CLANCY_LABEL;
+
+          if (!label) return;
+
+          await ctx.board!.removeLabel(ticketKey, label);
+        },
         postReworkActions: async (reworkCallOpts) => {
           const remote = detectRemote(exec);
           const handlers = resolvePlatformHandlers({

@@ -60,6 +60,8 @@ export type DeliverPhaseDeps = {
   readonly recordRework: () => void;
   /** Post-rework PR comment + thread resolution + review re-request. Pre-wired with handlers. */
   readonly postReworkActions: (opts: PostReworkCallOpts) => Promise<void>;
+  /** Remove build label from ticket after delivery. Best-effort — never blocks. */
+  readonly removeBuildLabel: (ticketKey: string) => Promise<void>;
 };
 
 // ─── Phase ───────────────────────────────────────────────────────────────────
@@ -122,6 +124,7 @@ async function deliverRework(
   });
 
   deps.recordRework();
+  await safeRemoveBuildLabel(ticket.key, deps);
 
   if (ctx.reworkPrNumber != null) {
     try {
@@ -168,8 +171,21 @@ async function deliverFresh(
   }
 
   deps.recordDelivery();
+  await safeRemoveBuildLabel(ticket.key, deps);
 
   return { ok: true };
+}
+
+/** Remove build label after delivery. Best-effort — never blocks. */
+async function safeRemoveBuildLabel(
+  ticketKey: string,
+  deps: DeliverPhaseDeps,
+): Promise<void> {
+  try {
+    await deps.removeBuildLabel(ticketKey);
+  } catch {
+    // Best-effort — label cleanup failure never blocks delivery
+  }
 }
 
 /** Compute parentKey and singleChildParent from context. */
