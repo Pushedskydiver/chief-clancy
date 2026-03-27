@@ -1,5 +1,26 @@
 # Monorepo Progress
 
+## Session 37 Handoff
+
+**Phase 10 audit complete.** 4 PRs this session: C33–C36. 610 terminal tests, 1566 core tests (was 592 + 1566 after session 36's C31–C32).
+
+### What was done
+
+- **C33** (#110): NaN guard + TOCTOU removal — `Number.isFinite` guards on `parseBridgeMetrics` (3 fields) and `resolveTimeLimit`. Refactored `findInstallDir` to try/catch `readFileSync` (TOCTOU fix). Removed redundant `existsSync` in `countStaleBriefs`. Added hooks-must-never-crash policy comments to all 8 entry-point catch blocks. +1 test.
+- **C34** (#111): Cast/assertion comments + JSDoc — "Safe:" comments on all 9 `as` casts and 1 `!` non-null assertion across hooks. Added `@param` and `@returns` tags to 4 exported functions in `monitor-guards.ts`.
+- **C35** (#112): Test gaps (high priority) — Boundary value tests for context guard (36%/26%), time guard (79%/80%/99%/100%), 7-day stale brief boundary, mixed brief types, empty string escape edge cases. Fixed existing 80% test that used 85%. +8 tests.
+- **C36** (#113): Test gaps (lower priority) — Wrong-shape JSON for stdin reader (number/string/array). `isPlainObject` class instance documentation test. Integration tests: `parseBridgeMetrics`→`runContextGuard` pipeline, `parseDebounceState`→`runContextGuard` escalation. +9 tests.
+
+### Phase 10 Audit — Complete
+
+All 6 cleanup PRs (C31–C36) merged. 8 regressions fixed, 3 bugs fixed, 12 convention violations resolved, 18 test gaps closed. Phase 10 hooks are production-ready.
+
+### Next up
+
+Phase 10 is fully complete. Next phase TBD.
+
+---
+
 ## Session 36 Handoff
 
 **Phase 10 complete + audit in progress.** 9 PRs this session: 10.5–10.7 + C31–C32. 592 terminal tests, 1566 core tests (was 468 + 1566 after session 35's 10.4).
