@@ -265,6 +265,9 @@ export {
 export type { QualityFs } from './shared/quality/quality.js';
 
 export type { FetchFn } from './shared/pr-creation/pr-creation.js';
+export { attemptPrCreation } from './shared/pr-creation/pr-creation.js';
+export { resolveCommitType } from './shared/commit-type/commit-type.js';
+export { buildPrBody } from './shared/pull-request/pr-body/pr-body.js';
 
 export type { CostFs } from './shared/cost/cost.js';
 export { appendCostEntry } from './shared/cost/cost.js';

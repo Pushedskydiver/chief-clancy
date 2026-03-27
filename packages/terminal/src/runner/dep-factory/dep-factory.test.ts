@@ -24,6 +24,7 @@ function createMockOpts() {
   } as unknown as DepFactoryOpts & {
     exec: ReturnType<typeof vi.fn>;
     lockFs: { deleteFile: ReturnType<typeof vi.fn> };
+    progressFs: { readFile: ReturnType<typeof vi.fn> };
     fetch: ReturnType<typeof vi.fn>;
   };
 }
@@ -100,6 +101,50 @@ describe('buildPipelineDeps', () => {
       'https://hooks.slack.com/x',
       expect.objectContaining({ method: 'POST' }),
     );
+  });
+
+  it('prRetry retryEntry calls fetch to create PR for pushed entry', async () => {
+    const mockOpts = createMockOpts();
+
+    // progressFs returns a PUSHED entry (no matching PR_CREATED)
+    const pushedLine = '2026-03-27 10:00 | PROJ-1 | Fix login | PUSHED';
+    mockOpts.progressFs.readFile.mockReturnValue(pushedLine);
+
+    // exec returns github remote URL for detectRemote (git remote get-url origin)
+    mockOpts.exec.mockReturnValue(
+      'https://github.com/test-owner/test-repo.git',
+    );
+
+    // fetch returns a successful PR creation response
+    mockOpts.fetch.mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({ html_url: 'https://github.com/x/1', number: 1 }),
+    } as unknown as Response);
+
+    const deps = buildPipelineDeps(mockOpts);
+    const ctx = {
+      config: {
+        provider: 'github',
+        env: {
+          CLANCY_BASE_BRANCH: 'main',
+          GITHUB_TOKEN: 'ghp_test123456789012345678901234567890',
+        },
+      },
+    };
+
+    await deps.prRetry(ctx as never);
+
+    expect(mockOpts.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('github.com'),
+      expect.objectContaining({ method: 'POST' }),
+    );
+
+    const callBody = JSON.parse(
+      (mockOpts.fetch.mock.calls[0]![1] as RequestInit).body as string,
+    );
+    expect(callBody.title).toBe('feat(PROJ-1): Fix login');
+    expect(callBody.head).toContain('PROJ-1');
   });
 
   it('cost reads lock and appends entry', () => {
