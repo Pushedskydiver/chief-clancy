@@ -98,6 +98,10 @@ describe('escapeAppleScript', () => {
   it('preserves single quotes (no escaping needed in double-quoted AppleScript)', () => {
     expect(escapeAppleScript("it's done")).toBe("it's done");
   });
+
+  it('returns empty string unchanged', () => {
+    expect(escapeAppleScript('')).toBe('');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -119,6 +123,10 @@ describe('escapePowerShell', () => {
 
   it('escapes all special characters together', () => {
     expect(escapePowerShell('`$"')).toBe('```$`"');
+  });
+
+  it('returns empty string unchanged', () => {
+    expect(escapePowerShell('')).toBe('');
   });
 });
 

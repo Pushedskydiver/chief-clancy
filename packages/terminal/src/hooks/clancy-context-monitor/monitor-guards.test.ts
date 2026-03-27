@@ -190,6 +190,31 @@ describe('runContextGuard', () => {
     expect(result.message).toContain('CONTEXT CRITICAL');
   });
 
+  it('does not fire just above warning threshold (36%)', () => {
+    const metrics: BridgeMetrics = {
+      remaining_percentage: 36,
+      used_pct: 64,
+      timestamp: NOW_SECONDS - 5,
+    };
+
+    const result = runContextGuard(metrics, freshDebounce, NOW_SECONDS);
+
+    expect(result.message).toBeNull();
+  });
+
+  it('fires warning not critical at 26% (just above critical)', () => {
+    const metrics: BridgeMetrics = {
+      remaining_percentage: 26,
+      used_pct: 74,
+      timestamp: NOW_SECONDS - 5,
+    };
+
+    const result = runContextGuard(metrics, freshDebounce, NOW_SECONDS);
+
+    expect(result.message).toContain('CONTEXT WARNING');
+    expect(result.message).not.toContain('CRITICAL');
+  });
+
   it('does not fire at exactly 60 seconds staleness', () => {
     const metrics: BridgeMetrics = {
       remaining_percentage: 20,
@@ -255,10 +280,21 @@ describe('runTimeGuard', () => {
     expect(result.message).toBeNull();
   });
 
-  it('fires warning at 80% elapsed', () => {
+  it('does not fire just below 80% threshold (79%)', () => {
     const start = '2025-01-01T00:00:00Z';
     const startMs = new Date(start).getTime();
-    const nowMs = startMs + THIRTY_MINUTES_MS * 0.85; // 85%
+    // Math.floor(79% * 100) = 79, which is < 80
+    const nowMs = startMs + THIRTY_MINUTES_MS * 0.79;
+
+    const result = runTimeGuard(timeInput(start, 30, nowMs), freshDebounce);
+
+    expect(result.message).toBeNull();
+  });
+
+  it('fires warning at exactly 80% elapsed', () => {
+    const start = '2025-01-01T00:00:00Z';
+    const startMs = new Date(start).getTime();
+    const nowMs = startMs + THIRTY_MINUTES_MS * 0.8; // exactly 80%
 
     const result = runTimeGuard(timeInput(start, 30, nowMs), freshDebounce);
 
@@ -267,10 +303,21 @@ describe('runTimeGuard', () => {
     expect(result.debounce.lastLevel).toBe('warning');
   });
 
-  it('fires critical at 100% elapsed', () => {
+  it('fires warning not critical at 99% elapsed', () => {
     const start = '2025-01-01T00:00:00Z';
     const startMs = new Date(start).getTime();
-    const nowMs = startMs + THIRTY_MINUTES_MS * 1.1; // 110%
+    const nowMs = startMs + THIRTY_MINUTES_MS * 0.99;
+
+    const result = runTimeGuard(timeInput(start, 30, nowMs), freshDebounce);
+
+    expect(result.message).toContain('TIME WARNING');
+    expect(result.message).not.toContain('CRITICAL');
+  });
+
+  it('fires critical at exactly 100% elapsed', () => {
+    const start = '2025-01-01T00:00:00Z';
+    const startMs = new Date(start).getTime();
+    const nowMs = startMs + THIRTY_MINUTES_MS; // exactly 100%
 
     const result = runTimeGuard(timeInput(start, 30, nowMs), freshDebounce);
 
