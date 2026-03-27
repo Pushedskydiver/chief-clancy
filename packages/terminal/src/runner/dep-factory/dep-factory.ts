@@ -121,8 +121,7 @@ function makeRetryEntry(fetchFn: FetchFn) {
       parent,
     );
 
-    // ProgressEntry lacks ticketType — defaults to 'feat' for retries
-    const commitType = resolveCommitType(undefined);
+    const commitType = resolveCommitType(entry.ticketType);
     const prTitle = `${commitType}(${entry.key}): ${entry.summary}`;
     // Retry uses summary as description — full ticket data unavailable from progress
     const prBody = buildPrBody({

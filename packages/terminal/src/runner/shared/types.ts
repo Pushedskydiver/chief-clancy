@@ -33,4 +33,5 @@ export type AppendFn = (opts: {
   readonly status: ProgressStatus;
   readonly prNumber?: number;
   readonly parent?: string;
+  readonly ticketType?: string;
 }) => void;
