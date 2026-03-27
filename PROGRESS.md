@@ -2,7 +2,7 @@
 
 ## Session 35 Handoff
 
-**Phase 10 hooks progressing.** 3 PRs this session: 10.2–10.4. 468 terminal tests, 1566 core tests (was 443 + 1566 after session 34's 10.1).
+**Phase 10 hooks progressing.** 4 PRs this session: 10.2–10.5. 512 terminal tests, 1566 core tests (was 443 + 1566 after session 34's 10.1).
 
 ### What was done
 
@@ -27,8 +27,8 @@
 
 ### Next up
 
-- **10.5**: Context monitor — most complex hook (190 lines, complexity 16). Decompose into `runContextGuard`, `runTimeGuard`, `shouldFireWarning` pure functions + debounce state machine. Uses shared tmpdir (bridgePath, debouncePath) and lock-file. Old hook at `~/Desktop/alex/clancy/hooks/clancy-context-monitor.js` is READ-ONLY reference.
-- After 10.5: 10.6 (statusline) → 10.7 (notification + check-update) → 10.8 (verification gate).
+- **10.6**: Statusline — writes bridge file for context-monitor. Extract duplicate `normalizeContextUsage` logic. ANSI context bar builder.
+- After 10.6: 10.7 (notification + check-update) → 10.8 (verification gate).
 
 ## Session 34 Handoff
 
@@ -84,6 +84,8 @@
 - **10.3** (#103): PreToolUse guards — credential-guard (`scan-credentials.ts`: 15 regex patterns with `assignment()` builder, `extractContent`, `isAllowedPath`, `extractNewString`) and branch-guard (`check-command.ts`: 7 decomposed check functions with named regex/message constants, `buildProtectedBranches`, `gitPushSegment`). Replaced dynamic regex in protected-branch check with string splitting (ReDoS fix). Removed `process.env` read from pure `checkCommand` — entry point passes branches. Property-based tests for both scanners. DA review: 4 MEDIUM (process.env in pure fn — fixed, property-based tests — added, ReDoS — fixed with string splitting, property tests for checkCommand — added), 5 LOW (cast comments — added, suffix matching — acceptable, restore --staged — tested as intentionally allowed, -f false positive — fixed with `gitPushSegment`, extractNewString — extracted). 443 terminal tests (+62).
 
 - **10.4** (#104): Simple hooks — post-compact (`build-context.ts`: builds context restoration from lock file, immutable line assembly) and drift-detector (`detect-drift.ts`: `versionsDiffer`, `readInstalledVersion`, `readPackageVersion`, `buildDriftWarning` with DI). Unified `COMMANDS_VERSION` constant (was duplicate `LOCAL_VERSION`/`GLOBAL_VERSION`). Atomic session debounce via `writeFileSync` with `{ flag: 'wx' }` (no TOCTOU). DA review: 3 MEDIUM (duplicate constant — unified, TOCTOU — fixed with exclusive create, test stubs don't verify paths — fixed), 4 LOW (all addressed with edge-case tests). 468 terminal tests (+25).
+
+- **10.5** (#105): Context monitor — decomposed 190-line JS hook (complexity 16) into pure functions with independent debounce state machines. `runContextGuard` (warning 35% / critical 25%), `runTimeGuard` (warning 80% / critical 100% of `CLANCY_TIME_LIMIT`), `shouldFireWarning` (shared debounce: first breach, every 5th, or escalation). `parseBridgeMetrics`, `parseDebounceState`, `resolveTimeLimit` (NaN-safe). Entry point: async stdin → guards → persist → emit. DA review: 1 HIGH (NaN passthrough in `resolveTimeLimit` — fixed with `Number.isNaN` guard), 2 MEDIUM (entry-point helpers untested — moved `resolveTimeLimit` to testable module; `as` cast replaced with type predicate), 2 LOW (return type annotation, staleness boundary consistent). 512 terminal tests (+44).
 
 ## Session 33 Handoff
 
