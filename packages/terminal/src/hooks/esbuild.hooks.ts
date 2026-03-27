@@ -8,7 +8,7 @@
  * Build order: tsc → tsc-alias → this script.
  * Entry points are the tsc-compiled JS in `dist/hooks/`.
  */
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readdirSync, rmSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -48,3 +48,14 @@ await Promise.all(
     }),
   ),
 );
+
+// Clean up tsc intermediates — only the flat bundled .js files should remain.
+const entries = readdirSync(DIST_HOOKS);
+
+entries.forEach((entry) => {
+  const full = join(DIST_HOOKS, entry);
+  const isDir = statSync(full).isDirectory();
+  const isBuildArtifact = entry.startsWith('esbuild.');
+
+  if (isDir || isBuildArtifact) rmSync(full, { recursive: true });
+});
