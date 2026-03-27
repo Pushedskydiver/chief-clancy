@@ -772,8 +772,8 @@ Which GitHub label should Clancy pick planning issues from?
 [2] Enter a different label name
 ```
 
-If [1]: store `CLANCY_PLAN_LABEL="needs-refinement"` in `.clancy/.env`.
-If [2]: prompt for the value, store as `CLANCY_PLAN_LABEL` in `.clancy/.env`. Wrap in double quotes.
+If [1]: store `CLANCY_LABEL_PLAN="needs-refinement"` in `.clancy/.env`.
+If [2]: prompt for the value, store as `CLANCY_LABEL_PLAN` in `.clancy/.env`. Wrap in double quotes.
 
 **Linear:** Output:
 

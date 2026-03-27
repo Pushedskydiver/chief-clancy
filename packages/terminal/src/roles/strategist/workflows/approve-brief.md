@@ -1102,9 +1102,24 @@ curl -s \
 
 ### Linear
 
-```bash
-# Fetch current label IDs on the parent, remove the brief label ID, issueUpdate
-# Use the same pattern as brief.md Step 10a — query labels, filter, update
+```graphql
+# Fetch current label IDs on the parent issue
+query {
+  issues(filter: { identifier: { eq: "$PARENT_KEY" } }) {
+    nodes {
+      id
+      labels { nodes { id name } }
+    }
+  }
+}
+
+# Filter out the brief label ID, then update with remaining labelIds
+mutation {
+  issueUpdate(
+    id: "$PARENT_ISSUE_UUID"
+    input: { labelIds: [currentLabelIds, without, briefLabelId] }
+  ) { success }
+}
 ```
 
 ### Azure DevOps
@@ -1166,6 +1181,142 @@ curl -s \
 
 ```
 ⚠️  Could not remove brief label from {PARENT_KEY}. Remove it manually if needed.
+```
+
+Continue — do not stop.
+
+---
+
+## Step 11b — Add plan label to parent
+
+Only if a parent ticket exists AND all tickets were created successfully. Add the plan label to the parent ticket so it enters the planning queue. Best-effort — warn on failure, never stop.
+
+**Crash safety:** Step 11a removes the brief label and Step 11b adds the plan label. If Step 11b fails, the parent loses its pipeline label — warn the user to add it manually.
+
+Use `CLANCY_LABEL_PLAN` from `.clancy/.env` if set, otherwise `clancy:plan`.
+
+### GitHub
+
+```bash
+# Ensure plan label exists
+curl -s \
+  -H "Authorization: Bearer $GITHUB_TOKEN" \
+  -H "Accept: application/vnd.github+json" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  -X POST \
+  "https://api.github.com/repos/$GITHUB_REPO/labels" \
+  -d "{\"name\": \"$CLANCY_LABEL_PLAN\", \"color\": \"0075ca\"}"
+# Ignore 422 (label already exists)
+
+# Add label to parent
+curl -s \
+  -H "Authorization: Bearer $GITHUB_TOKEN" \
+  -H "Accept: application/vnd.github+json" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  -X POST \
+  "https://api.github.com/repos/$GITHUB_REPO/issues/$PARENT_NUMBER/labels" \
+  -d "{\"labels\": [\"$CLANCY_LABEL_PLAN\"]}"
+```
+
+### Jira
+
+```bash
+CURRENT_LABELS=$(curl -s \
+  -u "$JIRA_USER:$JIRA_API_TOKEN" \
+  -H "Accept: application/json" \
+  "$JIRA_BASE_URL/rest/api/3/issue/$PARENT_KEY?fields=labels" | jq -r '.fields.labels')
+
+UPDATED_LABELS=$(echo "$CURRENT_LABELS" | jq --arg plan "$CLANCY_LABEL_PLAN" '. + [$plan] | unique')
+
+curl -s \
+  -u "$JIRA_USER:$JIRA_API_TOKEN" \
+  -X PUT \
+  -H "Content-Type: application/json" \
+  "$JIRA_BASE_URL/rest/api/3/issue/$PARENT_KEY" \
+  -d "{\"fields\": {\"labels\": $UPDATED_LABELS}}"
+```
+
+### Linear
+
+```graphql
+# Ensure plan label exists — check team labels, workspace labels, create if missing
+mutation {
+  issueLabelCreate(input: {
+    teamId: "$LINEAR_TEAM_ID"
+    name: "$CLANCY_LABEL_PLAN"
+    color: "#0075ca"
+  }) { success issueLabel { id } }
+}
+
+# Fetch current label IDs on the parent, add plan label ID
+mutation {
+  issueUpdate(
+    id: "$PARENT_ISSUE_UUID"
+    input: { labelIds: [...currentLabelIds, planLabelId] }
+  ) { success }
+}
+```
+
+### Azure DevOps
+
+```bash
+# Fetch current tags, append plan tag
+CURRENT=$(curl -s \
+  -u ":$AZDO_PAT" \
+  -H "Accept: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$PARENT_ID?fields=System.Tags&api-version=7.1")
+
+# Append plan tag to semicolon-delimited string
+curl -s \
+  -u ":$AZDO_PAT" \
+  -X PATCH \
+  -H "Content-Type: application/json-patch+json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$PARENT_ID?api-version=7.1" \
+  -d '[{"op": "replace", "path": "/fields/System.Tags", "value": "<existing tags>; $CLANCY_LABEL_PLAN"}]'
+```
+
+### Shortcut
+
+```bash
+# Resolve plan label ID (create if missing)
+LABELS=$(curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  "https://api.app.shortcut.com/api/v3/labels")
+
+# Find or create the plan label, get its ID
+# Then add to story (merge with existing labels):
+curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -X PUT \
+  "https://api.app.shortcut.com/api/v3/stories/$PARENT_STORY_ID" \
+  -d '{"labels": [existing_labels_plus_plan_label]}'
+```
+
+For epics, use `GET /api/v3/epics/$EPIC_ID` and `PUT /api/v3/epics/$EPIC_ID` with the same label pattern.
+
+### Notion
+
+```bash
+# Fetch current page properties, add plan label to multi-select
+PAGE=$(curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  "https://api.notion.com/v1/pages/$PARENT_PAGE_ID")
+
+# Update multi-select property with plan label added
+curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  -X PATCH \
+  "https://api.notion.com/v1/pages/$PARENT_PAGE_ID" \
+  -d '{"properties": {"$CLANCY_NOTION_LABELS": {"multi_select": [existing_options_plus_plan_label]}}}'
+```
+
+### On failure
+
+```
+⚠️  Could not add plan label to {PARENT_KEY}. Add it manually so the ticket enters the planning queue.
 ```
 
 Continue — do not stop.
