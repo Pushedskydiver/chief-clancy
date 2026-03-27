@@ -30,14 +30,16 @@ All 6 cleanup PRs (C31–C36) merged. 8 regressions fixed, 3 bugs fixed, 12 conv
 
 ### Phase 11 — Revised Plan
 
-| PR    | Theme                                     | Scope                                                                                                |
-| ----- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| 11.1a | Test infra: Claude simulator + fixtures   | Mock `spawnSync('claude')`, extract `makeCtx`/`makeBoard` into shared module                         |
-| 11.1b | Test infra: temp repo + env fixtures      | Git ops helper, `.clancy/.env` builders                                                              |
-| 11.1c | DI fetcher wiring on board constructors   | Optional `fetcher` param on all 6 board constructors + factory, threaded to `fetchAndParse`          |
-| 11.2  | Implementer lifecycle: happy path + exits | Per-board integration (13-phase pipeline, fatal/non-fatal aborts, rework path, ~60 tests)            |
-| 11.3  | Board write ops: label CRUD + transitions | ensureLabel/addLabel/removeLabel per board via DI fetcher, transitionTicket, idempotence (~54 tests) |
-| 11.4  | Advanced scenarios                        | Blocked ticket recursion, stale lock recovery, partial-push recovery, autopilot multi-iteration      |
+| PR    | Theme                                     | Scope                                                                                                 |
+| ----- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| 11.1a | Test infra: Claude simulator + fixtures   | Mock `spawnSync('claude')`, extract `makeCtx`/`makeBoard` into shared module                          |
+| 11.1b | Test infra: temp repo + env fixtures      | Git ops helper, `.clancy/.env` builders                                                               |
+| 11.1c | DI fetcher wiring on board constructors   | Optional `fetcher` param on all 6 board constructors + factory, threaded to every HTTP call            |
+| 11.2a | Lifecycle: GitHub happy path              | Full 13-phase pipeline with DI fetcher + Claude simulator, canned API responses. Pattern PR (~15 tests)|
+| 11.2b | Lifecycle: remaining boards happy path    | Replicate GitHub pattern for Jira, Linear, Shortcut, Notion, AzDo (~25 tests)                        |
+| 11.2c | Lifecycle: aborts + rework path           | Fatal/non-fatal early exits, rework detection flow across all boards (~20 tests)                      |
+| 11.3  | Board write ops: label CRUD + transitions | ensureLabel/addLabel/removeLabel per board via DI fetcher, transitionTicket, idempotence (~54 tests)   |
+| 11.4  | Advanced scenarios                        | Blocked ticket recursion, stale lock recovery, partial-push recovery, autopilot multi-iteration        |
 
 ### Phase 11 Progress
 
@@ -47,7 +49,7 @@ All 6 cleanup PRs (C31–C36) merged. 8 regressions fixed, 3 bugs fixed, 12 conv
 
 ### Next up
 
-Phase 11.2 — Implementer lifecycle: happy path + exits.
+Phase 11.2a — GitHub happy path lifecycle integration test (pattern PR).
 
 ---
 
