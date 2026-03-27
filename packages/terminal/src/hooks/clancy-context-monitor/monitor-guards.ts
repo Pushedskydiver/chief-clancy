@@ -80,6 +80,11 @@ export type GuardResult = {
  *
  * Fires on the first breach, every {@link DEBOUNCE_CALLS} breaches after
  * that, or when severity escalates from warning to critical.
+ *
+ * @param isFirst - Whether this is the first breach detected.
+ * @param callsSinceWarn - Number of tool calls since the last warning.
+ * @param severityEscalated - Whether severity increased (warning → critical).
+ * @returns `true` if a warning should be emitted.
  */
 export function shouldFireWarning(
   isFirst: boolean,
@@ -112,6 +117,7 @@ export function runContextGuard(
 
   const hasTimestamp = metrics.timestamp !== undefined;
   const isStale =
+    // Safe: hasTimestamp confirms timestamp is defined
     hasTimestamp && nowSeconds - metrics.timestamp! > STALE_SECONDS;
 
   if (isStale) return unchanged;
@@ -232,6 +238,9 @@ export const EMPTY_DEBOUNCE: DebounceState = {
  *
  * Returns {@link EMPTY_DEBOUNCE} on any parse failure — safe for
  * missing or corrupt files.
+ *
+ * @param raw - Raw JSON string from the debounce file.
+ * @returns Parsed debounce state, or {@link EMPTY_DEBOUNCE} on failure.
  */
 export function parseDebounceState(raw: string): DebounceState {
   try {
@@ -253,6 +262,9 @@ export function parseDebounceState(raw: string): DebounceState {
  *
  * Returns `null` on any parse failure — the context guard treats
  * `null` as "no data available".
+ *
+ * @param raw - Raw JSON string from the bridge file.
+ * @returns Parsed metrics, or `null` on failure.
  */
 export function parseBridgeMetrics(raw: string): BridgeMetrics | null {
   try {
@@ -279,6 +291,7 @@ export function parseBridgeMetrics(raw: string): BridgeMetrics | null {
     const hasTimestamp =
       typeof parsed.timestamp === 'number' && Number.isFinite(parsed.timestamp);
 
+    // Safe: hasTimestamp confirms parsed.timestamp is a finite number
     return hasTimestamp
       ? { ...result, timestamp: parsed.timestamp as number }
       : result;
@@ -291,7 +304,10 @@ export function parseBridgeMetrics(raw: string): BridgeMetrics | null {
  * Resolve the time limit from an environment variable string.
  *
  * Returns {@link DEFAULT_TIME_LIMIT} when the env var is undefined
- * or not a valid number (`NaN`).
+ * or not a finite number.
+ *
+ * @param env - The `CLANCY_TIME_LIMIT` environment variable value.
+ * @returns Parsed time limit in minutes, or {@link DEFAULT_TIME_LIMIT}.
  */
 export function resolveTimeLimit(env: string | undefined): number {
   if (env === undefined) return DEFAULT_TIME_LIMIT;

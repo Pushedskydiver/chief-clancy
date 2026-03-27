@@ -21,7 +21,7 @@ import {
 try {
   const event = readPreToolUseInput({ argv: process.argv, readFileSync });
   const toolName = event.tool_name ?? '';
-  // HookEvent.tool_input is Record<string, unknown>; fields validated individually below
+  // Safe: tool_input is untyped on HookEvent — fields validated individually below
   const toolInput = (event.tool_input ?? {}) as Record<string, unknown>;
   const filePath =
     typeof toolInput.file_path === 'string' ? toolInput.file_path : '';
