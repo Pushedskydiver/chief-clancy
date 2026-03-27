@@ -26,6 +26,7 @@ type AppendProgressOpts = {
   readonly status: ProgressStatus;
   readonly prNumber?: number;
   readonly parent?: string;
+  readonly ticketType?: string;
 };
 
 /**
@@ -100,12 +101,13 @@ function formatSlugLine(ts: string, opts: AppendProgressOpts): string {
   return `${ts} | ${opts.status} | ${opts.key} | ${opts.summary}\n`;
 }
 
-/** Format a standard line: `timestamp | key | summary | STATUS [| pr:N] [| parent:KEY]`. */
+/** Format a standard line: `timestamp | key | summary | STATUS [| pr:N] [| parent:KEY] [| type:VALUE]`. */
 function formatStandardLine(ts: string, opts: AppendProgressOpts): string {
   const prSuffix = opts.prNumber != null ? ` | pr:${opts.prNumber}` : '';
   const parentSuffix = opts.parent ? ` | parent:${opts.parent}` : '';
+  const typeSuffix = opts.ticketType ? ` | type:${opts.ticketType}` : '';
 
-  return `${ts} | ${opts.key} | ${opts.summary} | ${opts.status}${prSuffix}${parentSuffix}\n`;
+  return `${ts} | ${opts.key} | ${opts.summary} | ${opts.status}${prSuffix}${parentSuffix}${typeSuffix}\n`;
 }
 
 /** A single parsed entry from the progress log. */
@@ -116,6 +118,7 @@ export type ProgressEntry = {
   readonly status: ProgressStatus;
   readonly prNumber?: number;
   readonly parent?: string;
+  readonly ticketType?: string;
 };
 
 /**
@@ -180,7 +183,7 @@ function parseSlugEntry(
   };
 }
 
-/** Parse a standard entry: `timestamp | key | summary | STATUS [| pr:N] [| parent:KEY]`. */
+/** Parse a standard entry: `timestamp | key | summary | STATUS [| pr:N] [| parent:KEY] [| type:VALUE]`. */
 function parseStandardEntry(
   timestamp: string,
   parts: readonly string[],
@@ -188,7 +191,8 @@ function parseStandardEntry(
   const key = parts[1]!;
   const tail = parts.slice(2);
 
-  const { status, summary, prNumber, parent } = extractTailFields(tail);
+  const { status, summary, prNumber, parent, ticketType } =
+    extractTailFields(tail);
   if (!status) return undefined;
 
   const resolvedStatus =
@@ -201,6 +205,7 @@ function parseStandardEntry(
     status: resolvedStatus,
     ...(prNumber != null && { prNumber }),
     ...(parent != null && { parent }),
+    ...(ticketType != null && { ticketType }),
   };
 }
 
@@ -210,22 +215,33 @@ type TailFields = {
   readonly summary: string;
   readonly prNumber: number | undefined;
   readonly parent: string | undefined;
+  readonly ticketType: string | undefined;
 };
 
-/** Extract status, summary, prNumber, and parent from tail segments. */
+/** Extract status, summary, prNumber, parent, and ticketType from tail segments. */
 function extractTailFields(tail: readonly string[]): TailFields {
   const prSegment = tail.find((s) => /^pr:\d+$/.test(s));
   const parentSegment = tail.find((s) => s.startsWith('parent:'));
+  const typeSegment = tail.find((s) => s.startsWith('type:'));
   const statusSegment = tail.find(
     (s, i) =>
-      i >= 1 && isStatusSegment(s) && s !== prSegment && s !== parentSegment,
+      i >= 1 &&
+      isStatusSegment(s) &&
+      s !== prSegment &&
+      s !== parentSegment &&
+      s !== typeSegment,
   );
 
   const prNumber = prSegment ? parseInt(prSegment.slice(3), 10) : undefined;
   const parent = parentSegment ? parentSegment.slice(7) : undefined;
+  const ticketType = typeSegment ? typeSegment.slice(5) : undefined;
 
   const summaryParts = tail.filter(
-    (s) => s !== prSegment && s !== parentSegment && s !== statusSegment,
+    (s) =>
+      s !== prSegment &&
+      s !== parentSegment &&
+      s !== typeSegment &&
+      s !== statusSegment,
   );
 
   return {
@@ -234,6 +250,7 @@ function extractTailFields(tail: readonly string[]): TailFields {
     summary: summaryParts.join(' | '),
     prNumber,
     parent,
+    ticketType,
   };
 }
 

@@ -20,13 +20,16 @@ import type {
   ProgressEntry,
   ProgressFs,
   QualityFs,
+  RemoteInfo,
   RunContext,
 } from '@chief-clancy/core';
 
 import {
   appendCostEntry,
   appendProgress,
+  attemptPrCreation,
   branchSetup,
+  buildPrBody,
   checkFeasibility,
   checkout,
   cleanupPhase,
@@ -54,6 +57,7 @@ import {
   preflightPhase,
   prRetry,
   readLock,
+  resolveCommitType,
   resolvePlatformHandlers,
   reworkDetection,
   runPreflight,
@@ -103,6 +107,46 @@ function makeFindCompletedEpics(progressFs: ProgressFs, projectRoot: string) {
   };
 }
 
+function makeRetryEntry(fetchFn: FetchFn) {
+  return async (entry: ProgressEntry, remote: RemoteInfo, ctx: RunContext) => {
+    // Safe: prRetry runs after preflight, which sets config
+    const config = ctx.config!;
+    const baseBranch = config.env.CLANCY_BASE_BRANCH ?? 'main';
+    const parent = hasParent(entry) ? entry.parent : undefined;
+
+    const ticketBranch = computeTicketBranch(config.provider, entry.key);
+    const targetBranch = computeTargetBranch(
+      config.provider,
+      baseBranch,
+      parent,
+    );
+
+    const commitType = resolveCommitType(entry.ticketType);
+    const prTitle = `${commitType}(${entry.key}): ${entry.summary}`;
+    // Retry uses summary as description — full ticket data unavailable from progress
+    const prBody = buildPrBody({
+      config,
+      ticket: {
+        key: entry.key,
+        title: entry.summary,
+        description: entry.summary,
+        provider: config.provider,
+      },
+      targetBranch,
+    });
+
+    return attemptPrCreation({
+      fetchFn,
+      env: config.env,
+      remote,
+      sourceBranch: ticketBranch,
+      targetBranch,
+      title: prTitle,
+      body: prBody,
+    });
+  };
+}
+
 function wireEarlyPhases(opts: DepFactoryOpts, progress: AppendFn) {
   const { projectRoot, exec, lockFs, progressFs } = opts;
 
@@ -147,8 +191,7 @@ function wireEarlyPhases(opts: DepFactoryOpts, progress: AppendFn) {
         findRetryable: () =>
           findEntriesWithStatus(progressFs, projectRoot, 'PUSHED'),
         detectRemote: () => detectRemote(exec),
-        // Stub — PR retry creation wired in 9.5 (once entry point)
-        retryEntry: async () => undefined,
+        retryEntry: makeRetryEntry(opts.fetch),
         appendProgress: progress,
       }),
   };

@@ -2,7 +2,7 @@
 
 ## Session 34 Handoff
 
-**Phase 9 cleanup complete.** 6 PRs this session: C25–C30. 352 terminal tests (was 322).
+**Phase 9 cleanup complete + Phase 10 started.** 7 PRs this session: C25–C30 + 10.1. 353 terminal tests (was 322).
 
 ### What was done
 
@@ -47,9 +47,11 @@
 | notification     | 106       | Low-Med    | Platform dispatch (3 OS). Already exports testable functions.              |
 | check-update     | 115       | Medium     | Two responsibilities (npm version + brief staleness). Detached spawn.      |
 
+- **10.1** (#101): Wire `retryEntry` stub — replaced `async () => undefined` in dep-factory with `makeRetryEntry` that delegates to `attemptPrCreation`. Recomputes branches via `computeTicketBranch`/`computeTargetBranch`, builds PR title/body. New core barrel exports: `attemptPrCreation`, `resolveCommitType`, `buildPrBody`. DA review: 1 HIGH (known limitation: `resolveCommitType(undefined)` — documented), 5 MEDIUM (all addressed or documented).
+
 ### Next up
 
-- **10.1**: Wire `retryEntry` stub in dep-factory.
+- **10.2**: Hook build infrastructure (esbuild CJS config, shared utilities).
 
 ## Session 33 Handoff
 

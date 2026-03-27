@@ -133,6 +133,32 @@ describe('appendProgress', () => {
 
     expect(fs.written[0]).toContain('APPROVE_BRIEF | add-dark-mode');
   });
+
+  it('writes ticketType suffix when provided', () => {
+    const fs = mockFs();
+
+    appendProgress(fs, '/root', {
+      key: 'PROJ-1',
+      summary: 'Fix login',
+      status: 'PR_CREATED',
+      prNumber: 42,
+      ticketType: 'Bug',
+    });
+
+    expect(fs.written[0]).toContain('type:Bug');
+  });
+
+  it('omits ticketType suffix when not provided', () => {
+    const fs = mockFs();
+
+    appendProgress(fs, '/root', {
+      key: 'PROJ-1',
+      summary: 'Fix login',
+      status: 'PR_CREATED',
+    });
+
+    expect(fs.written[0]).not.toContain('type:');
+  });
 });
 
 // ─── parseProgressFile ────────────────────────────────────────────────
@@ -190,6 +216,27 @@ describe('parseProgressFile', () => {
     const entries = parseProgressFile(fs, '/root');
     expect(entries[0]?.prNumber).toBe(42);
     expect(entries[0]?.parent).toBe('PROJ-100');
+  });
+
+  it('parses entry with type:VALUE', () => {
+    const fs = readerFs(
+      '2024-01-15 14:30 | PROJ-1 | Fix login | PR_CREATED | pr:42 | type:Bug\n',
+    );
+
+    const entries = parseProgressFile(fs, '/root');
+    expect(entries[0]?.ticketType).toBe('Bug');
+    expect(entries[0]?.prNumber).toBe(42);
+  });
+
+  it('parses entry with all optional fields', () => {
+    const fs = readerFs(
+      '2024-01-15 14:30 | PROJ-1 | Fix login | PR_CREATED | pr:42 | parent:PROJ-100 | type:Bug\n',
+    );
+
+    const entries = parseProgressFile(fs, '/root');
+    expect(entries[0]?.prNumber).toBe(42);
+    expect(entries[0]?.parent).toBe('PROJ-100');
+    expect(entries[0]?.ticketType).toBe('Bug');
   });
 
   it('parses BRIEF entry in slug format', () => {
