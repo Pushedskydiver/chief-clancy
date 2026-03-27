@@ -27,11 +27,11 @@ All 6 cleanup PRs (C31–C36) merged. 8 regressions fixed, 3 bugs fixed, 12 conv
 
 ### Phase 11 — Revised Plan
 
-| PR    | Theme                                     | Scope                                                                                               |
-| ----- | ----------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| 11.1a | Test infra: Claude simulator + fixtures   | Mock `spawnSync('claude')`, extract `makeCtx`/`makeBoard` into shared module                        |
+| PR    | Theme                                     | Scope                                                                                                |
+| ----- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| 11.1a | Test infra: Claude simulator + fixtures   | Mock `spawnSync('claude')`, extract `makeCtx`/`makeBoard` into shared module                         |
 | 11.1b | Test infra: temp repo + env + DI fetcher  | Git ops helper, `.clancy/.env` builders, optional `fetcher` param on board constructors              |
-| 11.2  | Implementer lifecycle: happy path + exits | Per-board integration (13-phase pipeline, fatal/non-fatal aborts, rework path, ~60 tests)           |
+| 11.2  | Implementer lifecycle: happy path + exits | Per-board integration (13-phase pipeline, fatal/non-fatal aborts, rework path, ~60 tests)            |
 | 11.3  | Board write ops: label CRUD + transitions | ensureLabel/addLabel/removeLabel per board via DI fetcher, transitionTicket, idempotence (~54 tests) |
 | 11.4  | Advanced scenarios                        | Blocked ticket recursion, stale lock recovery, partial-push recovery, autopilot multi-iteration      |
 
