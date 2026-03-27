@@ -171,6 +171,7 @@ async function ensureAndAddLabel(
  * Create a Board implementation for Shortcut.
  *
  * @param env - The validated Shortcut environment variables.
+ * @param fetcher - Optional custom fetch function for DI in tests.
  * @returns A Board object that delegates to Shortcut API functions.
  */
 export function createShortcutBoard(

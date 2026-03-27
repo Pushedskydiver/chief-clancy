@@ -19,13 +19,6 @@ import { modifyLabelList, safeLabel } from '~/c/shared/label-helpers/index.js';
 
 import { SHORTCUT_API, shortcutHeaders } from '../api/index.js';
 
-/**
- * Fetch all labels from Shortcut (cached per process).
- *
- * @param token - The Shortcut API token.
- * @param cache - The label cache instance.
- * @returns The labels array, or an empty array on failure.
- */
 /** Options for {@link fetchLabels}. */
 type FetchLabelsOpts = {
   readonly token: string;
@@ -34,6 +27,12 @@ type FetchLabelsOpts = {
   readonly fetcher?: Fetcher;
 };
 
+/**
+ * Fetch all labels from Shortcut (cached per process).
+ *
+ * @param opts - Token, cache, optional refresh flag, and optional fetcher.
+ * @returns The labels array, or an empty array on failure.
+ */
 export async function fetchLabels(
   opts: FetchLabelsOpts,
 ): Promise<ShortcutLabelsResponse> {

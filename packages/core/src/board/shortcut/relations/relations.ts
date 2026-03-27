@@ -51,18 +51,6 @@ async function isBlockerUnresolved(opts: BlockerCheckOpts): Promise<boolean> {
   );
 }
 
-/**
- * Check whether a Shortcut story is blocked by unresolved blockers.
- *
- * Checks the `blocked` flag first, then examines `story_links` with
- * verb `"is blocked by"`. For each blocker, fetches the story to
- * check if it's in a "done" state.
- *
- * @param token - The Shortcut API token.
- * @param storyId - The story numeric ID.
- * @param workflowCache - The workflow cache instance.
- * @returns `true` if any blocker is unresolved, `false` otherwise.
- */
 /** Options for {@link fetchBlockerStatus}. */
 type FetchBlockerOpts = {
   readonly token: string;
@@ -71,6 +59,12 @@ type FetchBlockerOpts = {
   readonly fetcher?: Fetcher;
 };
 
+/**
+ * Check whether a Shortcut story is blocked by unresolved blockers.
+ *
+ * @param opts - Token, story ID, workflow cache, and optional fetcher.
+ * @returns `true` if any blocker is unresolved, `false` otherwise.
+ */
 export async function fetchBlockerStatus(
   opts: FetchBlockerOpts,
 ): Promise<boolean> {

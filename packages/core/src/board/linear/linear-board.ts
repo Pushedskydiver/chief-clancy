@@ -108,6 +108,7 @@ async function ensureAndAddLabel(
  * Create a Board implementation for Linear.
  *
  * @param env - The validated Linear environment variables.
+ * @param fetcher - Optional custom fetch function for DI in tests.
  * @returns A Board object that delegates to Linear API functions.
  */
 export function createLinearBoard(env: LinearEnv, fetcher?: Fetcher): Board {

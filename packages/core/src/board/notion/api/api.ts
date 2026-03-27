@@ -6,6 +6,7 @@
  */
 import type { NotionCtx } from './helpers.js';
 import type { NotionPage } from '~/c/schemas/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 import type { PingResult } from '~/c/types/index.js';
 
 import {
@@ -145,7 +146,7 @@ async function collectPages(
 export async function fetchPage(
   token: string,
   pageId: string,
-  fetcher?: (url: string, init?: RequestInit) => Promise<Response>,
+  fetcher?: Fetcher,
 ): Promise<NotionPage | undefined> {
   return fetchAndParse(
     `${NOTION_API}/pages/${pageId}`,

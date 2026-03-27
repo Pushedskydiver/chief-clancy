@@ -17,6 +17,7 @@ export {
   retryFetch,
 } from './shared/http/index.js';
 export type {
+  Fetcher,
   FetchAndParseOptions,
   PingEndpointOpts,
   RetryOptions,

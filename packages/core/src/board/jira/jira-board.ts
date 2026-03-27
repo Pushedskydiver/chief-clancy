@@ -103,6 +103,7 @@ async function doTransition(
  * Create a Board implementation for Jira.
  *
  * @param env - The validated Jira environment variables.
+ * @param fetcher - Optional custom fetch function for DI in tests.
  * @returns A Board object that delegates to Jira API functions.
  */
 export function createJiraBoard(env: JiraEnv, fetcher?: Fetcher): Board {

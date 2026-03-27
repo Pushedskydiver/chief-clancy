@@ -100,6 +100,7 @@ async function doTransition(
  * Create a Board implementation for Azure DevOps.
  *
  * @param env - The validated Azure DevOps environment variables.
+ * @param fetcher - Optional custom fetch function for DI in tests.
  * @returns A Board object that delegates to Azure DevOps API functions.
  */
 export function createAzdoBoard(env: AzdoEnv, fetcher?: Fetcher): Board {

@@ -160,6 +160,7 @@ function buildProps(env: NotionEnv): NotionProps {
  * Create a Board implementation for Notion.
  *
  * @param env - The validated Notion environment variables.
+ * @param fetcher - Optional custom fetch function for DI in tests.
  * @returns A Board object that delegates to Notion API functions.
  */
 export function createNotionBoard(env: NotionEnv, fetcher?: Fetcher): Board {
