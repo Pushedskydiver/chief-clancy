@@ -115,4 +115,36 @@ describe('buildCompactContext', () => {
 
     expect(result).toContain('targeting main');
   });
+
+  it('defaults ticketTitle to Unknown when missing', () => {
+    const lock = { ticketKey: 'PROJ-1', ticketBranch: 'feature/x' };
+
+    const result = buildCompactContext(lock);
+
+    expect(result).toContain('[PROJ-1] Unknown.');
+  });
+
+  it('defaults ticketTitle to Unknown when empty string', () => {
+    const lock = {
+      ticketKey: 'PROJ-1',
+      ticketBranch: 'feature/x',
+      ticketTitle: '',
+    };
+
+    const result = buildCompactContext(lock);
+
+    expect(result).toContain('[PROJ-1] Unknown.');
+  });
+
+  it('omits parent line when parentKey is empty string', () => {
+    const lock = {
+      ticketKey: 'PROJ-1',
+      ticketBranch: 'feature/x',
+      parentKey: '',
+    };
+
+    const result = buildCompactContext(lock);
+
+    expect(result).not.toContain('Parent:');
+  });
 });
