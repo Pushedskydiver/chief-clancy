@@ -1,6 +1,7 @@
 /**
  * Generic endpoint ping with HTTP status code mapping.
  */
+import type { Fetcher } from '../fetch-and-parse/fetch-and-parse.js';
 import type { PingResult } from '~/c/types/index.js';
 
 /** Options for {@link pingEndpoint}. */
@@ -13,6 +14,8 @@ export type PingEndpointOpts = {
   readonly statusErrors: Record<number, string>;
   /** Error message for network failures. */
   readonly networkError: string;
+  /** Custom fetch function for DI in tests. */
+  readonly fetcher?: Fetcher;
 };
 
 /**
@@ -27,10 +30,11 @@ export type PingEndpointOpts = {
 export async function pingEndpoint(
   opts: PingEndpointOpts,
 ): Promise<PingResult> {
-  const { url, headers, statusErrors, networkError } = opts;
+  const { url, headers, statusErrors, networkError, fetcher } = opts;
+  const doFetch = fetcher ?? fetch;
 
   try {
-    const response = await fetch(url, {
+    const response = await doFetch(url, {
       headers,
       signal: AbortSignal.timeout(10_000),
     });

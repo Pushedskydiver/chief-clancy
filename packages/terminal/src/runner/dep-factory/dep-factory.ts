@@ -168,7 +168,8 @@ function wireEarlyPhases(opts: DepFactoryOpts, progress: AppendFn) {
             envFs: opts.envFs,
           }),
         detectBoard: (env) => detectBoard(env),
-        createBoard: (config) => createBoard(config),
+        createBoard: (config) =>
+          createBoard(config, (url, init) => opts.fetch(url, init ?? {})),
       }),
 
     epicCompletion: (ctx: RunContext) =>

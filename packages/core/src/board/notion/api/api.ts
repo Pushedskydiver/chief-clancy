@@ -29,7 +29,10 @@ import { NOTION_API, notionHeaders } from './helpers.js';
  * @param token - The Notion integration token.
  * @returns Ping result with `ok` and optional `error`.
  */
-export async function pingNotion(token: string): Promise<PingResult> {
+export async function pingNotion(
+  token: string,
+  fetcher?: Fetcher,
+): Promise<PingResult> {
   return pingEndpoint({
     url: `${NOTION_API}/users/me`,
     headers: notionHeaders(token),
@@ -38,6 +41,7 @@ export async function pingNotion(token: string): Promise<PingResult> {
       403: '✗ Notion auth failed — check NOTION_TOKEN',
     },
     networkError: '✗ Could not reach Notion — check network',
+    fetcher,
   });
 }
 

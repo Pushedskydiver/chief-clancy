@@ -126,7 +126,7 @@ export function createLinearBoard(env: LinearEnv, fetcher?: Fetcher): Board {
   const fetch = (opts: FetchTicketOpts) => fetchLinearTickets(ctx, opts);
 
   return {
-    ping: () => pingLinear(ctx.apiKey),
+    ping: () => pingLinear(ctx.apiKey, ctx.fetcher),
 
     validateInputs: () =>
       isValidTeamId(ctx.teamId)

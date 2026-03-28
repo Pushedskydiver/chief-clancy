@@ -122,7 +122,13 @@ export function createJiraBoard(env: JiraEnv, fetcher?: Fetcher): Board {
   const fetch = (opts: FetchTicketOpts) => fetchJiraTickets(ctx, opts, env);
 
   return {
-    ping: () => pingJira(ctx.baseUrl, ctx.projectKey, ctx.auth),
+    ping: () =>
+      pingJira({
+        baseUrl: ctx.baseUrl,
+        projectKey: ctx.projectKey,
+        auth: ctx.auth,
+        fetcher: ctx.fetcher,
+      }),
     validateInputs: () => validateJqlInputs(env),
 
     fetchTicket: async (opts) => (await fetch(opts))[0],

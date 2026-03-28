@@ -30,26 +30,27 @@ All 6 cleanup PRs (C31–C36) merged. 8 regressions fixed, 3 bugs fixed, 12 conv
 
 ### Phase 11 — Revised Plan
 
-| PR    | Theme                                     | Scope                                                                                                 |
-| ----- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| 11.1a | Test infra: Claude simulator + fixtures   | Mock `spawnSync('claude')`, extract `makeCtx`/`makeBoard` into shared module                          |
-| 11.1b | Test infra: temp repo + env fixtures      | Git ops helper, `.clancy/.env` builders                                                               |
-| 11.1c | DI fetcher wiring on board constructors   | Optional `fetcher` param on all 6 board constructors + factory, threaded to every HTTP call            |
-| 11.2a | Lifecycle: GitHub happy path              | Full 13-phase pipeline with DI fetcher + Claude simulator, canned API responses. Pattern PR (~15 tests)|
-| 11.2b | Lifecycle: remaining boards happy path    | Replicate GitHub pattern for Jira, Linear, Shortcut, Notion, AzDo (~25 tests)                        |
-| 11.2c | Lifecycle: aborts + rework path           | Fatal/non-fatal early exits, rework detection flow across all boards (~20 tests)                      |
-| 11.3  | Board write ops: label CRUD + transitions | ensureLabel/addLabel/removeLabel per board via DI fetcher, transitionTicket, idempotence (~54 tests)   |
-| 11.4  | Advanced scenarios                        | Blocked ticket recursion, stale lock recovery, partial-push recovery, autopilot multi-iteration        |
+| PR    | Theme                                     | Scope                                                                                                   |
+| ----- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| 11.1a | Test infra: Claude simulator + fixtures   | Mock `spawnSync('claude')`, extract `makeCtx`/`makeBoard` into shared module                            |
+| 11.1b | Test infra: temp repo + env fixtures      | Git ops helper, `.clancy/.env` builders                                                                 |
+| 11.1c | DI fetcher wiring on board constructors   | Optional `fetcher` param on all 6 board constructors + factory, threaded to every HTTP call             |
+| 11.2a | Lifecycle: GitHub happy path              | Full 13-phase pipeline with DI fetcher + Claude simulator, canned API responses. Pattern PR (~15 tests) |
+| 11.2b | Lifecycle: remaining boards happy path    | Replicate GitHub pattern for Jira, Linear, Shortcut, Notion, AzDo (~25 tests)                           |
+| 11.2c | Lifecycle: aborts + rework path           | Fatal/non-fatal early exits, rework detection flow across all boards (~20 tests)                        |
+| 11.3  | Board write ops: label CRUD + transitions | ensureLabel/addLabel/removeLabel per board via DI fetcher, transitionTicket, idempotence (~54 tests)    |
+| 11.4  | Advanced scenarios                        | Blocked ticket recursion, stale lock recovery, partial-push recovery, autopilot multi-iteration         |
 
 ### Phase 11 Progress
 
 - **11.1a** (#118): Claude simulator + shared fixtures — `createClaudeSimulator` (configurable mock `SpawnSyncFn` with call recording + response sequences), exported `makeBoard`/`makeBoardConfig` from core test-helpers, re-export barrel in `terminal/test/helpers/fixtures.ts`. Knip config updated for terminal test scope. +13 tests.
 - **11.1b** (#119): Temp repo + env fixtures — `createTempRepo` (real git repo in temp dir with `ExecGit` executor via `execFileSync`), `createEnvBuilder` (`.clancy/.env` writer with `EnvFileSystem` adapter). Added `~/c/*` path alias to terminal tsconfig. +12 tests.
-- **11.1c**: DI fetcher wiring — exported `Fetcher` type, optional `fetcher?` param on all 6 board constructors + factory, threaded to every HTTP call site (fetchAndParse, raw fetch, linearGraphql). Zero raw `fetch()` calls remaining in board source. Functions refactored to opts objects where max-params exceeded. Notion's `retryFetch` falls back via `ctx.fetcher ?? retryFetch`.
+- **11.1c** (#120): DI fetcher wiring — exported `Fetcher` type, optional `fetcher?` param on all 6 board constructors + factory, threaded to every HTTP call site (fetchAndParse, raw fetch, linearGraphql). Zero raw `fetch()` calls remaining in board source. Functions refactored to opts objects where max-params exceeded. Notion's `retryFetch` falls back via `ctx.fetcher ?? retryFetch`.
+- **11.2a**: GitHub happy path integration test — full 13-phase pipeline with real git ops (temp repo + bare remote), regex-based mock fetcher, Claude simulator, real filesystem. Found and fixed: `pingEndpoint` missing DI fetcher, dep factory not wiring fetcher to `createBoard`, Jira `pingJira` converted to opts. +8 integration tests.
 
 ### Next up
 
-Phase 11.2a — GitHub happy path lifecycle integration test (pattern PR).
+Phase 11.2b — Remaining boards happy path (Jira, Linear, Shortcut, Notion, AzDo).
 
 ---
 

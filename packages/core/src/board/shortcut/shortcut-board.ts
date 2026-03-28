@@ -195,7 +195,7 @@ export function createShortcutBoard(
   const doFetch = (opts: FetchTicketOpts) => fetchShortcutTickets(ctx, opts);
 
   return {
-    ping: () => pingShortcut(ctx.token),
+    ping: () => pingShortcut(ctx.token, ctx.fetcher),
     validateInputs: () => undefined,
 
     fetchTicket: async (opts) => (await doFetch(opts))[0],

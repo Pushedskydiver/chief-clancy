@@ -99,17 +99,14 @@ export async function linearGraphql(opts: LinearGraphqlOpts): Promise<unknown> {
 }
 
 /**
- * Ping the Linear API to verify connectivity and credentials.
+ * Evaluate a raw ping response from Linear.
  *
- * @param apiKey - The Linear personal API key.
- * @returns Ping result with `ok` and optional `error`.
+ * @param response - The fetch response, or `undefined` on network failure.
+ * @returns A failure result, or `undefined` if the response needs JSON validation.
  */
-export async function pingLinear(apiKey: string): Promise<PingResult> {
-  const response = await fetch(
-    LINEAR_API,
-    graphqlInit(apiKey, '{ viewer { id } }'),
-  ).catch(() => undefined);
-
+function evaluatePingResponse(
+  response: Response | undefined,
+): PingResult | undefined {
   if (!response) {
     return { ok: false, error: '✗ Could not reach Linear — check network' };
   }
@@ -119,6 +116,30 @@ export async function pingLinear(apiKey: string): Promise<PingResult> {
       ? { ok: false, error: '✗ Linear auth failed — check LINEAR_API_KEY' }
       : { ok: false, error: `✗ Linear API returned HTTP ${response.status}` };
   }
+
+  return undefined;
+}
+
+/**
+ * Ping the Linear API to verify connectivity and credentials.
+ *
+ * @param apiKey - The Linear personal API key.
+ * @param fetcher - Optional custom fetch function for DI in tests.
+ * @returns Ping result with `ok` and optional `error`.
+ */
+export async function pingLinear(
+  apiKey: string,
+  fetcher?: Fetcher,
+): Promise<PingResult> {
+  const doFetch = fetcher ?? fetch;
+  const response = await doFetch(
+    LINEAR_API,
+    graphqlInit(apiKey, '{ viewer { id } }'),
+  ).catch(() => undefined);
+
+  const failure = evaluatePingResponse(response);
+  if (failure || !response)
+    return failure ?? { ok: false, error: '✗ Linear ping failed' };
 
   try {
     const json: unknown = await response.json();
