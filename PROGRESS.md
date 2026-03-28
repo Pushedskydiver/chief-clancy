@@ -1,5 +1,29 @@
 # Monorepo Progress
 
+## Session 38 Handoff
+
+**Phase 11 integration tests in progress.** 4 PRs this session: 11.1a–11.1c + 11.2a. 1570 core tests, 651 terminal tests (was 610 + 1570 after session 37).
+
+### What was done
+
+- **11.1a** (#118): Claude simulator + shared fixtures — `createClaudeSimulator` with call recording + response sequences. Exported `makeBoard`/`makeBoardConfig` from core test-helpers. +13 tests.
+- **11.1b** (#119): Temp repo + env fixtures — `createTempRepo` (real git via `execFileSync`), `createEnvBuilder` (`.clancy/.env` + `EnvFileSystem`). Added `~/c/*` tsconfig alias. +12 tests.
+- **11.1c** (#120): DI fetcher wiring — `Fetcher` type exported, optional `fetcher?` on all 6 board constructors + factory, threaded to every HTTP call. Zero raw `fetch()` remaining. DA review caught incomplete threading on secondary paths (labels, relations, transitions, pings) — all fixed across 8 commits. 40+ files changed.
+- **11.2a** (#121): GitHub happy path integration test — full 13-phase pipeline with real git ops (temp repo + bare remote), regex-based mock fetcher, Claude simulator, real filesystem. Found 4 bugs: `pingEndpoint` missing DI, dep factory not wiring fetcher to `createBoard`, Jira `pingJira` needed opts, `claude` binary stub for CI. +8 integration tests.
+
+### Key decisions
+
+- **DI over MSW** confirmed — every board HTTP call (fetchAndParse, raw fetch, linearGraphql, pingEndpoint) now accepts optional `fetcher?`. No new dependencies.
+- **Board context simplification** deferred to post-Phase 11 + cleanup. Research areas: shared `BoardContext` base type, `createHttpClient(fetcher?)` factory. Captured in memory.
+- **11.2 split** into 11.2a (GitHub pattern PR), 11.2b (remaining boards), 11.2c (aborts + rework).
+- **Integration test pattern** established: `setupPipeline` helper with configurable overrides, regex route tables for mock fetchers, dual-mode exec (stubs `claude` for CI), real filesystem in temp dirs.
+
+### Next up
+
+Phase 11.2b — Replicate GitHub integration test pattern for Jira, Linear, Shortcut, Notion, AzDo. Each board needs its own mock fetcher with canned API responses matching the board's schema. The `setupPipeline` helper and `createRepoWithRemote` are reusable — only the `.env` vars and fetcher routes change per board.
+
+---
+
 ## Session 37 Handoff
 
 **Phase 10 audit complete + Phase 11 validated + lifecycle robustness.** 8 PRs this session: C33–C40. 610 terminal tests, 1570 core tests.
@@ -46,7 +70,7 @@ All 6 cleanup PRs (C31–C36) merged. 8 regressions fixed, 3 bugs fixed, 12 conv
 - **11.1a** (#118): Claude simulator + shared fixtures — `createClaudeSimulator` (configurable mock `SpawnSyncFn` with call recording + response sequences), exported `makeBoard`/`makeBoardConfig` from core test-helpers, re-export barrel in `terminal/test/helpers/fixtures.ts`. Knip config updated for terminal test scope. +13 tests.
 - **11.1b** (#119): Temp repo + env fixtures — `createTempRepo` (real git repo in temp dir with `ExecGit` executor via `execFileSync`), `createEnvBuilder` (`.clancy/.env` writer with `EnvFileSystem` adapter). Added `~/c/*` path alias to terminal tsconfig. +12 tests.
 - **11.1c** (#120): DI fetcher wiring — exported `Fetcher` type, optional `fetcher?` param on all 6 board constructors + factory, threaded to every HTTP call site (fetchAndParse, raw fetch, linearGraphql). Zero raw `fetch()` calls remaining in board source. Functions refactored to opts objects where max-params exceeded. Notion's `retryFetch` falls back via `ctx.fetcher ?? retryFetch`.
-- **11.2a**: GitHub happy path integration test — full 13-phase pipeline with real git ops (temp repo + bare remote), regex-based mock fetcher, Claude simulator, real filesystem. Found and fixed: `pingEndpoint` missing DI fetcher, dep factory not wiring fetcher to `createBoard`, Jira `pingJira` converted to opts. +8 integration tests.
+- **11.2a** (#121): GitHub happy path integration test — full 13-phase pipeline with real git ops (temp repo + bare remote), regex-based mock fetcher, Claude simulator, real filesystem. Found and fixed: `pingEndpoint` missing DI fetcher, dep factory not wiring fetcher to `createBoard`, Jira `pingJira` converted to opts. +8 integration tests.
 
 ### Next up
 
