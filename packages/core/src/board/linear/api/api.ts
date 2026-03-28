@@ -98,26 +98,12 @@ export async function linearGraphql(opts: LinearGraphqlOpts): Promise<unknown> {
   }
 }
 
-/**
- * Evaluate a raw ping response from Linear.
- *
- * @param response - The fetch response, or `undefined` on network failure.
- * @returns A failure result, or `undefined` if the response needs JSON validation.
- */
-function evaluatePingResponse(
-  response: Response | undefined,
-): PingResult | undefined {
-  if (!response) {
-    return { ok: false, error: '✗ Could not reach Linear — check network' };
-  }
-
-  if (!response.ok) {
-    return response.status === 401 || response.status === 403
-      ? { ok: false, error: '✗ Linear auth failed — check LINEAR_API_KEY' }
-      : { ok: false, error: `✗ Linear API returned HTTP ${response.status}` };
-  }
-
-  return undefined;
+/** Map a Linear ping HTTP status to a failure result. */
+function mapPingStatus(status: number): PingResult {
+  const isAuthError = status === 401 || status === 403;
+  return isAuthError
+    ? { ok: false, error: '✗ Linear auth failed — check LINEAR_API_KEY' }
+    : { ok: false, error: `✗ Linear API returned HTTP ${status}` };
 }
 
 /**
@@ -131,15 +117,16 @@ export async function pingLinear(
   apiKey: string,
   fetcher?: Fetcher,
 ): Promise<PingResult> {
-  const doFetch = fetcher ?? fetch;
-  const response = await doFetch(
+  const response = await (fetcher ?? fetch)(
     LINEAR_API,
     graphqlInit(apiKey, '{ viewer { id } }'),
   ).catch(() => undefined);
 
-  const failure = evaluatePingResponse(response);
-  if (failure || !response)
-    return failure ?? { ok: false, error: '✗ Linear ping failed' };
+  if (!response) {
+    return { ok: false, error: '✗ Could not reach Linear — check network' };
+  }
+
+  if (!response.ok) return mapPingStatus(response.status);
 
   try {
     const json: unknown = await response.json();
