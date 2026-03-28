@@ -42,6 +42,7 @@ export async function pingAzdo(ctx: AzdoCtx): Promise<PingResult> {
       403: '✗ Azure DevOps auth failed — check AZDO_PAT',
     },
     networkError: '✗ Could not reach Azure DevOps — check network',
+    fetcher: ctx.fetcher,
   });
 }
 

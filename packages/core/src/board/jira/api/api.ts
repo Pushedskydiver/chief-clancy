@@ -64,19 +64,22 @@ export function isValidIssueKey(key: string): boolean {
   return ISSUE_KEY_PATTERN.test(key);
 }
 
+/** Options for {@link pingJira}. */
+type PingJiraOpts = {
+  readonly baseUrl: string;
+  readonly projectKey: string;
+  readonly auth: string;
+  readonly fetcher?: Fetcher;
+};
+
 /**
  * Ping the Jira API to verify connectivity and credentials.
  *
- * @param baseUrl - The Jira Cloud base URL.
- * @param projectKey - The Jira project key.
- * @param auth - The Base64-encoded Basic auth string.
+ * @param opts - Base URL, project key, auth, and optional fetcher.
  * @returns Ping result with `ok` and optional `error`.
  */
-export async function pingJira(
-  baseUrl: string,
-  projectKey: string,
-  auth: string,
-): Promise<PingResult> {
+export async function pingJira(opts: PingJiraOpts): Promise<PingResult> {
+  const { baseUrl, projectKey, auth, fetcher } = opts;
   return pingEndpoint({
     url: `${baseUrl}/rest/api/3/project/${projectKey}`,
     headers: jiraHeaders(auth),
@@ -86,6 +89,7 @@ export async function pingJira(
       404: `✗ Jira project "${projectKey}" not found`,
     },
     networkError: '✗ Could not reach Jira — check network',
+    fetcher,
   });
 }
 

@@ -49,11 +49,13 @@ export function isValidRepo(repo: string): boolean {
  *
  * @param token - GitHub personal access token.
  * @param repo - Repository in `owner/repo` format.
+ * @param fetcher - Optional custom fetch function for DI in tests.
  * @returns Ping result with `ok` and optional `error`.
  */
 export async function pingGitHub(
   token: string,
   repo: string,
+  fetcher?: Fetcher,
 ): Promise<PingResult> {
   if (!isValidRepo(repo)) {
     return { ok: false, error: '✗ GITHUB_REPO format is invalid' };
@@ -68,6 +70,7 @@ export async function pingGitHub(
       404: `✗ GitHub repo "${repo}" not found`,
     },
     networkError: '✗ Could not reach GitHub — check network',
+    fetcher,
   });
 }
 

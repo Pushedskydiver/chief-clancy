@@ -100,7 +100,7 @@ export function createGitHubBoard(env: GitHubEnv, fetcher?: Fetcher): Board {
   };
   const fetch = (opts: FetchTicketOpts) => fetchGitHubTickets(ctx, opts);
   return {
-    ping: () => pingGitHub(ctx.token, ctx.repo),
+    ping: () => pingGitHub(ctx.token, ctx.repo, ctx.fetcher),
 
     validateInputs: () =>
       isValidRepo(ctx.repo)

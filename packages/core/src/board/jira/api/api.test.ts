@@ -160,11 +160,11 @@ describe('pingJira', () => {
       } as Response),
     );
 
-    const result = await pingJira(
-      'https://example.atlassian.net',
-      'PROJ',
-      'auth',
-    );
+    const result = await pingJira({
+      baseUrl: 'https://example.atlassian.net',
+      projectKey: 'PROJ',
+      auth: 'auth',
+    });
     expect(result).toEqual({ ok: true });
   });
 
@@ -178,11 +178,11 @@ describe('pingJira', () => {
       } as Response),
     );
 
-    const result = await pingJira(
-      'https://example.atlassian.net',
-      'PROJ',
-      'bad',
-    );
+    const result = await pingJira({
+      baseUrl: 'https://example.atlassian.net',
+      projectKey: 'PROJ',
+      auth: 'bad',
+    });
     expect(result.ok).toBe(false);
     expect(result.error).toContain('auth failed');
   });

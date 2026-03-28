@@ -98,14 +98,26 @@ export async function linearGraphql(opts: LinearGraphqlOpts): Promise<unknown> {
   }
 }
 
+/** Map a Linear ping HTTP status to a failure result. */
+function mapPingStatus(status: number): PingResult {
+  const isAuthError = status === 401 || status === 403;
+  return isAuthError
+    ? { ok: false, error: '✗ Linear auth failed — check LINEAR_API_KEY' }
+    : { ok: false, error: `✗ Linear API returned HTTP ${status}` };
+}
+
 /**
  * Ping the Linear API to verify connectivity and credentials.
  *
  * @param apiKey - The Linear personal API key.
+ * @param fetcher - Optional custom fetch function for DI in tests.
  * @returns Ping result with `ok` and optional `error`.
  */
-export async function pingLinear(apiKey: string): Promise<PingResult> {
-  const response = await fetch(
+export async function pingLinear(
+  apiKey: string,
+  fetcher?: Fetcher,
+): Promise<PingResult> {
+  const response = await (fetcher ?? fetch)(
     LINEAR_API,
     graphqlInit(apiKey, '{ viewer { id } }'),
   ).catch(() => undefined);
@@ -114,11 +126,7 @@ export async function pingLinear(apiKey: string): Promise<PingResult> {
     return { ok: false, error: '✗ Could not reach Linear — check network' };
   }
 
-  if (!response.ok) {
-    return response.status === 401 || response.status === 403
-      ? { ok: false, error: '✗ Linear auth failed — check LINEAR_API_KEY' }
-      : { ok: false, error: `✗ Linear API returned HTTP ${response.status}` };
-  }
+  if (!response.ok) return mapPingStatus(response.status);
 
   try {
     const json: unknown = await response.json();

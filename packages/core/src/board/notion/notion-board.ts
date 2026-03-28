@@ -195,7 +195,7 @@ export function createNotionBoard(env: NotionEnv, fetcher?: Fetcher): Board {
     });
 
   return {
-    ping: () => pingNotion(ctx.token),
+    ping: () => pingNotion(ctx.token, ctx.fetcher),
 
     validateInputs() {
       if (!UUID_PATTERN.test(env.NOTION_DATABASE_ID)) {
