@@ -248,11 +248,14 @@ function createRepoWithRemote() {
   // Dual-mode exec: the dep factory's preflight wiring calls
   // (file, args) => exec([file, ...args]), so the first arg may be
   // a binary name (claude, git) or a git subcommand (rev-parse, etc.).
-  const KNOWN_BINARIES = new Set(['git', 'claude', 'node', 'pnpm', 'npm']);
+  // Stub `claude` so preflight passes even when Claude isn't installed (CI).
+  const STUBBED_BINARIES: Record<string, string> = { claude: '1.0.0 (stub)' };
+  const REAL_BINARIES = new Set(['git', 'node', 'pnpm', 'npm']);
   const exec = (args: readonly string[]) => {
-    const isBinary = KNOWN_BINARIES.has(args[0]);
-    const cmd = isBinary ? args[0] : 'git';
-    const cmdArgs = isBinary ? args.slice(1) : args;
+    if (args[0] in STUBBED_BINARIES) return STUBBED_BINARIES[args[0]];
+    const isReal = REAL_BINARIES.has(args[0]);
+    const cmd = isReal ? args[0] : 'git';
+    const cmdArgs = isReal ? args.slice(1) : args;
     return execFileSync(cmd, cmdArgs, {
       cwd: workDir,
       stdio: 'pipe',
