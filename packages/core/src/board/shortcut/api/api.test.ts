@@ -428,42 +428,40 @@ describe('fetchStories', () => {
 // ── transitionStory ───────────────────────────────────────────────
 
 describe('transitionStory', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
   it('returns true on successful transition', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true } as Response));
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true } as Response);
 
     const result = await transitionStory({
       token: 'tok',
       storyId: 42,
       workflowStateId: 101,
+      fetcher: mockFetch,
     });
     expect(result).toBe(true);
   });
 
   it('returns false on failure', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({ ok: false, status: 404 } as Response),
-    );
+    const mockFetch = vi
+      .fn()
+      .mockResolvedValue({ ok: false, status: 404 } as Response);
 
     const result = await transitionStory({
       token: 'tok',
       storyId: 42,
       workflowStateId: 101,
+      fetcher: mockFetch,
     });
     expect(result).toBe(false);
   });
 
   it('returns false on network error', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
+    const mockFetch = vi.fn().mockRejectedValue(new Error('offline'));
 
     const result = await transitionStory({
       token: 'tok',
       storyId: 42,
       workflowStateId: 101,
+      fetcher: mockFetch,
     });
     expect(result).toBe(false);
   });

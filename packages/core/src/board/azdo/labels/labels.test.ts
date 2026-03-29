@@ -1,41 +1,49 @@
 import type { AzdoCtx } from '../api/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { addLabel, removeLabel } from './labels.js';
 
-const ctx: AzdoCtx = { org: 'org', project: 'proj', pat: 'pat' };
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
+/** Build an Azure DevOps context with a DI fetcher. */
+function makeCtx(fetcher: Fetcher): AzdoCtx {
+  return { org: 'org', project: 'proj', pat: 'pat', fetcher };
+}
+
+/** Build a Response from JSON data (for fetchAndParse compatibility). */
+function jsonResponse(data: unknown, status = 200): Response {
+  return new Response(JSON.stringify(data), { status });
+}
 
 describe('azdo labels', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
   // ─── addLabel ─────────────────────────────────────────────────────────────
 
   describe('addLabel', () => {
     it('appends tag via JSON Patch', async () => {
-      const mockFetch = vi
+      const mockFetch: Fetcher = vi
         .fn()
         // fetchWorkItem to get current tags
         .mockResolvedValueOnce(
-          new Response(
-            JSON.stringify({
-              id: 42,
-              fields: { 'System.Tags': 'existing' },
-              relations: null,
-            }),
-            { status: 200 },
-          ),
+          jsonResponse({
+            id: 42,
+            fields: { 'System.Tags': 'existing' },
+            relations: null,
+          }),
         )
         // updateWorkItem PATCH
-        .mockResolvedValueOnce({ ok: true });
-      vi.stubGlobal('fetch', mockFetch);
+        .mockResolvedValueOnce({ ok: true } as Response);
 
-      await addLabel(ctx, 'azdo-42', 'new-tag');
+      await addLabel(makeCtx(mockFetch), 'azdo-42', 'new-tag');
 
       // Verify PATCH was called with updated tags
-      const [, patchOptions] = mockFetch.mock.calls[1] as [string, RequestInit];
+      const [, patchOptions] = vi.mocked(mockFetch).mock.calls[1] as [
+        string,
+        RequestInit,
+      ];
       const body = JSON.parse(patchOptions.body as string) as Array<{
         value: string;
       }>;
@@ -43,38 +51,38 @@ describe('azdo labels', () => {
     });
 
     it('does not duplicate existing tag', async () => {
-      const mockFetch = vi.fn().mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            id: 42,
-            fields: { 'System.Tags': 'existing' },
-            relations: null,
-          }),
-          { status: 200 },
-        ),
+      const mockFetch: Fetcher = vi.fn().mockResolvedValueOnce(
+        jsonResponse({
+          id: 42,
+          fields: { 'System.Tags': 'existing' },
+          relations: null,
+        }),
       );
-      vi.stubGlobal('fetch', mockFetch);
 
-      await addLabel(ctx, 'azdo-42', 'existing');
+      await addLabel(makeCtx(mockFetch), 'azdo-42', 'existing');
 
       // Only 1 call (fetchWorkItem) — no PATCH needed
       expect(mockFetch).toHaveBeenCalledTimes(1);
     });
 
     it('handles invalid key gracefully', async () => {
-      const mockFetch = vi.fn();
-      vi.stubGlobal('fetch', mockFetch);
+      const mockFetch: Fetcher = vi.fn();
 
-      await addLabel(ctx, 'invalid', 'tag');
+      await addLabel(makeCtx(mockFetch), 'invalid', 'tag');
 
       expect(mockFetch).not.toHaveBeenCalled();
     });
 
     it('handles fetch failure gracefully', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network')));
+      const mockFetch: Fetcher = vi
+        .fn()
+        .mockRejectedValue(new Error('network'));
+      vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       // Should not throw
-      await expect(addLabel(ctx, 'azdo-42', 'tag')).resolves.toBeUndefined();
+      await expect(
+        addLabel(makeCtx(mockFetch), 'azdo-42', 'tag'),
+      ).resolves.toBeUndefined();
     });
   });
 
@@ -82,24 +90,23 @@ describe('azdo labels', () => {
 
   describe('removeLabel', () => {
     it('removes tag via JSON Patch', async () => {
-      const mockFetch = vi
+      const mockFetch: Fetcher = vi
         .fn()
         .mockResolvedValueOnce(
-          new Response(
-            JSON.stringify({
-              id: 42,
-              fields: { 'System.Tags': 'keep; remove-me; also-keep' },
-              relations: null,
-            }),
-            { status: 200 },
-          ),
+          jsonResponse({
+            id: 42,
+            fields: { 'System.Tags': 'keep; remove-me; also-keep' },
+            relations: null,
+          }),
         )
-        .mockResolvedValueOnce({ ok: true });
-      vi.stubGlobal('fetch', mockFetch);
+        .mockResolvedValueOnce({ ok: true } as Response);
 
-      await removeLabel(ctx, 'azdo-42', 'remove-me');
+      await removeLabel(makeCtx(mockFetch), 'azdo-42', 'remove-me');
 
-      const [, patchOptions] = mockFetch.mock.calls[1] as [string, RequestInit];
+      const [, patchOptions] = vi.mocked(mockFetch).mock.calls[1] as [
+        string,
+        RequestInit,
+      ];
       const body = JSON.parse(patchOptions.body as string) as Array<{
         value: string;
       }>;
@@ -107,29 +114,24 @@ describe('azdo labels', () => {
     });
 
     it('does nothing when tag not present', async () => {
-      const mockFetch = vi.fn().mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            id: 42,
-            fields: { 'System.Tags': 'tag1; tag2' },
-            relations: null,
-          }),
-          { status: 200 },
-        ),
+      const mockFetch: Fetcher = vi.fn().mockResolvedValueOnce(
+        jsonResponse({
+          id: 42,
+          fields: { 'System.Tags': 'tag1; tag2' },
+          relations: null,
+        }),
       );
-      vi.stubGlobal('fetch', mockFetch);
 
-      await removeLabel(ctx, 'azdo-42', 'nonexistent');
+      await removeLabel(makeCtx(mockFetch), 'azdo-42', 'nonexistent');
 
       // Only 1 call (fetchWorkItem) — no PATCH needed
       expect(mockFetch).toHaveBeenCalledTimes(1);
     });
 
     it('handles invalid key gracefully', async () => {
-      const mockFetch = vi.fn();
-      vi.stubGlobal('fetch', mockFetch);
+      const mockFetch: Fetcher = vi.fn();
 
-      await removeLabel(ctx, 'invalid', 'tag');
+      await removeLabel(makeCtx(mockFetch), 'invalid', 'tag');
 
       expect(mockFetch).not.toHaveBeenCalled();
     });

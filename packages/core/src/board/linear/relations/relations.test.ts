@@ -325,7 +325,7 @@ describe('lookupWorkflowStateId', () => {
 
 describe('transitionIssue', () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('returns true on successful transition', async () => {
@@ -347,35 +347,33 @@ describe('transitionIssue', () => {
             data: { issueUpdate: { success: true } },
           }),
       } as Response);
-    vi.stubGlobal('fetch', mockFetch);
 
     const result = await transitionIssue({
       apiKey: 'key',
       teamId: 'team-1',
       issueId: 'issue-uuid',
       stateName: 'In Progress',
+      fetcher: mockFetch,
     });
 
     expect(result).toBe(true);
   });
 
   it('returns false when workflow state not found', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: { workflowStates: { nodes: [] } },
-          }),
-      } as Response),
-    );
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: { workflowStates: { nodes: [] } },
+        }),
+    } as Response);
 
     const result = await transitionIssue({
       apiKey: 'key',
       teamId: 'team-1',
       issueId: 'issue-uuid',
       stateName: 'NonExistent',
+      fetcher: mockFetch,
     });
 
     expect(result).toBe(false);
@@ -398,26 +396,28 @@ describe('transitionIssue', () => {
             data: { issueUpdate: { success: false } },
           }),
       } as Response);
-    vi.stubGlobal('fetch', mockFetch);
 
     const result = await transitionIssue({
       apiKey: 'key',
       teamId: 'team-1',
       issueId: 'issue-uuid',
       stateName: 'In Progress',
+      fetcher: mockFetch,
     });
 
     expect(result).toBe(false);
   });
 
   it('returns false on network error', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
+    const mockFetch = vi.fn().mockRejectedValue(new Error('offline'));
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const result = await transitionIssue({
       apiKey: 'key',
       teamId: 'team-1',
       issueId: 'issue-uuid',
       stateName: 'In Progress',
+      fetcher: mockFetch,
     });
 
     expect(result).toBe(false);
