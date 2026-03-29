@@ -1,4 +1,5 @@
 import type { ShortcutWorkflowsResponse } from '~/c/schemas/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 
 import { Cached } from '~/c/shared/cache/index.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -31,7 +32,7 @@ function makeCacheWithWorkflows(): Cached<ShortcutWorkflowsResponse> {
 describe('fetchBlockerStatus', () => {
   it('returns true when a blocker is not done', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       // Story detail (blocked, with story_links)
       .mockResolvedValueOnce(
         new Response(
@@ -65,7 +66,7 @@ describe('fetchBlockerStatus', () => {
 
   it('returns false when all blockers are done', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       .mockResolvedValueOnce(
         new Response(
           JSON.stringify({
@@ -101,7 +102,7 @@ describe('fetchBlockerStatus', () => {
 
   it('returns false when story is not blocked', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       .mockResolvedValue(
         new Response(
           JSON.stringify({ id: 42, name: 'Story', blocked: false }),
@@ -119,7 +120,7 @@ describe('fetchBlockerStatus', () => {
   });
 
   it('returns false when no story_links', async () => {
-    const mockFetch = vi.fn().mockResolvedValue(
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
       new Response(
         JSON.stringify({
           id: 42,
@@ -142,7 +143,7 @@ describe('fetchBlockerStatus', () => {
 
   it('returns false on API failure', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       .mockResolvedValue(new Response('error', { status: 500 }));
 
     const result = await fetchBlockerStatus({
@@ -159,7 +160,7 @@ describe('fetchBlockerStatus', () => {
 
 describe('fetchChildrenStatus', () => {
   it('uses text search when parentKey is provided', async () => {
-    const mockFetch = vi.fn().mockResolvedValue(
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
       new Response(
         JSON.stringify({
           data: [
@@ -183,7 +184,7 @@ describe('fetchChildrenStatus', () => {
 
   it('falls back to epic API when text search returns empty', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       // Text search — empty
       .mockResolvedValueOnce(
         new Response(JSON.stringify({ data: [] }), { status: 200 }),
@@ -209,7 +210,7 @@ describe('fetchChildrenStatus', () => {
 
   it('skips text search when parentKey is missing', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       .mockResolvedValue(
         new Response(
           JSON.stringify([{ id: 1, name: 'Child', workflow_state_id: 102 }]),
@@ -228,7 +229,7 @@ describe('fetchChildrenStatus', () => {
   });
 
   it('returns undefined on complete failure', async () => {
-    const mockFetch = vi.fn().mockRejectedValue(new Error('offline'));
+    const mockFetch = vi.fn<Fetcher>().mockRejectedValue(new Error('offline'));
 
     const result = await fetchChildrenStatus({
       token: 'tok',

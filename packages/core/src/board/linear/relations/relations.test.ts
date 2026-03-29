@@ -1,3 +1,5 @@
+import type { Fetcher } from '~/c/shared/http/index.js';
+
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -15,7 +17,7 @@ afterEach(() => {
 
 describe('fetchBlockerStatus', () => {
   it('returns true when a blocker is unresolved', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
       ok: true,
       json: () =>
         Promise.resolve({
@@ -39,7 +41,7 @@ describe('fetchBlockerStatus', () => {
   });
 
   it('returns false when all blockers are completed', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
       ok: true,
       json: () =>
         Promise.resolve({
@@ -63,7 +65,7 @@ describe('fetchBlockerStatus', () => {
   });
 
   it('returns false when blockers are canceled', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
       ok: true,
       json: () =>
         Promise.resolve({
@@ -87,7 +89,7 @@ describe('fetchBlockerStatus', () => {
   });
 
   it('ignores non-blockedBy relations', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
       ok: true,
       json: () =>
         Promise.resolve({
@@ -111,7 +113,7 @@ describe('fetchBlockerStatus', () => {
   });
 
   it('returns false when no relations exist', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
       ok: true,
       json: () =>
         Promise.resolve({
@@ -124,7 +126,7 @@ describe('fetchBlockerStatus', () => {
   });
 
   it('returns false on API failure', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
       ok: false,
       status: 500,
     } as Response);
@@ -138,7 +140,7 @@ describe('fetchBlockerStatus', () => {
 
 describe('fetchChildrenStatus', () => {
   it('uses Epic: text search when parentIdentifier is provided', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
       ok: true,
       json: () =>
         Promise.resolve({
@@ -170,7 +172,7 @@ describe('fetchChildrenStatus', () => {
 
   it('falls back to native children API when text search returns no results', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       // First call: Epic text search — empty
       .mockResolvedValueOnce({
         ok: true,
@@ -210,7 +212,7 @@ describe('fetchChildrenStatus', () => {
   });
 
   it('skips text search when parentIdentifier is missing', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
       ok: true,
       json: () =>
         Promise.resolve({
@@ -236,7 +238,9 @@ describe('fetchChildrenStatus', () => {
   });
 
   it('returns undefined on complete API failure', async () => {
-    const mockFetch = vi.fn().mockRejectedValue(new Error('network error'));
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockRejectedValue(new Error('network error'));
 
     const result = await fetchChildrenStatus({
       apiKey: 'key',
@@ -252,7 +256,7 @@ describe('fetchChildrenStatus', () => {
 
 describe('lookupWorkflowStateId', () => {
   it('returns state ID when found', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
       ok: true,
       json: () =>
         Promise.resolve({
@@ -274,7 +278,7 @@ describe('lookupWorkflowStateId', () => {
   });
 
   it('returns undefined when state not found', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
       ok: true,
       json: () =>
         Promise.resolve({
@@ -301,7 +305,7 @@ describe('transitionIssue', () => {
 
   it('returns true on successful transition', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       // First call: lookup workflow state
       .mockResolvedValueOnce({
         ok: true,
@@ -331,7 +335,7 @@ describe('transitionIssue', () => {
   });
 
   it('returns false when workflow state not found', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
       ok: true,
       json: () =>
         Promise.resolve({
@@ -352,7 +356,7 @@ describe('transitionIssue', () => {
 
   it('returns false on mutation failure', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       .mockResolvedValueOnce({
         ok: true,
         json: () =>
@@ -380,7 +384,7 @@ describe('transitionIssue', () => {
   });
 
   it('returns false on network error', async () => {
-    const mockFetch = vi.fn().mockRejectedValue(new Error('offline'));
+    const mockFetch = vi.fn<Fetcher>().mockRejectedValue(new Error('offline'));
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const result = await transitionIssue({

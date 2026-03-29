@@ -1,4 +1,5 @@
 import type { NotionCtx } from '../api/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -41,7 +42,7 @@ describe('notion relations', () => {
   describe('fetchBlockerStatus', () => {
     it('returns false when page has no blockers', async () => {
       const mockFetch = vi
-        .fn()
+        .fn<Fetcher>()
         .mockResolvedValue(
           mockResponse(makePage({ id: PAGE_ID, title: 'Unblocked' })),
         );
@@ -78,7 +79,7 @@ describe('notion relations', () => {
       });
 
       const mockFetch = vi
-        .fn()
+        .fn<Fetcher>()
         .mockResolvedValueOnce(mockResponse(page))
         .mockResolvedValueOnce(mockResponse(blockerPage));
       const ctx: NotionCtx = {
@@ -114,7 +115,7 @@ describe('notion relations', () => {
       });
 
       const mockFetch = vi
-        .fn()
+        .fn<Fetcher>()
         .mockResolvedValueOnce(mockResponse(page))
         .mockResolvedValueOnce(mockResponse(blockerPage));
       const ctx: NotionCtx = {
@@ -152,7 +153,7 @@ describe('notion relations', () => {
       });
 
       const mockFetch = vi
-        .fn()
+        .fn<Fetcher>()
         // fetchPage (the blocked page)
         .mockResolvedValueOnce(mockResponse(page))
         // queryAllPages (to find blockers)
@@ -178,7 +179,9 @@ describe('notion relations', () => {
     });
 
     it('returns false on network failure', async () => {
-      const mockFetch = vi.fn().mockRejectedValue(new Error('network'));
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockRejectedValue(new Error('network'));
       const ctx: NotionCtx = {
         token: TOKEN,
         databaseId: DATABASE_ID,
@@ -216,7 +219,7 @@ describe('notion relations', () => {
         extra: epicExtra,
       });
 
-      const mockFetch = vi.fn().mockResolvedValue(
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
         mockResponse({
           results: [child1, child2],
           has_more: false,
@@ -247,7 +250,7 @@ describe('notion relations', () => {
       });
 
       const mockFetch = vi
-        .fn()
+        .fn<Fetcher>()
         // queryAllPages for description search (no matches)
         .mockResolvedValueOnce(
           mockResponse({
@@ -289,7 +292,9 @@ describe('notion relations', () => {
     });
 
     it('returns undefined on failure', async () => {
-      const mockFetch = vi.fn().mockRejectedValue(new Error('network'));
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockRejectedValue(new Error('network'));
       const ctx: NotionCtx = {
         token: TOKEN,
         databaseId: DATABASE_ID,
@@ -308,7 +313,7 @@ describe('notion relations', () => {
 
     it('returns undefined when no children match via either mode', async () => {
       const mockFetch = vi
-        .fn()
+        .fn<Fetcher>()
         .mockResolvedValueOnce(
           mockResponse({ results: [], has_more: false, next_cursor: null }),
         )

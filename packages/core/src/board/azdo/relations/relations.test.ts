@@ -1,4 +1,5 @@
 import type { AzdoCtx } from '../api/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -13,7 +14,7 @@ describe('azdo relations', () => {
 
   describe('fetchBlockerStatus', () => {
     it('returns false when no relations', async () => {
-      const mockFetch = vi.fn().mockResolvedValue(
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
         new Response(
           JSON.stringify({
             id: 42,
@@ -36,7 +37,7 @@ describe('azdo relations', () => {
 
     it('returns true when predecessor is not done', async () => {
       const mockFetch = vi
-        .fn()
+        .fn<Fetcher>()
         // First call: fetch work item with dependency
         .mockResolvedValueOnce(
           new Response(
@@ -84,7 +85,7 @@ describe('azdo relations', () => {
 
     it('returns false when predecessor is done', async () => {
       const mockFetch = vi
-        .fn()
+        .fn<Fetcher>()
         .mockResolvedValueOnce(
           new Response(
             JSON.stringify({
@@ -129,7 +130,9 @@ describe('azdo relations', () => {
     });
 
     it('returns false on network failure', async () => {
-      const mockFetch = vi.fn().mockRejectedValue(new Error('network'));
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockRejectedValue(new Error('network'));
       const ctx: AzdoCtx = {
         org: 'org',
         project: 'proj',
@@ -143,7 +146,7 @@ describe('azdo relations', () => {
 
     it('returns false when work item not found', async () => {
       const mockFetch = vi
-        .fn()
+        .fn<Fetcher>()
         .mockResolvedValue(new Response('', { status: 404 }));
       const ctx: AzdoCtx = {
         org: 'org',
@@ -162,7 +165,7 @@ describe('azdo relations', () => {
   describe('fetchChildrenStatus', () => {
     it('uses Epic: text convention first (mode 1)', async () => {
       const mockFetch = vi
-        .fn()
+        .fn<Fetcher>()
         // WIQL for description search
         .mockResolvedValueOnce(
           new Response(
@@ -209,7 +212,7 @@ describe('azdo relations', () => {
 
     it('falls back to hierarchy links when description search finds nothing', async () => {
       const mockFetch = vi
-        .fn()
+        .fn<Fetcher>()
         // WIQL for description search — empty
         .mockResolvedValueOnce(
           new Response(JSON.stringify({ workItems: [] }), { status: 200 }),
@@ -262,7 +265,9 @@ describe('azdo relations', () => {
     });
 
     it('returns undefined on failure', async () => {
-      const mockFetch = vi.fn().mockRejectedValue(new Error('network'));
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockRejectedValue(new Error('network'));
       const ctx: AzdoCtx = {
         org: 'org',
         project: 'proj',
@@ -276,7 +281,7 @@ describe('azdo relations', () => {
 
     it('skips description search when parentKey is not provided', async () => {
       const mockFetch = vi
-        .fn()
+        .fn<Fetcher>()
         // WIQL for link query (no description search — straight to links)
         .mockResolvedValueOnce(
           new Response(

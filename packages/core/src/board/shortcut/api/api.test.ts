@@ -1,4 +1,5 @@
 import type { ShortcutWorkflowsResponse } from '~/c/schemas/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 
 import { Cached } from '~/c/shared/cache/index.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -429,7 +430,9 @@ describe('fetchStories', () => {
 
 describe('transitionStory', () => {
   it('returns true on successful transition', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({ ok: true } as Response);
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue({ ok: true } as Response);
 
     const result = await transitionStory({
       token: 'tok',
@@ -442,7 +445,7 @@ describe('transitionStory', () => {
 
   it('returns false on failure', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       .mockResolvedValue({ ok: false, status: 404 } as Response);
 
     const result = await transitionStory({
@@ -455,7 +458,7 @@ describe('transitionStory', () => {
   });
 
   it('returns false on network error', async () => {
-    const mockFetch = vi.fn().mockRejectedValue(new Error('offline'));
+    const mockFetch = vi.fn<Fetcher>().mockRejectedValue(new Error('offline'));
 
     const result = await transitionStory({
       token: 'tok',
