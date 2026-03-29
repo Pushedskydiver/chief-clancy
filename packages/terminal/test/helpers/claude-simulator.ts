@@ -19,7 +19,7 @@ export type SimulatorCall = {
 };
 
 /** Per-call response override. Unset fields fall back to defaults. */
-type SimulatorResponse = {
+export type SimulatorResponse = {
   readonly stdout?: string;
   readonly stderr?: string;
   readonly exitCode?: number;
