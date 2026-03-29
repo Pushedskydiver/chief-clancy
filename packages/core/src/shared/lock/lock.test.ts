@@ -191,10 +191,13 @@ describe('isLockStale', () => {
   });
 
   it('returns false at exactly 24 hours (boundary — strictly greater)', () => {
-    const exactly24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const now = Date.now();
+    vi.useFakeTimers({ now });
+    const exactly24h = new Date(now - 24 * 60 * 60 * 1000).toISOString();
     const lock = makeLockData({ startedAt: exactly24h });
 
     expect(isLockStale(lock)).toBe(false);
+    vi.useRealTimers();
   });
 
   it('returns true at 24 hours + 1 second', () => {
