@@ -40,7 +40,51 @@
 
 ### Next up
 
-Phase 12 planning.
+Phase 12: E2E / Smoke Tests.
+
+---
+
+## Phase 12: E2E / Smoke Tests
+
+End-to-end tests that verify the full implement pipeline against real board APIs. Ported from old Clancy repo's `test/e2e/` infrastructure, adapted to the new monorepo's DI architecture. Tests call `runPipeline` directly with real fetchers + Claude simulator.
+
+Location: `packages/terminal/test/e2e/`. File convention: `*.e2e.ts` (not picked up by existing `*.test.ts` vitest configs).
+
+| PR    | Scope                    | Description                                                                                   | Status  |
+| ----- | ------------------------ | --------------------------------------------------------------------------------------------- | ------- |
+| 12.1  | E2E scaffold             | Test location, vitest e2e config, `.env.e2e.example`, port `fetch-timeout.ts` + `git-auth.ts` | Pending |
+| 12.2  | Credential loader + auth | Port `env.ts`, `azdo-auth.ts`, `jira-auth.ts`                                                 | Pending |
+| 12.3  | Ticket factory           | `createTestTicket()` for 6 boards, `generateRunId()`                                          | Pending |
+| 12.4  | Cleanup helpers          | `cleanupTicket()`, `cleanupPullRequest()`, `cleanupBranch()` — per-board teardown             | Pending |
+| 12.5  | Garbage collector        | Orphan cleanup for stale `[QA]` tickets >24h. Standalone CLI + importable                     | Pending |
+| 12.6  | GitHub e2e               | Tracer bullet — first e2e test: `runPipeline` + real GitHub fetcher + Claude simulator        | Pending |
+| 12.7  | Jira e2e                 | Jira board e2e test                                                                           | Pending |
+| 12.8  | Linear e2e               | Linear board e2e test (GraphQL)                                                               | Pending |
+| 12.9  | Shortcut e2e             | Shortcut board e2e test                                                                       | Pending |
+| 12.10 | Notion e2e               | Notion board e2e test                                                                         | Pending |
+| 12.11 | Azure DevOps e2e         | Azure DevOps board e2e test (WIQL)                                                            | Pending |
+| 12.12 | Live schema validation   | Auth-endpoint checks against Zod schemas — API drift detection                                | Pending |
+| 12.13 | CI workflow              | GitHub Actions: weekly schedule, GC pre-step, board matrix, schema validation post-step       | Pending |
+
+### Dependencies
+
+- 12.1 is the foundation — all other PRs depend on it
+- 12.2 depends on 12.1 (credential loading uses e2e config)
+- 12.3 depends on 12.2 (ticket factory needs credentials)
+- 12.4 depends on 12.2 (cleanup needs credentials + auth helpers)
+- 12.5 depends on 12.2 + 12.4 (GC uses credentials + cleanup logic)
+- 12.6 depends on 12.1–12.4 (first real test needs all infrastructure)
+- 12.7–12.11 each depend on 12.6 (follow the tracer bullet pattern)
+- 12.12 depends on 12.2 (schema validation needs credentials)
+- 12.13 depends on 12.5–12.12 (CI wires everything together)
+
+### Key decisions
+
+- **Test entry point:** e2e tests call `runPipeline` directly (same as existing integration tests) with real fetchers instead of mock. No `vi.mock()` of the orchestrator
+- **Claude stays mocked:** `createClaudeSimulator()` from existing test helpers — e2e validates the pipeline, not Claude's code generation
+- **`.e2e.ts` naming convention:** prevents existing vitest configs from picking up e2e files in regular test runs
+- **Credentials:** `.env.e2e` from old repo reusable. `.gitignore` already covers `.env*`. CI uses scoped GitHub Actions secrets
+- **Old repo reference:** `~/Desktop/alex/clancy/test/e2e/` — READ-ONLY. Port + adapt, don't copy verbatim
 
 ---
 

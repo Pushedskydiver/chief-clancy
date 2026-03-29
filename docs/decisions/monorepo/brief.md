@@ -314,9 +314,9 @@ Every doc from the existing Clancy repo gets one of four treatments:
 
 | Action                  | When                | What it means                                                                |
 | ----------------------- | ------------------- | ---------------------------------------------------------------------------- |
-| **Rewrite**             | Phase 1 or Phase 13 | Content is obsolete or fundamentally changed by the monorepo. Written fresh. |
-| **Carry over + update** | Phase 13            | Core content is sound. Paths, commands, and tooling references updated.      |
-| **Carry over + review** | Phase 13            | Content describes behaviour, not internals. Light review for accuracy.       |
+| **Rewrite**             | Phase 1 or Phase 14 | Content is obsolete or fundamentally changed by the monorepo. Written fresh. |
+| **Carry over + update** | Phase 14            | Core content is sound. Paths, commands, and tooling references updated.      |
+| **Carry over + review** | Phase 14            | Content describes behaviour, not internals. Light review for accuracy.       |
 | **Carry over as-is**    | Phase 1             | No changes needed. Historical or conceptual content.                         |
 
 ### Phase 1 docs (scaffold — guides every session from day one)
@@ -330,7 +330,7 @@ Every doc from the existing Clancy repo gets one of four treatments:
 | **docs/GIT.md**         | Carry over + update    | Branch strategy unchanged. Update: pnpm commands, changeset workflow, monorepo PR conventions.                                                                                                             |
 | **docs/DEVELOPMENT.md** | Rewrite                | New development process: phase validation protocol, session pattern, DA reviews, changeset-based releases.                                                                                                 |
 
-### Phase 13 docs (publish prep — describes what was built)
+### Phase 14 docs (publish prep — describes what was built)
 
 | Doc                                | Action              | Notes                                                                                                                                      |
 | ---------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -546,31 +546,53 @@ Already scoped. Ship it.
 
 ---
 
-### Phase 12: Bundle verification
+### Phase 12: E2E / Smoke Tests
+
+End-to-end tests that verify the full implement pipeline against real board APIs. Ported from old Clancy repo's `test/e2e/` infrastructure, adapted to the new monorepo's DI architecture.
+
+| PR    | What                                                                                            | Exit criteria                  |
+| ----- | ----------------------------------------------------------------------------------------------- | ------------------------------ |
+| 12.1  | E2E scaffold: test location, vitest e2e config, `.env.e2e.example`, `fetch-timeout`, `git-auth` | Config runs, helpers compile   |
+| 12.2  | Credential loader + auth helpers: `env.ts`, `azdo-auth.ts`, `jira-auth.ts`                      | Credentials load, skip works   |
+| 12.3  | Ticket factory: `createTestTicket()` for 6 boards, `generateRunId()`                            | Tickets created on live boards |
+| 12.4  | Cleanup helpers: `cleanupTicket()`, `cleanupPullRequest()`, `cleanupBranch()`                   | Resources cleaned up           |
+| 12.5  | Garbage collector: orphan cleanup for stale `[QA]` tickets >24h                                 | Stale tickets removed          |
+| 12.6  | GitHub e2e (tracer bullet): `runPipeline` + real GitHub fetcher + Claude simulator              | Full pipeline passes           |
+| 12.7  | Jira e2e                                                                                        | Full pipeline passes           |
+| 12.8  | Linear e2e (GraphQL)                                                                            | Full pipeline passes           |
+| 12.9  | Shortcut e2e                                                                                    | Full pipeline passes           |
+| 12.10 | Notion e2e                                                                                      | Full pipeline passes           |
+| 12.11 | Azure DevOps e2e (WIQL)                                                                         | Full pipeline passes           |
+| 12.12 | Live schema validation: auth-endpoint checks against Zod schemas                                | No schema drift                |
+| 12.13 | CI workflow: weekly schedule, GC pre-step, board matrix, schema validation                      | Workflow runs green            |
+
+---
+
+### Phase 13: Bundle verification
 
 | PR   | What                                                                                                                   | Exit criteria                |
 | ---- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| 12.1 | esbuild config: configure for cross-package resolution via pnpm symlinks. Build bundles.                               | Bundles build without errors |
-| 12.2 | Bundle comparison: run current Clancy vs new monorepo bundles against same test scenarios. Verify identical behaviour. | Behaviour matches            |
+| 13.1 | esbuild config: configure for cross-package resolution via pnpm symlinks. Build bundles.                               | Bundles build without errors |
+| 13.2 | Bundle comparison: run current Clancy vs new monorepo bundles against same test scenarios. Verify identical behaviour. | Behaviour matches            |
 
 ---
 
-### Phase 13: Wrapper & publish prep
+### Phase 14: Wrapper & publish prep
 
 | PR   | What                                                                                      | Exit criteria                                  |
 | ---- | ----------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| 13.1 | `chief-clancy` wrapper package: `bin/clancy.js`, `package.json`.                          | `npx chief-clancy` delegates to terminal       |
-| 13.2 | Release workflow: GitHub Actions multi-package detection + publish. Tag conventions.      | Workflow triggers correctly on version bumps   |
-| 13.3 | Doc rewrites: ARCHITECTURE.md, VISUAL-ARCHITECTURE.md, TESTING.md, TECHNICAL-REFERENCE.md | Docs accurately describe the built system      |
-| 13.4 | Doc updates: SELF-REVIEW.md, LIFECYCLE.md, COMPARISON.md, roles/_.md, guides/_.md         | All docs reviewed, paths and commands accurate |
+| 14.1 | `chief-clancy` wrapper package: `bin/clancy.js`, `package.json`.                          | `npx chief-clancy` delegates to terminal       |
+| 14.2 | Release workflow: GitHub Actions multi-package detection + publish. Tag conventions.      | Workflow triggers correctly on version bumps   |
+| 14.3 | Doc rewrites: ARCHITECTURE.md, VISUAL-ARCHITECTURE.md, TESTING.md, TECHNICAL-REFERENCE.md | Docs accurately describe the built system      |
+| 14.4 | Doc updates: SELF-REVIEW.md, LIFECYCLE.md, COMPARISON.md, roles/_.md, guides/_.md         | All docs reviewed, paths and commands accurate |
 
 ---
 
-### Phase 14: Publish
+### Phase 15: Publish
 
 | PR   | What                                                                                       | Exit criteria                                   |
 | ---- | ------------------------------------------------------------------------------------------ | ----------------------------------------------- |
-| 14.1 | Create `@chief-clancy` npm org. Publish all packages. Deprecate old `chief-clancy@<1.0.0`. | Packages live on npm. `npx chief-clancy` works. |
+| 15.1 | Create `@chief-clancy` npm org. Publish all packages. Deprecate old `chief-clancy@<1.0.0`. | Packages live on npm. `npx chief-clancy` works. |
 
 ---
 
@@ -591,9 +613,10 @@ Phase 0 (v0.8.24)
        └→ Phase 9 (terminal orchestrator)  ←── depends on 3 + 8
             └→ Phase 10 (terminal hooks)
                  └→ Phase 11 (integration tests)
-                      └→ Phase 12 (bundle verification)
-                           └→ Phase 13 (wrapper & publish prep)
-                                └→ Phase 14 (publish)
+                      └→ Phase 12 (e2e / smoke tests)
+                           └→ Phase 13 (bundle verification)
+                                └→ Phase 14 (wrapper & publish prep)
+                                     └→ Phase 15 (publish)
 ```
 
 ---
@@ -613,9 +636,10 @@ Phase 0 (v0.8.24)
 | Phase 9 (orchestrator)          | 3-5 days            |
 | Phase 10 (hooks)                | 2-3 days            |
 | Phase 11 (integration tests)    | 5-7 days            |
-| Phase 12 (bundle verification)  | 2-3 days            |
-| Phases 13-14 (publish)          | 2-3 days            |
-| **Total**                       | **~35-55 days**     |
+| Phase 12 (e2e / smoke tests)    | 5-7 days            |
+| Phase 13 (bundle verification)  | 2-3 days            |
+| Phases 14-15 (publish)          | 2-3 days            |
+| **Total**                       | **~40-62 days**     |
 
 Not a sprint. Each phase is independently shippable. Any phase can pause without leaving a broken state. ~65 PRs total, each small enough to review in one sitting.
 
@@ -627,7 +651,7 @@ Not a sprint. Each phase is independently shippable. Any phase can pause without
 | --------------------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------- |
 | **Scope creep during rewrite** — "while I'm here, let me also..."                             | High     | Each PR has explicit exit criteria. Phase validation catches scope inflation before work starts.      |
 | **Lint rules too strict in practice** — `no-let` or max-params creates unreadable workarounds | Medium   | Phase 2 (first real code) is the proving ground. Rules adjusted based on real experience, not theory. |
-| **esbuild + pnpm symlink interaction** — untested, could surprise                             | Medium   | Phase 12 is dedicated to bundle verification. Isolated from feature work.                             |
+| **esbuild + pnpm symlink interaction** — untested, could surprise                             | Medium   | Phase 13 is dedicated to bundle verification. Isolated from feature work.                             |
 | **Motivation drift** — 35-55 days is a long time for infrastructure                           | Medium   | Each phase ships independently. Feature work (MCP server) can start after phase 9.                    |
 | **Feature parity gap** — old Clancy keeps working while new one is incomplete                 | Low      | Old repo stays published. No deprecation until new monorepo reaches parity.                           |
 
