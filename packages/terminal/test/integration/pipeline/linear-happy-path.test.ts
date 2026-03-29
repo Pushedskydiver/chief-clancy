@@ -17,7 +17,7 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { jsonResponse, setupPipeline } from './pipeline-helpers.js';
+import { jsonResponse, LINEAR_ENV, setupPipeline } from './pipeline-helpers.js';
 
 // ─── Linear GraphQL mock fetcher ────────────────────────────────────────────
 
@@ -174,14 +174,6 @@ function createLinearFetcher() {
     return new Response('Not Found', { status: 404 });
   };
 }
-
-// ─── Shared env vars ─────────────────────────────────────────────────────────
-
-const LINEAR_ENV = {
-  LINEAR_API_KEY: 'lin_test_key_abc123',
-  LINEAR_TEAM_ID: 'team-uuid-123',
-  CLANCY_LABEL: 'clancy',
-};
 
 // ─── Shared test setup ───────────────────────────────────────────────────────
 

@@ -17,7 +17,7 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { jsonResponse, setupPipeline } from './pipeline-helpers.js';
+import { JIRA_ENV, jsonResponse, setupPipeline } from './pipeline-helpers.js';
 
 // ─── Jira API mock fetcher ──────────────────────────────────────────────────
 
@@ -121,16 +121,6 @@ function createJiraFetcher() {
     );
   };
 }
-
-// ─── Shared env vars ─────────────────────────────────────────────────────────
-
-const JIRA_ENV = {
-  JIRA_BASE_URL: 'https://test.atlassian.net',
-  JIRA_USER: 'test@example.com',
-  JIRA_API_TOKEN: 'test-api-token',
-  JIRA_PROJECT_KEY: 'PROJ',
-  CLANCY_LABEL: 'clancy',
-};
 
 // ─── Shared test setup ───────────────────────────────────────────────────────
 

@@ -17,7 +17,11 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { jsonResponse, setupPipeline } from './pipeline-helpers.js';
+import {
+  jsonResponse,
+  setupPipeline,
+  SHORTCUT_ENV,
+} from './pipeline-helpers.js';
 
 // ─── Shortcut API mock fetcher ──────────────────────────────────────────────
 
@@ -126,13 +130,6 @@ function createShortcutFetcher() {
     );
   };
 }
-
-// ─── Shared env vars ─────────────────────────────────────────────────────────
-
-const SHORTCUT_ENV = {
-  SHORTCUT_API_TOKEN: 'sc-test-token-abc123',
-  CLANCY_LABEL: 'clancy',
-};
 
 // ─── Shared test setup ───────────────────────────────────────────────────────
 

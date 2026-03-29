@@ -17,7 +17,7 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { jsonResponse, setupPipeline } from './pipeline-helpers.js';
+import { jsonResponse, NOTION_ENV, setupPipeline } from './pipeline-helpers.js';
 
 // ─── Notion API mock fetcher ────────────────────────────────────────────────
 
@@ -51,8 +51,6 @@ const NOTION_PAGE = {
     },
   },
 };
-
-const DATABASE_ID = '11223344-5566-7788-99aa-bbccddeeff00';
 
 /** Route definitions for the Notion mock fetcher. */
 const ROUTES: ReadonlyArray<{
@@ -102,14 +100,6 @@ function createNotionFetcher() {
     );
   };
 }
-
-// ─── Shared env vars ─────────────────────────────────────────────────────────
-
-const NOTION_ENV = {
-  NOTION_TOKEN: 'ntn_test_token_abc123',
-  NOTION_DATABASE_ID: DATABASE_ID,
-  CLANCY_LABEL: 'clancy',
-};
 
 // ─── Shared test setup ───────────────────────────────────────────────────────
 

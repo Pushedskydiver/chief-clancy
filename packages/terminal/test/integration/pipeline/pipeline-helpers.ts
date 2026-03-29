@@ -11,7 +11,6 @@ import type {
   CostFs,
   EnvFileSystem,
   LockFs,
-  PipelineDeps,
   PipelineResult,
   ProgressFs,
   QualityFs,
@@ -197,7 +196,6 @@ function createRepoWithRemote(envVars: Record<string, string>): RepoWithRemote {
 
 export type PipelineSetup = {
   readonly repo: RepoWithRemote;
-  readonly deps: PipelineDeps;
   readonly run: (argv?: readonly string[]) => Promise<PipelineResult>;
 };
 
@@ -240,7 +238,7 @@ export function setupPipeline(opts: SetupOpts): PipelineSetup {
     return runPipeline(ctx, deps);
   };
 
-  return { repo, deps, run };
+  return { repo, run };
 }
 
 // ─── Shared response helper ─────────────────────────────────────────────────
@@ -251,4 +249,129 @@ export function jsonResponse(data: unknown, status = 200): Response {
     status,
     headers: { 'Content-Type': 'application/json' },
   });
+}
+
+// ─── Shared board env fixtures ──────────────────────────────────────────────
+
+export const GITHUB_ENV = {
+  GITHUB_TOKEN: 'ghp_test',
+  GITHUB_REPO: 'test-org/test-repo',
+  CLANCY_LABEL: 'clancy',
+};
+
+export const JIRA_ENV = {
+  JIRA_BASE_URL: 'https://test.atlassian.net',
+  JIRA_USER: 'test@example.com',
+  JIRA_API_TOKEN: 'test-api-token',
+  JIRA_PROJECT_KEY: 'PROJ',
+  CLANCY_LABEL: 'clancy',
+};
+
+export const LINEAR_ENV = {
+  LINEAR_API_KEY: 'lin_test_key_abc123',
+  LINEAR_TEAM_ID: 'team-uuid-123',
+  CLANCY_LABEL: 'clancy',
+};
+
+export const SHORTCUT_ENV = {
+  SHORTCUT_API_TOKEN: 'sc-test-token-abc123',
+  CLANCY_LABEL: 'clancy',
+};
+
+export const NOTION_ENV = {
+  NOTION_TOKEN: 'ntn_test_token_abc123',
+  NOTION_DATABASE_ID: '11223344-5566-7788-99aa-bbccddeeff00',
+  CLANCY_LABEL: 'clancy',
+};
+
+export const AZDO_ENV = {
+  AZDO_ORG: 'test-org',
+  AZDO_PROJECT: 'test-project',
+  AZDO_PAT: 'test-pat-abc123',
+  CLANCY_LABEL: 'clancy',
+};
+
+// ─── Shared GitHub mock fetcher ─────────────────────────────────────────────
+
+const GITHUB_USER = { login: 'testuser' };
+
+const GITHUB_ISSUE = {
+  number: 42,
+  title: 'Add widget feature',
+  body: 'Implement the widget.\n\nEpic: #10',
+  state: 'open',
+  assignee: { login: 'testuser' },
+  milestone: null,
+  labels: [{ name: 'clancy' }],
+  pull_request: undefined,
+};
+
+/** Route definitions for the GitHub mock fetcher. */
+const GITHUB_ROUTES: ReadonlyArray<{
+  readonly method: string;
+  readonly pattern: RegExp;
+  readonly respond: (url: string, init?: RequestInit) => Response;
+}> = [
+  {
+    method: 'GET',
+    pattern: /\/user$/,
+    respond: () => jsonResponse(GITHUB_USER),
+  },
+  {
+    method: 'GET',
+    pattern: /\/repos\/[^/]+\/[^/]+$/,
+    respond: () => jsonResponse({ id: 1 }),
+  },
+  {
+    method: 'GET',
+    pattern: /\/repos\/[^/]+\/[^/]+\/issues\?/,
+    respond: () => jsonResponse([GITHUB_ISSUE]),
+  },
+  {
+    method: 'GET',
+    pattern: /\/labels\//,
+    respond: () => jsonResponse({ name: 'clancy' }),
+  },
+  {
+    method: 'POST',
+    pattern: /\/labels$/,
+    respond: () => jsonResponse({ name: 'clancy' }, 201),
+  },
+  {
+    method: 'DELETE',
+    pattern: /\/labels\//,
+    respond: () => jsonResponse([], 200),
+  },
+  {
+    method: 'POST',
+    pattern: /\/pulls$/,
+    respond: () =>
+      jsonResponse(
+        { number: 1, html_url: 'https://github.com/test/pull/1' },
+        201,
+      ),
+  },
+  {
+    method: 'GET',
+    pattern: /\/search\/issues/,
+    respond: () => jsonResponse({ total_count: 0, items: [] }),
+  },
+  {
+    method: 'PATCH',
+    pattern: /\/issues\/\d+$/,
+    respond: () => jsonResponse({ state: 'closed' }),
+  },
+];
+
+/** Create a mock fetcher for the GitHub API with all happy-path routes. */
+export function createGitHubFetcher() {
+  return async (url: string, init?: RequestInit): Promise<Response> => {
+    const method = init?.method ?? 'GET';
+    const match = GITHUB_ROUTES.find(
+      (r) => r.method === method && r.pattern.test(url),
+    );
+    return (
+      match?.respond(url, init) ?? new Response('Not Found', { status: 404 })
+    );
+  };
 }
