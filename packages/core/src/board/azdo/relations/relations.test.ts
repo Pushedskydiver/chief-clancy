@@ -4,30 +4,31 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { fetchBlockerStatus, fetchChildrenStatus } from './relations.js';
 
-const ctx: AzdoCtx = { org: 'org', project: 'proj', pat: 'pat' };
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe('azdo relations', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
   // ─── fetchBlockerStatus ───────────────────────────────────────────────────
 
   describe('fetchBlockerStatus', () => {
     it('returns false when no relations', async () => {
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue(
-          new Response(
-            JSON.stringify({
-              id: 42,
-              fields: { 'System.Title': 'Test' },
-              relations: null,
-            }),
-            { status: 200 },
-          ),
+      const mockFetch = vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: 42,
+            fields: { 'System.Title': 'Test' },
+            relations: null,
+          }),
+          { status: 200 },
         ),
       );
+      const ctx: AzdoCtx = {
+        org: 'org',
+        project: 'proj',
+        pat: 'pat',
+        fetcher: mockFetch,
+      };
 
       const blocked = await fetchBlockerStatus(ctx, 42);
       expect(blocked).toBe(false);
@@ -70,7 +71,12 @@ describe('azdo relations', () => {
             { status: 200 },
           ),
         );
-      vi.stubGlobal('fetch', mockFetch);
+      const ctx: AzdoCtx = {
+        org: 'org',
+        project: 'proj',
+        pat: 'pat',
+        fetcher: mockFetch,
+      };
 
       const blocked = await fetchBlockerStatus(ctx, 42);
       expect(blocked).toBe(true);
@@ -111,24 +117,40 @@ describe('azdo relations', () => {
             { status: 200 },
           ),
         );
-      vi.stubGlobal('fetch', mockFetch);
+      const ctx: AzdoCtx = {
+        org: 'org',
+        project: 'proj',
+        pat: 'pat',
+        fetcher: mockFetch,
+      };
 
       const blocked = await fetchBlockerStatus(ctx, 42);
       expect(blocked).toBe(false);
     });
 
     it('returns false on network failure', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network')));
+      const mockFetch = vi.fn().mockRejectedValue(new Error('network'));
+      const ctx: AzdoCtx = {
+        org: 'org',
+        project: 'proj',
+        pat: 'pat',
+        fetcher: mockFetch,
+      };
 
       const blocked = await fetchBlockerStatus(ctx, 42);
       expect(blocked).toBe(false);
     });
 
     it('returns false when work item not found', async () => {
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue(new Response('', { status: 404 })),
-      );
+      const mockFetch = vi
+        .fn()
+        .mockResolvedValue(new Response('', { status: 404 }));
+      const ctx: AzdoCtx = {
+        org: 'org',
+        project: 'proj',
+        pat: 'pat',
+        fetcher: mockFetch,
+      };
 
       const blocked = await fetchBlockerStatus(ctx, 999);
       expect(blocked).toBe(false);
@@ -170,7 +192,12 @@ describe('azdo relations', () => {
             { status: 200 },
           ),
         );
-      vi.stubGlobal('fetch', mockFetch);
+      const ctx: AzdoCtx = {
+        org: 'org',
+        project: 'proj',
+        pat: 'pat',
+        fetcher: mockFetch,
+      };
 
       const result = await fetchChildrenStatus({
         ctx,
@@ -219,7 +246,12 @@ describe('azdo relations', () => {
             { status: 200 },
           ),
         );
-      vi.stubGlobal('fetch', mockFetch);
+      const ctx: AzdoCtx = {
+        org: 'org',
+        project: 'proj',
+        pat: 'pat',
+        fetcher: mockFetch,
+      };
 
       const result = await fetchChildrenStatus({
         ctx,
@@ -230,7 +262,13 @@ describe('azdo relations', () => {
     });
 
     it('returns undefined on failure', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network')));
+      const mockFetch = vi.fn().mockRejectedValue(new Error('network'));
+      const ctx: AzdoCtx = {
+        org: 'org',
+        project: 'proj',
+        pat: 'pat',
+        fetcher: mockFetch,
+      };
 
       const result = await fetchChildrenStatus({ ctx, parentId: 50 });
       expect(result).toBeUndefined();
@@ -263,7 +301,12 @@ describe('azdo relations', () => {
             { status: 200 },
           ),
         );
-      vi.stubGlobal('fetch', mockFetch);
+      const ctx: AzdoCtx = {
+        org: 'org',
+        project: 'proj',
+        pat: 'pat',
+        fetcher: mockFetch,
+      };
 
       const result = await fetchChildrenStatus({ ctx, parentId: 50 });
       expect(result).toEqual({ total: 1, incomplete: 1 });

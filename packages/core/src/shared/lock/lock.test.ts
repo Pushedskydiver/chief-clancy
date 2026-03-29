@@ -189,6 +189,22 @@ describe('isLockStale', () => {
 
     expect(isLockStale(lock)).toBe(false);
   });
+
+  it('returns false at exactly 24 hours (boundary — strictly greater)', () => {
+    const exactly24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const lock = makeLockData({ startedAt: exactly24h });
+
+    expect(isLockStale(lock)).toBe(false);
+  });
+
+  it('returns true at 24 hours + 1 second', () => {
+    const justOver24h = new Date(
+      Date.now() - (24 * 60 * 60 * 1000 + 1000),
+    ).toISOString();
+    const lock = makeLockData({ startedAt: justOver24h });
+
+    expect(isLockStale(lock)).toBe(true);
+  });
 });
 
 // ─── deleteVerifyAttempt ─────────────────────────────────────────────────────

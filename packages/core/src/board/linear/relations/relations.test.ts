@@ -7,144 +7,129 @@ import {
   transitionIssue,
 } from './relations.js';
 
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 // ── fetchBlockerStatus ────────────────────────────────────────────
 
 describe('fetchBlockerStatus', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
   it('returns true when a blocker is unresolved', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: {
-              issue: {
-                relations: {
-                  nodes: [
-                    {
-                      type: 'blockedBy',
-                      relatedIssue: { state: { type: 'started' } },
-                    },
-                  ],
-                },
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: {
+            issue: {
+              relations: {
+                nodes: [
+                  {
+                    type: 'blockedBy',
+                    relatedIssue: { state: { type: 'started' } },
+                  },
+                ],
               },
             },
-          }),
-      } as Response),
-    );
+          },
+        }),
+    } as Response);
 
-    const result = await fetchBlockerStatus('key', 'issue-uuid');
+    const result = await fetchBlockerStatus('key', 'issue-uuid', mockFetch);
     expect(result).toBe(true);
   });
 
   it('returns false when all blockers are completed', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: {
-              issue: {
-                relations: {
-                  nodes: [
-                    {
-                      type: 'blockedBy',
-                      relatedIssue: { state: { type: 'completed' } },
-                    },
-                  ],
-                },
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: {
+            issue: {
+              relations: {
+                nodes: [
+                  {
+                    type: 'blockedBy',
+                    relatedIssue: { state: { type: 'completed' } },
+                  },
+                ],
               },
             },
-          }),
-      } as Response),
-    );
+          },
+        }),
+    } as Response);
 
-    const result = await fetchBlockerStatus('key', 'issue-uuid');
+    const result = await fetchBlockerStatus('key', 'issue-uuid', mockFetch);
     expect(result).toBe(false);
   });
 
   it('returns false when blockers are canceled', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: {
-              issue: {
-                relations: {
-                  nodes: [
-                    {
-                      type: 'blockedBy',
-                      relatedIssue: { state: { type: 'canceled' } },
-                    },
-                  ],
-                },
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: {
+            issue: {
+              relations: {
+                nodes: [
+                  {
+                    type: 'blockedBy',
+                    relatedIssue: { state: { type: 'canceled' } },
+                  },
+                ],
               },
             },
-          }),
-      } as Response),
-    );
+          },
+        }),
+    } as Response);
 
-    const result = await fetchBlockerStatus('key', 'issue-uuid');
+    const result = await fetchBlockerStatus('key', 'issue-uuid', mockFetch);
     expect(result).toBe(false);
   });
 
   it('ignores non-blockedBy relations', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: {
-              issue: {
-                relations: {
-                  nodes: [
-                    {
-                      type: 'blocks',
-                      relatedIssue: { state: { type: 'started' } },
-                    },
-                  ],
-                },
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: {
+            issue: {
+              relations: {
+                nodes: [
+                  {
+                    type: 'blocks',
+                    relatedIssue: { state: { type: 'started' } },
+                  },
+                ],
               },
             },
-          }),
-      } as Response),
-    );
+          },
+        }),
+    } as Response);
 
-    const result = await fetchBlockerStatus('key', 'issue-uuid');
+    const result = await fetchBlockerStatus('key', 'issue-uuid', mockFetch);
     expect(result).toBe(false);
   });
 
   it('returns false when no relations exist', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: { issue: { relations: { nodes: [] } } },
-          }),
-      } as Response),
-    );
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: { issue: { relations: { nodes: [] } } },
+        }),
+    } as Response);
 
-    const result = await fetchBlockerStatus('key', 'issue-uuid');
+    const result = await fetchBlockerStatus('key', 'issue-uuid', mockFetch);
     expect(result).toBe(false);
   });
 
   it('returns false on API failure', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({ ok: false, status: 500 } as Response),
-    );
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 500,
+    } as Response);
 
-    const result = await fetchBlockerStatus('key', 'issue-uuid');
+    const result = await fetchBlockerStatus('key', 'issue-uuid', mockFetch);
     expect(result).toBe(false);
   });
 });
@@ -152,10 +137,6 @@ describe('fetchBlockerStatus', () => {
 // ── fetchChildrenStatus ───────────────────────────────────────────
 
 describe('fetchChildrenStatus', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
   it('uses Epic: text search when parentIdentifier is provided', async () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
@@ -171,12 +152,12 @@ describe('fetchChildrenStatus', () => {
           },
         }),
     } as Response);
-    vi.stubGlobal('fetch', mockFetch);
 
     const result = await fetchChildrenStatus({
       apiKey: 'key',
       parentId: 'parent-uuid',
       parentIdentifier: 'ENG-42',
+      fetcher: mockFetch,
     });
 
     expect(result).toEqual({ total: 2, incomplete: 1 });
@@ -216,12 +197,12 @@ describe('fetchChildrenStatus', () => {
             },
           }),
       } as Response);
-    vi.stubGlobal('fetch', mockFetch);
 
     const result = await fetchChildrenStatus({
       apiKey: 'key',
       parentId: 'parent-uuid',
       parentIdentifier: 'ENG-42',
+      fetcher: mockFetch,
     });
 
     expect(result).toEqual({ total: 3, incomplete: 2 });
@@ -242,11 +223,11 @@ describe('fetchChildrenStatus', () => {
           },
         }),
     } as Response);
-    vi.stubGlobal('fetch', mockFetch);
 
     const result = await fetchChildrenStatus({
       apiKey: 'key',
       parentId: 'parent-uuid',
+      fetcher: mockFetch,
     });
 
     expect(result).toEqual({ total: 1, incomplete: 0 });
@@ -255,15 +236,13 @@ describe('fetchChildrenStatus', () => {
   });
 
   it('returns undefined on complete API failure', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockRejectedValue(new Error('network error')),
-    );
+    const mockFetch = vi.fn().mockRejectedValue(new Error('network error'));
 
     const result = await fetchChildrenStatus({
       apiKey: 'key',
       parentId: 'parent-uuid',
       parentIdentifier: 'ENG-42',
+      fetcher: mockFetch,
     });
     expect(result).toBeUndefined();
   });
@@ -272,50 +251,42 @@ describe('fetchChildrenStatus', () => {
 // ── lookupWorkflowStateId ─────────────────────────────────────────
 
 describe('lookupWorkflowStateId', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
   it('returns state ID when found', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: {
-              workflowStates: {
-                nodes: [{ id: 'state-uuid' }],
-              },
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: {
+            workflowStates: {
+              nodes: [{ id: 'state-uuid' }],
             },
-          }),
-      } as Response),
-    );
+          },
+        }),
+    } as Response);
 
     const result = await lookupWorkflowStateId({
       apiKey: 'key',
       teamId: 'team-1',
       stateName: 'In Progress',
+      fetcher: mockFetch,
     });
     expect(result).toBe('state-uuid');
   });
 
   it('returns undefined when state not found', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: { workflowStates: { nodes: [] } },
-          }),
-      } as Response),
-    );
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: { workflowStates: { nodes: [] } },
+        }),
+    } as Response);
 
     const result = await lookupWorkflowStateId({
       apiKey: 'key',
       teamId: 'team-1',
       stateName: 'NonExistent',
+      fetcher: mockFetch,
     });
     expect(result).toBeUndefined();
   });

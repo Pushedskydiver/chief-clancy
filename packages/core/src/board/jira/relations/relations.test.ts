@@ -1,15 +1,16 @@
+import type { Fetcher } from '~/c/shared/http/index.js';
+
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { fetchBlockerStatus, fetchChildrenStatus } from './relations.js';
 
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 // ── fetchBlockerStatus ─────────────────────────────────────────────
 
 describe('fetchBlockerStatus', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-    vi.restoreAllMocks();
-  });
-
   it('returns true when a blocker is unresolved', async () => {
     const response = {
       fields: {
@@ -24,19 +25,17 @@ describe('fetchBlockerStatus', () => {
         ],
       },
     };
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValue(
-          new Response(JSON.stringify(response), { status: 200 }),
-        ),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue(
+        new Response(JSON.stringify(response), { status: 200 }),
+      );
 
     const result = await fetchBlockerStatus({
       baseUrl: 'https://example.atlassian.net',
       auth: 'auth',
       key: 'PROJ-42',
+      fetcher: mockFetch,
     });
     expect(result).toBe(true);
   });
@@ -55,19 +54,17 @@ describe('fetchBlockerStatus', () => {
         ],
       },
     };
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValue(
-          new Response(JSON.stringify(response), { status: 200 }),
-        ),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue(
+        new Response(JSON.stringify(response), { status: 200 }),
+      );
 
     const result = await fetchBlockerStatus({
       baseUrl: 'https://example.atlassian.net',
       auth: 'auth',
       key: 'PROJ-42',
+      fetcher: mockFetch,
     });
     expect(result).toBe(false);
   });
@@ -82,13 +79,14 @@ describe('fetchBlockerStatus', () => {
   });
 
   it('returns false on network error', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network')));
+    const mockFetch = vi.fn<Fetcher>().mockRejectedValue(new Error('network'));
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const result = await fetchBlockerStatus({
       baseUrl: 'https://example.atlassian.net',
       auth: 'auth',
       key: 'PROJ-42',
+      fetcher: mockFetch,
     });
     expect(result).toBe(false);
   });
@@ -97,57 +95,48 @@ describe('fetchBlockerStatus', () => {
 // ── fetchChildrenStatus ────────────────────────────────────────────
 
 describe('fetchChildrenStatus', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-    vi.restoreAllMocks();
-  });
-
   it('returns children count from Epic text search', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        // Total query
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ total: 3 }), { status: 200 }),
-        )
-        // Incomplete query
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ total: 1 }), { status: 200 }),
-        ),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      // Total query
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ total: 3 }), { status: 200 }),
+      )
+      // Incomplete query
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ total: 1 }), { status: 200 }),
+      );
 
     const result = await fetchChildrenStatus({
       baseUrl: 'https://example.atlassian.net',
       auth: 'auth',
       parentKey: 'PROJ-100',
+      fetcher: mockFetch,
     });
     expect(result).toEqual({ total: 3, incomplete: 1 });
   });
 
   it('falls back to parent JQL when Epic returns 0', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        // Epic total → 0
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ total: 0 }), { status: 200 }),
-        )
-        // Parent total → 2
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ total: 2 }), { status: 200 }),
-        )
-        // Parent incomplete → 1
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ total: 1 }), { status: 200 }),
-        ),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      // Epic total → 0
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ total: 0 }), { status: 200 }),
+      )
+      // Parent total → 2
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ total: 2 }), { status: 200 }),
+      )
+      // Parent incomplete → 1
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ total: 1 }), { status: 200 }),
+      );
 
     const result = await fetchChildrenStatus({
       baseUrl: 'https://example.atlassian.net',
       auth: 'auth',
       parentKey: 'PROJ-100',
+      fetcher: mockFetch,
     });
     expect(result).toEqual({ total: 2, incomplete: 1 });
   });
@@ -162,13 +151,14 @@ describe('fetchChildrenStatus', () => {
   });
 
   it('returns undefined on network error', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network')));
+    const mockFetch = vi.fn<Fetcher>().mockRejectedValue(new Error('network'));
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const result = await fetchChildrenStatus({
       baseUrl: 'https://example.atlassian.net',
       auth: 'auth',
       parentKey: 'PROJ-100',
+      fetcher: mockFetch,
     });
     expect(result).toBeUndefined();
   });

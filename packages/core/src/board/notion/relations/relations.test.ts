@@ -1,28 +1,15 @@
 import type { NotionCtx } from '../api/index.js';
 
-import { retryFetch } from '~/c/shared/http/index.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { fetchBlockerStatus, fetchChildrenStatus } from './relations.js';
 
-vi.mock('~/c/shared/http/retry-fetch/retry-fetch.js', () => ({
-  retryFetch: vi.fn(),
-}));
-
 const TOKEN = 'ntn_test_token';
 const DATABASE_ID = 'db-uuid-1234';
 const PAGE_ID = 'ab12cd34-5678-9abc-def0-123456789abc';
-const ctx: NotionCtx = { token: TOKEN, databaseId: DATABASE_ID };
 
 function mockResponse(body: unknown, status = 200): Response {
-  return {
-    ok: status >= 200 && status < 300,
-    status,
-    json: () => Promise.resolve(body),
-    headers: new Headers(),
-    arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
-    text: () => Promise.resolve(JSON.stringify(body)),
-  } as unknown as Response;
+  return new Response(JSON.stringify(body), { status });
 }
 
 function makePage(opts: {
@@ -44,19 +31,25 @@ function makePage(opts: {
   };
 }
 
-describe('notion relations', () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-    vi.clearAllMocks();
-  });
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
+describe('notion relations', () => {
   // ─── fetchBlockerStatus ─────────────────────────────────────────────────
 
   describe('fetchBlockerStatus', () => {
     it('returns false when page has no blockers', async () => {
-      vi.mocked(retryFetch).mockResolvedValue(
-        mockResponse(makePage({ id: PAGE_ID, title: 'Unblocked' })),
-      );
+      const mockFetch = vi
+        .fn()
+        .mockResolvedValue(
+          mockResponse(makePage({ id: PAGE_ID, title: 'Unblocked' })),
+        );
+      const ctx: NotionCtx = {
+        token: TOKEN,
+        databaseId: DATABASE_ID,
+        fetcher: mockFetch,
+      };
 
       const result = await fetchBlockerStatus({
         ctx,
@@ -84,9 +77,15 @@ describe('notion relations', () => {
         statusName: 'In Progress',
       });
 
-      vi.mocked(retryFetch)
+      const mockFetch = vi
+        .fn()
         .mockResolvedValueOnce(mockResponse(page))
         .mockResolvedValueOnce(mockResponse(blockerPage));
+      const ctx: NotionCtx = {
+        token: TOKEN,
+        databaseId: DATABASE_ID,
+        fetcher: mockFetch,
+      };
 
       const result = await fetchBlockerStatus({
         ctx,
@@ -114,9 +113,15 @@ describe('notion relations', () => {
         statusName: 'Done',
       });
 
-      vi.mocked(retryFetch)
+      const mockFetch = vi
+        .fn()
         .mockResolvedValueOnce(mockResponse(page))
         .mockResolvedValueOnce(mockResponse(blockerPage));
+      const ctx: NotionCtx = {
+        token: TOKEN,
+        databaseId: DATABASE_ID,
+        fetcher: mockFetch,
+      };
 
       const result = await fetchBlockerStatus({
         ctx,
@@ -146,7 +151,8 @@ describe('notion relations', () => {
         statusName: 'In Progress',
       });
 
-      vi.mocked(retryFetch)
+      const mockFetch = vi
+        .fn()
         // fetchPage (the blocked page)
         .mockResolvedValueOnce(mockResponse(page))
         // queryAllPages (to find blockers)
@@ -157,6 +163,11 @@ describe('notion relations', () => {
             next_cursor: null,
           }),
         );
+      const ctx: NotionCtx = {
+        token: TOKEN,
+        databaseId: DATABASE_ID,
+        fetcher: mockFetch,
+      };
 
       const result = await fetchBlockerStatus({
         ctx,
@@ -167,7 +178,12 @@ describe('notion relations', () => {
     });
 
     it('returns false on network failure', async () => {
-      vi.mocked(retryFetch).mockRejectedValue(new Error('network'));
+      const mockFetch = vi.fn().mockRejectedValue(new Error('network'));
+      const ctx: NotionCtx = {
+        token: TOKEN,
+        databaseId: DATABASE_ID,
+        fetcher: mockFetch,
+      };
 
       const result = await fetchBlockerStatus({
         ctx,
@@ -200,13 +216,18 @@ describe('notion relations', () => {
         extra: epicExtra,
       });
 
-      vi.mocked(retryFetch).mockResolvedValue(
+      const mockFetch = vi.fn().mockResolvedValue(
         mockResponse({
           results: [child1, child2],
           has_more: false,
           next_cursor: null,
         }),
       );
+      const ctx: NotionCtx = {
+        token: TOKEN,
+        databaseId: DATABASE_ID,
+        fetcher: mockFetch,
+      };
 
       const result = await fetchChildrenStatus({
         ctx,
@@ -225,7 +246,8 @@ describe('notion relations', () => {
         title: 'Child 1',
       });
 
-      vi.mocked(retryFetch)
+      const mockFetch = vi
+        .fn()
         // queryAllPages for description search (no matches)
         .mockResolvedValueOnce(
           mockResponse({
@@ -250,6 +272,11 @@ describe('notion relations', () => {
             next_cursor: null,
           }),
         );
+      const ctx: NotionCtx = {
+        token: TOKEN,
+        databaseId: DATABASE_ID,
+        fetcher: mockFetch,
+      };
 
       const result = await fetchChildrenStatus({
         ctx,
@@ -262,7 +289,12 @@ describe('notion relations', () => {
     });
 
     it('returns undefined on failure', async () => {
-      vi.mocked(retryFetch).mockRejectedValue(new Error('network'));
+      const mockFetch = vi.fn().mockRejectedValue(new Error('network'));
+      const ctx: NotionCtx = {
+        token: TOKEN,
+        databaseId: DATABASE_ID,
+        fetcher: mockFetch,
+      };
 
       const result = await fetchChildrenStatus({
         ctx,
@@ -275,13 +307,19 @@ describe('notion relations', () => {
     });
 
     it('returns undefined when no children match via either mode', async () => {
-      vi.mocked(retryFetch)
+      const mockFetch = vi
+        .fn()
         .mockResolvedValueOnce(
           mockResponse({ results: [], has_more: false, next_cursor: null }),
         )
         .mockResolvedValueOnce(
           mockResponse({ results: [], has_more: false, next_cursor: null }),
         );
+      const ctx: NotionCtx = {
+        token: TOKEN,
+        databaseId: DATABASE_ID,
+        fetcher: mockFetch,
+      };
 
       const result = await fetchChildrenStatus({
         ctx,

@@ -147,6 +147,57 @@ describe('fetchTicket', () => {
     expect(result).toBeUndefined();
   });
 
+  it('walks 10 blocked candidates to find the last unblocked one', async () => {
+    const blocked = Array.from({ length: 9 }, (_, i) =>
+      makeTicket({ key: `PROJ-${i + 1}` }),
+    );
+    const unblocked = makeTicket({ key: 'PROJ-10' });
+    const board = makeBoard({
+      fetchTickets: vi.fn(() => Promise.resolve([...blocked, unblocked])),
+      fetchBlockerStatus: vi
+        .fn()
+        .mockResolvedValueOnce(true)
+        .mockResolvedValueOnce(true)
+        .mockResolvedValueOnce(true)
+        .mockResolvedValueOnce(true)
+        .mockResolvedValueOnce(true)
+        .mockResolvedValueOnce(true)
+        .mockResolvedValueOnce(true)
+        .mockResolvedValueOnce(true)
+        .mockResolvedValueOnce(true)
+        .mockResolvedValueOnce(false),
+    });
+
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const result = await fetchTicket(board);
+    log.mockRestore();
+
+    expect(result).toEqual(unblocked);
+    expect(board.fetchBlockerStatus).toHaveBeenCalledTimes(10);
+  });
+
+  it('handles interleaved plan-label and blocked candidates', async () => {
+    const plan = makeTicket({ key: 'PROJ-1', labels: ['clancy:plan'] });
+    const blocked = makeTicket({ key: 'PROJ-2' });
+    const target = makeTicket({ key: 'PROJ-3' });
+    const board = makeBoard({
+      fetchTickets: vi.fn(() => Promise.resolve([plan, blocked, target])),
+      fetchBlockerStatus: vi
+        .fn()
+        .mockResolvedValueOnce(true)
+        .mockResolvedValueOnce(false),
+      sharedEnv: vi.fn(() => ({ CLANCY_LABEL_PLAN: 'clancy:plan' })),
+    });
+
+    const log = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const result = await fetchTicket(board);
+    log.mockRestore();
+
+    expect(result).toEqual(target);
+    // Plan ticket skipped without blocker check; blocked and target both checked
+    expect(board.fetchBlockerStatus).toHaveBeenCalledTimes(2);
+  });
+
   it('returns undefined when no candidates available', async () => {
     const board = makeBoard({
       fetchTickets: vi.fn(() => Promise.resolve([])),

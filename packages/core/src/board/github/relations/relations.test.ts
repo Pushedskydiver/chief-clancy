@@ -1,3 +1,5 @@
+import type { Fetcher } from '~/c/shared/http/index.js';
+
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -5,6 +7,10 @@ import {
   fetchChildrenStatus,
   parseBlockerRefs,
 } from './relations.js';
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 // ── parseBlockerRefs ───────────────────────────────────────────────
 
@@ -32,10 +38,6 @@ describe('parseBlockerRefs', () => {
 // ── fetchBlockerStatus ─────────────────────────────────────────────
 
 describe('fetchBlockerStatus', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
   it('returns false when no blockers in body', async () => {
     const result = await fetchBlockerStatus({
       token: 'tok',
@@ -47,40 +49,36 @@ describe('fetchBlockerStatus', () => {
   });
 
   it('returns true when a blocker is still open', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValue(
-          new Response(JSON.stringify({ state: 'open' }), { status: 200 }),
-        ),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ state: 'open' }), { status: 200 }),
+      );
 
     const result = await fetchBlockerStatus({
       token: 'tok',
       repo: 'owner/repo',
       issueNumber: 1,
       body: 'Blocked by #10',
+      fetcher: mockFetch,
     });
 
     expect(result).toBe(true);
   });
 
   it('returns false when all blockers are closed', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValue(
-          new Response(JSON.stringify({ state: 'closed' }), { status: 200 }),
-        ),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ state: 'closed' }), { status: 200 }),
+      );
 
     const result = await fetchBlockerStatus({
       token: 'tok',
       repo: 'owner/repo',
       issueNumber: 1,
       body: 'Blocked by #10',
+      fetcher: mockFetch,
     });
 
     expect(result).toBe(false);
@@ -97,13 +95,14 @@ describe('fetchBlockerStatus', () => {
   });
 
   it('returns false on network error', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network')));
+    const mockFetch = vi.fn<Fetcher>().mockRejectedValue(new Error('network'));
 
     const result = await fetchBlockerStatus({
       token: 'tok',
       repo: 'owner/repo',
       issueNumber: 1,
       body: 'Blocked by #10',
+      fetcher: mockFetch,
     });
 
     expect(result).toBe(false);
@@ -113,80 +112,70 @@ describe('fetchBlockerStatus', () => {
 // ── fetchChildrenStatus ────────────────────────────────────────────
 
 describe('fetchChildrenStatus', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
   it('returns children count from Epic text search', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        // All children query
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ total_count: 3 }), { status: 200 }),
-        )
-        // Open children query
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ total_count: 1 }), { status: 200 }),
-        ),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      // All children query
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ total_count: 3 }), { status: 200 }),
+      )
+      // Open children query
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ total_count: 1 }), { status: 200 }),
+      );
 
     const result = await fetchChildrenStatus({
       token: 'tok',
       repo: 'owner/repo',
       parentNumber: 5,
+      fetcher: mockFetch,
     });
 
     expect(result).toEqual({ total: 3, incomplete: 1 });
   });
 
   it('falls back to Parent text search when Epic returns 0', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        // Epic: all returns 0
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ total_count: 0 }), { status: 200 }),
-        )
-        // Parent: all returns 2
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ total_count: 2 }), { status: 200 }),
-        )
-        // Parent: open returns 1
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ total_count: 1 }), { status: 200 }),
-        ),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      // Epic: all returns 0
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ total_count: 0 }), { status: 200 }),
+      )
+      // Parent: all returns 2
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ total_count: 2 }), { status: 200 }),
+      )
+      // Parent: open returns 1
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ total_count: 1 }), { status: 200 }),
+      );
 
     const result = await fetchChildrenStatus({
       token: 'tok',
       repo: 'owner/repo',
       parentNumber: 5,
+      fetcher: mockFetch,
     });
 
     expect(result).toEqual({ total: 2, incomplete: 1 });
   });
 
   it('returns {1, 1} when both return 0 but currentTicketKey is set', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ total_count: 0 }), { status: 200 }),
-        )
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ total_count: 0 }), { status: 200 }),
-        ),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ total_count: 0 }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ total_count: 0 }), { status: 200 }),
+      );
 
     const result = await fetchChildrenStatus({
       token: 'tok',
       repo: 'owner/repo',
       parentNumber: 5,
       currentTicketKey: '#99',
+      fetcher: mockFetch,
     });
 
     expect(result).toEqual({ total: 1, incomplete: 1 });
@@ -202,12 +191,13 @@ describe('fetchChildrenStatus', () => {
   });
 
   it('returns undefined on network error', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network')));
+    const mockFetch = vi.fn<Fetcher>().mockRejectedValue(new Error('network'));
 
     const result = await fetchChildrenStatus({
       token: 'tok',
       repo: 'owner/repo',
       parentNumber: 5,
+      fetcher: mockFetch,
     });
 
     expect(result).toBeUndefined();
