@@ -7,7 +7,7 @@
 ### What was done
 
 - **12.4** (#132): Cleanup helpers — `cleanupTicket()` dispatch for 6 boards, `cleanupPullRequest()`, `cleanupBranch()`. Split into 8 files matching ticket-factory pattern. Exported `E2EBoard` from `env.ts`, updated ticket-factory to import it. 6 tests.
-- **12.5** (#TBD): Garbage collector — `cleanupOrphanTickets()` dispatch for 6 boards + CLI entry point (`npx tsx gc.ts`). Searches for `[QA]` tickets >24h and closes/deletes them. GitHub GC also cleans orphan PRs and `feature/*` branches. Split into 8 files. 3 tests.
+- **12.5** (#133): Garbage collector — `cleanupOrphanTickets()` dispatch for 6 boards + CLI entry point (`npx tsx gc.ts`). Searches for `[QA]` tickets >24h and closes/deletes them. GitHub GC also cleans orphan PRs and `feature/*` branches. Split into 8 files. 3 tests.
 
 ### Key decisions
 
