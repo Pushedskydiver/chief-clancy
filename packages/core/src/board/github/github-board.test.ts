@@ -1,4 +1,5 @@
 import type { GitHubEnv } from '~/c/schemas/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -33,7 +34,6 @@ describe('parseEpicRef', () => {
 
 describe('createGitHubBoard', () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
@@ -97,21 +97,17 @@ describe('createGitHubBoard', () => {
       },
     ];
 
-    // Mock for resolveUsername (/user)
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ login: 'octocat' }), { status: 200 }),
-        )
-        // Mock for fetchIssues
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify(issues), { status: 200 }),
-        ),
-    );
+    // Mock for resolveUsername (/user) then fetchIssues
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ login: 'octocat' }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(issues), { status: 200 }),
+      );
 
-    const board = createGitHubBoard(baseEnv);
+    const board = createGitHubBoard(baseEnv, mockFetch);
     const tickets = await board.fetchTickets({});
 
     expect(tickets).toHaveLength(1);
@@ -138,19 +134,16 @@ describe('createGitHubBoard', () => {
       },
     ];
 
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ login: 'user' }), { status: 200 }),
-        )
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify(issues), { status: 200 }),
-        ),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ login: 'user' }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(issues), { status: 200 }),
+      );
 
-    const board = createGitHubBoard(baseEnv);
+    const board = createGitHubBoard(baseEnv, mockFetch);
     const tickets = await board.fetchTickets({});
 
     expect(tickets[0].parentInfo).toBe('Sprint 1');
@@ -162,38 +155,30 @@ describe('createGitHubBoard', () => {
       { number: 2, title: 'Second', body: '', labels: [] },
     ];
 
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ login: 'user' }), { status: 200 }),
-        )
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify(issues), { status: 200 }),
-        ),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ login: 'user' }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(issues), { status: 200 }),
+      );
 
-    const board = createGitHubBoard(baseEnv);
+    const board = createGitHubBoard(baseEnv, mockFetch);
     const ticket = await board.fetchTicket({});
 
     expect(ticket?.key).toBe('#1');
   });
 
   it('fetchTicket returns undefined when no issues', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ login: 'user' }), { status: 200 }),
-        )
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify([]), { status: 200 }),
-        ),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ login: 'user' }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(new Response(JSON.stringify([]), { status: 200 }));
 
-    const board = createGitHubBoard(baseEnv);
+    const board = createGitHubBoard(baseEnv, mockFetch);
     const ticket = await board.fetchTicket({});
 
     expect(ticket).toBeUndefined();
@@ -212,16 +197,13 @@ describe('createGitHubBoard', () => {
   });
 
   it('fetchBlockerStatus delegates to relations module', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValue(
-          new Response(JSON.stringify({ state: 'open' }), { status: 200 }),
-        ),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ state: 'open' }), { status: 200 }),
+      );
 
-    const board = createGitHubBoard(baseEnv);
+    const board = createGitHubBoard(baseEnv, mockFetch);
     const result = await board.fetchBlockerStatus({
       key: '#42',
       title: '',
@@ -239,19 +221,16 @@ describe('createGitHubBoard', () => {
   });
 
   it('fetchChildrenStatus delegates to relations module', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ total_count: 3 }), { status: 200 }),
-        )
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ total_count: 1 }), { status: 200 }),
-        ),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ total_count: 3 }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ total_count: 1 }), { status: 200 }),
+      );
 
-    const board = createGitHubBoard(baseEnv);
+    const board = createGitHubBoard(baseEnv, mockFetch);
     const result = await board.fetchChildrenStatus('#5');
 
     expect(result).toEqual({ total: 3, incomplete: 1 });
@@ -259,14 +238,13 @@ describe('createGitHubBoard', () => {
 
   it('ensureLabel creates the label if it does not exist', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       // GET label → 404
       .mockResolvedValueOnce({ ok: false, status: 404 } as Response)
       // POST create → 201
       .mockResolvedValueOnce({ ok: true, status: 201 } as Response);
-    vi.stubGlobal('fetch', mockFetch);
 
-    const board = createGitHubBoard(baseEnv);
+    const board = createGitHubBoard(baseEnv, mockFetch);
     await board.ensureLabel('clancy:build');
 
     expect(mockFetch).toHaveBeenCalledTimes(2);
@@ -277,12 +255,11 @@ describe('createGitHubBoard', () => {
   });
 
   it('ensureLabel skips creation if label already exists', async () => {
-    const mockFetch = vi.fn().mockResolvedValueOnce({
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValueOnce({
       ok: true,
     } as Response);
-    vi.stubGlobal('fetch', mockFetch);
 
-    const board = createGitHubBoard(baseEnv);
+    const board = createGitHubBoard(baseEnv, mockFetch);
     await board.ensureLabel('existing');
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -290,14 +267,13 @@ describe('createGitHubBoard', () => {
 
   it('addLabel adds a label to an issue', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       // ensureLabel GET → exists
       .mockResolvedValueOnce({ ok: true } as Response)
       // addLabel POST → success
       .mockResolvedValueOnce({ ok: true } as Response);
-    vi.stubGlobal('fetch', mockFetch);
 
-    const board = createGitHubBoard(baseEnv);
+    const board = createGitHubBoard(baseEnv, mockFetch);
     await board.addLabel('#42', 'clancy:build');
 
     expect(mockFetch).toHaveBeenCalledTimes(2);
@@ -305,12 +281,11 @@ describe('createGitHubBoard', () => {
   });
 
   it('removeLabel removes a label from an issue', async () => {
-    const mockFetch = vi.fn().mockResolvedValueOnce({
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValueOnce({
       ok: true,
     } as Response);
-    vi.stubGlobal('fetch', mockFetch);
 
-    const board = createGitHubBoard(baseEnv);
+    const board = createGitHubBoard(baseEnv, mockFetch);
     await board.removeLabel('#42', 'clancy:build');
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -323,14 +298,13 @@ describe('createGitHubBoard', () => {
   });
 
   it('removeLabel ignores 404 (label not on issue)', async () => {
-    const mockFetch = vi.fn().mockResolvedValueOnce({
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValueOnce({
       ok: false,
       status: 404,
     } as Response);
-    vi.stubGlobal('fetch', mockFetch);
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    const board = createGitHubBoard(baseEnv);
+    const board = createGitHubBoard(baseEnv, mockFetch);
     await board.removeLabel('#42', 'missing');
 
     expect(warn).not.toHaveBeenCalled();
@@ -339,7 +313,7 @@ describe('createGitHubBoard', () => {
   it('caches the username across multiple fetchTickets calls', async () => {
     const issues = [{ number: 1, title: 'T', body: '', labels: [] }];
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       // First call: resolveUsername + fetchIssues
       .mockResolvedValueOnce(
         new Response(JSON.stringify({ login: 'octocat' }), { status: 200 }),
@@ -351,9 +325,8 @@ describe('createGitHubBoard', () => {
       .mockResolvedValueOnce(
         new Response(JSON.stringify(issues), { status: 200 }),
       );
-    vi.stubGlobal('fetch', mockFetch);
 
-    const board = createGitHubBoard(baseEnv);
+    const board = createGitHubBoard(baseEnv, mockFetch);
     await board.fetchTickets({});
     await board.fetchTickets({});
 

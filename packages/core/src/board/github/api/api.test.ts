@@ -1,3 +1,5 @@
+import type { Fetcher } from '~/c/shared/http/index.js';
+
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -56,48 +58,39 @@ describe('isValidRepo', () => {
 
 describe('pingGitHub', () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('returns ok on successful response', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
-      } as Response),
-    );
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: true,
+      arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
+    } as Response);
 
-    const result = await pingGitHub('tok_123', 'owner/repo');
+    const result = await pingGitHub('tok_123', 'owner/repo', mockFetch);
     expect(result).toEqual({ ok: true });
   });
 
   it('returns auth error on 401', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: false,
-        status: 401,
-        arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
-      } as Response),
-    );
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: false,
+      status: 401,
+      arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
+    } as Response);
 
-    const result = await pingGitHub('bad_token', 'owner/repo');
+    const result = await pingGitHub('bad_token', 'owner/repo', mockFetch);
     expect(result.ok).toBe(false);
     expect(result.error).toContain('auth failed');
   });
 
   it('returns not found on 404', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: false,
-        status: 404,
-        arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
-      } as Response),
-    );
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: false,
+      status: 404,
+      arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
+    } as Response);
 
-    const result = await pingGitHub('tok_123', 'owner/missing');
+    const result = await pingGitHub('tok_123', 'owner/missing', mockFetch);
     expect(result.ok).toBe(false);
     expect(result.error).toContain('not found');
   });
@@ -107,32 +100,28 @@ describe('pingGitHub', () => {
 
 describe('resolveUsername', () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
   it('returns cached username without fetching', async () => {
     const cache = { get: () => 'cached-user', store: vi.fn() };
-    vi.stubGlobal('fetch', vi.fn());
+    const mockFetch = vi.fn<Fetcher>();
 
-    const result = await resolveUsername('tok', cache);
+    const result = await resolveUsername('tok', cache, mockFetch);
 
     expect(result).toBe('cached-user');
-    expect(fetch).not.toHaveBeenCalled();
+    expect(mockFetch).not.toHaveBeenCalled();
   });
 
   it('fetches and caches the username from /user', async () => {
     const cache = { get: () => undefined, store: vi.fn() };
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValue(
-          new Response(JSON.stringify({ login: 'octocat' }), { status: 200 }),
-        ),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ login: 'octocat' }), { status: 200 }),
+      );
 
-    const result = await resolveUsername('tok', cache);
+    const result = await resolveUsername('tok', cache, mockFetch);
 
     expect(result).toBe('octocat');
     expect(cache.store).toHaveBeenCalledWith('octocat');
@@ -140,13 +129,12 @@ describe('resolveUsername', () => {
 
   it('falls back to @me on non-OK response', async () => {
     const cache = { get: () => undefined, store: vi.fn() };
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(new Response('', { status: 401 })),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue(new Response('', { status: 401 }));
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    const result = await resolveUsername('bad_tok', cache);
+    const result = await resolveUsername('bad_tok', cache, mockFetch);
 
     expect(result).toBe('@me');
     expect(cache.store).toHaveBeenCalledWith('@me');
@@ -154,30 +142,26 @@ describe('resolveUsername', () => {
 
   it('falls back to @me on network error', async () => {
     const cache = { get: () => undefined, store: vi.fn() };
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockRejectedValue(new Error('ECONNREFUSED')),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockRejectedValue(new Error('ECONNREFUSED'));
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    const result = await resolveUsername('tok', cache);
+    const result = await resolveUsername('tok', cache, mockFetch);
 
     expect(result).toBe('@me');
   });
 
   it('falls back to @me on unexpected response shape', async () => {
     const cache = { get: () => undefined, store: vi.fn() };
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValue(
-          new Response(JSON.stringify({ wrong: 'shape' }), { status: 200 }),
-        ),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ wrong: 'shape' }), { status: 200 }),
+      );
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    const result = await resolveUsername('tok', cache);
+    const result = await resolveUsername('tok', cache, mockFetch);
 
     expect(result).toBe('@me');
   });
@@ -200,11 +184,15 @@ describe('fetchIssues', () => {
         labels: [{ name: 'bug' }],
       },
     ];
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify(issues), { status: 200 }),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue(new Response(JSON.stringify(issues), { status: 200 }));
 
-    const result = await fetchIssues({ token: 'tok', repo: 'owner/repo' });
+    const result = await fetchIssues({
+      token: 'tok',
+      repo: 'owner/repo',
+      fetcher: mockFetch,
+    });
 
     expect(result).toHaveLength(1);
     expect(result[0]).toEqual({
@@ -228,11 +216,15 @@ describe('fetchIssues', () => {
         labels: [],
       },
     ];
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify(items), { status: 200 }),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue(new Response(JSON.stringify(items), { status: 200 }));
 
-    const result = await fetchIssues({ token: 'tok', repo: 'owner/repo' });
+    const result = await fetchIssues({
+      token: 'tok',
+      repo: 'owner/repo',
+      fetcher: mockFetch,
+    });
 
     expect(result).toHaveLength(1);
     expect(result[0].key).toBe('#1');
@@ -248,14 +240,15 @@ describe('fetchIssues', () => {
         labels: [{ name: 'clancy:hitl' }],
       },
     ];
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify(items), { status: 200 }),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue(new Response(JSON.stringify(items), { status: 200 }));
 
     const result = await fetchIssues({
       token: 'tok',
       repo: 'owner/repo',
       excludeHitl: true,
+      fetcher: mockFetch,
     });
 
     expect(result).toHaveLength(1);
@@ -269,40 +262,46 @@ describe('fetchIssues', () => {
       body: '',
       labels: [],
     }));
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify(items), { status: 200 }),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue(new Response(JSON.stringify(items), { status: 200 }));
 
     const result = await fetchIssues({
       token: 'tok',
       repo: 'owner/repo',
       limit: 2,
+      fetcher: mockFetch,
     });
 
     expect(result).toHaveLength(2);
   });
 
   it('returns empty array on fetch failure', async () => {
-    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('network'));
+    const mockFetch = vi.fn<Fetcher>().mockRejectedValue(new Error('network'));
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    const result = await fetchIssues({ token: 'tok', repo: 'owner/repo' });
+    const result = await fetchIssues({
+      token: 'tok',
+      repo: 'owner/repo',
+      fetcher: mockFetch,
+    });
 
     expect(result).toEqual([]);
   });
 
   it('passes label as query parameter when provided', async () => {
-    const fetchSpy = vi
-      .spyOn(globalThis, 'fetch')
+    const mockFetch = vi
+      .fn<Fetcher>()
       .mockResolvedValue(new Response('[]', { status: 200 }));
 
     await fetchIssues({
       token: 'tok',
       repo: 'owner/repo',
       label: 'clancy:build',
+      fetcher: mockFetch,
     });
 
-    const url = fetchSpy.mock.calls[0][0] as string;
+    const url = mockFetch.mock.calls[0][0] as string;
     expect(url).toContain('labels=clancy%3Abuild');
   });
 });
@@ -311,25 +310,34 @@ describe('fetchIssues', () => {
 
 describe('closeIssue', () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('returns true on successful close', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true } as Response));
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue({ ok: true } as Response);
 
     const result = await closeIssue({
       token: 'tok',
       repo: 'owner/repo',
       issueNumber: 42,
+      fetcher: mockFetch,
     });
     expect(result).toBe(true);
   });
 
   it('sends PATCH with closed state', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({ ok: true } as Response);
-    vi.stubGlobal('fetch', mockFetch);
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue({ ok: true } as Response);
 
-    await closeIssue({ token: 'tok', repo: 'owner/repo', issueNumber: 42 });
+    await closeIssue({
+      token: 'tok',
+      repo: 'owner/repo',
+      issueNumber: 42,
+      fetcher: mockFetch,
+    });
 
     expect(mockFetch).toHaveBeenCalledWith(
       'https://api.github.com/repos/owner/repo/issues/42',
@@ -350,12 +358,13 @@ describe('closeIssue', () => {
   });
 
   it('returns false on network error', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network')));
+    const mockFetch = vi.fn<Fetcher>().mockRejectedValue(new Error('network'));
 
     const result = await closeIssue({
       token: 'tok',
       repo: 'owner/repo',
       issueNumber: 42,
+      fetcher: mockFetch,
     });
     expect(result).toBe(false);
   });

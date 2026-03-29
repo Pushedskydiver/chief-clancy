@@ -1,4 +1,5 @@
 import type { LinearEnv } from '~/c/schemas/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -17,7 +18,7 @@ function makeEnv(overrides?: Partial<LinearEnv>): LinearEnv {
 
 describe('createLinearBoard', () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('returns an object with all Board methods', () => {
@@ -53,47 +54,41 @@ describe('createLinearBoard', () => {
   });
 
   it('ping delegates to Linear API', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ data: { viewer: { id: 'user-123' } } }),
-      } as Response),
-    );
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ data: { viewer: { id: 'user-123' } } }),
+    } as Response);
 
-    const board = createLinearBoard(makeEnv());
+    const board = createLinearBoard(makeEnv(), mockFetch);
     const result = await board.ping();
     expect(result.ok).toBe(true);
   });
 
   it('fetchTickets maps Linear issues to FetchedTicket shape', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: {
-              viewer: {
-                assignedIssues: {
-                  nodes: [
-                    {
-                      id: 'uuid-1',
-                      identifier: 'ENG-42',
-                      title: 'Fix bug',
-                      description: 'Broken',
-                      parent: { identifier: 'ENG-10' },
-                      labels: { nodes: [{ name: 'bug' }] },
-                    },
-                  ],
-                },
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: {
+            viewer: {
+              assignedIssues: {
+                nodes: [
+                  {
+                    id: 'uuid-1',
+                    identifier: 'ENG-42',
+                    title: 'Fix bug',
+                    description: 'Broken',
+                    parent: { identifier: 'ENG-10' },
+                    labels: { nodes: [{ name: 'bug' }] },
+                  },
+                ],
               },
             },
-          }),
-      } as Response),
-    );
+          },
+        }),
+    } as Response);
 
-    const board = createLinearBoard(makeEnv());
+    const board = createLinearBoard(makeEnv(), mockFetch);
     const tickets = await board.fetchTickets({});
 
     expect(tickets).toHaveLength(1);
@@ -110,81 +105,72 @@ describe('createLinearBoard', () => {
   });
 
   it('fetchTicket returns first ticket', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: {
-              viewer: {
-                assignedIssues: {
-                  nodes: [
-                    {
-                      id: 'uuid-1',
-                      identifier: 'ENG-1',
-                      title: 'First',
-                    },
-                    {
-                      id: 'uuid-2',
-                      identifier: 'ENG-2',
-                      title: 'Second',
-                    },
-                  ],
-                },
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: {
+            viewer: {
+              assignedIssues: {
+                nodes: [
+                  {
+                    id: 'uuid-1',
+                    identifier: 'ENG-1',
+                    title: 'First',
+                  },
+                  {
+                    id: 'uuid-2',
+                    identifier: 'ENG-2',
+                    title: 'Second',
+                  },
+                ],
               },
             },
-          }),
-      } as Response),
-    );
+          },
+        }),
+    } as Response);
 
-    const board = createLinearBoard(makeEnv());
+    const board = createLinearBoard(makeEnv(), mockFetch);
     const ticket = await board.fetchTicket({});
     expect(ticket?.key).toBe('ENG-1');
   });
 
   it('fetchTicket returns undefined when no tickets', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: { viewer: { assignedIssues: { nodes: [] } } },
-          }),
-      } as Response),
-    );
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: { viewer: { assignedIssues: { nodes: [] } } },
+        }),
+    } as Response);
 
-    const board = createLinearBoard(makeEnv());
+    const board = createLinearBoard(makeEnv(), mockFetch);
     const ticket = await board.fetchTicket({});
     expect(ticket).toBeUndefined();
   });
 
   it('parentInfo defaults to "none" when no parent', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: {
-              viewer: {
-                assignedIssues: {
-                  nodes: [
-                    {
-                      id: 'uuid-1',
-                      identifier: 'ENG-1',
-                      title: 'Solo',
-                    },
-                  ],
-                },
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: {
+            viewer: {
+              assignedIssues: {
+                nodes: [
+                  {
+                    id: 'uuid-1',
+                    identifier: 'ENG-1',
+                    title: 'Solo',
+                  },
+                ],
               },
             },
-          }),
-      } as Response),
-    );
+          },
+        }),
+    } as Response);
 
-    const board = createLinearBoard(makeEnv());
+    const board = createLinearBoard(makeEnv(), mockFetch);
     const tickets = await board.fetchTickets({});
     expect(tickets[0]?.parentInfo).toBe('none');
   });
@@ -217,27 +203,24 @@ describe('createLinearBoard', () => {
   });
 
   it('fetchChildrenStatus delegates to relations module', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: {
-              issue: {
-                children: {
-                  nodes: [
-                    { state: { type: 'completed' } },
-                    { state: { type: 'started' } },
-                  ],
-                },
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: {
+            issue: {
+              children: {
+                nodes: [
+                  { state: { type: 'completed' } },
+                  { state: { type: 'started' } },
+                ],
               },
             },
-          }),
-      } as Response),
-    );
+          },
+        }),
+    } as Response);
 
-    const board = createLinearBoard(makeEnv());
+    const board = createLinearBoard(makeEnv(), mockFetch);
     const result = await board.fetchChildrenStatus('ENG-42', 'parent-uuid');
 
     expect(result).toEqual({ total: 2, incomplete: 1 });
@@ -245,7 +228,7 @@ describe('createLinearBoard', () => {
 
   it('transitionTicket succeeds with linearIssueId', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       // lookupWorkflowStateId
       .mockResolvedValueOnce({
         ok: true,
@@ -260,10 +243,9 @@ describe('createLinearBoard', () => {
         json: () =>
           Promise.resolve({ data: { issueUpdate: { success: true } } }),
       } as Response);
-    vi.stubGlobal('fetch', mockFetch);
     vi.spyOn(console, 'log').mockImplementation(() => {});
 
-    const board = createLinearBoard(makeEnv());
+    const board = createLinearBoard(makeEnv(), mockFetch);
     const result = await board.transitionTicket(
       {
         key: 'ENG-42',
@@ -279,16 +261,18 @@ describe('createLinearBoard', () => {
   });
 
   it('uses CLANCY_LABEL for default label filter', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
       ok: true,
       json: () =>
         Promise.resolve({
           data: { viewer: { assignedIssues: { nodes: [] } } },
         }),
     } as Response);
-    vi.stubGlobal('fetch', mockFetch);
 
-    const board = createLinearBoard(makeEnv({ CLANCY_LABEL: 'clancy:build' }));
+    const board = createLinearBoard(
+      makeEnv({ CLANCY_LABEL: 'clancy:build' }),
+      mockFetch,
+    );
     await board.fetchTickets({});
 
     const body = JSON.parse(
@@ -298,16 +282,18 @@ describe('createLinearBoard', () => {
   });
 
   it('buildLabel in opts overrides CLANCY_LABEL', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
       ok: true,
       json: () =>
         Promise.resolve({
           data: { viewer: { assignedIssues: { nodes: [] } } },
         }),
     } as Response);
-    vi.stubGlobal('fetch', mockFetch);
 
-    const board = createLinearBoard(makeEnv({ CLANCY_LABEL: 'clancy:build' }));
+    const board = createLinearBoard(
+      makeEnv({ CLANCY_LABEL: 'clancy:build' }),
+      mockFetch,
+    );
     await board.fetchTickets({ buildLabel: 'custom:label' });
 
     const body = JSON.parse(

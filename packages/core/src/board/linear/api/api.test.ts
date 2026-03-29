@@ -1,3 +1,5 @@
+import type { Fetcher } from '~/c/shared/http/index.js';
+
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -54,17 +56,20 @@ describe('isValidTeamId', () => {
 
 describe('linearGraphql', () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('sends POST to Linear GraphQL endpoint', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ data: { viewer: { id: '123' } } }),
     } as Response);
-    vi.stubGlobal('fetch', mockFetch);
 
-    await linearGraphql({ apiKey: 'api_key', query: '{ viewer { id } }' });
+    await linearGraphql({
+      apiKey: 'api_key',
+      query: '{ viewer { id } }',
+      fetcher: mockFetch,
+    });
 
     expect(mockFetch).toHaveBeenCalledWith(
       'https://api.linear.app/graphql',
@@ -73,13 +78,16 @@ describe('linearGraphql', () => {
   });
 
   it('passes API key directly in Authorization header', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ data: {} }),
     } as Response);
-    vi.stubGlobal('fetch', mockFetch);
 
-    await linearGraphql({ apiKey: 'lin_api_key', query: '{ viewer { id } }' });
+    await linearGraphql({
+      apiKey: 'lin_api_key',
+      query: '{ viewer { id } }',
+      fetcher: mockFetch,
+    });
 
     const init = mockFetch.mock.calls[0]?.[1] as RequestInit;
     const headers = init.headers as Record<string, string>;
@@ -87,16 +95,16 @@ describe('linearGraphql', () => {
   });
 
   it('includes query and variables in body', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ data: {} }),
     } as Response);
-    vi.stubGlobal('fetch', mockFetch);
 
     await linearGraphql({
       apiKey: 'key',
       query: 'query($id: ID!) { issue(id: $id) { id } }',
       variables: { id: '123' },
+      fetcher: mockFetch,
     });
 
     const init = mockFetch.mock.calls[0]?.[1] as RequestInit;
@@ -107,59 +115,55 @@ describe('linearGraphql', () => {
 
   it('returns parsed JSON on success', async () => {
     const expected = { data: { viewer: { id: '42' } } };
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(expected),
-      } as Response),
-    );
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(expected),
+    } as Response);
 
     const result = await linearGraphql({
       apiKey: 'key',
       query: '{ viewer { id } }',
+      fetcher: mockFetch,
     });
     expect(result).toEqual(expected);
   });
 
   it('returns undefined on network error', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockRejectedValue(new Error('network down')),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockRejectedValue(new Error('network down'));
 
     const result = await linearGraphql({
       apiKey: 'key',
       query: '{ viewer { id } }',
+      fetcher: mockFetch,
     });
     expect(result).toBeUndefined();
   });
 
   it('returns undefined on non-OK response', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({ ok: false, status: 500 } as Response),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue({ ok: false, status: 500 } as Response);
 
     const result = await linearGraphql({
       apiKey: 'key',
       query: '{ viewer { id } }',
+      fetcher: mockFetch,
     });
     expect(result).toBeUndefined();
   });
 
   it('returns undefined on invalid JSON', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.reject(new Error('bad json')),
-      } as Response),
-    );
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: true,
+      json: () => Promise.reject(new Error('bad json')),
+    } as Response);
 
     const result = await linearGraphql({
       apiKey: 'key',
       query: '{ viewer { id } }',
+      fetcher: mockFetch,
     });
     expect(result).toBeUndefined();
   });
@@ -169,73 +173,64 @@ describe('linearGraphql', () => {
 
 describe('pingLinear', () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('returns ok on valid viewer response', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ data: { viewer: { id: 'user-uuid' } } }),
-      } as Response),
-    );
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ data: { viewer: { id: 'user-uuid' } } }),
+    } as Response);
 
-    const result = await pingLinear('key');
+    const result = await pingLinear('key', mockFetch);
     expect(result).toEqual({ ok: true });
   });
 
   it('returns auth error on 401', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({ ok: false, status: 401 } as Response),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue({ ok: false, status: 401 } as Response);
 
-    const result = await pingLinear('key');
+    const result = await pingLinear('key', mockFetch);
     expect(result.ok).toBe(false);
     expect(result.error).toContain('auth failed');
   });
 
   it('returns auth error on 403', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({ ok: false, status: 403 } as Response),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue({ ok: false, status: 403 } as Response);
 
-    const result = await pingLinear('key');
+    const result = await pingLinear('key', mockFetch);
     expect(result.ok).toBe(false);
     expect(result.error).toContain('auth failed');
   });
 
   it('returns generic error on other HTTP codes', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({ ok: false, status: 500 } as Response),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue({ ok: false, status: 500 } as Response);
 
-    const result = await pingLinear('key');
+    const result = await pingLinear('key', mockFetch);
     expect(result.ok).toBe(false);
     expect(result.error).toContain('500');
   });
 
   it('returns network error on fetch failure', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
+    const mockFetch = vi.fn<Fetcher>().mockRejectedValue(new Error('offline'));
 
-    const result = await pingLinear('key');
+    const result = await pingLinear('key', mockFetch);
     expect(result.ok).toBe(false);
     expect(result.error).toContain('network');
   });
 
   it('returns auth error when viewer ID is missing', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ data: {} }),
-      } as Response),
-    );
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ data: {} }),
+    } as Response);
 
-    const result = await pingLinear('key');
+    const result = await pingLinear('key', mockFetch);
     expect(result.ok).toBe(false);
     expect(result.error).toContain('auth failed');
   });
@@ -245,7 +240,7 @@ describe('pingLinear', () => {
 
 describe('fetchIssues', () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('returns mapped tickets on success', async () => {
@@ -268,17 +263,15 @@ describe('fetchIssues', () => {
       },
     };
 
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(graphqlResponse),
-      } as Response),
-    );
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(graphqlResponse),
+    } as Response);
 
     const tickets = await fetchIssues({
       apiKey: 'key',
       teamId: 'team-1',
+      fetcher: mockFetch,
     });
 
     expect(tickets).toHaveLength(1);
@@ -294,53 +287,51 @@ describe('fetchIssues', () => {
   });
 
   it('returns empty array on API failure', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({ ok: false, status: 500 } as Response),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue({ ok: false, status: 500 } as Response);
 
     const tickets = await fetchIssues({
       apiKey: 'key',
       teamId: 'team-1',
+      fetcher: mockFetch,
     });
 
     expect(tickets).toEqual([]);
   });
 
   it('returns empty array when no issues found', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: { viewer: { assignedIssues: { nodes: [] } } },
-          }),
-      } as Response),
-    );
-
-    const tickets = await fetchIssues({
-      apiKey: 'key',
-      teamId: 'team-1',
-    });
-
-    expect(tickets).toEqual([]);
-  });
-
-  it('includes label filter in query when provided', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
       ok: true,
       json: () =>
         Promise.resolve({
           data: { viewer: { assignedIssues: { nodes: [] } } },
         }),
     } as Response);
-    vi.stubGlobal('fetch', mockFetch);
+
+    const tickets = await fetchIssues({
+      apiKey: 'key',
+      teamId: 'team-1',
+      fetcher: mockFetch,
+    });
+
+    expect(tickets).toEqual([]);
+  });
+
+  it('includes label filter in query when provided', async () => {
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: { viewer: { assignedIssues: { nodes: [] } } },
+        }),
+    } as Response);
 
     await fetchIssues({
       apiKey: 'key',
       teamId: 'team-1',
       label: 'clancy:build',
+      fetcher: mockFetch,
     });
 
     const body = JSON.parse(
@@ -373,18 +364,16 @@ describe('fetchIssues', () => {
       },
     };
 
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(graphqlResponse),
-      } as Response),
-    );
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(graphqlResponse),
+    } as Response);
 
     const tickets = await fetchIssues({
       apiKey: 'key',
       teamId: 'team-1',
       excludeHitl: true,
+      fetcher: mockFetch,
     });
 
     expect(tickets).toHaveLength(1);
@@ -392,33 +381,31 @@ describe('fetchIssues', () => {
   });
 
   it('handles null description gracefully', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: {
-              viewer: {
-                assignedIssues: {
-                  nodes: [
-                    {
-                      id: 'uuid-1',
-                      identifier: 'ENG-1',
-                      title: 'No desc',
-                      description: null,
-                    },
-                  ],
-                },
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: {
+            viewer: {
+              assignedIssues: {
+                nodes: [
+                  {
+                    id: 'uuid-1',
+                    identifier: 'ENG-1',
+                    title: 'No desc',
+                    description: null,
+                  },
+                ],
               },
             },
-          }),
-      } as Response),
-    );
+          },
+        }),
+    } as Response);
 
     const tickets = await fetchIssues({
       apiKey: 'key',
       teamId: 'team-1',
+      fetcher: mockFetch,
     });
 
     expect(tickets[0]?.description).toBe('');

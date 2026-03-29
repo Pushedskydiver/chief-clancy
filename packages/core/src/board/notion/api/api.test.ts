@@ -1,6 +1,6 @@
 import type { NotionCtx } from './helpers.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 
-import { retryFetch } from '~/c/shared/http/index.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -12,14 +12,9 @@ import {
   updatePage,
 } from './api.js';
 
-vi.mock('~/c/shared/http/retry-fetch/retry-fetch.js', () => ({
-  retryFetch: vi.fn(),
-}));
-
 const TOKEN = 'ntn_test_token';
 const DATABASE_ID = 'db-uuid-1234';
 const PAGE_ID = 'ab12cd34-5678-9abc-def0-123456789abc';
-const ctx: NotionCtx = { token: TOKEN, databaseId: DATABASE_ID };
 
 function mockResponse(body: unknown, status = 200): Response {
   return {
@@ -44,53 +39,53 @@ function makePage(id: string, title: string, statusName = 'To-do') {
 
 describe('notion api', () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
     vi.restoreAllMocks();
-    vi.clearAllMocks();
   });
 
   // ─── pingNotion ─────────────────────────────────────────────────────────
 
   describe('pingNotion', () => {
     it('returns ok true on successful response', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(mockResponse({})));
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValue(mockResponse({}));
 
-      const result = await pingNotion(TOKEN);
+      const result = await pingNotion(TOKEN, mockFetch);
       expect(result).toEqual({ ok: true });
     });
 
     it('returns error on auth failure (401)', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(mockResponse({}, 401)));
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockResolvedValue(mockResponse({}, 401));
 
-      const result = await pingNotion(TOKEN);
+      const result = await pingNotion(TOKEN, mockFetch);
       expect(result.ok).toBe(false);
       expect(result.error).toContain('auth failed');
     });
 
     it('returns error on server error', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(mockResponse({}, 500)));
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockResolvedValue(mockResponse({}, 500));
 
-      const result = await pingNotion(TOKEN);
+      const result = await pingNotion(TOKEN, mockFetch);
       expect(result.ok).toBe(false);
       expect(result.error).toContain('HTTP 500');
     });
 
     it('returns error on network failure', async () => {
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockRejectedValue(new Error('ECONNREFUSED')),
-      );
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockRejectedValue(new Error('ECONNREFUSED'));
 
-      const result = await pingNotion(TOKEN);
+      const result = await pingNotion(TOKEN, mockFetch);
       expect(result.ok).toBe(false);
       expect(result.error).toContain('Could not reach');
     });
 
     it('sends correct headers', async () => {
-      const mockFetch = vi.fn().mockResolvedValue(mockResponse({}));
-      vi.stubGlobal('fetch', mockFetch);
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValue(mockResponse({}));
 
-      await pingNotion(TOKEN);
+      await pingNotion(TOKEN, mockFetch);
 
       expect(mockFetch).toHaveBeenCalledWith(
         'https://api.notion.com/v1/users/me',
@@ -109,7 +104,7 @@ describe('notion api', () => {
   describe('queryDatabase', () => {
     it('returns parsed results on success', async () => {
       const page = makePage(PAGE_ID, 'Test ticket');
-      vi.mocked(retryFetch).mockResolvedValue(
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
         mockResponse({
           results: [page],
           has_more: false,
@@ -117,6 +112,11 @@ describe('notion api', () => {
         }),
       );
 
+      const ctx: NotionCtx = {
+        token: TOKEN,
+        databaseId: DATABASE_ID,
+        fetcher: mockFetch,
+      };
       const result = await queryDatabase({ ctx });
 
       expect(result).toBeDefined();
@@ -125,14 +125,19 @@ describe('notion api', () => {
     });
 
     it('sends filter when provided', async () => {
-      vi.mocked(retryFetch).mockResolvedValue(
-        mockResponse({ results: [], has_more: false }),
-      );
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockResolvedValue(mockResponse({ results: [], has_more: false }));
 
+      const ctx: NotionCtx = {
+        token: TOKEN,
+        databaseId: DATABASE_ID,
+        fetcher: mockFetch,
+      };
       const filter = { property: 'Status', status: { equals: 'To-do' } };
       await queryDatabase({ ctx, filter });
 
-      expect(retryFetch).toHaveBeenCalledWith(
+      expect(mockFetch).toHaveBeenCalledWith(
         expect.any(String),
         expect.objectContaining({
           method: 'POST',
@@ -142,15 +147,29 @@ describe('notion api', () => {
     });
 
     it('returns undefined on HTTP error', async () => {
-      vi.mocked(retryFetch).mockResolvedValue(mockResponse({}, 400));
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockResolvedValue(mockResponse({}, 400));
 
+      const ctx: NotionCtx = {
+        token: TOKEN,
+        databaseId: DATABASE_ID,
+        fetcher: mockFetch,
+      };
       const result = await queryDatabase({ ctx });
       expect(result).toBeUndefined();
     });
 
     it('returns undefined on network failure', async () => {
-      vi.mocked(retryFetch).mockRejectedValue(new Error('network'));
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockRejectedValue(new Error('network'));
 
+      const ctx: NotionCtx = {
+        token: TOKEN,
+        databaseId: DATABASE_ID,
+        fetcher: mockFetch,
+      };
       const result = await queryDatabase({ ctx });
       expect(result).toBeUndefined();
     });
@@ -163,7 +182,8 @@ describe('notion api', () => {
       const page1 = makePage('page-1-id-0000-0000-000000000000', 'Page 1');
       const page2 = makePage('page-2-id-0000-0000-000000000000', 'Page 2');
 
-      vi.mocked(retryFetch)
+      const mockFetch = vi
+        .fn<Fetcher>()
         .mockResolvedValueOnce(
           mockResponse({
             results: [page1],
@@ -179,13 +199,25 @@ describe('notion api', () => {
           }),
         );
 
+      const ctx: NotionCtx = {
+        token: TOKEN,
+        databaseId: DATABASE_ID,
+        fetcher: mockFetch,
+      };
       const results = await queryAllPages({ ctx });
       expect(results).toHaveLength(2);
     });
 
     it('returns empty array on failure', async () => {
-      vi.mocked(retryFetch).mockRejectedValue(new Error('network'));
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockRejectedValue(new Error('network'));
 
+      const ctx: NotionCtx = {
+        token: TOKEN,
+        databaseId: DATABASE_ID,
+        fetcher: mockFetch,
+      };
       const results = await queryAllPages({ ctx });
       expect(results).toEqual([]);
     });
@@ -196,17 +228,19 @@ describe('notion api', () => {
   describe('fetchPage', () => {
     it('returns parsed page on success', async () => {
       const page = makePage(PAGE_ID, 'Test page');
-      vi.mocked(retryFetch).mockResolvedValue(mockResponse(page));
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValue(mockResponse(page));
 
-      const result = await fetchPage(TOKEN, PAGE_ID);
+      const result = await fetchPage(TOKEN, PAGE_ID, mockFetch);
       expect(result).toBeDefined();
       expect(result!.id).toBe(PAGE_ID);
     });
 
     it('returns undefined on HTTP error', async () => {
-      vi.mocked(retryFetch).mockResolvedValue(mockResponse({}, 404));
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockResolvedValue(mockResponse({}, 404));
 
-      const result = await fetchPage(TOKEN, PAGE_ID);
+      const result = await fetchPage(TOKEN, PAGE_ID, mockFetch);
       expect(result).toBeUndefined();
     });
   });
@@ -215,23 +249,29 @@ describe('notion api', () => {
 
   describe('updatePage', () => {
     it('returns true on success', async () => {
-      vi.mocked(retryFetch).mockResolvedValue(mockResponse({}));
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValue(mockResponse({}));
 
       const result = await updatePage({
         token: TOKEN,
         pageId: PAGE_ID,
         properties: { Status: { status: { name: 'In Progress' } } },
+        fetcher: mockFetch,
       });
       expect(result).toBe(true);
     });
 
     it('sends PATCH with properties in body', async () => {
-      vi.mocked(retryFetch).mockResolvedValue(mockResponse({}));
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValue(mockResponse({}));
 
       const props = { Status: { status: { name: 'Done' } } };
-      await updatePage({ token: TOKEN, pageId: PAGE_ID, properties: props });
+      await updatePage({
+        token: TOKEN,
+        pageId: PAGE_ID,
+        properties: props,
+        fetcher: mockFetch,
+      });
 
-      expect(retryFetch).toHaveBeenCalledWith(
+      expect(mockFetch).toHaveBeenCalledWith(
         `https://api.notion.com/v1/pages/${PAGE_ID}`,
         expect.objectContaining({
           method: 'PATCH',
@@ -241,23 +281,29 @@ describe('notion api', () => {
     });
 
     it('returns false on HTTP error', async () => {
-      vi.mocked(retryFetch).mockResolvedValue(mockResponse({}, 400));
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockResolvedValue(mockResponse({}, 400));
 
       const result = await updatePage({
         token: TOKEN,
         pageId: PAGE_ID,
         properties: {},
+        fetcher: mockFetch,
       });
       expect(result).toBe(false);
     });
 
     it('returns false on network failure', async () => {
-      vi.mocked(retryFetch).mockRejectedValue(new Error('network'));
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockRejectedValue(new Error('network'));
 
       const result = await updatePage({
         token: TOKEN,
         pageId: PAGE_ID,
         properties: {},
+        fetcher: mockFetch,
       });
       expect(result).toBe(false);
     });
@@ -268,7 +314,7 @@ describe('notion api', () => {
   describe('findPageByKey', () => {
     it('finds page by short ID match', async () => {
       const page = makePage(PAGE_ID, 'Target');
-      vi.mocked(retryFetch).mockResolvedValue(
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
         mockResponse({
           results: [page],
           has_more: false,
@@ -276,21 +322,35 @@ describe('notion api', () => {
         }),
       );
 
+      const ctx: NotionCtx = {
+        token: TOKEN,
+        databaseId: DATABASE_ID,
+        fetcher: mockFetch,
+      };
       const result = await findPageByKey(ctx, 'notion-ab12cd34');
       expect(result).toBeDefined();
       expect(result!.id).toBe(PAGE_ID);
     });
 
     it('returns undefined when not found', async () => {
-      vi.mocked(retryFetch).mockResolvedValue(
-        mockResponse({ results: [], has_more: false }),
-      );
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockResolvedValue(mockResponse({ results: [], has_more: false }));
 
+      const ctx: NotionCtx = {
+        token: TOKEN,
+        databaseId: DATABASE_ID,
+        fetcher: mockFetch,
+      };
       const result = await findPageByKey(ctx, 'notion-00000000');
       expect(result).toBeUndefined();
     });
 
     it('returns undefined for empty key', async () => {
+      const ctx: NotionCtx = {
+        token: TOKEN,
+        databaseId: DATABASE_ID,
+      };
       const result = await findPageByKey(ctx, 'notion-');
       expect(result).toBeUndefined();
     });

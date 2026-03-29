@@ -1,4 +1,5 @@
 import type { JiraEnv } from '~/c/schemas/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -13,7 +14,6 @@ const baseEnv: JiraEnv = {
 
 describe('createJiraBoard', () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
@@ -77,16 +77,13 @@ describe('createJiraBoard', () => {
         },
       ],
     };
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValue(
-          new Response(JSON.stringify(response), { status: 200 }),
-        ),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue(
+        new Response(JSON.stringify(response), { status: 200 }),
+      );
 
-    const board = createJiraBoard(baseEnv);
+    const board = createJiraBoard(baseEnv, mockFetch);
     const tickets = await board.fetchTickets({});
 
     expect(tickets).toHaveLength(1);
@@ -115,63 +112,54 @@ describe('createJiraBoard', () => {
         },
       ],
     };
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValue(
-          new Response(JSON.stringify(response), { status: 200 }),
-        ),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue(
+        new Response(JSON.stringify(response), { status: 200 }),
+      );
 
-    const board = createJiraBoard(baseEnv);
+    const board = createJiraBoard(baseEnv, mockFetch);
     const ticket = await board.fetchTicket({});
 
     expect(ticket?.key).toBe('PROJ-1');
   });
 
   it('fetchTicket returns undefined when no issues', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValue(
-          new Response(JSON.stringify({ issues: [] }), { status: 200 }),
-        ),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ issues: [] }), { status: 200 }),
+      );
 
-    const board = createJiraBoard(baseEnv);
+    const board = createJiraBoard(baseEnv, mockFetch);
     const ticket = await board.fetchTicket({});
 
     expect(ticket).toBeUndefined();
   });
 
   it('fetchBlockerStatus delegates to relations module', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(
-        new Response(
-          JSON.stringify({
-            fields: {
-              issuelinks: [
-                {
-                  type: { name: 'Blocks' },
-                  inwardIssue: {
-                    key: 'PROJ-99',
-                    fields: {
-                      status: { statusCategory: { key: 'indeterminate' } },
-                    },
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          fields: {
+            issuelinks: [
+              {
+                type: { name: 'Blocks' },
+                inwardIssue: {
+                  key: 'PROJ-99',
+                  fields: {
+                    status: { statusCategory: { key: 'indeterminate' } },
                   },
                 },
-              ],
-            },
-          }),
-          { status: 200 },
-        ),
+              },
+            ],
+          },
+        }),
+        { status: 200 },
       ),
     );
 
-    const board = createJiraBoard(baseEnv);
+    const board = createJiraBoard(baseEnv, mockFetch);
     const result = await board.fetchBlockerStatus({
       key: 'PROJ-42',
       title: '',
@@ -183,19 +171,16 @@ describe('createJiraBoard', () => {
   });
 
   it('fetchChildrenStatus delegates to relations module', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ total: 2 }), { status: 200 }),
-        )
-        .mockResolvedValueOnce(
-          new Response(JSON.stringify({ total: 1 }), { status: 200 }),
-        ),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ total: 2 }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ total: 1 }), { status: 200 }),
+      );
 
-    const board = createJiraBoard(baseEnv);
+    const board = createJiraBoard(baseEnv, mockFetch);
     const result = await board.fetchChildrenStatus('PROJ-10');
 
     expect(result).toEqual({ total: 2, incomplete: 1 });
@@ -203,7 +188,7 @@ describe('createJiraBoard', () => {
 
   it('addLabel delegates to label module', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       // GET labels
       .mockResolvedValueOnce(
         new Response(JSON.stringify({ fields: { labels: ['existing'] } }), {
@@ -212,9 +197,8 @@ describe('createJiraBoard', () => {
       )
       // PUT labels
       .mockResolvedValueOnce(new Response(null, { status: 204 }));
-    vi.stubGlobal('fetch', mockFetch);
 
-    const board = createJiraBoard(baseEnv);
+    const board = createJiraBoard(baseEnv, mockFetch);
     await board.addLabel('PROJ-42', 'new-label');
 
     expect(mockFetch).toHaveBeenCalledTimes(2);
@@ -225,7 +209,7 @@ describe('createJiraBoard', () => {
 
   it('removeLabel delegates to label module', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       // GET labels
       .mockResolvedValueOnce(
         new Response(
@@ -235,9 +219,8 @@ describe('createJiraBoard', () => {
       )
       // PUT labels
       .mockResolvedValueOnce(new Response(null, { status: 204 }));
-    vi.stubGlobal('fetch', mockFetch);
 
-    const board = createJiraBoard(baseEnv);
+    const board = createJiraBoard(baseEnv, mockFetch);
     await board.removeLabel('PROJ-42', 'remove-me');
 
     expect(mockFetch).toHaveBeenCalledTimes(2);
@@ -252,26 +235,27 @@ describe('createJiraBoard', () => {
         },
       ],
     };
-    vi.stubGlobal(
-      'fetch',
-      vi
-        .fn()
-        .mockResolvedValue(
-          new Response(JSON.stringify(response), { status: 200 }),
-        ),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue(
+        new Response(JSON.stringify(response), { status: 200 }),
+      );
 
-    const board = createJiraBoard({
-      ...baseEnv,
-      CLANCY_JQL_STATUS: 'In Progress',
-    });
+    const board = createJiraBoard(
+      {
+        ...baseEnv,
+        CLANCY_JQL_STATUS: 'In Progress',
+      },
+      mockFetch,
+    );
     const tickets = await board.fetchTickets({});
 
     expect(tickets[0].status).toBe('In Progress');
   });
 
   it('transitionTicket logs on success', async () => {
-    vi.spyOn(globalThis, 'fetch')
+    const mockFetch = vi
+      .fn<Fetcher>()
       .mockResolvedValueOnce(
         new Response(
           JSON.stringify({
@@ -283,7 +267,7 @@ describe('createJiraBoard', () => {
       .mockResolvedValueOnce(new Response(null, { status: 204 }));
     const log = vi.spyOn(console, 'log').mockImplementation(() => {});
 
-    const board = createJiraBoard(baseEnv);
+    const board = createJiraBoard(baseEnv, mockFetch);
     const result = await board.transitionTicket(
       {
         key: 'PROJ-42',
