@@ -7,7 +7,7 @@
 ### What was done
 
 - **11.3** (#124): Board write ops DI fetcher conversion — converted all label CRUD tests (ensureLabel, addLabel, removeLabel) and transition tests (transitionIssue, transitionStory) across all 6 boards from `vi.stubGlobal('fetch')` to DI `fetcher` parameter injection. 9 test files, 71 tests converted. Removed `vi.unstubAllGlobals()`/`vi.stubGlobal` boilerplate. Notion tests converted from `vi.mock('retryFetch')` to DI `ctx.fetcher`. Net -87 lines.
-- **11.4** (#TBD): Advanced scenarios — converted all per-board relations tests (fetchBlockerStatus, fetchChildrenStatus, lookupWorkflowStateId) from `vi.stubGlobal`/`vi.mock` to DI fetcher. 6 relations test files, 65 tests converted. Added 4 new edge-case tests: lock staleness 24-hour boundary precision (exactly 24h not stale, 24h+1s stale), blocker recursion depth (10 blocked candidates + interleaved plan-label/blocked candidates). 8 files, +99 lines net.
+- **11.4** (#125): Advanced scenarios — converted all per-board relations tests (fetchBlockerStatus, fetchChildrenStatus, lookupWorkflowStateId) from `vi.stubGlobal`/`vi.mock` to DI fetcher. 6 relations test files, 65 tests converted. Added 4 new edge-case tests: lock staleness 24-hour boundary precision (exactly 24h not stale, 24h+1s stale), blocker recursion depth (10 blocked candidates + interleaved plan-label/blocked candidates). Standardised `vi.fn<Fetcher>()` typing across all mock fetchers. 8 files, +99 lines net.
 
 ### Key decisions
 
@@ -24,7 +24,7 @@
 - **11.2b** (#122): Remaining boards happy path — +40 integration tests.
 - **11.2c** (#123): Abort scenarios — +13 integration tests.
 - **11.3** (#124): Board write ops DI fetcher — 71 tests converted. 9 files.
-- **11.4** (#TBD): Advanced scenarios — 65 relations tests converted + 4 new edge-case tests. 8 files.
+- **11.4** (#125): Advanced scenarios — 65 relations tests converted + 4 new edge-case tests. 8 files.
 
 ### Next up
 
