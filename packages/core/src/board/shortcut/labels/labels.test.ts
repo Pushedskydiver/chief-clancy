@@ -54,7 +54,7 @@ describe('parseStoryId', () => {
 
 describe('fetchLabels', () => {
   it('returns labels on success', async () => {
-    const mockFetch: Fetcher = vi.fn().mockResolvedValue(
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
       jsonResponse([
         { id: 1, name: 'bug' },
         { id: 2, name: 'feature' },
@@ -71,8 +71,8 @@ describe('fetchLabels', () => {
   });
 
   it('returns cached value on subsequent calls', async () => {
-    const mockFetch: Fetcher = vi
-      .fn()
+    const mockFetch = vi
+      .fn<Fetcher>()
       .mockResolvedValue(jsonResponse([{ id: 1, name: 'bug' }]));
 
     const cache = makeLabelCache();
@@ -86,8 +86,8 @@ describe('fetchLabels', () => {
 
 describe('createLabel', () => {
   it('returns label ID on success', async () => {
-    const mockFetch: Fetcher = vi
-      .fn()
+    const mockFetch = vi
+      .fn<Fetcher>()
       .mockResolvedValue(jsonResponse({ id: 99, name: 'clancy:build' }));
 
     const id = await createLabel('tok', 'clancy:build', mockFetch);
@@ -95,8 +95,8 @@ describe('createLabel', () => {
   });
 
   it('returns undefined on failure', async () => {
-    const mockFetch: Fetcher = vi
-      .fn()
+    const mockFetch = vi
+      .fn<Fetcher>()
       .mockResolvedValue(jsonResponse('error', 500));
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -109,8 +109,8 @@ describe('createLabel', () => {
 
 describe('getStoryLabelIds', () => {
   it('returns label IDs from story', async () => {
-    const mockFetch: Fetcher = vi
-      .fn()
+    const mockFetch = vi
+      .fn<Fetcher>()
       .mockResolvedValue(
         jsonResponse({ id: 42, name: 'Story', label_ids: [1, 2, 3] }),
       );
@@ -120,8 +120,8 @@ describe('getStoryLabelIds', () => {
   });
 
   it('returns empty array when no label_ids', async () => {
-    const mockFetch: Fetcher = vi
-      .fn()
+    const mockFetch = vi
+      .fn<Fetcher>()
       .mockResolvedValue(jsonResponse({ id: 42, name: 'Story' }));
 
     const ids = await getStoryLabelIds('tok', 42, mockFetch);
@@ -129,8 +129,8 @@ describe('getStoryLabelIds', () => {
   });
 
   it('returns undefined on failure', async () => {
-    const mockFetch: Fetcher = vi
-      .fn()
+    const mockFetch = vi
+      .fn<Fetcher>()
       .mockResolvedValue(jsonResponse('not found', 404));
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -143,8 +143,8 @@ describe('getStoryLabelIds', () => {
 
 describe('updateStoryLabelIds', () => {
   it('sends PUT with label_ids', async () => {
-    const mockFetch: Fetcher = vi
-      .fn()
+    const mockFetch = vi
+      .fn<Fetcher>()
       .mockResolvedValue({ ok: true } as Response);
 
     await updateStoryLabelIds({
@@ -155,7 +155,7 @@ describe('updateStoryLabelIds', () => {
     });
 
     const body = JSON.parse(
-      (vi.mocked(mockFetch).mock.calls[0]?.[1] as RequestInit).body as string,
+      (mockFetch.mock.calls[0]?.[1] as RequestInit).body as string,
     ) as Record<string, unknown>;
     expect(body.label_ids).toEqual([1, 2, 3]);
   });
@@ -165,7 +165,7 @@ describe('updateStoryLabelIds', () => {
 
 describe('ensureLabel', () => {
   it('does not create when label exists', async () => {
-    const mockFetch: Fetcher = vi.fn();
+    const mockFetch = vi.fn<Fetcher>();
 
     const cache = makeLabelCacheWith([{ id: 1, name: 'clancy:build' }]);
     await ensureLabel({
@@ -178,8 +178,8 @@ describe('ensureLabel', () => {
   });
 
   it('creates label when not found', async () => {
-    const mockFetch: Fetcher = vi
-      .fn()
+    const mockFetch = vi
+      .fn<Fetcher>()
       .mockResolvedValue(jsonResponse({ id: 99, name: 'clancy:build' }));
 
     const cache = makeLabelCacheWith([{ id: 1, name: 'bug' }]);
@@ -194,7 +194,7 @@ describe('ensureLabel', () => {
   });
 
   it('does not throw on failure', async () => {
-    const mockFetch: Fetcher = vi.fn().mockRejectedValue(new Error('offline'));
+    const mockFetch = vi.fn<Fetcher>().mockRejectedValue(new Error('offline'));
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const cache = makeLabelCache();
@@ -213,8 +213,8 @@ describe('ensureLabel', () => {
 
 describe('addLabel', () => {
   it('adds label ID to story', async () => {
-    const mockFetch: Fetcher = vi
-      .fn()
+    const mockFetch = vi
+      .fn<Fetcher>()
       // getStoryLabelIds
       .mockResolvedValueOnce(
         jsonResponse({ id: 42, name: 'Story', label_ids: [1] }),
@@ -236,13 +236,13 @@ describe('addLabel', () => {
     });
 
     const body = JSON.parse(
-      (vi.mocked(mockFetch).mock.calls[1]?.[1] as RequestInit).body as string,
+      (mockFetch.mock.calls[1]?.[1] as RequestInit).body as string,
     ) as Record<string, unknown>;
     expect(body.label_ids).toEqual([1, 5]);
   });
 
   it('does nothing for invalid key', async () => {
-    const mockFetch: Fetcher = vi.fn();
+    const mockFetch = vi.fn<Fetcher>();
 
     const cache = makeLabelCacheWith([{ id: 1, name: 'bug' }]);
     await addLabel({
@@ -260,8 +260,8 @@ describe('addLabel', () => {
 
 describe('removeLabel', () => {
   it('removes label ID from story', async () => {
-    const mockFetch: Fetcher = vi
-      .fn()
+    const mockFetch = vi
+      .fn<Fetcher>()
       .mockResolvedValueOnce(
         jsonResponse({ id: 42, name: 'Story', label_ids: [1, 5] }),
       )
@@ -281,14 +281,14 @@ describe('removeLabel', () => {
     });
 
     const body = JSON.parse(
-      (vi.mocked(mockFetch).mock.calls[1]?.[1] as RequestInit).body as string,
+      (mockFetch.mock.calls[1]?.[1] as RequestInit).body as string,
     ) as Record<string, unknown>;
     expect(body.label_ids).toEqual([1]);
   });
 
   it('skips update when label not on story', async () => {
-    const mockFetch: Fetcher = vi
-      .fn()
+    const mockFetch = vi
+      .fn<Fetcher>()
       .mockResolvedValue(
         jsonResponse({ id: 42, name: 'Story', label_ids: [1] }),
       );

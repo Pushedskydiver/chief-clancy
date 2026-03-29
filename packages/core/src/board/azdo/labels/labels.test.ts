@@ -24,8 +24,8 @@ describe('azdo labels', () => {
 
   describe('addLabel', () => {
     it('appends tag via JSON Patch', async () => {
-      const mockFetch: Fetcher = vi
-        .fn()
+      const mockFetch = vi
+        .fn<Fetcher>()
         // fetchWorkItem to get current tags
         .mockResolvedValueOnce(
           jsonResponse({
@@ -40,10 +40,7 @@ describe('azdo labels', () => {
       await addLabel(makeCtx(mockFetch), 'azdo-42', 'new-tag');
 
       // Verify PATCH was called with updated tags
-      const [, patchOptions] = vi.mocked(mockFetch).mock.calls[1] as [
-        string,
-        RequestInit,
-      ];
+      const [, patchOptions] = mockFetch.mock.calls[1] as [string, RequestInit];
       const body = JSON.parse(patchOptions.body as string) as Array<{
         value: string;
       }>;
@@ -51,7 +48,7 @@ describe('azdo labels', () => {
     });
 
     it('does not duplicate existing tag', async () => {
-      const mockFetch: Fetcher = vi.fn().mockResolvedValueOnce(
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValueOnce(
         jsonResponse({
           id: 42,
           fields: { 'System.Tags': 'existing' },
@@ -66,7 +63,7 @@ describe('azdo labels', () => {
     });
 
     it('handles invalid key gracefully', async () => {
-      const mockFetch: Fetcher = vi.fn();
+      const mockFetch = vi.fn<Fetcher>();
 
       await addLabel(makeCtx(mockFetch), 'invalid', 'tag');
 
@@ -74,8 +71,8 @@ describe('azdo labels', () => {
     });
 
     it('handles fetch failure gracefully', async () => {
-      const mockFetch: Fetcher = vi
-        .fn()
+      const mockFetch = vi
+        .fn<Fetcher>()
         .mockRejectedValue(new Error('network'));
       vi.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -90,8 +87,8 @@ describe('azdo labels', () => {
 
   describe('removeLabel', () => {
     it('removes tag via JSON Patch', async () => {
-      const mockFetch: Fetcher = vi
-        .fn()
+      const mockFetch = vi
+        .fn<Fetcher>()
         .mockResolvedValueOnce(
           jsonResponse({
             id: 42,
@@ -103,10 +100,7 @@ describe('azdo labels', () => {
 
       await removeLabel(makeCtx(mockFetch), 'azdo-42', 'remove-me');
 
-      const [, patchOptions] = vi.mocked(mockFetch).mock.calls[1] as [
-        string,
-        RequestInit,
-      ];
+      const [, patchOptions] = mockFetch.mock.calls[1] as [string, RequestInit];
       const body = JSON.parse(patchOptions.body as string) as Array<{
         value: string;
       }>;
@@ -114,7 +108,7 @@ describe('azdo labels', () => {
     });
 
     it('does nothing when tag not present', async () => {
-      const mockFetch: Fetcher = vi.fn().mockResolvedValueOnce(
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValueOnce(
         jsonResponse({
           id: 42,
           fields: { 'System.Tags': 'tag1; tag2' },
@@ -129,7 +123,7 @@ describe('azdo labels', () => {
     });
 
     it('handles invalid key gracefully', async () => {
-      const mockFetch: Fetcher = vi.fn();
+      const mockFetch = vi.fn<Fetcher>();
 
       await removeLabel(makeCtx(mockFetch), 'invalid', 'tag');
 

@@ -20,7 +20,7 @@ function makeCtx(fetcher: Fetcher) {
 describe('addLabel', () => {
   it('adds a label via read-modify-write', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       // GET labels
       .mockResolvedValueOnce(
         new Response(JSON.stringify({ fields: { labels: ['existing'] } }), {
@@ -33,12 +33,13 @@ describe('addLabel', () => {
     await addLabel(makeCtx(mockFetch), 'PROJ-42', 'clancy:build');
 
     expect(mockFetch).toHaveBeenCalledTimes(2);
-    const putBody = JSON.parse(mockFetch.mock.calls[1][1].body as string);
+    const putCall = mockFetch.mock.calls[1] as [string, RequestInit];
+    const putBody = JSON.parse(putCall[1].body as string);
     expect(putBody.fields.labels).toEqual(['existing', 'clancy:build']);
   });
 
   it('skips add when label already present', async () => {
-    const mockFetch = vi.fn().mockResolvedValueOnce(
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValueOnce(
       new Response(JSON.stringify({ fields: { labels: ['clancy:build'] } }), {
         status: 200,
       }),
@@ -51,7 +52,7 @@ describe('addLabel', () => {
   });
 
   it('skips for invalid issue key', async () => {
-    const mockFetch = vi.fn();
+    const mockFetch = vi.fn<Fetcher>();
 
     await addLabel(makeCtx(mockFetch), 'invalid', 'label');
 
@@ -59,7 +60,7 @@ describe('addLabel', () => {
   });
 
   it('does not throw on network error', async () => {
-    const mockFetch = vi.fn().mockRejectedValue(new Error('network'));
+    const mockFetch = vi.fn<Fetcher>().mockRejectedValue(new Error('network'));
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     await addLabel(makeCtx(mockFetch), 'PROJ-42', 'label');
@@ -70,7 +71,7 @@ describe('addLabel', () => {
 describe('removeLabel', () => {
   it('removes a label via read-modify-write', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       // GET labels
       .mockResolvedValueOnce(
         new Response(
@@ -84,12 +85,13 @@ describe('removeLabel', () => {
     await removeLabel(makeCtx(mockFetch), 'PROJ-42', 'clancy:build');
 
     expect(mockFetch).toHaveBeenCalledTimes(2);
-    const putBody = JSON.parse(mockFetch.mock.calls[1][1].body as string);
+    const putCall = mockFetch.mock.calls[1] as [string, RequestInit];
+    const putBody = JSON.parse(putCall[1].body as string);
     expect(putBody.fields.labels).toEqual(['bug']);
   });
 
   it('skips remove when label not present', async () => {
-    const mockFetch = vi.fn().mockResolvedValueOnce(
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValueOnce(
       new Response(JSON.stringify({ fields: { labels: ['bug'] } }), {
         status: 200,
       }),

@@ -181,14 +181,6 @@ export async function fetchChildrenStatus(
   }
 }
 
-/**
- * Fetch children status by searching for a body reference string.
- *
- * @param token - GitHub personal access token.
- * @param repo - Repository in `owner/repo` format.
- * @param bodyRef - The body reference string to search for.
- * @returns The children status, or `undefined` on failure.
- */
 /** Options for {@link fetchChildrenByBodyRef}. */
 type BodyRefOpts = {
   readonly token: string;
@@ -197,6 +189,12 @@ type BodyRefOpts = {
   readonly fetcher?: Fetcher;
 };
 
+/**
+ * Fetch children status by searching for a body reference string.
+ *
+ * @param opts - Token, repo, and body reference string.
+ * @returns The children status, or `undefined` on failure.
+ */
 async function fetchChildrenByBodyRef(
   opts: BodyRefOpts,
 ): Promise<ChildrenStatus | undefined> {

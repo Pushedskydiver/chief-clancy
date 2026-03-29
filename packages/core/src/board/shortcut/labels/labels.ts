@@ -107,14 +107,6 @@ export async function getStoryLabelIds(
   return data ? (data.label_ids ?? []) : undefined;
 }
 
-/**
- * Update a story's label IDs.
- *
- * @param token - The Shortcut API token.
- * @param storyId - The story numeric ID.
- * @param labelIds - The new label IDs array.
- * @returns Resolves when complete (best-effort — never throws).
- */
 /** Options for {@link updateStoryLabelIds}. */
 type UpdateStoryLabelsOpts = {
   readonly token: string;
@@ -123,6 +115,12 @@ type UpdateStoryLabelsOpts = {
   readonly fetcher?: Fetcher;
 };
 
+/**
+ * Update a story's label IDs.
+ *
+ * @param opts - Token, story ID, and label IDs array.
+ * @returns Resolves when complete (best-effort — never throws).
+ */
 export async function updateStoryLabelIds(
   opts: UpdateStoryLabelsOpts,
 ): Promise<void> {

@@ -26,7 +26,7 @@ function jsonResponse(data: unknown): Response {
 
 describe('ensureLabel', () => {
   it('caches label ID from team labels', async () => {
-    const mockFetch: Fetcher = vi.fn().mockResolvedValue(
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
       jsonResponse({
         data: {
           team: {
@@ -51,8 +51,8 @@ describe('ensureLabel', () => {
   });
 
   it('falls back to workspace labels when not in team', async () => {
-    const mockFetch: Fetcher = vi
-      .fn()
+    const mockFetch = vi
+      .fn<Fetcher>()
       // Team query — no match
       .mockResolvedValueOnce(
         jsonResponse({
@@ -84,8 +84,8 @@ describe('ensureLabel', () => {
   });
 
   it('creates a new label when not found anywhere', async () => {
-    const mockFetch: Fetcher = vi
-      .fn()
+    const mockFetch = vi
+      .fn<Fetcher>()
       // Team query — empty
       .mockResolvedValueOnce(
         jsonResponse({
@@ -124,7 +124,7 @@ describe('ensureLabel', () => {
   });
 
   it('skips API calls when label is already cached', async () => {
-    const mockFetch: Fetcher = vi.fn();
+    const mockFetch = vi.fn<Fetcher>();
 
     const cache = makeCache();
     cache.store('clancy:build', 'cached-uuid');
@@ -141,8 +141,8 @@ describe('ensureLabel', () => {
   });
 
   it('does not throw on API failure', async () => {
-    const mockFetch: Fetcher = vi
-      .fn()
+    const mockFetch = vi
+      .fn<Fetcher>()
       .mockRejectedValue(new Error('network error'));
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -163,8 +163,8 @@ describe('ensureLabel', () => {
 
 describe('addLabel', () => {
   it('adds label ID to issue label list', async () => {
-    const mockFetch: Fetcher = vi
-      .fn()
+    const mockFetch = vi
+      .fn<Fetcher>()
       // Issue lookup
       .mockResolvedValueOnce(
         jsonResponse({
@@ -198,7 +198,7 @@ describe('addLabel', () => {
 
     // Verify the update mutation includes both existing and new label
     const updateBody = JSON.parse(
-      (vi.mocked(mockFetch).mock.calls[1]?.[1] as RequestInit).body as string,
+      (mockFetch.mock.calls[1]?.[1] as RequestInit).body as string,
     ) as { variables?: { labelIds?: string[] } };
     expect(updateBody.variables?.labelIds).toEqual([
       'existing-label',
@@ -207,7 +207,7 @@ describe('addLabel', () => {
   });
 
   it('skips update when label is already on the issue', async () => {
-    const mockFetch: Fetcher = vi.fn().mockResolvedValue(
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
       jsonResponse({
         data: {
           issueSearch: {
@@ -238,7 +238,7 @@ describe('addLabel', () => {
   });
 
   it('does nothing when label ID is not cached', async () => {
-    const mockFetch: Fetcher = vi.fn();
+    const mockFetch = vi.fn<Fetcher>();
 
     const cache = makeCache();
 
@@ -254,7 +254,7 @@ describe('addLabel', () => {
   });
 
   it('does not throw on failure', async () => {
-    const mockFetch: Fetcher = vi.fn().mockRejectedValue(new Error('network'));
+    const mockFetch = vi.fn<Fetcher>().mockRejectedValue(new Error('network'));
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const cache = makeCache();
@@ -276,8 +276,8 @@ describe('addLabel', () => {
 
 describe('removeLabel', () => {
   it('removes label ID from issue label list', async () => {
-    const mockFetch: Fetcher = vi
-      .fn()
+    const mockFetch = vi
+      .fn<Fetcher>()
       // Issue lookup
       .mockResolvedValueOnce(
         jsonResponse({
@@ -315,14 +315,14 @@ describe('removeLabel', () => {
     });
 
     const updateBody = JSON.parse(
-      (vi.mocked(mockFetch).mock.calls[1]?.[1] as RequestInit).body as string,
+      (mockFetch.mock.calls[1]?.[1] as RequestInit).body as string,
     ) as { variables?: { labelIds?: string[] } };
     expect(updateBody.variables?.labelIds).toEqual(['keep-label']);
   });
 
   it('finds label by name when not cached', async () => {
-    const mockFetch: Fetcher = vi
-      .fn()
+    const mockFetch = vi
+      .fn<Fetcher>()
       .mockResolvedValueOnce(
         jsonResponse({
           data: {
@@ -354,13 +354,13 @@ describe('removeLabel', () => {
     });
 
     const updateBody = JSON.parse(
-      (vi.mocked(mockFetch).mock.calls[1]?.[1] as RequestInit).body as string,
+      (mockFetch.mock.calls[1]?.[1] as RequestInit).body as string,
     ) as { variables?: { labelIds?: string[] } };
     expect(updateBody.variables?.labelIds).toEqual([]);
   });
 
   it('skips update when label is not on the issue', async () => {
-    const mockFetch: Fetcher = vi.fn().mockResolvedValue(
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
       jsonResponse({
         data: {
           issueSearch: {
@@ -393,7 +393,7 @@ describe('removeLabel', () => {
   });
 
   it('does not throw on failure', async () => {
-    const mockFetch: Fetcher = vi.fn().mockRejectedValue(new Error('network'));
+    const mockFetch = vi.fn<Fetcher>().mockRejectedValue(new Error('network'));
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const cache = makeCache();
