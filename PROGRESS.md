@@ -2,24 +2,26 @@
 
 ## Session 42 Handoff
 
-**Phase 12 in progress — 4 of 13 PRs done.** 1574 core tests, 753 terminal tests.
+**Phase 12 in progress — 5 of 13 PRs done.** 1574 core tests, 756 terminal tests.
 
 ### What was done
 
 - **12.4** (#132): Cleanup helpers — `cleanupTicket()` dispatch for 6 boards, `cleanupPullRequest()`, `cleanupBranch()`. Split into 8 files matching ticket-factory pattern. Exported `E2EBoard` from `env.ts`, updated ticket-factory to import it. 6 tests.
+- **12.5** (#133): Garbage collector — `cleanupOrphanTickets()` dispatch for 6 boards + CLI entry point (`npx tsx gc.ts`). Searches for `[QA]` tickets >24h and closes/deletes them. GitHub GC also cleans orphan PRs and `feature/*` branches. Split into 8 files. 3 tests.
 
 ### Key decisions
 
 - **`cleanupPullRequest` simplified:** Dropped the `board` param (old code passed it but all boards routed to the same GitHub cleanup). Takes only `prNumber`.
 - **`E2EBoard` canonical location:** `env.ts` is now the single source. ticket-factory imports from there instead of redeclaring.
 - **Header helpers duplicated locally:** Each board file defines its own header builder (same as ticket-factory pattern) to avoid cross-boundary imports into test code.
+- **GitHub GC 3-pass:** Issues → PRs → branches (closed PR branches). Only deletes `feature/*` branches.
+- **Pagination:** Shortcut (cursor tokens, max 100 pages) and Notion (cursor, max 10 pages) handle paginated results.
+- **WIQL injection guard:** AzDO validates project name with same regex as runtime `isSafeWiqlValue` before interpolation.
 
 ### Next up
 
-- **12.5**: Garbage collector (orphan `[QA]` tickets >24h)
 - **12.6**: GitHub e2e (tracer bullet — first real pipeline test)
-
-Old repo reference: `~/Desktop/alex/clancy/test/e2e/helpers/gc.ts`
+- **12.7**: Jira e2e
 
 ---
 
@@ -108,10 +110,10 @@ Location: `packages/terminal/test/e2e/`. File convention: `*.e2e.ts` (not picked
 | PR    | Scope                    | Description                                                                                   | Status      |
 | ----- | ------------------------ | --------------------------------------------------------------------------------------------- | ----------- |
 | 12.1  | E2E scaffold             | Test location, vitest e2e config, `.env.e2e.example`, port `fetch-timeout.ts` + `git-auth.ts` | Done (#129) |
-| 12.2  | Credential loader + auth | Port `env.ts`, `azdo-auth.ts`, `jira-auth.ts`                                                 | Done        |
-| 12.3  | Ticket factory           | `createTestTicket()` for 6 boards, `generateRunId()`                                          | Done        |
-| 12.4  | Cleanup helpers          | `cleanupTicket()`, `cleanupPullRequest()`, `cleanupBranch()` — per-board teardown             | Pending     |
-| 12.5  | Garbage collector        | Orphan cleanup for stale `[QA]` tickets >24h. Standalone CLI + importable                     | Pending     |
+| 12.2  | Credential loader + auth | Port `env.ts`, `azdo-auth.ts`, `jira-auth.ts`                                                 | Done (#130) |
+| 12.3  | Ticket factory           | `createTestTicket()` for 6 boards, `generateRunId()`                                          | Done (#131) |
+| 12.4  | Cleanup helpers          | `cleanupTicket()`, `cleanupPullRequest()`, `cleanupBranch()` — per-board teardown             | Done (#132) |
+| 12.5  | Garbage collector        | Orphan cleanup for stale `[QA]` tickets >24h. Standalone CLI + importable                     | Done (#133) |
 | 12.6  | GitHub e2e               | Tracer bullet — first e2e test: `runPipeline` + real GitHub fetcher + Claude simulator        | Pending     |
 | 12.7  | Jira e2e                 | Jira board e2e test                                                                           | Pending     |
 | 12.8  | Linear e2e               | Linear board e2e test (GraphQL)                                                               | Pending     |
