@@ -6,6 +6,7 @@
  * - {@link createRepoWithRemote} — temp git repo with bare remote and `.clancy/.env`
  * - {@link setupPipeline} — full pipeline wiring with configurable overrides
  */
+import type { SimulatorResponse } from '../../helpers/claude-simulator.js';
 import type {
   CostFs,
   EnvFileSystem,
@@ -204,17 +205,22 @@ type SetupOpts = {
   readonly envVars: Record<string, string>;
   readonly fetcher: (url: string, init?: RequestInit) => Promise<Response>;
   readonly exitCode?: number;
+  /** Ordered per-call overrides for the Claude simulator. */
+  readonly simulatorResponses?: readonly SimulatorResponse[];
 };
 
 /**
  * Set up a full pipeline with the given board configuration.
  *
- * @param opts - Env vars, mock fetcher, and optional Claude exit code.
+ * @param opts - Env vars, mock fetcher, optional Claude exit code, and optional per-call simulator responses.
  * @returns Repo handle, wired deps, and a run function.
  */
 export function setupPipeline(opts: SetupOpts): PipelineSetup {
   const repo = createRepoWithRemote(opts.envVars);
-  const sim = createClaudeSimulator({ exitCode: opts.exitCode ?? 0 });
+  const sim = createClaudeSimulator({
+    exitCode: opts.exitCode ?? 0,
+    responses: opts.simulatorResponses,
+  });
   const fs = createRealFs();
 
   const deps = buildPipelineDeps({
