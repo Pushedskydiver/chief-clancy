@@ -1,5 +1,35 @@
 # Monorepo Progress
 
+## Session 40 Handoff
+
+**Phase 11.3 in progress.** 1 PR this session: 11.3. 1570 core tests, 696 terminal tests.
+
+### What was done
+
+- **11.3** (#TBD): Board write ops DI fetcher conversion — converted all label CRUD tests (ensureLabel, addLabel, removeLabel) and transition tests (transitionIssue, transitionStory) across all 6 boards from `vi.stubGlobal('fetch')` to DI `fetcher` parameter injection. 9 test files, 71 tests converted. Removed `vi.unstubAllGlobals()`/`vi.stubGlobal` boilerplate. Notion tests converted from `vi.mock('retryFetch')` to DI `ctx.fetcher`. Net -87 lines.
+
+### Key decisions
+
+- **DI over global stubs** — all board write-op functions already accept optional `fetcher?` params (wired in 11.1c). Passing mock fetchers via DI is cleaner, avoids global state pollution between tests, and doesn't require cleanup in `afterEach`.
+- **Transition tests in mixed files** — Jira api.test.ts, Linear relations.test.ts, and Shortcut api.test.ts contain tests for many functions. Only the transition sections were converted; other sections retain their existing patterns to avoid scope creep.
+- **No new tests added** — the existing 71 tests already cover the label CRUD and transition scenarios comprehensively. The change is a testing infrastructure improvement, not a coverage expansion.
+
+### Phase 11 Progress
+
+- **11.1a** (#118): Claude simulator + shared fixtures — +13 tests.
+- **11.1b** (#119): Temp repo + env fixtures — +12 tests.
+- **11.1c** (#120): DI fetcher wiring — 40+ files changed.
+- **11.2a** (#121): GitHub happy path integration test — +8 integration tests.
+- **11.2b** (#122): Remaining boards happy path — +40 integration tests.
+- **11.2c** (#123): Abort scenarios — +13 integration tests.
+- **11.3** (#TBD): Board write ops DI fetcher — 71 tests converted from `vi.stubGlobal` to DI fetcher. 9 files, -87 lines.
+
+### Next up
+
+Phase 11.4 — Advanced scenarios (blocked ticket recursion, stale lock recovery, partial-push recovery, autopilot multi-iteration).
+
+---
+
 ## Session 39 Handoff
 
 **Phase 11.2 complete.** 2 PRs this session: 11.2b + 11.2c. 1570 core tests, 704 terminal tests (was 651 after session 38).

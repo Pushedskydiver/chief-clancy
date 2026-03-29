@@ -341,7 +341,8 @@ describe('transitionIssue', () => {
   });
 
   it('returns true on successful transition', async () => {
-    vi.spyOn(globalThis, 'fetch')
+    const mockFetch = vi
+      .fn()
       // lookupTransitionId
       .mockResolvedValueOnce(
         new Response(
@@ -357,15 +358,18 @@ describe('transitionIssue', () => {
       auth: 'auth',
       issueKey: 'PROJ-42',
       statusName: 'Done',
+      fetcher: mockFetch,
     });
 
     expect(result).toBe(true);
   });
 
   it('returns false when transition not found', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify({ transitions: [] }), { status: 200 }),
-    );
+    const mockFetch = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ transitions: [] }), { status: 200 }),
+      );
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const result = await transitionIssue({
@@ -373,13 +377,14 @@ describe('transitionIssue', () => {
       auth: 'auth',
       issueKey: 'PROJ-42',
       statusName: 'No Such Status',
+      fetcher: mockFetch,
     });
 
     expect(result).toBe(false);
   });
 
   it('returns false on network error', async () => {
-    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('network'));
+    const mockFetch = vi.fn().mockRejectedValue(new Error('network'));
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const result = await transitionIssue({
@@ -387,6 +392,7 @@ describe('transitionIssue', () => {
       auth: 'auth',
       issueKey: 'PROJ-42',
       statusName: 'Done',
+      fetcher: mockFetch,
     });
 
     expect(result).toBe(false);
