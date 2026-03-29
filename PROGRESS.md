@@ -1,5 +1,29 @@
 # Monorepo Progress
 
+## Session 39 Handoff
+
+**Phase 11.2 complete.** 2 PRs this session: 11.2b + 11.2c. 1570 core tests, 704 terminal tests (was 651 after session 38).
+
+### What was done
+
+- **11.2b** (#122): Remaining boards happy path — extracted shared pipeline test infrastructure (`pipeline-helpers.ts`: `setupPipeline`, `createRepoWithRemote`, `createRealFs`, `jsonResponse`), refactored GitHub test to use shared helpers, added integration tests for Jira, Linear, Shortcut, Notion, Azure DevOps. Each board: regex-based mock fetcher matching API schemas, board-specific env vars, 8 tests (completion, branch, lock, progress, dry-run, preflight abort, ticket-fetch abort, invoke abort). Added 30s timeout to all pipeline `describe` blocks for concurrent CI stability. +40 integration tests.
+- **11.2c** (#123): Abort scenarios — ping failure per board (6 tests), feasibility INFEASIBLE abort (2 tests), lock contention with active PID (1 test), stale lock cleanup + continue (1 test), board validation failure for unsafe inputs (3 tests: Jira JQL injection, AzDo WIQL injection, Notion invalid UUID). Extended `pipeline-helpers.ts` with `simulatorResponses` option. Exported `SimulatorResponse` from `claude-simulator.ts` to avoid type duplication. +13 integration tests.
+
+### Key decisions
+
+- **30s timeout on describe blocks** — integration tests were timing out at the 5s default when all 7 test files run concurrently via turbo. Each test creates a git repo + runs the full pipeline.
+- **Simulator responses** — `setupPipeline` now accepts `simulatorResponses` for per-call Claude output overrides, enabling feasibility abort testing without modifying the simulator itself.
+- **Auth-fail fetcher for validation tests** — board validation tests use a 401-returning fetcher instead of a GitHub happy-path fetcher, making intent clear that no fetches should occur during validation aborts.
+- **Rework path** not testable at integration level — rework detection depends on `detectRemote` returning a recognized git host (GitHub/GitLab/etc.), which doesn't work with bare local git remotes. Rework is well-covered by existing unit tests in core.
+
+### Next up
+
+Phase 11.3 — Board write ops: label CRUD + transitions (ensureLabel/addLabel/removeLabel per board via DI fetcher, transitionTicket, idempotence ~54 tests). These are unit tests, not integration tests — each board's label/transition functions tested directly with mock fetchers.
+
+After 11.3: 11.4 (advanced scenarios).
+
+---
+
 ## Session 38 Handoff
 
 **Phase 11 integration tests in progress.** 4 PRs this session: 11.1a–11.1c + 11.2a. 1570 core tests, 651 terminal tests (was 610 + 1570 after session 37).
