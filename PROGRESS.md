@@ -1,5 +1,37 @@
 # Monorepo Progress
 
+## Session 41 Handoff
+
+**Phase 12 in progress — 3 of 13 PRs done.** 4 PRs this session: phase plan commit + 12.1–12.3. 1574 core tests, 746 terminal tests.
+
+### What was done
+
+- **Phase plan**: Planned Phase 12 (E2E/Smoke Tests), inserted into brief, renumbered old 12–14 → 13–15.
+- **12.1** (#129): E2E scaffold — vitest e2e config (60s timeout, sequential, `.e2e.ts` convention), `.env.e2e.example`, `fetchWithTimeout` (DI fetcher, AbortController), `git-auth` (GIT_ASKPASS, shell injection protection, env restore). 16 tests.
+- **12.2** (#130): Credential loader + auth — `env.ts` (per-board getters, `hasCredentials`, `loadEnvFile` with TOCTOU fix), `azdo-auth.ts`, `jira-auth.ts`. Also fixed flaky `isLockStale` boundary test with fake timers. 28 tests.
+- **12.3** (#131): Ticket factory — `createTestTicket` dispatch + per-board files (GitHub, Jira, Linear/GraphQL, Shortcut, Notion/schema discovery, Azure DevOps/identity resolution). Split into 8 files to stay under 300-line convention. 7 tests.
+
+### Key decisions
+
+- **Test location:** `packages/terminal/test/e2e/` with `.e2e.ts` naming convention (not picked up by existing `*.test.ts` vitest configs)
+- **E2e vitest config:** `defineConfig` (not `defineProject`) — runs standalone, not as workspace project
+- **DI in helpers:** `fetchWithTimeout` accepts optional `fetcher` param; `loadEnvFile` uses direct `fs` (test helper exemption from DI convention)
+- **Shell injection:** `git-auth.ts` uses single-quoted `tokenPath` in askpass script
+- **Env restore:** `configureGitAuth` captures/restores original `GIT_ASKPASS` and `GIT_TERMINAL_PROMPT`
+- **TOCTOU fix:** `loadEnvFile` uses try/catch instead of `existsSync` + `readFileSync`
+- **Types non-exported:** `E2EBoard`, credential types, `discoverNotionSchema`, `resolveLinearTeamUuid` — export when consumed (12.4+)
+- **Old `.env.e2e` reusable:** Same credential variables, `.gitignore` already covers `.env*`
+
+### Next up
+
+- **12.4**: Cleanup helpers (`cleanupTicket`, `cleanupPullRequest`, `cleanupBranch` — per-board teardown)
+- **12.5**: Garbage collector (orphan `[QA]` tickets >24h)
+- **12.6**: GitHub e2e (tracer bullet — first real pipeline test)
+
+Old repo reference: `~/Desktop/alex/clancy/test/e2e/helpers/cleanup.ts` and `gc.ts`
+
+---
+
 ## Session 40 Handoff
 
 **Phase 11 complete + audit clean.** 5 PRs this session: 11.3, 11.4, C41–C43. 1574 core tests, 696 terminal tests.
