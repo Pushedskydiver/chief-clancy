@@ -53,7 +53,7 @@ Location: `packages/terminal/test/e2e/`. File convention: `*.e2e.ts` (not picked
 | PR    | Scope                    | Description                                                                                   | Status      |
 | ----- | ------------------------ | --------------------------------------------------------------------------------------------- | ----------- |
 | 12.1  | E2E scaffold             | Test location, vitest e2e config, `.env.e2e.example`, port `fetch-timeout.ts` + `git-auth.ts` | Done (#129) |
-| 12.2  | Credential loader + auth | Port `env.ts`, `azdo-auth.ts`, `jira-auth.ts`                                                 | Pending     |
+| 12.2  | Credential loader + auth | Port `env.ts`, `azdo-auth.ts`, `jira-auth.ts`                                                 | Done        |
 | 12.3  | Ticket factory           | `createTestTicket()` for 6 boards, `generateRunId()`                                          | Pending     |
 | 12.4  | Cleanup helpers          | `cleanupTicket()`, `cleanupPullRequest()`, `cleanupBranch()` — per-board teardown             | Pending     |
 | 12.5  | Garbage collector        | Orphan cleanup for stale `[QA]` tickets >24h. Standalone CLI + importable                     | Pending     |
