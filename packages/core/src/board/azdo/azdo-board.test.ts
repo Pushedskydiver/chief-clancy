@@ -1,4 +1,5 @@
 import type { AzdoEnv } from '~/c/schemas/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 import type { FetchedTicket } from '~/c/types/index.js';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -13,7 +14,7 @@ const baseEnv: AzdoEnv = {
 
 describe('createAzdoBoard', () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   // ─── Interface check ────────────────────────────────────────────────────
@@ -93,21 +94,18 @@ describe('createAzdoBoard', () => {
 
   describe('ping', () => {
     it('delegates to pingAzdo', async () => {
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue(
-          new Response(
-            JSON.stringify({
-              id: 'proj-uuid',
-              name: 'P',
-              state: 'wellFormed',
-            }),
-            { status: 200 },
-          ),
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: 'proj-uuid',
+            name: 'P',
+            state: 'wellFormed',
+          }),
+          { status: 200 },
         ),
       );
 
-      const board = createAzdoBoard(baseEnv);
+      const board = createAzdoBoard(baseEnv, mockFetch);
       const result = await board.ping();
       expect(result.ok).toBe(true);
     });
@@ -118,7 +116,7 @@ describe('createAzdoBoard', () => {
   describe('fetchTickets', () => {
     it('returns normalised FetchedTickets', async () => {
       const mockFetch = vi
-        .fn()
+        .fn<Fetcher>()
         // WIQL response
         .mockResolvedValueOnce(
           new Response(JSON.stringify({ workItems: [{ id: 42 }] }), {
@@ -149,9 +147,8 @@ describe('createAzdoBoard', () => {
             { status: 200 },
           ),
         );
-      vi.stubGlobal('fetch', mockFetch);
 
-      const board = createAzdoBoard(baseEnv);
+      const board = createAzdoBoard(baseEnv, mockFetch);
       const tickets = await board.fetchTickets({});
 
       expect(tickets).toHaveLength(1);
@@ -166,7 +163,7 @@ describe('createAzdoBoard', () => {
 
     it('sets parentInfo to none when no parent', async () => {
       const mockFetch = vi
-        .fn()
+        .fn<Fetcher>()
         .mockResolvedValueOnce(
           new Response(JSON.stringify({ workItems: [{ id: 42 }] }), {
             status: 200,
@@ -186,25 +183,26 @@ describe('createAzdoBoard', () => {
             { status: 200 },
           ),
         );
-      vi.stubGlobal('fetch', mockFetch);
 
-      const board = createAzdoBoard(baseEnv);
+      const board = createAzdoBoard(baseEnv, mockFetch);
       const tickets = await board.fetchTickets({});
       expect(tickets[0].parentInfo).toBe('none');
     });
 
     it('uses custom status from CLANCY_AZDO_STATUS', async () => {
       const mockFetch = vi
-        .fn()
+        .fn<Fetcher>()
         .mockResolvedValue(
           new Response(JSON.stringify({ workItems: [] }), { status: 200 }),
         );
-      vi.stubGlobal('fetch', mockFetch);
 
-      const board = createAzdoBoard({
-        ...baseEnv,
-        CLANCY_AZDO_STATUS: 'Active',
-      });
+      const board = createAzdoBoard(
+        {
+          ...baseEnv,
+          CLANCY_AZDO_STATUS: 'Active',
+        },
+        mockFetch,
+      );
       await board.fetchTickets({});
 
       // Verify WIQL contains Active status
@@ -219,7 +217,7 @@ describe('createAzdoBoard', () => {
   describe('fetchTicket', () => {
     it('returns the first ticket from fetchTickets', async () => {
       const mockFetch = vi
-        .fn()
+        .fn<Fetcher>()
         .mockResolvedValueOnce(
           new Response(JSON.stringify({ workItems: [{ id: 1 }, { id: 2 }] }), {
             status: 200,
@@ -244,9 +242,8 @@ describe('createAzdoBoard', () => {
             { status: 200 },
           ),
         );
-      vi.stubGlobal('fetch', mockFetch);
 
-      const board = createAzdoBoard(baseEnv);
+      const board = createAzdoBoard(baseEnv, mockFetch);
       const ticket = await board.fetchTicket({});
 
       expect(ticket).toBeDefined();
@@ -254,16 +251,13 @@ describe('createAzdoBoard', () => {
     });
 
     it('returns undefined when no tickets', async () => {
-      vi.stubGlobal(
-        'fetch',
-        vi
-          .fn()
-          .mockResolvedValue(
-            new Response(JSON.stringify({ workItems: [] }), { status: 200 }),
-          ),
-      );
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockResolvedValue(
+          new Response(JSON.stringify({ workItems: [] }), { status: 200 }),
+        );
 
-      const board = createAzdoBoard(baseEnv);
+      const board = createAzdoBoard(baseEnv, mockFetch);
       const ticket = await board.fetchTicket({});
       expect(ticket).toBeUndefined();
     });
@@ -273,21 +267,18 @@ describe('createAzdoBoard', () => {
 
   describe('fetchBlockerStatus', () => {
     it('delegates to fetchBlockerStatus with parsed ID', async () => {
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue(
-          new Response(
-            JSON.stringify({
-              id: 42,
-              fields: { 'System.Title': 'Test' },
-              relations: null,
-            }),
-            { status: 200 },
-          ),
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: 42,
+            fields: { 'System.Title': 'Test' },
+            relations: null,
+          }),
+          { status: 200 },
         ),
       );
 
-      const board = createAzdoBoard(baseEnv);
+      const board = createAzdoBoard(baseEnv, mockFetch);
       const ticket: FetchedTicket = {
         key: 'azdo-42',
         title: 'Test',
@@ -335,10 +326,11 @@ describe('createAzdoBoard', () => {
 
   describe('transitionTicket', () => {
     it('updates System.State via JSON Patch', async () => {
-      const mockFetch = vi.fn().mockResolvedValue({ ok: true });
-      vi.stubGlobal('fetch', mockFetch);
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockResolvedValue({ ok: true } as Response);
 
-      const board = createAzdoBoard(baseEnv);
+      const board = createAzdoBoard(baseEnv, mockFetch);
       const ticket: FetchedTicket = {
         key: 'azdo-42',
         title: 'Test',
@@ -388,7 +380,7 @@ describe('createAzdoBoard', () => {
   describe('addLabel', () => {
     it('delegates to label module addLabel', async () => {
       const mockFetch = vi
-        .fn()
+        .fn<Fetcher>()
         .mockResolvedValueOnce(
           new Response(
             JSON.stringify({
@@ -399,10 +391,9 @@ describe('createAzdoBoard', () => {
             { status: 200 },
           ),
         )
-        .mockResolvedValueOnce({ ok: true });
-      vi.stubGlobal('fetch', mockFetch);
+        .mockResolvedValueOnce({ ok: true } as Response);
 
-      const board = createAzdoBoard(baseEnv);
+      const board = createAzdoBoard(baseEnv, mockFetch);
       await board.addLabel('azdo-42', 'new-tag');
 
       expect(mockFetch).toHaveBeenCalledTimes(2);
@@ -412,7 +403,7 @@ describe('createAzdoBoard', () => {
   describe('removeLabel', () => {
     it('delegates to label module removeLabel', async () => {
       const mockFetch = vi
-        .fn()
+        .fn<Fetcher>()
         .mockResolvedValueOnce(
           new Response(
             JSON.stringify({
@@ -423,10 +414,9 @@ describe('createAzdoBoard', () => {
             { status: 200 },
           ),
         )
-        .mockResolvedValueOnce({ ok: true });
-      vi.stubGlobal('fetch', mockFetch);
+        .mockResolvedValueOnce({ ok: true } as Response);
 
-      const board = createAzdoBoard(baseEnv);
+      const board = createAzdoBoard(baseEnv, mockFetch);
       await board.removeLabel('azdo-42', 'remove-me');
 
       expect(mockFetch).toHaveBeenCalledTimes(2);

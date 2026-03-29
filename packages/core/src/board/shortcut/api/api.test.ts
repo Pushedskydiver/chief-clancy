@@ -59,52 +59,47 @@ describe('shortcutHeaders', () => {
 
 describe('pingShortcut', () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('returns ok on valid member-info response', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve({ id: 'user-uuid', mention_name: 'alex' }),
-      } as Response),
-    );
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ id: 'user-uuid', mention_name: 'alex' }),
+    } as Response);
 
-    const result = await pingShortcut('tok');
+    const result = await pingShortcut('tok', mockFetch);
     expect(result).toEqual({ ok: true });
   });
 
   it('falls back to /workflows when member-info fails', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       .mockResolvedValueOnce({ ok: false, status: 404 } as Response)
       .mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve([{ id: 1, name: 'Eng', states: [] }]),
       } as Response);
-    vi.stubGlobal('fetch', mockFetch);
 
-    const result = await pingShortcut('tok');
+    const result = await pingShortcut('tok', mockFetch);
     expect(result).toEqual({ ok: true });
     expect(mockFetch).toHaveBeenCalledTimes(2);
   });
 
   it('returns auth error on 401', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({ ok: false, status: 401 } as Response),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue({ ok: false, status: 401 } as Response);
 
-    const result = await pingShortcut('tok');
+    const result = await pingShortcut('tok', mockFetch);
     expect(result.ok).toBe(false);
     expect(result.error).toContain('auth failed');
   });
 
   it('returns network error on fetch failure', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
+    const mockFetch = vi.fn<Fetcher>().mockRejectedValue(new Error('offline'));
 
-    const result = await pingShortcut('tok');
+    const result = await pingShortcut('tok', mockFetch);
     expect(result.ok).toBe(false);
     expect(result.error).toContain('network');
   });
@@ -114,50 +109,43 @@ describe('pingShortcut', () => {
 
 describe('fetchWorkflows', () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('returns workflows on success', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(WORKFLOWS),
-      } as Response),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue(
+        new Response(JSON.stringify(WORKFLOWS), { status: 200 }),
+      );
 
     const cache = makeCache();
-    const result = await fetchWorkflows('tok', cache);
+    const result = await fetchWorkflows('tok', cache, mockFetch);
     expect(result).toHaveLength(2);
     expect(result[0]?.name).toBe('Engineering');
   });
 
   it('returns cached value on subsequent calls', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(WORKFLOWS),
-    } as Response);
-    vi.stubGlobal('fetch', mockFetch);
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue(
+        new Response(JSON.stringify(WORKFLOWS), { status: 200 }),
+      );
 
     const cache = makeCache();
-    await fetchWorkflows('tok', cache);
-    await fetchWorkflows('tok', cache);
+    await fetchWorkflows('tok', cache, mockFetch);
+    await fetchWorkflows('tok', cache, mockFetch);
 
     expect(mockFetch).toHaveBeenCalledTimes(1);
   });
 
   it('returns empty array on failure', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: false,
-        status: 500,
-        text: () => Promise.resolve('error'),
-      } as Response),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue(new Response('error', { status: 500 }));
 
     const cache = makeCache();
-    const result = await fetchWorkflows('tok', cache);
+    const result = await fetchWorkflows('tok', cache, mockFetch);
     expect(result).toEqual([]);
   });
 });
@@ -165,10 +153,6 @@ describe('fetchWorkflows', () => {
 // ── resolveWorkflowStateId ────────────────────────────────────────
 
 describe('resolveWorkflowStateId', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
   it('resolves state name to ID (case-insensitive)', async () => {
     const cache = makeCache();
     cache.store(WORKFLOWS);
@@ -207,10 +191,6 @@ describe('resolveWorkflowStateId', () => {
 // ── resolveWorkflowStateIdsByType ─────────────────────────────────
 
 describe('resolveWorkflowStateIdsByType', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
   it('returns all IDs for a given type', async () => {
     const cache = makeCache();
     cache.store(WORKFLOWS);
@@ -249,10 +229,6 @@ describe('resolveWorkflowStateIdsByType', () => {
 // ── resolveDoneStateIds ───────────────────────────────────────────
 
 describe('resolveDoneStateIds', () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
   it('returns set of done state IDs', async () => {
     const cache = makeCache();
     cache.store(WORKFLOWS);
@@ -268,7 +244,7 @@ describe('resolveDoneStateIds', () => {
 
 describe('fetchStories', () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('returns empty array when no workflow state IDs', async () => {
@@ -280,28 +256,26 @@ describe('fetchStories', () => {
   });
 
   it('maps stories to ShortcutTicket shape', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: [
-              {
-                id: 42,
-                name: 'Fix bug',
-                description: 'A bug',
-                epic_id: 10,
-                labels: [{ id: 1, name: 'bug' }],
-              },
-            ],
-          }),
-      } as Response),
-    );
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: [
+            {
+              id: 42,
+              name: 'Fix bug',
+              description: 'A bug',
+              epic_id: 10,
+              labels: [{ id: 1, name: 'bug' }],
+            },
+          ],
+        }),
+    } as Response);
 
     const result = await fetchStories({
       token: 'tok',
       workflowStateIds: [100],
+      fetcher: mockFetch,
     });
 
     expect(result).toHaveLength(1);
@@ -317,18 +291,16 @@ describe('fetchStories', () => {
   });
 
   it('handles bare array response shape', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve([{ id: 1, name: 'Story', description: null }]),
-      } as Response),
-    );
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve([{ id: 1, name: 'Story', description: null }]),
+    } as Response);
 
     const result = await fetchStories({
       token: 'tok',
       workflowStateIds: [100],
+      fetcher: mockFetch,
     });
 
     expect(result).toHaveLength(1);
@@ -336,28 +308,26 @@ describe('fetchStories', () => {
   });
 
   it('filters HITL stories when excludeHitl is true', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: [
-              { id: 1, name: 'Normal', labels: [{ id: 1, name: 'bug' }] },
-              {
-                id: 2,
-                name: 'HITL',
-                labels: [{ id: 2, name: 'clancy:hitl' }],
-              },
-            ],
-          }),
-      } as Response),
-    );
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: [
+            { id: 1, name: 'Normal', labels: [{ id: 1, name: 'bug' }] },
+            {
+              id: 2,
+              name: 'HITL',
+              labels: [{ id: 2, name: 'clancy:hitl' }],
+            },
+          ],
+        }),
+    } as Response);
 
     const result = await fetchStories({
       token: 'tok',
       workflowStateIds: [100],
       excludeHitl: true,
+      fetcher: mockFetch,
     });
 
     expect(result).toHaveLength(1);
@@ -365,16 +335,16 @@ describe('fetchStories', () => {
   });
 
   it('includes label filter in search body', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ data: [] }),
     } as Response);
-    vi.stubGlobal('fetch', mockFetch);
 
     await fetchStories({
       token: 'tok',
       workflowStateIds: [100],
       label: 'clancy:build',
+      fetcher: mockFetch,
     });
 
     const body = JSON.parse(
@@ -384,43 +354,42 @@ describe('fetchStories', () => {
   });
 
   it('returns empty array on API failure', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({ ok: false, status: 500 } as Response),
-    );
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue({ ok: false, status: 500 } as Response);
 
     const result = await fetchStories({
       token: 'tok',
       workflowStateIds: [100],
+      fetcher: mockFetch,
     });
     expect(result).toEqual([]);
   });
 
   it('returns empty array on network error', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')));
+    const mockFetch = vi.fn<Fetcher>().mockRejectedValue(new Error('offline'));
 
     const result = await fetchStories({
       token: 'tok',
       workflowStateIds: [100],
+      fetcher: mockFetch,
     });
     expect(result).toEqual([]);
   });
 
   it('handles null description', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () =>
-          Promise.resolve({
-            data: [{ id: 1, name: 'Story', description: null }],
-          }),
-      } as Response),
-    );
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: [{ id: 1, name: 'Story', description: null }],
+        }),
+    } as Response);
 
     const result = await fetchStories({
       token: 'tok',
       workflowStateIds: [100],
+      fetcher: mockFetch,
     });
     expect(result[0]?.description).toBe('');
   });

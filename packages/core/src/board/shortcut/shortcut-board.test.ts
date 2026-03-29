@@ -1,4 +1,6 @@
 import type { ShortcutEnv } from '~/c/schemas/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
+import type { Mock } from 'vitest';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -15,15 +17,14 @@ function makeEnv(overrides?: Partial<ShortcutEnv>): ShortcutEnv {
 /** Stub fetch to return workflows + stories in sequence. */
 function stubWorkflowsAndStories(
   stories: readonly unknown[] = [],
-): ReturnType<typeof vi.fn> {
+): Mock<Fetcher> {
   return (
     vi
-      .fn()
+      .fn<Fetcher>()
       // fetchWorkflows
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () =>
-          Promise.resolve([
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify([
             {
               id: 1,
               name: 'Eng',
@@ -34,7 +35,9 @@ function stubWorkflowsAndStories(
               ],
             },
           ]),
-      } as Response)
+          { status: 200 },
+        ),
+      )
       // fetchStories
       .mockResolvedValueOnce({
         ok: true,
@@ -45,7 +48,7 @@ function stubWorkflowsAndStories(
 
 describe('createShortcutBoard', () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('returns an object with all Board methods', () => {
@@ -76,20 +79,17 @@ describe('createShortcutBoard', () => {
   });
 
   it('fetchTickets maps stories to FetchedTicket shape', async () => {
-    vi.stubGlobal(
-      'fetch',
-      stubWorkflowsAndStories([
-        {
-          id: 42,
-          name: 'Fix bug',
-          description: 'A bug',
-          epic_id: 10,
-          labels: [{ id: 1, name: 'bug' }],
-        },
-      ]),
-    );
+    const mockFetch = stubWorkflowsAndStories([
+      {
+        id: 42,
+        name: 'Fix bug',
+        description: 'A bug',
+        epic_id: 10,
+        labels: [{ id: 1, name: 'bug' }],
+      },
+    ]);
 
-    const board = createShortcutBoard(makeEnv());
+    const board = createShortcutBoard(makeEnv(), mockFetch);
     const tickets = await board.fetchTickets({});
 
     expect(tickets).toHaveLength(1);
@@ -105,34 +105,30 @@ describe('createShortcutBoard', () => {
   });
 
   it('fetchTicket returns first ticket', async () => {
-    vi.stubGlobal(
-      'fetch',
-      stubWorkflowsAndStories([
-        { id: 1, name: 'First' },
-        { id: 2, name: 'Second' },
-      ]),
-    );
+    const mockFetch = stubWorkflowsAndStories([
+      { id: 1, name: 'First' },
+      { id: 2, name: 'Second' },
+    ]);
 
-    const board = createShortcutBoard(makeEnv());
+    const board = createShortcutBoard(makeEnv(), mockFetch);
     const ticket = await board.fetchTicket({});
     expect(ticket?.key).toBe('sc-1');
   });
 
   it('fetchTicket returns undefined when no stories', async () => {
-    vi.stubGlobal('fetch', stubWorkflowsAndStories([]));
+    const mockFetch = stubWorkflowsAndStories([]);
 
-    const board = createShortcutBoard(makeEnv());
+    const board = createShortcutBoard(makeEnv(), mockFetch);
     const ticket = await board.fetchTicket({});
     expect(ticket).toBeUndefined();
   });
 
   it('parentInfo defaults to "none" when no epicId', async () => {
-    vi.stubGlobal(
-      'fetch',
-      stubWorkflowsAndStories([{ id: 1, name: 'Story', epic_id: null }]),
-    );
+    const mockFetch = stubWorkflowsAndStories([
+      { id: 1, name: 'Story', epic_id: null },
+    ]);
 
-    const board = createShortcutBoard(makeEnv());
+    const board = createShortcutBoard(makeEnv(), mockFetch);
     const tickets = await board.fetchTickets({});
     expect(tickets[0]?.parentInfo).toBe('none');
   });
@@ -183,9 +179,8 @@ describe('createShortcutBoard', () => {
           ],
         }),
     } as Response);
-    vi.stubGlobal('fetch', mockFetch);
 
-    const board = createShortcutBoard(makeEnv());
+    const board = createShortcutBoard(makeEnv(), mockFetch);
     // First call warms the workflow cache
     await board.fetchTickets({});
 
@@ -196,12 +191,11 @@ describe('createShortcutBoard', () => {
 
   it('transitionTicket succeeds with valid key', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       // fetchWorkflows
-      .mockResolvedValueOnce({
-        ok: true,
-        json: () =>
-          Promise.resolve([
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify([
             {
               id: 1,
               name: 'Eng',
@@ -211,13 +205,14 @@ describe('createShortcutBoard', () => {
               ],
             },
           ]),
-      } as Response)
+          { status: 200 },
+        ),
+      )
       // transitionStory PUT
       .mockResolvedValueOnce({ ok: true } as Response);
-    vi.stubGlobal('fetch', mockFetch);
     vi.spyOn(console, 'log').mockImplementation(() => {});
 
-    const board = createShortcutBoard(makeEnv());
+    const board = createShortcutBoard(makeEnv(), mockFetch);
     const result = await board.transitionTicket(
       {
         key: 'sc-42',
@@ -233,10 +228,10 @@ describe('createShortcutBoard', () => {
 
   it('uses CLANCY_LABEL for default label filter', async () => {
     const mockFetch = stubWorkflowsAndStories([]);
-    vi.stubGlobal('fetch', mockFetch);
 
     const board = createShortcutBoard(
       makeEnv({ CLANCY_LABEL: 'clancy:build' }),
+      mockFetch,
     );
     await board.fetchTickets({});
 
@@ -249,10 +244,10 @@ describe('createShortcutBoard', () => {
 
   it('buildLabel in opts overrides CLANCY_LABEL', async () => {
     const mockFetch = stubWorkflowsAndStories([]);
-    vi.stubGlobal('fetch', mockFetch);
 
     const board = createShortcutBoard(
       makeEnv({ CLANCY_LABEL: 'clancy:build' }),
+      mockFetch,
     );
     await board.fetchTickets({ buildLabel: 'custom:label' });
 
@@ -263,10 +258,9 @@ describe('createShortcutBoard', () => {
   });
 
   it('uses SHORTCUT_WORKFLOW for workflow scoping', async () => {
-    const mockFetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: () =>
-        Promise.resolve([
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
+      new Response(
+        JSON.stringify([
           {
             id: 1,
             name: 'Engineering',
@@ -278,11 +272,13 @@ describe('createShortcutBoard', () => {
             states: [{ id: 200, name: 'To Do', type: 'unstarted' }],
           },
         ]),
-    } as Response);
-    vi.stubGlobal('fetch', mockFetch);
+        { status: 200 },
+      ),
+    );
 
     const board = createShortcutBoard(
       makeEnv({ SHORTCUT_WORKFLOW: 'Engineering' }),
+      mockFetch,
     );
     await board.fetchTickets({});
 

@@ -1,14 +1,10 @@
 import type { NotionEnv } from '~/c/schemas/index.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 import type { FetchedTicket } from '~/c/types/index.js';
 
-import { retryFetch } from '~/c/shared/http/index.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createNotionBoard } from './notion-board.js';
-
-vi.mock('~/c/shared/http/retry-fetch/retry-fetch.js', () => ({
-  retryFetch: vi.fn(),
-}));
 
 const baseEnv: NotionEnv = {
   NOTION_TOKEN: 'ntn_test_token',
@@ -51,9 +47,7 @@ function makeFullPage(
 
 describe('createNotionBoard', () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
     vi.restoreAllMocks();
-    vi.clearAllMocks();
   });
 
   it('returns an object with all Board methods', () => {
@@ -100,9 +94,9 @@ describe('createNotionBoard', () => {
 
   describe('ping', () => {
     it('delegates to pingNotion', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(mockResponse({})));
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValue(mockResponse({}));
 
-      const board = createNotionBoard(baseEnv);
+      const board = createNotionBoard(baseEnv, mockFetch);
       const result = await board.ping();
       expect(result.ok).toBe(true);
     });
@@ -118,7 +112,7 @@ describe('createNotionBoard', () => {
         ['bug'],
       );
 
-      vi.mocked(retryFetch).mockResolvedValue(
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
         mockResponse({
           results: [page],
           has_more: false,
@@ -126,7 +120,7 @@ describe('createNotionBoard', () => {
         }),
       );
 
-      const board = createNotionBoard(baseEnv);
+      const board = createNotionBoard(baseEnv, mockFetch);
       const tickets = await board.fetchTickets({});
 
       expect(tickets).toHaveLength(1);
@@ -140,9 +134,11 @@ describe('createNotionBoard', () => {
     });
 
     it('returns empty array when query returns undefined', async () => {
-      vi.mocked(retryFetch).mockRejectedValue(new Error('network'));
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockRejectedValue(new Error('network'));
 
-      const board = createNotionBoard(baseEnv);
+      const board = createNotionBoard(baseEnv, mockFetch);
       const tickets = await board.fetchTickets({});
       expect(tickets).toEqual([]);
     });
@@ -154,7 +150,7 @@ describe('createNotionBoard', () => {
         ['clancy:hitl'],
       );
 
-      vi.mocked(retryFetch).mockResolvedValue(
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
         mockResponse({
           results: [page],
           has_more: false,
@@ -162,7 +158,7 @@ describe('createNotionBoard', () => {
         }),
       );
 
-      const board = createNotionBoard(baseEnv);
+      const board = createNotionBoard(baseEnv, mockFetch);
       const tickets = await board.fetchTickets({ excludeHitl: true });
       expect(tickets).toEqual([]);
     });
@@ -172,11 +168,11 @@ describe('createNotionBoard', () => {
 
   describe('fetchTicket', () => {
     it('returns undefined when no tickets', async () => {
-      vi.mocked(retryFetch).mockResolvedValue(
-        mockResponse({ results: [], has_more: false }),
-      );
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockResolvedValue(mockResponse({ results: [], has_more: false }));
 
-      const board = createNotionBoard(baseEnv);
+      const board = createNotionBoard(baseEnv, mockFetch);
       const ticket = await board.fetchTicket({});
       expect(ticket).toBeUndefined();
     });
@@ -219,7 +215,7 @@ describe('createNotionBoard', () => {
         },
       };
 
-      vi.mocked(retryFetch).mockResolvedValue(
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
         mockResponse({
           results: [childPage],
           has_more: false,
@@ -227,7 +223,7 @@ describe('createNotionBoard', () => {
         }),
       );
 
-      const board = createNotionBoard(baseEnv);
+      const board = createNotionBoard(baseEnv, mockFetch);
       const result = await board.fetchChildrenStatus('notion-ab12cd34');
 
       expect(result).toEqual({ total: 1, incomplete: 1 });
@@ -250,7 +246,8 @@ describe('createNotionBoard', () => {
         },
       };
 
-      vi.mocked(retryFetch)
+      const mockFetch = vi
+        .fn<Fetcher>()
         // findPageByKey → queryAllPages
         .mockResolvedValueOnce(
           mockResponse({
@@ -262,10 +259,10 @@ describe('createNotionBoard', () => {
         // updatePage PATCH
         .mockResolvedValueOnce(mockResponse({}));
 
-      const board = createNotionBoard(baseEnv);
+      const board = createNotionBoard(baseEnv, mockFetch);
       await board.addLabel('notion-ab12cd34', 'new-label');
 
-      expect(retryFetch).toHaveBeenCalledWith(
+      expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('/pages/'),
         expect.objectContaining({ method: 'PATCH' }),
       );
@@ -286,7 +283,8 @@ describe('createNotionBoard', () => {
         },
       };
 
-      vi.mocked(retryFetch)
+      const mockFetch = vi
+        .fn<Fetcher>()
         // findPageByKey → queryAllPages
         .mockResolvedValueOnce(
           mockResponse({
@@ -298,10 +296,10 @@ describe('createNotionBoard', () => {
         // updatePage PATCH
         .mockResolvedValueOnce(mockResponse({}));
 
-      const board = createNotionBoard(baseEnv);
+      const board = createNotionBoard(baseEnv, mockFetch);
       await board.removeLabel('notion-ab12cd34', 'old-label');
 
-      expect(retryFetch).toHaveBeenCalledWith(
+      expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('/pages/'),
         expect.objectContaining({ method: 'PATCH' }),
       );
@@ -312,9 +310,9 @@ describe('createNotionBoard', () => {
 
   describe('transitionTicket', () => {
     it('updates page status property', async () => {
-      vi.mocked(retryFetch).mockResolvedValue(mockResponse({}));
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValue(mockResponse({}));
 
-      const board = createNotionBoard(baseEnv);
+      const board = createNotionBoard(baseEnv, mockFetch);
       const ticket: FetchedTicket = {
         key: 'notion-ab12cd34',
         title: 'Test',
@@ -327,18 +325,19 @@ describe('createNotionBoard', () => {
       const result = await board.transitionTicket(ticket, 'In Progress');
       expect(result).toBe(true);
 
-      expect(retryFetch).toHaveBeenCalledWith(
+      expect(mockFetch).toHaveBeenCalledWith(
         expect.stringContaining('/pages/'),
         expect.objectContaining({ method: 'PATCH' }),
       );
     });
 
     it('falls back to select on status failure', async () => {
-      vi.mocked(retryFetch)
+      const mockFetch = vi
+        .fn<Fetcher>()
         .mockResolvedValueOnce(mockResponse({}, 400))
         .mockResolvedValueOnce(mockResponse({}));
 
-      const board = createNotionBoard(baseEnv);
+      const board = createNotionBoard(baseEnv, mockFetch);
       const ticket: FetchedTicket = {
         key: 'notion-ab12cd34',
         title: 'Test',
@@ -350,7 +349,7 @@ describe('createNotionBoard', () => {
 
       const result = await board.transitionTicket(ticket, 'Done');
       expect(result).toBe(true);
-      expect(retryFetch).toHaveBeenCalledTimes(2);
+      expect(mockFetch).toHaveBeenCalledTimes(2);
     });
 
     it('returns false when no issueId', async () => {

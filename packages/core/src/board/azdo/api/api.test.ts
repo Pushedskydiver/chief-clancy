@@ -1,4 +1,5 @@
 import type { AzdoCtx } from './helpers.js';
+import type { Fetcher } from '~/c/shared/http/index.js';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -16,7 +17,7 @@ const baseCtx: AzdoCtx = { org: 'myorg', project: 'MyProject', pat: 'pat' };
 
 describe('azdo api', () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   // ─── workItemToTicket ─────────────────────────────────────────────────────
@@ -74,42 +75,41 @@ describe('azdo api', () => {
 
   describe('pingAzdo', () => {
     it('returns ok true on successful response', async () => {
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue(
-          new Response(
-            JSON.stringify({
-              id: 'proj-uuid',
-              name: 'P',
-              state: 'wellFormed',
-            }),
-            { status: 200 },
-          ),
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: 'proj-uuid',
+            name: 'P',
+            state: 'wellFormed',
+          }),
+          { status: 200 },
         ),
       );
 
-      const result = await pingAzdo(baseCtx);
+      const result = await pingAzdo({ ...baseCtx, fetcher: mockFetch });
       expect(result).toEqual({ ok: true });
     });
 
     it('returns error on auth failure', async () => {
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue(new Response('', { status: 401 })),
-      );
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockResolvedValue(new Response('', { status: 401 }));
 
-      const result = await pingAzdo({ ...baseCtx, pat: 'bad' });
+      const result = await pingAzdo({
+        ...baseCtx,
+        pat: 'bad',
+        fetcher: mockFetch,
+      });
       expect(result.ok).toBe(false);
       expect(result.error).toContain('auth failed');
     });
 
     it('returns error on network failure', async () => {
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockRejectedValue(new Error('ECONNREFUSED')),
-      );
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockRejectedValue(new Error('ECONNREFUSED'));
 
-      const result = await pingAzdo(baseCtx);
+      const result = await pingAzdo({ ...baseCtx, fetcher: mockFetch });
       expect(result.ok).toBe(false);
       expect(result.error).toContain('Could not reach');
     });
@@ -119,36 +119,40 @@ describe('azdo api', () => {
 
   describe('runWiql', () => {
     it('returns work item IDs from WIQL response', async () => {
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue(
-          new Response(
-            JSON.stringify({
-              workItems: [{ id: 1 }, { id: 2 }],
-            }),
-            { status: 200 },
-          ),
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            workItems: [{ id: 1 }, { id: 2 }],
+          }),
+          { status: 200 },
         ),
       );
 
-      const ids = await runWiql(baseCtx, 'SELECT ...');
+      const ids = await runWiql(
+        { ...baseCtx, fetcher: mockFetch },
+        'SELECT ...',
+      );
       expect(ids).toEqual([1, 2]);
     });
 
     it('returns empty array on failure', async () => {
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue(new Response('', { status: 400 })),
-      );
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockResolvedValue(new Response('', { status: 400 }));
 
-      const ids = await runWiql(baseCtx, 'BAD');
+      const ids = await runWiql({ ...baseCtx, fetcher: mockFetch }, 'BAD');
       expect(ids).toEqual([]);
     });
 
     it('returns empty array on network failure', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('timeout')));
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockRejectedValue(new Error('timeout'));
 
-      const ids = await runWiql(baseCtx, 'SELECT ...');
+      const ids = await runWiql(
+        { ...baseCtx, fetcher: mockFetch },
+        'SELECT ...',
+      );
       expect(ids).toEqual([]);
     });
   });
@@ -157,32 +161,28 @@ describe('azdo api', () => {
 
   describe('fetchWorkItem', () => {
     it('returns a single work item', async () => {
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue(
-          new Response(
-            JSON.stringify({
-              id: 42,
-              fields: { 'System.Title': 'Test' },
-              relations: null,
-            }),
-            { status: 200 },
-          ),
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            id: 42,
+            fields: { 'System.Title': 'Test' },
+            relations: null,
+          }),
+          { status: 200 },
         ),
       );
 
-      const item = await fetchWorkItem(baseCtx, 42);
+      const item = await fetchWorkItem({ ...baseCtx, fetcher: mockFetch }, 42);
       expect(item).toBeDefined();
       expect(item?.id).toBe(42);
     });
 
     it('returns undefined on failure', async () => {
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue(new Response('', { status: 404 })),
-      );
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockResolvedValue(new Response('', { status: 404 }));
 
-      const item = await fetchWorkItem(baseCtx, 999);
+      const item = await fetchWorkItem({ ...baseCtx, fetcher: mockFetch }, 999);
       expect(item).toBeUndefined();
     });
   });
@@ -191,10 +191,12 @@ describe('azdo api', () => {
 
   describe('updateWorkItem', () => {
     it('returns true on successful PATCH', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true }));
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockResolvedValue({ ok: true } as Response);
 
       const result = await updateWorkItem({
-        ctx: baseCtx,
+        ctx: { ...baseCtx, fetcher: mockFetch },
         id: 42,
         patchOps: [
           { op: 'replace', path: '/fields/System.State', value: 'Active' },
@@ -204,11 +206,12 @@ describe('azdo api', () => {
     });
 
     it('sends JSON Patch content type', async () => {
-      const mockFetch = vi.fn().mockResolvedValue({ ok: true });
-      vi.stubGlobal('fetch', mockFetch);
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockResolvedValue({ ok: true } as Response);
 
       await updateWorkItem({
-        ctx: baseCtx,
+        ctx: { ...baseCtx, fetcher: mockFetch },
         id: 42,
         patchOps: [
           { op: 'replace', path: '/fields/System.State', value: 'Active' },
@@ -223,13 +226,12 @@ describe('azdo api', () => {
     });
 
     it('returns false on HTTP error', async () => {
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue({ ok: false, status: 400 }),
-      );
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockResolvedValue({ ok: false, status: 400 } as Response);
 
       const result = await updateWorkItem({
-        ctx: baseCtx,
+        ctx: { ...baseCtx, fetcher: mockFetch },
         id: 42,
         patchOps: [],
       });
@@ -237,10 +239,12 @@ describe('azdo api', () => {
     });
 
     it('returns false on network failure', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('network')));
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockRejectedValue(new Error('network'));
 
       const result = await updateWorkItem({
-        ctx: baseCtx,
+        ctx: { ...baseCtx, fetcher: mockFetch },
         id: 42,
         patchOps: [],
       });
@@ -252,26 +256,26 @@ describe('azdo api', () => {
 
   describe('fetchWorkItems', () => {
     it('returns work items from batch response', async () => {
-      vi.stubGlobal(
-        'fetch',
-        vi.fn().mockResolvedValue(
-          new Response(
-            JSON.stringify({
-              value: [
-                {
-                  id: 1,
-                  fields: { 'System.Title': 'Item 1' },
-                  relations: null,
-                },
-              ],
-              count: 1,
-            }),
-            { status: 200 },
-          ),
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            value: [
+              {
+                id: 1,
+                fields: { 'System.Title': 'Item 1' },
+                relations: null,
+              },
+            ],
+            count: 1,
+          }),
+          { status: 200 },
         ),
       );
 
-      const items = await fetchWorkItems(baseCtx, [1]);
+      const items = await fetchWorkItems(
+        { ...baseCtx, fetcher: mockFetch },
+        [1],
+      );
       expect(items).toHaveLength(1);
       expect(items[0].id).toBe(1);
     });
@@ -282,15 +286,14 @@ describe('azdo api', () => {
     });
 
     it('batches requests in chunks of 200', async () => {
-      const mockFetch = vi.fn().mockResolvedValue(
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
         new Response(JSON.stringify({ value: [], count: 0 }), {
           status: 200,
         }),
       );
-      vi.stubGlobal('fetch', mockFetch);
 
       const ids = Array.from({ length: 250 }, (_, i) => i + 1);
-      await fetchWorkItems(baseCtx, ids);
+      await fetchWorkItems({ ...baseCtx, fetcher: mockFetch }, ids);
 
       expect(mockFetch).toHaveBeenCalledTimes(2);
     });
@@ -301,7 +304,7 @@ describe('azdo api', () => {
   describe('fetchTickets', () => {
     it('returns tickets from two-step fetch', async () => {
       const mockFetch = vi
-        .fn()
+        .fn<Fetcher>()
         .mockResolvedValueOnce(
           new Response(
             JSON.stringify({ workItems: [{ id: 10 }, { id: 20 }] }),
@@ -335,10 +338,9 @@ describe('azdo api', () => {
             { status: 200 },
           ),
         );
-      vi.stubGlobal('fetch', mockFetch);
 
       const tickets = await fetchTickets({
-        ctx: { org: 'org', project: 'proj', pat: 'pat' },
+        ctx: { org: 'org', project: 'proj', pat: 'pat', fetcher: mockFetch },
         status: 'New',
       });
 
@@ -350,7 +352,7 @@ describe('azdo api', () => {
 
     it('filters out clancy:hitl when excludeHitl is true', async () => {
       const mockFetch = vi
-        .fn()
+        .fn<Fetcher>()
         .mockResolvedValueOnce(
           new Response(
             JSON.stringify({ workItems: [{ id: 10 }, { id: 20 }] }),
@@ -382,10 +384,9 @@ describe('azdo api', () => {
             { status: 200 },
           ),
         );
-      vi.stubGlobal('fetch', mockFetch);
 
       const tickets = await fetchTickets({
-        ctx: { org: 'org', project: 'proj', pat: 'pat' },
+        ctx: { org: 'org', project: 'proj', pat: 'pat', fetcher: mockFetch },
         status: 'New',
         excludeHitl: true,
       });
@@ -396,7 +397,7 @@ describe('azdo api', () => {
 
     it('filters by label when provided', async () => {
       const mockFetch = vi
-        .fn()
+        .fn<Fetcher>()
         .mockResolvedValueOnce(
           new Response(
             JSON.stringify({ workItems: [{ id: 10 }, { id: 20 }] }),
@@ -428,10 +429,9 @@ describe('azdo api', () => {
             { status: 200 },
           ),
         );
-      vi.stubGlobal('fetch', mockFetch);
 
       const tickets = await fetchTickets({
-        ctx: { org: 'org', project: 'proj', pat: 'pat' },
+        ctx: { org: 'org', project: 'proj', pat: 'pat', fetcher: mockFetch },
         status: 'New',
         label: 'clancy:build',
       });
@@ -441,17 +441,14 @@ describe('azdo api', () => {
     });
 
     it('returns empty array when WIQL returns no IDs', async () => {
-      vi.stubGlobal(
-        'fetch',
-        vi
-          .fn()
-          .mockResolvedValue(
-            new Response(JSON.stringify({ workItems: [] }), { status: 200 }),
-          ),
-      );
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockResolvedValue(
+          new Response(JSON.stringify({ workItems: [] }), { status: 200 }),
+        );
 
       const tickets = await fetchTickets({
-        ctx: { org: 'org', project: 'proj', pat: 'pat' },
+        ctx: { org: 'org', project: 'proj', pat: 'pat', fetcher: mockFetch },
         status: 'New',
       });
       expect(tickets).toEqual([]);
@@ -459,14 +456,13 @@ describe('azdo api', () => {
 
     it('includes WIT filter in WIQL when provided', async () => {
       const mockFetch = vi
-        .fn()
+        .fn<Fetcher>()
         .mockResolvedValue(
           new Response(JSON.stringify({ workItems: [] }), { status: 200 }),
         );
-      vi.stubGlobal('fetch', mockFetch);
 
       await fetchTickets({
-        ctx: { org: 'org', project: 'proj', pat: 'pat' },
+        ctx: { org: 'org', project: 'proj', pat: 'pat', fetcher: mockFetch },
         status: 'New',
         wit: 'User Story',
       });
