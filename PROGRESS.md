@@ -117,7 +117,7 @@ Location: `packages/terminal/test/e2e/`. File convention: `*.e2e.ts` (not picked
 | 12.3  | Ticket factory           | `createTestTicket()` for 6 boards, `generateRunId()`                                          | Done (#131) |
 | 12.4  | Cleanup helpers          | `cleanupTicket()`, `cleanupPullRequest()`, `cleanupBranch()` — per-board teardown             | Done (#132) |
 | 12.5  | Garbage collector        | Orphan cleanup for stale `[QA]` tickets >24h. Standalone CLI + importable                     | Done (#133) |
-| 12.6  | GitHub e2e               | Tracer bullet — first e2e test: `runPipeline` + real GitHub fetcher + Claude simulator        | Done (#TBD) |
+| 12.6  | GitHub e2e               | Tracer bullet — first e2e test: `runPipeline` + real GitHub fetcher + Claude simulator        | Done (#134) |
 | 12.7  | Jira e2e                 | Jira board e2e test                                                                           | Pending     |
 | 12.8  | Linear e2e               | Linear board e2e test (GraphQL)                                                               | Pending     |
 | 12.9  | Shortcut e2e             | Shortcut board e2e test                                                                       | Pending     |
