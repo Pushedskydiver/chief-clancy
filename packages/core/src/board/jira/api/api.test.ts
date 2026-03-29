@@ -1,3 +1,5 @@
+import type { Fetcher } from '~/c/shared/http/index.js';
+
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -342,7 +344,7 @@ describe('transitionIssue', () => {
 
   it('returns true on successful transition', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       // lookupTransitionId
       .mockResolvedValueOnce(
         new Response(
@@ -366,7 +368,7 @@ describe('transitionIssue', () => {
 
   it('returns false when transition not found', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       .mockResolvedValue(
         new Response(JSON.stringify({ transitions: [] }), { status: 200 }),
       );
@@ -384,7 +386,7 @@ describe('transitionIssue', () => {
   });
 
   it('returns false on network error', async () => {
-    const mockFetch = vi.fn().mockRejectedValue(new Error('network'));
+    const mockFetch = vi.fn<Fetcher>().mockRejectedValue(new Error('network'));
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const result = await transitionIssue({
