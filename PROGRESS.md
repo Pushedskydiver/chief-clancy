@@ -71,10 +71,11 @@ All 6 cleanup PRs (C31–C36) merged. 8 regressions fixed, 3 bugs fixed, 12 conv
 - **11.1b** (#119): Temp repo + env fixtures — `createTempRepo` (real git repo in temp dir with `ExecGit` executor via `execFileSync`), `createEnvBuilder` (`.clancy/.env` writer with `EnvFileSystem` adapter). Added `~/c/*` path alias to terminal tsconfig. +12 tests.
 - **11.1c** (#120): DI fetcher wiring — exported `Fetcher` type, optional `fetcher?` param on all 6 board constructors + factory, threaded to every HTTP call site (fetchAndParse, raw fetch, linearGraphql). Zero raw `fetch()` calls remaining in board source. Functions refactored to opts objects where max-params exceeded. Notion's `retryFetch` falls back via `ctx.fetcher ?? retryFetch`.
 - **11.2a** (#121): GitHub happy path integration test — full 13-phase pipeline with real git ops (temp repo + bare remote), regex-based mock fetcher, Claude simulator, real filesystem. Found and fixed: `pingEndpoint` missing DI fetcher, dep factory not wiring fetcher to `createBoard`, Jira `pingJira` converted to opts. +8 integration tests.
+- **11.2b**: Remaining boards happy path — extracted shared pipeline test infrastructure (`pipeline-helpers.ts`: `setupPipeline`, `createRepoWithRemote`, `createRealFs`, `jsonResponse`), refactored GitHub test to use shared helpers, added integration tests for Jira, Linear, Shortcut, Notion, Azure DevOps. Each board: regex-based mock fetcher matching API schemas, board-specific env vars, 8 tests (completion, branch, lock, progress, dry-run, preflight abort, ticket-fetch abort, invoke abort). Added 30s timeout to all pipeline `describe` blocks for concurrent CI stability. +40 integration tests.
 
 ### Next up
 
-Phase 11.2b — Remaining boards happy path (Jira, Linear, Shortcut, Notion, AzDo).
+Phase 11.2c — Aborts + rework path (fatal/non-fatal early exits, rework detection across all boards).
 
 ---
 

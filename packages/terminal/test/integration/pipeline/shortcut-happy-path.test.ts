@@ -1,9 +1,9 @@
 /**
- * Integration test: GitHub board — full pipeline happy path.
+ * Integration test: Shortcut board — full pipeline happy path.
  *
  * Exercises the complete 13-phase pipeline with:
  * - Real git operations (temp repo with bare remote)
- * - DI fetcher returning canned GitHub API responses
+ * - DI fetcher returning canned Shortcut API responses
  * - Claude simulator for the invoke phase
  * - Real filesystem for lock/progress/cost/quality files
  *
@@ -19,92 +19,118 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { jsonResponse, setupPipeline } from './pipeline-helpers.js';
 
-// ─── GitHub API mock fetcher ─────────────────────────────────────────────────
+// ─── Shortcut API mock fetcher ──────────────────────────────────────────────
 
-const GITHUB_USER = { login: 'testuser' };
-const GITHUB_ISSUE = {
-  number: 42,
-  title: 'Add widget feature',
-  body: 'Implement the widget.\n\nEpic: #10',
-  state: 'open',
-  assignee: { login: 'testuser' },
-  milestone: null,
-  labels: [{ name: 'clancy' }],
-  pull_request: undefined,
-};
+const SHORTCUT_MEMBER = { id: 'member-uuid-123', profile: { name: 'Test' } };
 
-/** Route definitions for the GitHub mock fetcher. */
-const ROUTES: ReadonlyArray<{
-  readonly method: string;
-  readonly pattern: RegExp;
-  readonly respond: () => Response;
-}> = [
+const SHORTCUT_WORKFLOWS = [
   {
-    method: 'GET',
-    pattern: /\/user$/,
-    respond: () => jsonResponse(GITHUB_USER),
-  },
-  {
-    method: 'GET',
-    pattern: /\/repos\/[^/]+\/[^/]+$/,
-    respond: () => jsonResponse({ id: 1 }),
-  },
-  {
-    method: 'GET',
-    pattern: /\/repos\/[^/]+\/[^/]+\/issues\?/,
-    respond: () => jsonResponse([GITHUB_ISSUE]),
-  },
-  {
-    method: 'GET',
-    pattern: /\/labels\//,
-    respond: () => jsonResponse({ name: 'clancy' }),
-  },
-  {
-    method: 'POST',
-    pattern: /\/labels$/,
-    respond: () => jsonResponse({ name: 'clancy' }, 201),
-  },
-  {
-    method: 'DELETE',
-    pattern: /\/labels\//,
-    respond: () => jsonResponse([], 200),
-  },
-  {
-    method: 'POST',
-    pattern: /\/pulls$/,
-    respond: () =>
-      jsonResponse(
-        { number: 1, html_url: 'https://github.com/test/pull/1' },
-        201,
-      ),
-  },
-  {
-    method: 'GET',
-    pattern: /\/search\/issues/,
-    respond: () => jsonResponse({ total_count: 0, items: [] }),
-  },
-  {
-    method: 'PATCH',
-    pattern: /\/issues\/\d+$/,
-    respond: () => jsonResponse({ state: 'closed' }),
+    id: 1,
+    name: 'Default',
+    states: [
+      { id: 500000010, name: 'Unstarted', type: 'unstarted' },
+      { id: 500000020, name: 'In Progress', type: 'started' },
+      { id: 500000030, name: 'Done', type: 'done' },
+    ],
   },
 ];
 
-function createGitHubFetcher() {
+const SHORTCUT_STORY = {
+  id: 42,
+  name: 'Add widget feature',
+  description: 'Implement the widget.\n\nEpic: sc-100',
+  workflow_state_id: 500000010,
+  epic_id: 100,
+  labels: [{ id: 1, name: 'clancy' }],
+  story_links: [],
+};
+
+/** Route definitions for the Shortcut mock fetcher. */
+const ROUTES: ReadonlyArray<{
+  readonly method: string;
+  readonly pattern: RegExp;
+  readonly respond: (url: string, init?: RequestInit) => Response;
+}> = [
+  // Ping: GET /member-info
+  {
+    method: 'GET',
+    pattern: /\/member-info$/,
+    respond: () => jsonResponse(SHORTCUT_MEMBER),
+  },
+  // Fetch workflows: GET /workflows
+  {
+    method: 'GET',
+    pattern: /\/workflows$/,
+    respond: () => jsonResponse(SHORTCUT_WORKFLOWS),
+  },
+  // Search stories: POST /stories/search
+  {
+    method: 'POST',
+    pattern: /\/stories\/search$/,
+    respond: (_url, init) => {
+      const body = JSON.parse(String(init?.body ?? '{}')) as {
+        readonly query?: string;
+      };
+      // Children status queries use the query field
+      if (body.query) {
+        return jsonResponse({ data: [] });
+      }
+      return jsonResponse({ data: [SHORTCUT_STORY] });
+    },
+  },
+  // Transition / update story: PUT /stories/{id}
+  {
+    method: 'PUT',
+    pattern: /\/stories\/\d+$/,
+    respond: () => jsonResponse({ id: 42 }),
+  },
+  // Fetch single story (blockers): GET /stories/{id}
+  {
+    method: 'GET',
+    pattern: /\/stories\/\d+$/,
+    respond: () =>
+      jsonResponse({
+        ...SHORTCUT_STORY,
+        blocked: false,
+        story_links: [],
+      }),
+  },
+  // Fetch epic stories (children fallback): GET /epics/{id}/stories
+  {
+    method: 'GET',
+    pattern: /\/epics\/\d+\/stories$/,
+    respond: () => jsonResponse([]),
+  },
+  // Fetch labels: GET /labels
+  {
+    method: 'GET',
+    pattern: /\/labels$/,
+    respond: () => jsonResponse([{ id: 1, name: 'clancy' }]),
+  },
+  // Create label: POST /labels
+  {
+    method: 'POST',
+    pattern: /\/labels$/,
+    respond: () => jsonResponse({ id: 2, name: 'new-label' }, 201),
+  },
+];
+
+function createShortcutFetcher() {
   return async (url: string, init?: RequestInit): Promise<Response> => {
     const method = init?.method ?? 'GET';
     const match = ROUTES.find(
       (r) => r.method === method && r.pattern.test(url),
     );
-    return match?.respond() ?? new Response('Not Found', { status: 404 });
+    return (
+      match?.respond(url, init) ?? new Response('Not Found', { status: 404 })
+    );
   };
 }
 
 // ─── Shared env vars ─────────────────────────────────────────────────────────
 
-const GITHUB_ENV = {
-  GITHUB_TOKEN: 'ghp_test',
-  GITHUB_REPO: 'test-org/test-repo',
+const SHORTCUT_ENV = {
+  SHORTCUT_API_TOKEN: 'sc-test-token-abc123',
   CLANCY_LABEL: 'clancy',
 };
 
@@ -115,8 +141,8 @@ function setup(overrides?: {
   readonly fetcher?: (url: string, init?: RequestInit) => Promise<Response>;
 }): PipelineSetup {
   return setupPipeline({
-    envVars: GITHUB_ENV,
-    fetcher: overrides?.fetcher ?? createGitHubFetcher(),
+    envVars: SHORTCUT_ENV,
+    fetcher: overrides?.fetcher ?? createShortcutFetcher(),
     exitCode: overrides?.exitCode,
   });
 }
@@ -130,7 +156,7 @@ afterEach(() => {
   cleanup = undefined;
 });
 
-describe('GitHub pipeline — happy path', { timeout: 30_000 }, () => {
+describe('Shortcut pipeline — happy path', { timeout: 30_000 }, () => {
   it('completes the full 13-phase pipeline', async () => {
     const { repo, run } = setup();
     cleanup = repo.cleanup;
@@ -146,9 +172,9 @@ describe('GitHub pipeline — happy path', { timeout: 30_000 }, () => {
 
     await run();
 
-    // GitHub ticket #42 → branch feature/issue-42
+    // Shortcut story 42 → branch feature/sc-42
     const branches = repo.exec(['branch', '--list']).trim();
-    expect(branches).toContain('feature/issue-42');
+    expect(branches).toContain('feature/sc-42');
   });
 
   it('cleans up lock file after completion', async () => {
@@ -171,7 +197,7 @@ describe('GitHub pipeline — happy path', { timeout: 30_000 }, () => {
     expect(existsSync(progressPath)).toBe(true);
 
     const content = readFileSync(progressPath, 'utf8');
-    expect(content).toContain('#42');
+    expect(content).toContain('sc-42');
   });
 
   it('returns dry-run status with --dry-run flag', async () => {
@@ -195,11 +221,11 @@ describe('GitHub pipeline — happy path', { timeout: 30_000 }, () => {
     expect(result.phase).toBe('preflight');
   });
 
-  it('aborts at ticket-fetch when board returns no issues', async () => {
-    const baseFetcher = createGitHubFetcher();
+  it('aborts at ticket-fetch when board returns no stories', async () => {
+    const baseFetcher = createShortcutFetcher();
     const emptyFetcher = async (url: string, init?: RequestInit) => {
-      if (/\/issues\?/.test(url) && (init?.method ?? 'GET') === 'GET') {
-        return jsonResponse([]);
+      if (/\/stories\/search$/.test(url) && init?.method === 'POST') {
+        return jsonResponse({ data: [] });
       }
       return baseFetcher(url, init);
     };
