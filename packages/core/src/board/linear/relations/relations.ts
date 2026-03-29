@@ -67,17 +67,6 @@ export async function fetchBlockerStatus(
   });
 }
 
-/**
- * Fetch children status of a Linear parent issue (dual-mode).
- *
- * Tries the `Epic: {identifier}` text convention first. Falls back
- * to the native `children` API for backward compatibility.
- *
- * @param apiKey - The Linear personal API key.
- * @param parentId - The Linear parent issue UUID.
- * @param parentIdentifier - The parent identifier (e.g., `'ENG-42'`).
- * @returns The children status, or `undefined` on failure.
- */
 /** Options for {@link fetchChildrenStatus}. */
 type FetchChildrenOpts = {
   readonly apiKey: string;
@@ -86,6 +75,15 @@ type FetchChildrenOpts = {
   readonly fetcher?: Fetcher;
 };
 
+/**
+ * Fetch children status of a Linear parent issue (dual-mode).
+ *
+ * Tries the `Epic: {identifier}` text convention first. Falls back
+ * to the native `children` API for backward compatibility.
+ *
+ * @param opts - API key, parent ID, and optional parent identifier.
+ * @returns The children status, or `undefined` on failure.
+ */
 export async function fetchChildrenStatus(
   opts: FetchChildrenOpts,
 ): Promise<ChildrenStatus | undefined> {
@@ -178,14 +176,6 @@ async function fetchChildrenByNativeApi(
   return countChildrenStatus(nodes);
 }
 
-/**
- * Look up a Linear workflow state ID by name and team.
- *
- * @param apiKey - The Linear personal API key.
- * @param teamId - The Linear team ID.
- * @param stateName - The workflow state name (e.g., `'In Progress'`).
- * @returns The state ID, or `undefined` if not found.
- */
 /** Options for {@link lookupWorkflowStateId}. */
 type LookupStateOpts = {
   readonly apiKey: string;
@@ -194,6 +184,12 @@ type LookupStateOpts = {
   readonly fetcher?: Fetcher;
 };
 
+/**
+ * Look up a Linear workflow state ID by name and team.
+ *
+ * @param opts - API key, team ID, and state name.
+ * @returns The state ID, or `undefined` if not found.
+ */
 export async function lookupWorkflowStateId(
   opts: LookupStateOpts,
 ): Promise<string | undefined> {

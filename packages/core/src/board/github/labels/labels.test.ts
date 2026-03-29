@@ -15,7 +15,9 @@ function makeCtx(fetcher: Fetcher) {
 
 describe('ensureLabel', () => {
   it('does nothing when the label already exists', async () => {
-    const mockFetch = vi.fn().mockResolvedValueOnce({ ok: true } as Response);
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValueOnce({ ok: true } as Response);
 
     await ensureLabel(makeCtx(mockFetch), 'bug');
 
@@ -24,7 +26,7 @@ describe('ensureLabel', () => {
 
   it('creates the label when GET returns 404', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       .mockResolvedValueOnce({ ok: false, status: 404 } as Response)
       .mockResolvedValueOnce({ ok: true, status: 201 } as Response);
 
@@ -38,7 +40,7 @@ describe('ensureLabel', () => {
 
   it('ignores 422 on create (race condition — label already exists)', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       .mockResolvedValueOnce({ ok: false, status: 404 } as Response)
       .mockResolvedValueOnce({ ok: false, status: 422 } as Response);
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -50,7 +52,7 @@ describe('ensureLabel', () => {
 
   it('warns on non-404 GET error', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       .mockResolvedValueOnce({ ok: false, status: 500 } as Response);
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -63,7 +65,7 @@ describe('ensureLabel', () => {
 
   it('warns on create failure (non-422)', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       .mockResolvedValueOnce({ ok: false, status: 404 } as Response)
       .mockResolvedValueOnce({ ok: false, status: 500 } as Response);
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -76,7 +78,9 @@ describe('ensureLabel', () => {
   });
 
   it('warns on network error without throwing', async () => {
-    const mockFetch = vi.fn().mockRejectedValueOnce(new Error('ECONNREFUSED'));
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockRejectedValueOnce(new Error('ECONNREFUSED'));
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     await ensureLabel(makeCtx(mockFetch), 'label');
@@ -89,7 +93,9 @@ describe('ensureLabel', () => {
 
 describe('addLabel', () => {
   it('sends POST to the issue labels endpoint', async () => {
-    const mockFetch = vi.fn().mockResolvedValueOnce({ ok: true } as Response);
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValueOnce({ ok: true } as Response);
 
     await addLabel(makeCtx(mockFetch), 42, 'bug');
 
@@ -104,7 +110,7 @@ describe('addLabel', () => {
 
   it('warns on non-OK response without throwing', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       .mockResolvedValueOnce({ ok: false, status: 403 } as Response);
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -116,7 +122,9 @@ describe('addLabel', () => {
   });
 
   it('warns on network error without throwing', async () => {
-    const mockFetch = vi.fn().mockRejectedValueOnce(new Error('timeout'));
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockRejectedValueOnce(new Error('timeout'));
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     await addLabel(makeCtx(mockFetch), 42, 'label');
@@ -129,7 +137,9 @@ describe('addLabel', () => {
 
 describe('removeLabel', () => {
   it('sends DELETE to the issue label endpoint', async () => {
-    const mockFetch = vi.fn().mockResolvedValueOnce({ ok: true } as Response);
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValueOnce({ ok: true } as Response);
 
     await removeLabel(makeCtx(mockFetch), 42, 'clancy:build');
 
@@ -141,7 +151,7 @@ describe('removeLabel', () => {
 
   it('ignores 404 (label not on issue)', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       .mockResolvedValueOnce({ ok: false, status: 404 } as Response);
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -152,7 +162,7 @@ describe('removeLabel', () => {
 
   it('warns on non-404 error without throwing', async () => {
     const mockFetch = vi
-      .fn()
+      .fn<Fetcher>()
       .mockResolvedValueOnce({ ok: false, status: 500 } as Response);
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -164,7 +174,9 @@ describe('removeLabel', () => {
   });
 
   it('warns on network error without throwing', async () => {
-    const mockFetch = vi.fn().mockRejectedValueOnce(new Error('network'));
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockRejectedValueOnce(new Error('network'));
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     await removeLabel(makeCtx(mockFetch), 42, 'label');

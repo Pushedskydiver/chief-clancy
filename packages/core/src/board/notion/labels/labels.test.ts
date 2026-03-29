@@ -38,8 +38,8 @@ describe('notion labels', () => {
   describe('addLabel', () => {
     it('appends label via PATCH', async () => {
       const page = makePageWithLabels(['existing']);
-      const mockFetch: Fetcher = vi
-        .fn()
+      const mockFetch = vi
+        .fn<Fetcher>()
         // findPageByKey → queryAllPages → queryDatabase
         .mockResolvedValueOnce(
           jsonResponse({
@@ -58,7 +58,7 @@ describe('notion labels', () => {
         labelsProp: 'Labels',
       });
 
-      const patchCall = vi.mocked(mockFetch).mock.calls[1];
+      const patchCall = mockFetch.mock.calls[1];
       const body = JSON.parse((patchCall[1] as RequestInit).body as string) as {
         properties: Record<string, unknown>;
       };
@@ -70,7 +70,7 @@ describe('notion labels', () => {
 
     it('skips update when label already present', async () => {
       const page = makePageWithLabels(['existing']);
-      const mockFetch: Fetcher = vi.fn().mockResolvedValueOnce(
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValueOnce(
         jsonResponse({
           results: [page],
           has_more: false,
@@ -90,8 +90,8 @@ describe('notion labels', () => {
     });
 
     it('handles page not found gracefully', async () => {
-      const mockFetch: Fetcher = vi
-        .fn()
+      const mockFetch = vi
+        .fn<Fetcher>()
         .mockResolvedValueOnce(jsonResponse({ results: [], has_more: false }));
 
       await expect(
@@ -108,8 +108,8 @@ describe('notion labels', () => {
   describe('removeLabel', () => {
     it('removes label via PATCH', async () => {
       const page = makePageWithLabels(['keep', 'remove-me']);
-      const mockFetch: Fetcher = vi
-        .fn()
+      const mockFetch = vi
+        .fn<Fetcher>()
         .mockResolvedValueOnce(
           jsonResponse({
             results: [page],
@@ -126,7 +126,7 @@ describe('notion labels', () => {
         labelsProp: 'Labels',
       });
 
-      const patchCall = vi.mocked(mockFetch).mock.calls[1];
+      const patchCall = mockFetch.mock.calls[1];
       const body = JSON.parse((patchCall[1] as RequestInit).body as string) as {
         properties: Record<string, unknown>;
       };
@@ -138,7 +138,7 @@ describe('notion labels', () => {
 
     it('skips update when label not present', async () => {
       const page = makePageWithLabels(['other']);
-      const mockFetch: Fetcher = vi.fn().mockResolvedValueOnce(
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValueOnce(
         jsonResponse({
           results: [page],
           has_more: false,

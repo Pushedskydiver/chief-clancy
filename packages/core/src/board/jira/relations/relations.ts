@@ -14,17 +14,6 @@ import { isValidIssueKey, jiraHeaders } from '../api/index.js';
 
 const jiraSearchCountSchema = z.object({ total: z.optional(z.number()) });
 
-/**
- * Check whether a Jira issue is blocked by unresolved blockers.
- *
- * Fetches the issue's links and checks for inward "Blocks"
- * relationships where the blocking issue is not done.
- *
- * @param baseUrl - The Jira Cloud base URL.
- * @param auth - The Base64-encoded Basic auth string.
- * @param key - The Jira issue key (e.g., `'PROJ-123'`).
- * @returns `true` if any blocker is unresolved, `false` otherwise.
- */
 /** Options for {@link fetchBlockerStatus}. */
 type FetchBlockerOpts = {
   readonly baseUrl: string;
@@ -33,6 +22,15 @@ type FetchBlockerOpts = {
   readonly fetcher?: Fetcher;
 };
 
+/**
+ * Check whether a Jira issue is blocked by unresolved blockers.
+ *
+ * Fetches the issue's links and checks for inward "Blocks"
+ * relationships where the blocking issue is not done.
+ *
+ * @param opts - Connection details and issue key.
+ * @returns `true` if any blocker is unresolved, `false` otherwise.
+ */
 export async function fetchBlockerStatus(
   opts: FetchBlockerOpts,
 ): Promise<boolean> {
@@ -68,17 +66,6 @@ export async function fetchBlockerStatus(
   }
 }
 
-/**
- * Fetch the children status of a Jira epic (dual-mode).
- *
- * Tries the `Epic: {key}` text convention first. Falls back to
- * the native `parent = {key}` JQL for backward compatibility.
- *
- * @param baseUrl - The Jira Cloud base URL.
- * @param auth - The Base64-encoded Basic auth string.
- * @param parentKey - The parent issue key (e.g., `'PROJ-100'`).
- * @returns The children status, or `undefined` on failure.
- */
 /** Options for {@link fetchChildrenStatus}. */
 type FetchChildrenOpts = {
   readonly baseUrl: string;
@@ -87,6 +74,15 @@ type FetchChildrenOpts = {
   readonly fetcher?: Fetcher;
 };
 
+/**
+ * Fetch the children status of a Jira epic (dual-mode).
+ *
+ * Tries the `Epic: {key}` text convention first. Falls back to
+ * the native `parent = {key}` JQL for backward compatibility.
+ *
+ * @param opts - Connection details and parent issue key.
+ * @returns The children status, or `undefined` on failure.
+ */
 export async function fetchChildrenStatus(
   opts: FetchChildrenOpts,
 ): Promise<ChildrenStatus | undefined> {

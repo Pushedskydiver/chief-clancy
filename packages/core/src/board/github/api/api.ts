@@ -204,14 +204,6 @@ export async function fetchIssues(
   );
 }
 
-/**
- * Close a GitHub issue.
- *
- * @param token - GitHub personal access token.
- * @param repo - Repository in `owner/repo` format.
- * @param issueNumber - The issue number to close.
- * @returns `true` if the issue was closed successfully.
- */
 /** Options for {@link closeIssue}. */
 type CloseIssueOpts = {
   readonly token: string;
@@ -220,6 +212,12 @@ type CloseIssueOpts = {
   readonly fetcher?: Fetcher;
 };
 
+/**
+ * Close a GitHub issue.
+ *
+ * @param opts - Token, repo, and issue number.
+ * @returns `true` if the issue was closed successfully.
+ */
 export async function closeIssue(opts: CloseIssueOpts): Promise<boolean> {
   const { token, repo, issueNumber, fetcher } = opts;
   if (!isValidRepo(repo)) return false;

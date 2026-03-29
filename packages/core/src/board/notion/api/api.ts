@@ -165,14 +165,6 @@ export async function fetchPage(
 
 // ─── Update ──────────────────────────────────────────────────────────────────
 
-/**
- * Update a Notion page's properties.
- *
- * @param token - The Notion integration token.
- * @param pageId - The page UUID.
- * @param properties - The properties to update.
- * @returns `true` if the update succeeded.
- */
 /** Options for {@link updatePage}. */
 type UpdatePageOpts = {
   readonly token: string;
@@ -181,6 +173,12 @@ type UpdatePageOpts = {
   readonly fetcher?: Fetcher;
 };
 
+/**
+ * Update a Notion page's properties.
+ *
+ * @param opts - Token, page ID, and properties to update.
+ * @returns `true` if the update succeeded.
+ */
 export async function updatePage(opts: UpdatePageOpts): Promise<boolean> {
   const { token, pageId, properties, fetcher } = opts;
   const doFetch = fetcher ?? retryFetch;
