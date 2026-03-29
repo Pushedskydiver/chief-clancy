@@ -2,33 +2,45 @@
 
 ## Session 40 Handoff
 
-**Phase 11.3–11.4 complete.** 2 PRs this session: 11.3 + 11.4. 1574 core tests (+4), 696 terminal tests.
+**Phase 11 complete + audit clean.** 5 PRs this session: 11.3, 11.4, C41–C43. 1574 core tests, 696 terminal tests.
 
 ### What was done
 
-- **11.3** (#124): Board write ops DI fetcher conversion — converted all label CRUD tests (ensureLabel, addLabel, removeLabel) and transition tests (transitionIssue, transitionStory) across all 6 boards from `vi.stubGlobal('fetch')` to DI `fetcher` parameter injection. 9 test files, 71 tests converted. Removed `vi.unstubAllGlobals()`/`vi.stubGlobal` boilerplate. Notion tests converted from `vi.mock('retryFetch')` to DI `ctx.fetcher`. Net -87 lines.
-- **11.4** (#125): Advanced scenarios — converted all per-board relations tests (fetchBlockerStatus, fetchChildrenStatus, lookupWorkflowStateId) from `vi.stubGlobal`/`vi.mock` to DI fetcher. 6 relations test files, 65 tests converted. Added 4 new edge-case tests: lock staleness 24-hour boundary precision (exactly 24h not stale, 24h+1s stale), blocker recursion depth (10 blocked candidates + interleaved plan-label/blocked candidates). Standardised `vi.fn<Fetcher>()` typing across all mock fetchers. 8 files, +99 lines net.
+- **11.3** (#124): Board write ops DI fetcher — labels + transitions, 71 tests converted, 9 files.
+- **11.4** (#125): Advanced scenarios — relations DI + 4 edge-case tests, 65 tests converted, 8 files.
+- **C41** (#126): JSDoc placement fixes (8), stale @param updates (6), label `vi.fn<Fetcher>()` typing (6 files).
+- **C42** (#127): Integration test fixture dedup — extracted 6 env constants + GitHub fetcher to `pipeline-helpers.ts`, removed unused `PipelineSetup.deps`, standardised route signatures. Net -111 lines.
+- **C43** (#128): Remaining DI conversion — 52 `vi.stubGlobal('fetch')` converted across 12 files (API tests, board-level tests, pingEndpoint). Only 1 `vi.stubGlobal('fetch')` remains in entire codebase (`retry-fetch.test.ts` — legitimately tests the global fetch wrapper).
+
+### Phase 11 audit
+
+6 parallel audit agents ran: conventions, test coverage, security, build/exports, behavioral parity, integration infra. 4 MEDIUM + 8 LOW findings. All resolved in C41–C43.
 
 ### Key decisions
 
-- **DI over global stubs** — all board functions already accept optional `fetcher?` params (wired in 11.1c). Passing mock fetchers via DI is cleaner, avoids global state pollution between tests, and doesn't require cleanup in `afterEach`.
-- **Relations tests complete DI coverage** — after 11.3 (labels + transitions) and 11.4 (relations), all board HTTP-calling tests now use DI fetcher. Zero `vi.stubGlobal('fetch')` remaining in label, transition, or relation tests.
-- **Edge-case tests validate boundary semantics** — `isLockStale` uses `>` (strictly greater) for 24-hour comparison, confirmed by boundary tests. `firstUnblocked` correctly walks many candidates and handles mixed skip-reasons (plan-label vs blocked).
+- **DI migration complete** — every board test (labels, relations, transitions, API, board-level) now uses DI `fetcher` injection. Zero `vi.stubGlobal('fetch')` pollution across the entire board test suite.
+- **`vi.fn<Fetcher>()` standardised** — all mock fetchers use the vitest generic pattern, preserving both type checking and mock interface. No `: Fetcher` annotation or `vi.mocked()` wrappers.
+- **Shared fixtures** — board env constants and GitHub fetcher extracted to `pipeline-helpers.ts`. Adding a new required env var now requires changing 1 file, not 7.
 
-### Phase 11 Progress
+### Phase 11 — Complete
 
-- **11.1a** (#118): Claude simulator + shared fixtures — +13 tests.
-- **11.1b** (#119): Temp repo + env fixtures — +12 tests.
-- **11.1c** (#120): DI fetcher wiring — 40+ files changed.
-- **11.2a** (#121): GitHub happy path integration test — +8 integration tests.
-- **11.2b** (#122): Remaining boards happy path — +40 integration tests.
-- **11.2c** (#123): Abort scenarios — +13 integration tests.
-- **11.3** (#124): Board write ops DI fetcher — 71 tests converted. 9 files.
-- **11.4** (#125): Advanced scenarios — 65 relations tests converted + 4 new edge-case tests. 8 files.
+| PR           | Theme                              | Scope                  |
+| ------------ | ---------------------------------- | ---------------------- |
+| 11.1a (#118) | Claude simulator + shared fixtures | +13 tests              |
+| 11.1b (#119) | Temp repo + env fixtures           | +12 tests              |
+| 11.1c (#120) | DI fetcher wiring                  | 40+ files              |
+| 11.2a (#121) | GitHub happy path integration      | +8 tests               |
+| 11.2b (#122) | Remaining boards happy path        | +40 tests              |
+| 11.2c (#123) | Abort scenarios                    | +13 tests              |
+| 11.3 (#124)  | Label + transition DI              | 71 tests converted     |
+| 11.4 (#125)  | Relations DI + edge cases          | 65 converted + 4 new   |
+| C41 (#126)   | JSDoc + typing cleanup             | 12 files               |
+| C42 (#127)   | Fixture dedup                      | -111 lines             |
+| C43 (#128)   | Remaining DI conversion            | 52 converted, 12 files |
 
 ### Next up
 
-Phase 11 wrap-up or Phase 12 planning.
+Phase 12 planning.
 
 ---
 
