@@ -6,7 +6,7 @@
 
 ### What was done
 
-- **12.4** (#TBD): Cleanup helpers — `cleanupTicket()` dispatch for 6 boards, `cleanupPullRequest()`, `cleanupBranch()`. Split into 8 files matching ticket-factory pattern. Exported `E2EBoard` from `env.ts`, updated ticket-factory to import it. 6 tests.
+- **12.4** (#132): Cleanup helpers — `cleanupTicket()` dispatch for 6 boards, `cleanupPullRequest()`, `cleanupBranch()`. Split into 8 files matching ticket-factory pattern. Exported `E2EBoard` from `env.ts`, updated ticket-factory to import it. 6 tests.
 
 ### Key decisions
 
