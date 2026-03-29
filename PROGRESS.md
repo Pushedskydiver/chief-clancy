@@ -1,5 +1,28 @@
 # Monorepo Progress
 
+## Session 42 Handoff
+
+**Phase 12 in progress — 4 of 13 PRs done.** 1574 core tests, 753 terminal tests.
+
+### What was done
+
+- **12.4** (#TBD): Cleanup helpers — `cleanupTicket()` dispatch for 6 boards, `cleanupPullRequest()`, `cleanupBranch()`. Split into 8 files matching ticket-factory pattern. Exported `E2EBoard` from `env.ts`, updated ticket-factory to import it. 6 tests.
+
+### Key decisions
+
+- **`cleanupPullRequest` simplified:** Dropped the `board` param (old code passed it but all boards routed to the same GitHub cleanup). Takes only `prNumber`.
+- **`E2EBoard` canonical location:** `env.ts` is now the single source. ticket-factory imports from there instead of redeclaring.
+- **Header helpers duplicated locally:** Each board file defines its own header builder (same as ticket-factory pattern) to avoid cross-boundary imports into test code.
+
+### Next up
+
+- **12.5**: Garbage collector (orphan `[QA]` tickets >24h)
+- **12.6**: GitHub e2e (tracer bullet — first real pipeline test)
+
+Old repo reference: `~/Desktop/alex/clancy/test/e2e/helpers/gc.ts`
+
+---
+
 ## Session 41 Handoff
 
 **Phase 12 in progress — 3 of 13 PRs done.** 4 PRs this session: phase plan commit + 12.1–12.3. 1574 core tests, 746 terminal tests.

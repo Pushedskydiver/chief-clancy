@@ -46,9 +46,14 @@ function env(key: string): string | undefined {
 
 // ── Board types ─────────────────────────────────────────────────
 
-type E2EBoard = 'github' | 'jira' | 'linear' | 'shortcut' | 'notion' | 'azdo';
+export type E2EBoard =
+  | 'github'
+  | 'jira'
+  | 'linear'
+  | 'shortcut'
+  | 'notion'
+  | 'azdo';
 
-// Types start non-exported — export when consumed by ticket factory / cleanup (12.3+)
 type GitHubCredentials = {
   readonly token: string;
   readonly repo: string;

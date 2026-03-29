@@ -4,15 +4,14 @@
  * Each board has a createTestTicket implementation that calls the real API.
  * Ticket titles include a unique run ID for isolation between concurrent runs.
  */
+import type { E2EBoard } from '../env.js';
+
 import { createAzdoTicket } from './azdo.js';
 import { createGitHubTicket } from './github.js';
 import { createJiraTicket } from './jira.js';
 import { createLinearTicket } from './linear.js';
 import { createNotionTicket } from './notion.js';
 import { createShortcutTicket } from './shortcut.js';
-
-// Export when consumed by cleanup helpers / GC (12.4+)
-type E2EBoard = 'github' | 'jira' | 'linear' | 'shortcut' | 'notion' | 'azdo';
 
 export type CreateTicketOptions = {
   /** Override the default ticket title suffix. */
