@@ -1,9 +1,9 @@
 /**
- * Integration test: GitHub board — full pipeline happy path.
+ * Integration test: Jira board — full pipeline happy path.
  *
  * Exercises the complete 13-phase pipeline with:
  * - Real git operations (temp repo with bare remote)
- * - DI fetcher returning canned GitHub API responses
+ * - DI fetcher returning canned Jira API responses
  * - Claude simulator for the invoke phase
  * - Real filesystem for lock/progress/cost/quality files
  *
@@ -19,92 +19,116 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { jsonResponse, setupPipeline } from './pipeline-helpers.js';
 
-// ─── GitHub API mock fetcher ─────────────────────────────────────────────────
+// ─── Jira API mock fetcher ──────────────────────────────────────────────────
 
-const GITHUB_USER = { login: 'testuser' };
-const GITHUB_ISSUE = {
-  number: 42,
-  title: 'Add widget feature',
-  body: 'Implement the widget.\n\nEpic: #10',
-  state: 'open',
-  assignee: { login: 'testuser' },
-  milestone: null,
-  labels: [{ name: 'clancy' }],
-  pull_request: undefined,
+const JIRA_ISSUE = {
+  key: 'PROJ-42',
+  fields: {
+    summary: 'Add widget feature',
+    description: {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'Implement the widget.' }],
+        },
+        {
+          type: 'paragraph',
+          content: [{ type: 'text', text: 'Epic: PROJ-100' }],
+        },
+      ],
+    },
+    issuelinks: [],
+    parent: { key: 'PROJ-100' },
+    customfield_10014: null,
+    labels: ['clancy'],
+  },
 };
 
-/** Route definitions for the GitHub mock fetcher. */
+/** Route definitions for the Jira mock fetcher. */
 const ROUTES: ReadonlyArray<{
   readonly method: string;
   readonly pattern: RegExp;
-  readonly respond: () => Response;
+  readonly respond: (url: string, init?: RequestInit) => Response;
 }> = [
+  // Ping: GET /rest/api/3/project/{projectKey}
   {
     method: 'GET',
-    pattern: /\/user$/,
-    respond: () => jsonResponse(GITHUB_USER),
+    pattern: /\/rest\/api\/3\/project\/[^/]+$/,
+    respond: () => jsonResponse({ id: '10000', key: 'PROJ' }),
   },
-  {
-    method: 'GET',
-    pattern: /\/repos\/[^/]+\/[^/]+$/,
-    respond: () => jsonResponse({ id: 1 }),
-  },
-  {
-    method: 'GET',
-    pattern: /\/repos\/[^/]+\/[^/]+\/issues\?/,
-    respond: () => jsonResponse([GITHUB_ISSUE]),
-  },
-  {
-    method: 'GET',
-    pattern: /\/labels\//,
-    respond: () => jsonResponse({ name: 'clancy' }),
-  },
+  // Fetch tickets: POST /rest/api/3/search/jql
   {
     method: 'POST',
-    pattern: /\/labels$/,
-    respond: () => jsonResponse({ name: 'clancy' }, 201),
+    pattern: /\/rest\/api\/3\/search\/jql$/,
+    respond: (_url, init) => {
+      const body = JSON.parse(String(init?.body ?? '{}')) as {
+        readonly maxResults?: number;
+      };
+      // Children status queries use maxResults: 0
+      if (body.maxResults === 0) {
+        return jsonResponse({ total: 0, issues: [] });
+      }
+      return jsonResponse({ total: 1, issues: [JIRA_ISSUE] });
+    },
   },
+  // Transitions lookup: GET /rest/api/3/issue/{key}/transitions
   {
-    method: 'DELETE',
-    pattern: /\/labels\//,
-    respond: () => jsonResponse([], 200),
-  },
-  {
-    method: 'POST',
-    pattern: /\/pulls$/,
+    method: 'GET',
+    pattern: /\/rest\/api\/3\/issue\/[^/]+\/transitions$/,
     respond: () =>
-      jsonResponse(
-        { number: 1, html_url: 'https://github.com/test/pull/1' },
-        201,
-      ),
+      jsonResponse({
+        transitions: [
+          { id: '21', name: 'In Progress' },
+          { id: '31', name: 'Done' },
+        ],
+      }),
   },
+  // Transition: POST /rest/api/3/issue/{key}/transitions
+  {
+    method: 'POST',
+    pattern: /\/rest\/api\/3\/issue\/[^/]+\/transitions$/,
+    respond: () => new Response(null, { status: 204 }),
+  },
+  // Fetch labels: GET /rest/api/3/issue/{key}?fields=labels
   {
     method: 'GET',
-    pattern: /\/search\/issues/,
-    respond: () => jsonResponse({ total_count: 0, items: [] }),
+    pattern: /\/rest\/api\/3\/issue\/[^/?]+\?fields=labels$/,
+    respond: () => jsonResponse({ fields: { labels: ['clancy'] } }),
   },
+  // Write labels: PUT /rest/api/3/issue/{key}
   {
-    method: 'PATCH',
-    pattern: /\/issues\/\d+$/,
-    respond: () => jsonResponse({ state: 'closed' }),
+    method: 'PUT',
+    pattern: /\/rest\/api\/3\/issue\/[^/?]+$/,
+    respond: () => new Response(null, { status: 204 }),
+  },
+  // Fetch issue links (blockers): GET /rest/api/3/issue/{key}?fields=issuelinks
+  {
+    method: 'GET',
+    pattern: /\/rest\/api\/3\/issue\/[^/?]+\?fields=issuelinks$/,
+    respond: () => jsonResponse({ fields: { issuelinks: [] } }),
   },
 ];
 
-function createGitHubFetcher() {
+function createJiraFetcher() {
   return async (url: string, init?: RequestInit): Promise<Response> => {
     const method = init?.method ?? 'GET';
     const match = ROUTES.find(
       (r) => r.method === method && r.pattern.test(url),
     );
-    return match?.respond() ?? new Response('Not Found', { status: 404 });
+    return (
+      match?.respond(url, init) ?? new Response('Not Found', { status: 404 })
+    );
   };
 }
 
 // ─── Shared env vars ─────────────────────────────────────────────────────────
 
-const GITHUB_ENV = {
-  GITHUB_TOKEN: 'ghp_test',
-  GITHUB_REPO: 'test-org/test-repo',
+const JIRA_ENV = {
+  JIRA_BASE_URL: 'https://test.atlassian.net',
+  JIRA_USER: 'test@example.com',
+  JIRA_API_TOKEN: 'test-api-token',
+  JIRA_PROJECT_KEY: 'PROJ',
   CLANCY_LABEL: 'clancy',
 };
 
@@ -115,8 +139,8 @@ function setup(overrides?: {
   readonly fetcher?: (url: string, init?: RequestInit) => Promise<Response>;
 }): PipelineSetup {
   return setupPipeline({
-    envVars: GITHUB_ENV,
-    fetcher: overrides?.fetcher ?? createGitHubFetcher(),
+    envVars: JIRA_ENV,
+    fetcher: overrides?.fetcher ?? createJiraFetcher(),
     exitCode: overrides?.exitCode,
   });
 }
@@ -130,7 +154,7 @@ afterEach(() => {
   cleanup = undefined;
 });
 
-describe('GitHub pipeline — happy path', { timeout: 30_000 }, () => {
+describe('Jira pipeline — happy path', { timeout: 30_000 }, () => {
   it('completes the full 13-phase pipeline', async () => {
     const { repo, run } = setup();
     cleanup = repo.cleanup;
@@ -146,9 +170,9 @@ describe('GitHub pipeline — happy path', { timeout: 30_000 }, () => {
 
     await run();
 
-    // GitHub ticket #42 → branch feature/issue-42
+    // Jira PROJ-42 → branch feature/proj-42
     const branches = repo.exec(['branch', '--list']).trim();
-    expect(branches).toContain('feature/issue-42');
+    expect(branches).toContain('feature/proj-42');
   });
 
   it('cleans up lock file after completion', async () => {
@@ -171,7 +195,7 @@ describe('GitHub pipeline — happy path', { timeout: 30_000 }, () => {
     expect(existsSync(progressPath)).toBe(true);
 
     const content = readFileSync(progressPath, 'utf8');
-    expect(content).toContain('#42');
+    expect(content).toContain('PROJ-42');
   });
 
   it('returns dry-run status with --dry-run flag', async () => {
@@ -196,10 +220,10 @@ describe('GitHub pipeline — happy path', { timeout: 30_000 }, () => {
   });
 
   it('aborts at ticket-fetch when board returns no issues', async () => {
-    const baseFetcher = createGitHubFetcher();
+    const baseFetcher = createJiraFetcher();
     const emptyFetcher = async (url: string, init?: RequestInit) => {
-      if (/\/issues\?/.test(url) && (init?.method ?? 'GET') === 'GET') {
-        return jsonResponse([]);
+      if (/\/search\/jql$/.test(url) && init?.method === 'POST') {
+        return jsonResponse({ total: 0, issues: [] });
       }
       return baseFetcher(url, init);
     };

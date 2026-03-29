@@ -1,9 +1,9 @@
 /**
- * Integration test: GitHub board — full pipeline happy path.
+ * Integration test: Notion board — full pipeline happy path.
  *
  * Exercises the complete 13-phase pipeline with:
  * - Real git operations (temp repo with bare remote)
- * - DI fetcher returning canned GitHub API responses
+ * - DI fetcher returning canned Notion API responses
  * - Claude simulator for the invoke phase
  * - Real filesystem for lock/progress/cost/quality files
  *
@@ -19,92 +19,95 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { jsonResponse, setupPipeline } from './pipeline-helpers.js';
 
-// ─── GitHub API mock fetcher ─────────────────────────────────────────────────
+// ─── Notion API mock fetcher ────────────────────────────────────────────────
 
-const GITHUB_USER = { login: 'testuser' };
-const GITHUB_ISSUE = {
-  number: 42,
-  title: 'Add widget feature',
-  body: 'Implement the widget.\n\nEpic: #10',
-  state: 'open',
-  assignee: { login: 'testuser' },
-  milestone: null,
-  labels: [{ name: 'clancy' }],
-  pull_request: undefined,
+/** Full UUID for the test page. Short key: notion-ab12cd34. */
+const PAGE_UUID = 'ab12cd34-5678-9abc-def0-123456789abc';
+
+const NOTION_PAGE = {
+  id: PAGE_UUID,
+  properties: {
+    Name: {
+      type: 'title',
+      title: [{ plain_text: 'Add widget feature' }],
+    },
+    Description: {
+      type: 'rich_text',
+      rich_text: [
+        { plain_text: 'Implement the widget.\n\nEpic: notion-ff001122' },
+      ],
+    },
+    Status: {
+      type: 'status',
+      status: { name: 'To-do' },
+    },
+    Labels: {
+      type: 'multi_select',
+      multi_select: [{ name: 'clancy' }],
+    },
+    Epic: {
+      type: 'relation',
+      relation: [{ id: 'ff001122-3344-5566-7788-99aabbccddee' }],
+    },
+  },
 };
 
-/** Route definitions for the GitHub mock fetcher. */
+const DATABASE_ID = '11223344-5566-7788-99aa-bbccddeeff00';
+
+/** Route definitions for the Notion mock fetcher. */
 const ROUTES: ReadonlyArray<{
   readonly method: string;
   readonly pattern: RegExp;
-  readonly respond: () => Response;
+  readonly respond: (url: string, init?: RequestInit) => Response;
 }> = [
+  // Ping: GET /users/me
   {
     method: 'GET',
-    pattern: /\/user$/,
-    respond: () => jsonResponse(GITHUB_USER),
+    pattern: /\/users\/me$/,
+    respond: () => jsonResponse({ id: 'user-uuid', type: 'bot' }),
   },
-  {
-    method: 'GET',
-    pattern: /\/repos\/[^/]+\/[^/]+$/,
-    respond: () => jsonResponse({ id: 1 }),
-  },
-  {
-    method: 'GET',
-    pattern: /\/repos\/[^/]+\/[^/]+\/issues\?/,
-    respond: () => jsonResponse([GITHUB_ISSUE]),
-  },
-  {
-    method: 'GET',
-    pattern: /\/labels\//,
-    respond: () => jsonResponse({ name: 'clancy' }),
-  },
+  // Query database: POST /databases/{id}/query
   {
     method: 'POST',
-    pattern: /\/labels$/,
-    respond: () => jsonResponse({ name: 'clancy' }, 201),
-  },
-  {
-    method: 'DELETE',
-    pattern: /\/labels\//,
-    respond: () => jsonResponse([], 200),
-  },
-  {
-    method: 'POST',
-    pattern: /\/pulls$/,
+    pattern: /\/databases\/[^/]+\/query$/,
     respond: () =>
-      jsonResponse(
-        { number: 1, html_url: 'https://github.com/test/pull/1' },
-        201,
-      ),
+      jsonResponse({
+        results: [NOTION_PAGE],
+        has_more: false,
+        next_cursor: null,
+      }),
   },
+  // Fetch page: GET /pages/{id}
   {
     method: 'GET',
-    pattern: /\/search\/issues/,
-    respond: () => jsonResponse({ total_count: 0, items: [] }),
+    pattern: /\/pages\/[^/]+$/,
+    respond: () => jsonResponse(NOTION_PAGE),
   },
+  // Update page: PATCH /pages/{id}
   {
     method: 'PATCH',
-    pattern: /\/issues\/\d+$/,
-    respond: () => jsonResponse({ state: 'closed' }),
+    pattern: /\/pages\/[^/]+$/,
+    respond: () => jsonResponse({ id: PAGE_UUID }),
   },
 ];
 
-function createGitHubFetcher() {
+function createNotionFetcher() {
   return async (url: string, init?: RequestInit): Promise<Response> => {
     const method = init?.method ?? 'GET';
     const match = ROUTES.find(
       (r) => r.method === method && r.pattern.test(url),
     );
-    return match?.respond() ?? new Response('Not Found', { status: 404 });
+    return (
+      match?.respond(url, init) ?? new Response('Not Found', { status: 404 })
+    );
   };
 }
 
 // ─── Shared env vars ─────────────────────────────────────────────────────────
 
-const GITHUB_ENV = {
-  GITHUB_TOKEN: 'ghp_test',
-  GITHUB_REPO: 'test-org/test-repo',
+const NOTION_ENV = {
+  NOTION_TOKEN: 'ntn_test_token_abc123',
+  NOTION_DATABASE_ID: DATABASE_ID,
   CLANCY_LABEL: 'clancy',
 };
 
@@ -115,8 +118,8 @@ function setup(overrides?: {
   readonly fetcher?: (url: string, init?: RequestInit) => Promise<Response>;
 }): PipelineSetup {
   return setupPipeline({
-    envVars: GITHUB_ENV,
-    fetcher: overrides?.fetcher ?? createGitHubFetcher(),
+    envVars: NOTION_ENV,
+    fetcher: overrides?.fetcher ?? createNotionFetcher(),
     exitCode: overrides?.exitCode,
   });
 }
@@ -130,7 +133,7 @@ afterEach(() => {
   cleanup = undefined;
 });
 
-describe('GitHub pipeline — happy path', { timeout: 30_000 }, () => {
+describe('Notion pipeline — happy path', { timeout: 30_000 }, () => {
   it('completes the full 13-phase pipeline', async () => {
     const { repo, run } = setup();
     cleanup = repo.cleanup;
@@ -146,9 +149,9 @@ describe('GitHub pipeline — happy path', { timeout: 30_000 }, () => {
 
     await run();
 
-    // GitHub ticket #42 → branch feature/issue-42
+    // Notion page ab12cd34-... → branch feature/notion-ab12cd34
     const branches = repo.exec(['branch', '--list']).trim();
-    expect(branches).toContain('feature/issue-42');
+    expect(branches).toContain('feature/notion-ab12cd34');
   });
 
   it('cleans up lock file after completion', async () => {
@@ -171,7 +174,7 @@ describe('GitHub pipeline — happy path', { timeout: 30_000 }, () => {
     expect(existsSync(progressPath)).toBe(true);
 
     const content = readFileSync(progressPath, 'utf8');
-    expect(content).toContain('#42');
+    expect(content).toContain('notion-ab12cd34');
   });
 
   it('returns dry-run status with --dry-run flag', async () => {
@@ -195,11 +198,15 @@ describe('GitHub pipeline — happy path', { timeout: 30_000 }, () => {
     expect(result.phase).toBe('preflight');
   });
 
-  it('aborts at ticket-fetch when board returns no issues', async () => {
-    const baseFetcher = createGitHubFetcher();
+  it('aborts at ticket-fetch when board returns no pages', async () => {
+    const baseFetcher = createNotionFetcher();
     const emptyFetcher = async (url: string, init?: RequestInit) => {
-      if (/\/issues\?/.test(url) && (init?.method ?? 'GET') === 'GET') {
-        return jsonResponse([]);
+      if (/\/databases\/[^/]+\/query$/.test(url) && init?.method === 'POST') {
+        return jsonResponse({
+          results: [],
+          has_more: false,
+          next_cursor: null,
+        });
       }
       return baseFetcher(url, init);
     };

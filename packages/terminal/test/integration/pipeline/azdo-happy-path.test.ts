@@ -1,9 +1,9 @@
 /**
- * Integration test: GitHub board — full pipeline happy path.
+ * Integration test: Azure DevOps board — full pipeline happy path.
  *
  * Exercises the complete 13-phase pipeline with:
  * - Real git operations (temp repo with bare remote)
- * - DI fetcher returning canned GitHub API responses
+ * - DI fetcher returning canned Azure DevOps API responses
  * - Claude simulator for the invoke phase
  * - Real filesystem for lock/progress/cost/quality files
  *
@@ -19,92 +19,92 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { jsonResponse, setupPipeline } from './pipeline-helpers.js';
 
-// ─── GitHub API mock fetcher ─────────────────────────────────────────────────
+// ─── Azure DevOps API mock fetcher ──────────────────────────────────────────
 
-const GITHUB_USER = { login: 'testuser' };
-const GITHUB_ISSUE = {
-  number: 42,
-  title: 'Add widget feature',
-  body: 'Implement the widget.\n\nEpic: #10',
-  state: 'open',
-  assignee: { login: 'testuser' },
-  milestone: null,
-  labels: [{ name: 'clancy' }],
-  pull_request: undefined,
+const AZDO_WORK_ITEM = {
+  id: 42,
+  fields: {
+    'System.Title': 'Add widget feature',
+    'System.Description': 'Implement the widget.\n\nEpic: azdo-100',
+    'System.State': 'New',
+    'System.Tags': 'clancy',
+  },
+  relations: [
+    {
+      rel: 'System.LinkTypes.Hierarchy-Reverse',
+      url: 'https://dev.azure.com/test-org/test-project/_apis/wit/workItems/100',
+    },
+  ],
 };
 
-/** Route definitions for the GitHub mock fetcher. */
+/** Route definitions for the Azure DevOps mock fetcher. */
 const ROUTES: ReadonlyArray<{
   readonly method: string;
   readonly pattern: RegExp;
-  readonly respond: () => Response;
+  readonly respond: (url: string, init?: RequestInit) => Response;
 }> = [
+  // Ping: GET /{org}/_apis/projects/{project}
   {
     method: 'GET',
-    pattern: /\/user$/,
-    respond: () => jsonResponse(GITHUB_USER),
+    pattern: /\/_apis\/projects\/[^?]+/,
+    respond: () => jsonResponse({ id: 'project-uuid', name: 'test-project' }),
   },
-  {
-    method: 'GET',
-    pattern: /\/repos\/[^/]+\/[^/]+$/,
-    respond: () => jsonResponse({ id: 1 }),
-  },
-  {
-    method: 'GET',
-    pattern: /\/repos\/[^/]+\/[^/]+\/issues\?/,
-    respond: () => jsonResponse([GITHUB_ISSUE]),
-  },
-  {
-    method: 'GET',
-    pattern: /\/labels\//,
-    respond: () => jsonResponse({ name: 'clancy' }),
-  },
+  // WIQL query: POST /wit/wiql
   {
     method: 'POST',
-    pattern: /\/labels$/,
-    respond: () => jsonResponse({ name: 'clancy' }, 201),
+    pattern: /\/wit\/wiql\?/,
+    respond: (_url, init) => {
+      const body = JSON.parse(String(init?.body ?? '{}')) as {
+        readonly query?: string;
+      };
+      const query = body.query ?? '';
+
+      // Children status queries search by description or link type
+      if (query.includes('Epic:') || query.includes('WorkItemLinks')) {
+        return jsonResponse({ workItems: [] });
+      }
+
+      return jsonResponse({ workItems: [{ id: 42 }] });
+    },
   },
-  {
-    method: 'DELETE',
-    pattern: /\/labels\//,
-    respond: () => jsonResponse([], 200),
-  },
-  {
-    method: 'POST',
-    pattern: /\/pulls$/,
-    respond: () =>
-      jsonResponse(
-        { number: 1, html_url: 'https://github.com/test/pull/1' },
-        201,
-      ),
-  },
+  // Fetch single work item: GET /wit/workitems/{id}?$expand=relations
   {
     method: 'GET',
-    pattern: /\/search\/issues/,
-    respond: () => jsonResponse({ total_count: 0, items: [] }),
+    pattern: /\/wit\/workitems\/\d+\?.*\$expand=relations/,
+    respond: () => jsonResponse(AZDO_WORK_ITEM),
   },
+  // Batch fetch work items: GET /wit/workitems?ids=...
+  {
+    method: 'GET',
+    pattern: /\/wit\/workitems\?ids=/,
+    respond: () => jsonResponse({ value: [AZDO_WORK_ITEM], count: 1 }),
+  },
+  // Update work item (transition / tags): PATCH /wit/workitems/{id}
   {
     method: 'PATCH',
-    pattern: /\/issues\/\d+$/,
-    respond: () => jsonResponse({ state: 'closed' }),
+    pattern: /\/wit\/workitems\/\d+\?/,
+    respond: () => jsonResponse(AZDO_WORK_ITEM),
   },
 ];
 
-function createGitHubFetcher() {
+function createAzdoFetcher() {
   return async (url: string, init?: RequestInit): Promise<Response> => {
     const method = init?.method ?? 'GET';
     const match = ROUTES.find(
       (r) => r.method === method && r.pattern.test(url),
     );
-    return match?.respond() ?? new Response('Not Found', { status: 404 });
+    return (
+      match?.respond(url, init) ?? new Response('Not Found', { status: 404 })
+    );
   };
 }
 
 // ─── Shared env vars ─────────────────────────────────────────────────────────
 
-const GITHUB_ENV = {
-  GITHUB_TOKEN: 'ghp_test',
-  GITHUB_REPO: 'test-org/test-repo',
+const AZDO_ENV = {
+  AZDO_ORG: 'test-org',
+  AZDO_PROJECT: 'test-project',
+  AZDO_PAT: 'test-pat-abc123',
   CLANCY_LABEL: 'clancy',
 };
 
@@ -115,8 +115,8 @@ function setup(overrides?: {
   readonly fetcher?: (url: string, init?: RequestInit) => Promise<Response>;
 }): PipelineSetup {
   return setupPipeline({
-    envVars: GITHUB_ENV,
-    fetcher: overrides?.fetcher ?? createGitHubFetcher(),
+    envVars: AZDO_ENV,
+    fetcher: overrides?.fetcher ?? createAzdoFetcher(),
     exitCode: overrides?.exitCode,
   });
 }
@@ -130,7 +130,7 @@ afterEach(() => {
   cleanup = undefined;
 });
 
-describe('GitHub pipeline — happy path', { timeout: 30_000 }, () => {
+describe('Azure DevOps pipeline — happy path', { timeout: 30_000 }, () => {
   it('completes the full 13-phase pipeline', async () => {
     const { repo, run } = setup();
     cleanup = repo.cleanup;
@@ -146,9 +146,9 @@ describe('GitHub pipeline — happy path', { timeout: 30_000 }, () => {
 
     await run();
 
-    // GitHub ticket #42 → branch feature/issue-42
+    // AzDo work item 42 → branch feature/azdo-42
     const branches = repo.exec(['branch', '--list']).trim();
-    expect(branches).toContain('feature/issue-42');
+    expect(branches).toContain('feature/azdo-42');
   });
 
   it('cleans up lock file after completion', async () => {
@@ -171,7 +171,7 @@ describe('GitHub pipeline — happy path', { timeout: 30_000 }, () => {
     expect(existsSync(progressPath)).toBe(true);
 
     const content = readFileSync(progressPath, 'utf8');
-    expect(content).toContain('#42');
+    expect(content).toContain('azdo-42');
   });
 
   it('returns dry-run status with --dry-run flag', async () => {
@@ -195,11 +195,11 @@ describe('GitHub pipeline — happy path', { timeout: 30_000 }, () => {
     expect(result.phase).toBe('preflight');
   });
 
-  it('aborts at ticket-fetch when board returns no issues', async () => {
-    const baseFetcher = createGitHubFetcher();
+  it('aborts at ticket-fetch when WIQL returns no work items', async () => {
+    const baseFetcher = createAzdoFetcher();
     const emptyFetcher = async (url: string, init?: RequestInit) => {
-      if (/\/issues\?/.test(url) && (init?.method ?? 'GET') === 'GET') {
-        return jsonResponse([]);
+      if (/\/wit\/wiql\?/.test(url) && init?.method === 'POST') {
+        return jsonResponse({ workItems: [] });
       }
       return baseFetcher(url, init);
     };
