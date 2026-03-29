@@ -2,12 +2,13 @@
 
 ## Session 42 Handoff
 
-**Phase 12 in progress — 5 of 13 PRs done.** 1574 core tests, 756 terminal tests.
+**Phase 12 in progress — 6 of 13 PRs done.** 1574 core tests, 756 terminal tests.
 
 ### What was done
 
 - **12.4** (#132): Cleanup helpers — `cleanupTicket()` dispatch for 6 boards, `cleanupPullRequest()`, `cleanupBranch()`. Split into 8 files matching ticket-factory pattern. Exported `E2EBoard` from `env.ts`, updated ticket-factory to import it. 6 tests.
 - **12.5** (#133): Garbage collector — `cleanupOrphanTickets()` dispatch for 6 boards + CLI entry point (`npx tsx gc.ts`). Searches for `[QA]` tickets >24h and closes/deletes them. GitHub GC also cleans orphan PRs and `feature/*` branches. Split into 8 files. 3 tests.
+- **12.6** (#TBD): GitHub e2e tracer bullet — first real E2E test. `setupE2EPipeline` shared helper (temp repo with real remote, Claude simulator that creates commits, real `fetch`). Verifies full pipeline: ticket creation, branch, PR, progress entry, PR body, issue state.
 
 ### Key decisions
 
@@ -17,11 +18,13 @@
 - **GitHub GC 3-pass:** Issues → PRs → branches (closed PR branches). Only deletes `feature/*` branches.
 - **Pagination:** Shortcut (cursor tokens, max 100 pages) and Notion (cursor, max 10 pages) handle paginated results.
 - **WIQL injection guard:** AzDO validates project name with same regex as runtime `isSafeWiqlValue` before interpolation.
+- **E2E Claude simulator:** Wraps existing simulator to create real commits. Pipeline invoke phase returns success AND produces a git commit, so deliver phase can push and create a real PR.
+- **`--skip-feasibility` default:** E2E tests skip feasibility by default (no real Claude needed). Matches old e2e pattern.
 
 ### Next up
 
-- **12.6**: GitHub e2e (tracer bullet — first real pipeline test)
 - **12.7**: Jira e2e
+- **12.8**: Linear e2e
 
 ---
 
@@ -114,7 +117,7 @@ Location: `packages/terminal/test/e2e/`. File convention: `*.e2e.ts` (not picked
 | 12.3  | Ticket factory           | `createTestTicket()` for 6 boards, `generateRunId()`                                          | Done (#131) |
 | 12.4  | Cleanup helpers          | `cleanupTicket()`, `cleanupPullRequest()`, `cleanupBranch()` — per-board teardown             | Done (#132) |
 | 12.5  | Garbage collector        | Orphan cleanup for stale `[QA]` tickets >24h. Standalone CLI + importable                     | Done (#133) |
-| 12.6  | GitHub e2e               | Tracer bullet — first e2e test: `runPipeline` + real GitHub fetcher + Claude simulator        | Pending     |
+| 12.6  | GitHub e2e               | Tracer bullet — first e2e test: `runPipeline` + real GitHub fetcher + Claude simulator        | Done (#TBD) |
 | 12.7  | Jira e2e                 | Jira board e2e test                                                                           | Pending     |
 | 12.8  | Linear e2e               | Linear board e2e test (GraphQL)                                                               | Pending     |
 | 12.9  | Shortcut e2e             | Shortcut board e2e test                                                                       | Pending     |
