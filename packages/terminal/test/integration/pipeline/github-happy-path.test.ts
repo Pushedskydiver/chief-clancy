@@ -17,96 +17,12 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { jsonResponse, setupPipeline } from './pipeline-helpers.js';
-
-// ─── GitHub API mock fetcher ─────────────────────────────────────────────────
-
-const GITHUB_USER = { login: 'testuser' };
-const GITHUB_ISSUE = {
-  number: 42,
-  title: 'Add widget feature',
-  body: 'Implement the widget.\n\nEpic: #10',
-  state: 'open',
-  assignee: { login: 'testuser' },
-  milestone: null,
-  labels: [{ name: 'clancy' }],
-  pull_request: undefined,
-};
-
-/** Route definitions for the GitHub mock fetcher. */
-const ROUTES: ReadonlyArray<{
-  readonly method: string;
-  readonly pattern: RegExp;
-  readonly respond: () => Response;
-}> = [
-  {
-    method: 'GET',
-    pattern: /\/user$/,
-    respond: () => jsonResponse(GITHUB_USER),
-  },
-  {
-    method: 'GET',
-    pattern: /\/repos\/[^/]+\/[^/]+$/,
-    respond: () => jsonResponse({ id: 1 }),
-  },
-  {
-    method: 'GET',
-    pattern: /\/repos\/[^/]+\/[^/]+\/issues\?/,
-    respond: () => jsonResponse([GITHUB_ISSUE]),
-  },
-  {
-    method: 'GET',
-    pattern: /\/labels\//,
-    respond: () => jsonResponse({ name: 'clancy' }),
-  },
-  {
-    method: 'POST',
-    pattern: /\/labels$/,
-    respond: () => jsonResponse({ name: 'clancy' }, 201),
-  },
-  {
-    method: 'DELETE',
-    pattern: /\/labels\//,
-    respond: () => jsonResponse([], 200),
-  },
-  {
-    method: 'POST',
-    pattern: /\/pulls$/,
-    respond: () =>
-      jsonResponse(
-        { number: 1, html_url: 'https://github.com/test/pull/1' },
-        201,
-      ),
-  },
-  {
-    method: 'GET',
-    pattern: /\/search\/issues/,
-    respond: () => jsonResponse({ total_count: 0, items: [] }),
-  },
-  {
-    method: 'PATCH',
-    pattern: /\/issues\/\d+$/,
-    respond: () => jsonResponse({ state: 'closed' }),
-  },
-];
-
-function createGitHubFetcher() {
-  return async (url: string, init?: RequestInit): Promise<Response> => {
-    const method = init?.method ?? 'GET';
-    const match = ROUTES.find(
-      (r) => r.method === method && r.pattern.test(url),
-    );
-    return match?.respond() ?? new Response('Not Found', { status: 404 });
-  };
-}
-
-// ─── Shared env vars ─────────────────────────────────────────────────────────
-
-const GITHUB_ENV = {
-  GITHUB_TOKEN: 'ghp_test',
-  GITHUB_REPO: 'test-org/test-repo',
-  CLANCY_LABEL: 'clancy',
-};
+import {
+  createGitHubFetcher,
+  GITHUB_ENV,
+  jsonResponse,
+  setupPipeline,
+} from './pipeline-helpers.js';
 
 // ─── Shared test setup ───────────────────────────────────────────────────────
 

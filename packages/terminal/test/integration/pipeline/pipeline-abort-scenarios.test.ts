@@ -15,7 +15,16 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { jsonResponse, setupPipeline } from './pipeline-helpers.js';
+import {
+  AZDO_ENV,
+  createGitHubFetcher,
+  GITHUB_ENV,
+  JIRA_ENV,
+  LINEAR_ENV,
+  NOTION_ENV,
+  setupPipeline,
+  SHORTCUT_ENV,
+} from './pipeline-helpers.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -31,125 +40,6 @@ afterEach(() => {
   cleanup?.();
   cleanup = undefined;
 });
-
-// ─── Board-specific env configs ──────────────────────────────────────────────
-
-const GITHUB_ENV = {
-  GITHUB_TOKEN: 'ghp_test',
-  GITHUB_REPO: 'test-org/test-repo',
-  CLANCY_LABEL: 'clancy',
-};
-
-const JIRA_ENV = {
-  JIRA_BASE_URL: 'https://test.atlassian.net',
-  JIRA_USER: 'test@example.com',
-  JIRA_API_TOKEN: 'test-api-token',
-  JIRA_PROJECT_KEY: 'PROJ',
-  CLANCY_LABEL: 'clancy',
-};
-
-const LINEAR_ENV = {
-  LINEAR_API_KEY: 'lin_test_key_abc123',
-  LINEAR_TEAM_ID: 'team-uuid-123',
-  CLANCY_LABEL: 'clancy',
-};
-
-const SHORTCUT_ENV = {
-  SHORTCUT_API_TOKEN: 'sc-test-token-abc123',
-  CLANCY_LABEL: 'clancy',
-};
-
-const NOTION_ENV = {
-  NOTION_TOKEN: 'ntn_test_token_abc123',
-  NOTION_DATABASE_ID: '11223344-5566-7788-99aa-bbccddeeff00',
-  CLANCY_LABEL: 'clancy',
-};
-
-const AZDO_ENV = {
-  AZDO_ORG: 'test-org',
-  AZDO_PROJECT: 'test-project',
-  AZDO_PAT: 'test-pat-abc123',
-  CLANCY_LABEL: 'clancy',
-};
-
-// ─── GitHub happy-path fetcher (reused for non-ping tests) ───────────────────
-
-const GITHUB_ISSUE = {
-  number: 42,
-  title: 'Add widget feature',
-  body: 'Implement the widget.',
-  state: 'open',
-  assignee: { login: 'testuser' },
-  milestone: null,
-  labels: [{ name: 'clancy' }],
-  pull_request: undefined,
-};
-
-function createGitHubHappyFetcher() {
-  const routes: ReadonlyArray<{
-    readonly method: string;
-    readonly pattern: RegExp;
-    readonly respond: () => Response;
-  }> = [
-    {
-      method: 'GET',
-      pattern: /\/user$/,
-      respond: () => jsonResponse({ login: 'testuser' }),
-    },
-    {
-      method: 'GET',
-      pattern: /\/repos\/[^/]+\/[^/]+$/,
-      respond: () => jsonResponse({ id: 1 }),
-    },
-    {
-      method: 'GET',
-      pattern: /\/repos\/[^/]+\/[^/]+\/issues\?/,
-      respond: () => jsonResponse([GITHUB_ISSUE]),
-    },
-    {
-      method: 'GET',
-      pattern: /\/labels\//,
-      respond: () => jsonResponse({ name: 'clancy' }),
-    },
-    {
-      method: 'POST',
-      pattern: /\/labels$/,
-      respond: () => jsonResponse({ name: 'clancy' }, 201),
-    },
-    {
-      method: 'DELETE',
-      pattern: /\/labels\//,
-      respond: () => jsonResponse([], 200),
-    },
-    {
-      method: 'POST',
-      pattern: /\/pulls$/,
-      respond: () =>
-        jsonResponse(
-          { number: 1, html_url: 'https://github.com/test/pull/1' },
-          201,
-        ),
-    },
-    {
-      method: 'GET',
-      pattern: /\/search\/issues/,
-      respond: () => jsonResponse({ total_count: 0, items: [] }),
-    },
-    {
-      method: 'PATCH',
-      pattern: /\/issues\/\d+$/,
-      respond: () => jsonResponse({ state: 'closed' }),
-    },
-  ];
-
-  return async (url: string, init?: RequestInit): Promise<Response> => {
-    const method = init?.method ?? 'GET';
-    const match = routes.find(
-      (r) => r.method === method && r.pattern.test(url),
-    );
-    return match?.respond() ?? new Response('Not Found', { status: 404 });
-  };
-}
 
 // ─── Ping failure tests ──────────────────────────────────────────────────────
 
@@ -239,7 +129,7 @@ describe('Pipeline abort — feasibility check', { timeout: 30_000 }, () => {
   it('aborts at feasibility when Claude returns INFEASIBLE', async () => {
     const { repo, run } = setupPipeline({
       envVars: GITHUB_ENV,
-      fetcher: createGitHubHappyFetcher(),
+      fetcher: createGitHubFetcher(),
       simulatorResponses: [
         { stdout: 'INFEASIBLE: requires manual database migration' },
       ],
@@ -255,7 +145,7 @@ describe('Pipeline abort — feasibility check', { timeout: 30_000 }, () => {
   it('records SKIPPED progress when feasibility fails', async () => {
     const { repo, run } = setupPipeline({
       envVars: GITHUB_ENV,
-      fetcher: createGitHubHappyFetcher(),
+      fetcher: createGitHubFetcher(),
       simulatorResponses: [
         { stdout: 'INFEASIBLE: needs infrastructure changes' },
       ],
@@ -279,7 +169,7 @@ describe('Pipeline abort — lock contention', { timeout: 30_000 }, () => {
   it('aborts at lock-check when active session lock exists', async () => {
     const { repo, run } = setupPipeline({
       envVars: GITHUB_ENV,
-      fetcher: createGitHubHappyFetcher(),
+      fetcher: createGitHubFetcher(),
     });
     cleanup = repo.cleanup;
 
@@ -308,7 +198,7 @@ describe('Pipeline abort — lock contention', { timeout: 30_000 }, () => {
   it('continues after cleaning up stale lock from dead process', async () => {
     const { repo, run } = setupPipeline({
       envVars: GITHUB_ENV,
-      fetcher: createGitHubHappyFetcher(),
+      fetcher: createGitHubFetcher(),
     });
     cleanup = repo.cleanup;
 

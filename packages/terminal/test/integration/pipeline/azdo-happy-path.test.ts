@@ -17,7 +17,7 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { jsonResponse, setupPipeline } from './pipeline-helpers.js';
+import { AZDO_ENV, jsonResponse, setupPipeline } from './pipeline-helpers.js';
 
 // ─── Azure DevOps API mock fetcher ──────────────────────────────────────────
 
@@ -98,15 +98,6 @@ function createAzdoFetcher() {
     );
   };
 }
-
-// ─── Shared env vars ─────────────────────────────────────────────────────────
-
-const AZDO_ENV = {
-  AZDO_ORG: 'test-org',
-  AZDO_PROJECT: 'test-project',
-  AZDO_PAT: 'test-pat-abc123',
-  CLANCY_LABEL: 'clancy',
-};
 
 // ─── Shared test setup ───────────────────────────────────────────────────────
 
