@@ -173,10 +173,12 @@ function dispatchBbCloud(
   ctx: DispatchCtx,
   remote: BitbucketRemote,
 ): Promise<PrCreationResult> {
-  // Safe: resolveGitToken always sets username for Bitbucket Cloud
+  const { username } = ctx.creds;
+  if (!username) throw new Error('Bitbucket Cloud requires a username');
+
   return createBbCloudPr({
     fetchFn: ctx.fetchFn,
-    username: ctx.creds.username!,
+    username,
     token: ctx.creds.token,
     workspace: remote.workspace,
     repoSlug: remote.repoSlug,
