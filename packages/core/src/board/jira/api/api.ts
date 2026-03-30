@@ -140,6 +140,7 @@ function collectStrings(node: unknown): readonly string[] {
   if (typeof node === 'string') return [node];
   if (Array.isArray(node)) return node.flatMap(collectStrings);
   if (node && typeof node === 'object') {
+    // Safe: the guard above confirms `node` is a non-null object
     return Object.values(node as Record<string, unknown>).flatMap(
       collectStrings,
     );
