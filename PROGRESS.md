@@ -2,27 +2,30 @@
 
 ## Session 43 Handoff
 
-**Phase 12 in progress — 10 of 13 PRs done.** 1574 core tests, 756 terminal tests.
+**Phase 12 in progress — 11 of 13 PRs done.** 1574 core tests, 756 terminal tests.
 
 ### What was done
 
 - **12.7** (#135): Jira e2e — port from old repo using `setupE2EPipeline`. Creates real Jira issue, runs full pipeline with Claude simulator, verifies PR creation on GitHub sandbox. Uses both Jira + GitHub credentials. Jira-specific: `clancy-build` label (dash, not colon), strongly consistent API (no pause needed).
 - **12.8** (#136): Linear e2e — GraphQL-based board using `setupE2EPipeline`. Creates real Linear issue, runs pipeline, verifies PR. `GITHUB_REPO` intentionally omitted from env vars (detectBoard would misdetect as GitHub Issues). Cleanup uses ticket UUID not key.
 - **12.9** (#137): Shortcut e2e — REST API board using `setupE2EPipeline`. Env var mapping: `SHORTCUT_TOKEN` (e2e env) → `SHORTCUT_API_TOKEN` (runtime schema). `GITHUB_REPO` omitted (same as Linear). Cleanup uses numeric story ID.
-- **12.10** (#TBD): Notion e2e — requires schema discovery (`discoverNotionSchema`) before pipeline setup. Conditional env vars: `CLANCY_NOTION_TODO` (status option name), `CLANCY_NOTION_LABELS` + `CLANCY_LABEL_BUILD` (set together when labels property exists). Exported `discoverNotionSchema` from ticket factory. Cleanup archives page (no hard delete).
+- **12.10** (#138): Notion e2e — requires schema discovery (`discoverNotionSchema`) before pipeline setup. Conditional env vars: `CLANCY_NOTION_TODO` (status option name), `CLANCY_NOTION_LABELS` + `CLANCY_LABEL_BUILD` (set together when labels property exists). Exported `discoverNotionSchema` from ticket factory. Cleanup archives page (no hard delete).
+- **12.11** (#TBD): Azure DevOps e2e — WIQL-based board using `setupE2EPipeline`. Env var mapping: `AZURE_*` (e2e env) → `AZDO_*` (runtime schema). `GITHUB_REPO` omitted. Cleanup tries hard delete, falls back to close + tag. No old reference test — new port following established pattern.
 
 ### Key decisions
 
 - **`cleanupPullRequest` over `cleanupGitHubPullRequest`:** All non-GitHub board tests use the generic board-agnostic wrapper since all boards share the same GitHub sandbox for PRs.
-- **No consistency pause:** Jira, Linear, Shortcut, and Notion APIs are strongly consistent unlike GitHub Issues list API.
-- **`GITHUB_REPO` omission for Linear/Shortcut/Notion:** `detectBoard` checks `GITHUB_TOKEN + GITHUB_REPO` before all three boards. `GITHUB_TOKEN` alone suffices for git host auth (PR creation via `sharedEnvSchema`).
+- **No consistency pause:** All non-GitHub board APIs are strongly consistent unlike GitHub Issues list API.
+- **`GITHUB_REPO` omission for all non-GitHub boards:** `detectBoard` checks `GITHUB_TOKEN + GITHUB_REPO` before Linear/Shortcut/Notion/AzDO. `GITHUB_TOKEN` alone suffices for git host auth (PR creation via `sharedEnvSchema`).
 - **Linear cleanup uses UUID:** `cleanupLinearTicket(ticketId)` takes the UUID, not the identifier key. Progress assertions use the key (`CLA-5`).
 - **Shortcut env var mapping:** `.env.e2e` stores `SHORTCUT_TOKEN`; runtime expects `SHORTCUT_API_TOKEN`. Documented in file-level JSDoc.
+- **AzDO env var mapping:** `.env.e2e` stores `AZURE_*`; runtime expects `AZDO_*`. Documented in file-level JSDoc.
 - **Notion schema discovery:** Called twice per test (once in ticket factory, once for env vars). Accepted as test-only double-fetch — refactoring `CreatedTicket` to carry board-specific metadata would be over-engineering.
 
 ### Next up
 
-- **12.11**: Azure DevOps e2e
+- **12.12**: Live schema validation
+- **12.13**: CI workflow
 
 ---
 
@@ -147,8 +150,8 @@ Location: `packages/terminal/test/e2e/`. File convention: `*.e2e.ts` (not picked
 | 12.7  | Jira e2e                 | Jira board e2e test                                                                           | Done (#135) |
 | 12.8  | Linear e2e               | Linear board e2e test (GraphQL)                                                               | Done (#136) |
 | 12.9  | Shortcut e2e             | Shortcut board e2e test                                                                       | Done (#TBD) |
-| 12.10 | Notion e2e               | Notion board e2e test                                                                         | Done (#TBD) |
-| 12.11 | Azure DevOps e2e         | Azure DevOps board e2e test (WIQL)                                                            | Pending     |
+| 12.10 | Notion e2e               | Notion board e2e test                                                                         | Done (#138) |
+| 12.11 | Azure DevOps e2e         | Azure DevOps board e2e test (WIQL)                                                            | Done (#TBD) |
 | 12.12 | Live schema validation   | Auth-endpoint checks against Zod schemas — API drift detection                                | Pending     |
 | 12.13 | CI workflow              | GitHub Actions: weekly schedule, GC pre-step, board matrix, schema validation post-step       | Pending     |
 
