@@ -272,10 +272,10 @@ export {
 } from './dev/lifecycle/quality/quality.js';
 export type { QualityFs } from './dev/lifecycle/quality/quality.js';
 
-export type { FetchFn } from './shared/pr-creation/pr-creation.js';
-export { attemptPrCreation } from './shared/pr-creation/pr-creation.js';
+export type { FetchFn } from './dev/lifecycle/pr-creation/pr-creation.js';
+export { attemptPrCreation } from './dev/lifecycle/pr-creation/pr-creation.js';
 export { resolveCommitType } from './dev/lifecycle/commit-type/commit-type.js';
-export { buildPrBody } from './shared/pull-request/pr-body/pr-body.js';
+export { buildPrBody } from './dev/lifecycle/pull-request/pr-body/pr-body.js';
 
 export type { CostFs } from './dev/lifecycle/cost/cost.js';
 export { appendCostEntry } from './dev/lifecycle/cost/cost.js';

@@ -5,28 +5,28 @@
  * progress. No console output — returns structured results for the
  * terminal layer to display.
  */
+import type { FetchFn } from '~/c/dev/lifecycle/pr-creation/index.js';
 import type { ProgressFs } from '~/c/dev/lifecycle/progress/index.js';
+import type { EpicContext } from '~/c/dev/lifecycle/pull-request/pr-body/index.js';
 import type { BoardConfig } from '~/c/schemas/env/env.js';
 import type { ExecGit } from '~/c/shared/git-ops/index.js';
-import type { FetchFn } from '~/c/shared/pr-creation/index.js';
-import type { EpicContext } from '~/c/shared/pull-request/pr-body/index.js';
 import type { FetchedTicket } from '~/c/types/board.js';
 import type { PrCreationResult, RemoteInfo } from '~/c/types/remote.js';
 
 import { resolveCommitType } from '~/c/dev/lifecycle/commit-type/index.js';
+import {
+  computeDeliveryOutcome,
+  progressForOutcome,
+} from '~/c/dev/lifecycle/outcome/index.js';
+import { attemptPrCreation } from '~/c/dev/lifecycle/pr-creation/index.js';
 import { appendProgress } from '~/c/dev/lifecycle/progress/index.js';
+import { buildPrBody } from '~/c/dev/lifecycle/pull-request/pr-body/index.js';
 import { buildEpicContext } from '~/c/shared/epic/index.js';
 import {
   checkout,
   detectRemote,
   pushBranch,
 } from '~/c/shared/git-ops/index.js';
-import {
-  computeDeliveryOutcome,
-  progressForOutcome,
-} from '~/c/shared/outcome/index.js';
-import { attemptPrCreation } from '~/c/shared/pr-creation/index.js';
-import { buildPrBody } from '~/c/shared/pull-request/pr-body/index.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
