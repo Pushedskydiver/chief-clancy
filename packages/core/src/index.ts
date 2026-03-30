@@ -178,8 +178,12 @@ export {
   shortcutWorkflowsResponseSchema,
 } from './schemas/index.js';
 
-export { createContext, RunContext, runPipeline } from './pipeline/index.js';
-export type { PipelineDeps, PipelineResult } from './pipeline/index.js';
+export {
+  createContext,
+  RunContext,
+  runPipeline,
+} from './dev/pipeline/index.js';
+export type { PipelineDeps, PipelineResult } from './dev/pipeline/index.js';
 
 // Phase functions + deps types (consumed by terminal dep factory)
 export {
@@ -196,7 +200,7 @@ export {
   reworkDetection,
   ticketFetch,
   transition,
-} from './pipeline/index.js';
+} from './dev/pipeline/index.js';
 export type {
   BranchSetupDeps,
   CleanupDeps,
@@ -210,7 +214,7 @@ export type {
   ReworkDetectionDeps,
   TicketFetchDeps,
   TransitionDeps,
-} from './pipeline/index.js';
+} from './dev/pipeline/index.js';
 
 // Shared utilities (consumed by terminal dep factory for phase wiring)
 export type { ExecGit } from './shared/git-ops/index.js';
