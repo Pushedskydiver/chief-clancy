@@ -31,8 +31,7 @@ type NotionSchema = {
  * @param databaseId - Database UUID.
  * @returns The discovered schema info.
  */
-// Export when needed by GC or other consumers
-async function discoverNotionSchema(
+export async function discoverNotionSchema(
   token: string,
   databaseId: string,
 ): Promise<NotionSchema> {
