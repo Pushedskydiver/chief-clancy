@@ -83,28 +83,24 @@ Code is organised by **capability directories** that map to future packages. See
 
 ### Core (domain model + capabilities)
 
-| Path                         | Future package | Purpose                                                       |
-| ---------------------------- | -------------- | ------------------------------------------------------------- |
-| `packages/core/src/board/`   | core (forever) | Board type, factory, 6 implementations                        |
-| `packages/core/src/types/`   | core (forever) | Shared type definitions                                       |
-| `packages/core/src/schemas/` | core (forever) | Zod validation schemas                                        |
-| `packages/core/src/shared/`  | core (forever) | Pure utilities (git-ops, env-parser, branch, format, http...) |
-| `packages/core/src/dev/`     | @c-c/dev       | Ticket lifecycle, phase pipeline, delivery orchestration      |
-| `packages/core/src/brief/`   | @c-c/brief     | Strategist — grill, decomposition, ticket creation            |
-| `packages/core/src/plan/`    | @c-c/plan      | Implementation planning, approval flow                        |
-| `packages/core/src/design/`  | @c-c/design    | Design specs, Stitch integration, visual verification         |
-| `packages/core/src/qa/`      | @c-c/qa        | Verification gate, self-healing retry, quality metrics        |
+| Path                               | Future package | Purpose                                                            |
+| ---------------------------------- | -------------- | ------------------------------------------------------------------ |
+| `packages/core/src/board/`         | core (forever) | Board type, factory, 6 implementations                             |
+| `packages/core/src/types/`         | core (forever) | Shared type definitions                                            |
+| `packages/core/src/schemas/`       | core (forever) | Zod validation schemas                                             |
+| `packages/core/src/shared/`        | core (forever) | Pure utilities (cache, env-parser, git-ops, git-token, http, etc.) |
+| `packages/core/src/dev/lifecycle/` | @c-c/dev       | Ticket lifecycle (branch, deliver, rework, PR creation, progress)  |
+| `packages/core/src/dev/pipeline/`  | @c-c/dev       | Phase orchestration (context, run-pipeline, 13 phases)             |
 
 ### Terminal (CLI + automation)
 
-| Path                               | Future package | Purpose                                         |
-| ---------------------------------- | -------------- | ----------------------------------------------- |
-| `packages/terminal/src/installer/` | terminal       | Installer modules                               |
-| `packages/terminal/src/roles/`     | terminal       | 5 roles — slash commands and workflows          |
-| `packages/terminal/src/agents/`    | terminal       | 7 agent prompts                                 |
-| `packages/terminal/src/shared/`    | terminal       | Terminal utilities (ansi, prompt, notify)       |
-| `packages/terminal/hooks/`         | terminal       | Pre-built CommonJS hooks                        |
-| `packages/terminal/src/automate/`  | @c-c/automate  | AFK runner, board watcher, quiet hours, reports |
+| Path                               | Future package | Purpose                                   |
+| ---------------------------------- | -------------- | ----------------------------------------- |
+| `packages/terminal/src/installer/` | terminal       | Installer modules                         |
+| `packages/terminal/src/roles/`     | terminal       | 5 roles — slash commands and workflows    |
+| `packages/terminal/src/agents/`    | terminal       | 7 agent prompts                           |
+| `packages/terminal/src/shared/`    | terminal       | Terminal utilities (ansi, prompt, notify) |
+| `packages/terminal/src/hooks/`     | terminal       | Pre-built CommonJS hooks                  |
 
 ## Testing
 

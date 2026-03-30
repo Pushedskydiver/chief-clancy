@@ -1,8 +1,22 @@
 # Monorepo Progress
 
-## Session 46 Handoff
+## Session 46 Handoff (continued)
 
-**Audit cleanup complete — all 14 PRs (C44–C57) merged.** 1608 core tests, 756 terminal tests.
+**Audit cleanup + capability directory reorganization complete.** 1608 core tests, 756 terminal tests.
+
+### Capability directory reorganization (PRs #156–#163)
+
+Reorganized `packages/core/src/` by future package boundaries per the approved ADR (`docs/decisions/architecture/package-evolution.md`).
+
+- **shared/** now contains only 7 true utility modules: cache, env-parser, git-ops, git-token, http, label-helpers, remote
+- **dev/lifecycle/** contains 18 ticket-lifecycle modules (future `@chief-clancy/dev`): branch, commit-type, cost, deliver-epic, deliver-ticket, epic, feasibility, fetch-ticket, format, lock, outcome, pr-creation, preflight, progress, pull-request, quality, resume, rework
+- **dev/pipeline/** contains the phase orchestration layer: context, run-pipeline, 13 phase subdirectories
+
+Public API unchanged. No config changes. Zero behavior changes.
+
+---
+
+### Audit cleanup (C44–C57)
 
 ### What was done
 
