@@ -247,8 +247,8 @@ export {
   computeTicketBranch,
 } from './dev/lifecycle/branch/index.js';
 
-export { runPreflight } from './shared/preflight/preflight.js';
-export type { PreflightDeps } from './shared/preflight/preflight.js';
+export { runPreflight } from './dev/lifecycle/preflight/preflight.js';
+export type { PreflightDeps } from './dev/lifecycle/preflight/preflight.js';
 
 export { detectResume, executeResume } from './shared/resume/resume.js';
 
@@ -263,7 +263,7 @@ export { deliverViaPullRequest } from './shared/deliver-ticket/deliver-ticket.js
 
 export { deliverEpicToBase } from './shared/deliver-epic/deliver-epic.js';
 
-export { ensureEpicBranch } from './shared/epic/epic.js';
+export { ensureEpicBranch } from './dev/lifecycle/epic/epic.js';
 
 export {
   getQualityData,
