@@ -95,7 +95,10 @@ describe.skipIf(!canRun)('E2E: GitHub — full pipeline', () => {
 
     // Run the full pipeline — real GitHub API, simulated Claude
     const result = await pipeline.run();
-    expect(result.status).toBe('completed');
+    expect(
+      result.status,
+      `Pipeline failed at phase "${result.phase}": ${result.error}`,
+    ).toBe('completed');
 
     // Verify: feature branch was created
     const branches = pipeline.repo.exec(['branch', '--list']);
@@ -111,7 +114,7 @@ describe.skipIf(!canRun)('E2E: GitHub — full pipeline', () => {
 
     // Extract PR number from progress
     const prMatch = progress.match(/pr:(\d+)/);
-    expect(prMatch).not.toBeNull();
+    expect(prMatch, `No pr:<number> in progress:\n${progress}`).not.toBeNull();
     prNumber = prMatch![1];
 
     // Verify via real GitHub API: PR exists on sandbox repo
