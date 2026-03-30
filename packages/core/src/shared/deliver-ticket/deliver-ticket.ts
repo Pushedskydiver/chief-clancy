@@ -13,7 +13,7 @@ import type { EpicContext } from '~/c/shared/pull-request/pr-body/index.js';
 import type { FetchedTicket } from '~/c/types/board.js';
 import type { PrCreationResult, RemoteInfo } from '~/c/types/remote.js';
 
-import { resolveCommitType } from '~/c/shared/commit-type/index.js';
+import { resolveCommitType } from '~/c/dev/lifecycle/commit-type/index.js';
 import { buildEpicContext } from '~/c/shared/epic/index.js';
 import {
   checkout,
