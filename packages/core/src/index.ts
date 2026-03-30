@@ -250,12 +250,12 @@ export {
 export { runPreflight } from './dev/lifecycle/preflight/preflight.js';
 export type { PreflightDeps } from './dev/lifecycle/preflight/preflight.js';
 
-export { detectResume, executeResume } from './shared/resume/resume.js';
+export { detectResume, executeResume } from './dev/lifecycle/resume/resume.js';
 
-export { fetchReworkFromPrReview } from './shared/rework/rework.js';
-export { postReworkActions } from './shared/rework/rework.js';
-export type { PlatformReworkHandlers } from './shared/rework/rework-handlers.js';
-export { resolvePlatformHandlers } from './shared/rework/rework-handlers.js';
+export { fetchReworkFromPrReview } from './dev/lifecycle/rework/rework.js';
+export { postReworkActions } from './dev/lifecycle/rework/rework.js';
+export type { PlatformReworkHandlers } from './dev/lifecycle/rework/rework-handlers.js';
+export { resolvePlatformHandlers } from './dev/lifecycle/rework/rework-handlers.js';
 
 export { checkFeasibility } from './dev/lifecycle/feasibility/feasibility.js';
 
