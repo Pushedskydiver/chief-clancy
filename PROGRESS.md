@@ -1,8 +1,24 @@
 # Monorepo Progress
 
-## Session 46 Handoff (continued)
+## Session 46 Handoff
 
-**Audit cleanup + capability directory reorganization complete.** 1608 core tests, 756 terminal tests.
+**Phase 13 complete. Audit cleanup, capability directory reorganization, and bundle verification done.** 1608 core tests, 775 terminal tests.
+
+### Phase 13 — Bundle verification (#165)
+
+Hook bundles already worked (esbuild.hooks.ts builds 8 self-contained CJS bundles). Added 19 smoke tests verifying bundle existence, clean loading, and PreToolUse JSON output. The old repo's runtime script bundles (`clancy-once.js`, `clancy-afk.js`) are Phase 14 scope — they depend on `bin/clancy.js`.
+
+### What's next — Phase 14: Wrapper & publish prep
+
+**14.1** — `bin/clancy.js`: Create CLI entry point delegating to terminal's CLI bridge. Package.json and bin field already configured.
+
+**14.2** — Publish workflow: GitHub Actions with changesets for multi-package publish. `.changeset/config.json` already configured.
+
+**14.3** — Doc rewrites (4 new files): ARCHITECTURE.md, VISUAL-ARCHITECTURE.md, TESTING.md, TECHNICAL-REFERENCE.md. Consider splitting into 1 PR per doc.
+
+**14.4** — Doc updates: SELF-REVIEW.md, DEVELOPMENT.md updates + create LIFECYCLE.md, COMPARISON.md, docs/roles/, docs/guides/. Consider splitting into 2–3 PRs.
+
+### Capability directory reorganization (PRs #156–#164)
 
 ### Capability directory reorganization (PRs #156–#163)
 
