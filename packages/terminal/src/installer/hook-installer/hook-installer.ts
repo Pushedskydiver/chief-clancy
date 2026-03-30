@@ -198,8 +198,7 @@ function mergeHookRegistrations(
 /** Check whether a value looks like a HookEntry ({ hooks: [...] }). */
 function isHookEntry(value: unknown): value is HookEntry {
   if (!isPlainObject(value)) return false;
-  // Safe: isPlainObject check above guarantees value is an object
-  const hooks = (value as { readonly hooks?: unknown }).hooks;
+  const hooks = value.hooks;
 
   return Array.isArray(hooks);
 }

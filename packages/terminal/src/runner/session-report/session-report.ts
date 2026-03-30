@@ -293,9 +293,9 @@ function safeRead(readFile: (path: string) => string, path: string): string {
   try {
     return readFile(path);
   } catch (err: unknown) {
-    const isNotFound =
-      err instanceof Error && (err as NodeJS.ErrnoException).code === 'ENOENT';
-    if (isNotFound) return '';
+    if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
+      return '';
+    }
     throw err;
   }
 }
