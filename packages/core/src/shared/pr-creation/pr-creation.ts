@@ -110,15 +110,15 @@ export function buildManualPrUrl(
 
   switch (remote.host) {
     case 'github':
-      return `https://${remote.hostname}/${remote.owner}/${remote.repo}/compare/${tgt}...${src}`;
+      return `https://${remote.hostname}/${encodeURIComponent(remote.owner)}/${encodeURIComponent(remote.repo)}/compare/${tgt}...${src}`;
     case 'gitlab':
       return `https://${remote.hostname}/${remote.projectPath}/-/merge_requests/new?merge_request[source_branch]=${src}&merge_request[target_branch]=${tgt}`;
     case 'bitbucket':
-      return `https://${remote.hostname}/${remote.workspace}/${remote.repoSlug}/pull-requests/new?source=${src}&dest=${tgt}`;
+      return `https://${remote.hostname}/${encodeURIComponent(remote.workspace)}/${encodeURIComponent(remote.repoSlug)}/pull-requests/new?source=${src}&dest=${tgt}`;
     case 'bitbucket-server':
-      return `https://${remote.hostname}/projects/${remote.projectKey}/repos/${remote.repoSlug}/pull-requests?create&sourceBranch=refs/heads/${src}&targetBranch=refs/heads/${tgt}`;
+      return `https://${remote.hostname}/projects/${encodeURIComponent(remote.projectKey)}/repos/${encodeURIComponent(remote.repoSlug)}/pull-requests?create&sourceBranch=refs/heads/${src}&targetBranch=refs/heads/${tgt}`;
     case 'azure':
-      return `https://${remote.hostname}/${remote.org}/${remote.project}/_git/${remote.repo}/pullrequestcreate?sourceRef=${src}&targetRef=${tgt}`;
+      return `https://${remote.hostname}/${encodeURIComponent(remote.org)}/${encodeURIComponent(remote.project)}/_git/${encodeURIComponent(remote.repo)}/pullrequestcreate?sourceRef=${src}&targetRef=${tgt}`;
     default:
       return undefined;
   }

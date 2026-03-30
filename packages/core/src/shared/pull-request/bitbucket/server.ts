@@ -82,7 +82,7 @@ export async function createServerPullRequest(
 
   return postPullRequest({
     fetchFn,
-    url: `${apiBase}/projects/${projectKey}/repos/${repoSlug}/pull-requests`,
+    url: `${apiBase}/projects/${encodeURIComponent(projectKey)}/repos/${encodeURIComponent(repoSlug)}/pull-requests`,
     headers: { Authorization: `Bearer ${token}` },
     body: {
       title,
@@ -122,7 +122,7 @@ export async function postServerPrComment(
 
   try {
     const res = await fetchFn(
-      `${apiBase}/projects/${projectKey}/repos/${repoSlug}/pull-requests/${prId}/comments`,
+      `${apiBase}/projects/${encodeURIComponent(projectKey)}/repos/${encodeURIComponent(repoSlug)}/pull-requests/${prId}/comments`,
       {
         method: 'POST',
         headers: {
@@ -157,7 +157,7 @@ export async function checkServerPrReviewState(
 
   try {
     const prRes = await fetchFn(
-      `${apiBase}/projects/${projectKey}/repos/${repoSlug}/pull-requests?state=OPEN&at=refs/heads/${branch}`,
+      `${apiBase}/projects/${encodeURIComponent(projectKey)}/repos/${encodeURIComponent(repoSlug)}/pull-requests?state=OPEN&at=${encodeURIComponent(`refs/heads/${branch}`)}`,
       { headers: { Authorization: auth } },
     );
     if (!prRes.ok) return undefined;
@@ -247,7 +247,7 @@ async function fetchActivities(
   const { fetchFn, auth, apiBase, projectKey, repoSlug, prId } = opts;
 
   const res = await fetchFn(
-    `${apiBase}/projects/${projectKey}/repos/${repoSlug}/pull-requests/${prId}/activities?limit=100`,
+    `${apiBase}/projects/${encodeURIComponent(projectKey)}/repos/${encodeURIComponent(repoSlug)}/pull-requests/${prId}/activities?limit=100`,
     { headers: { Authorization: auth } },
   );
   if (!res.ok) return undefined;
