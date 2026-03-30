@@ -259,9 +259,9 @@ export { resolvePlatformHandlers } from './dev/lifecycle/rework/rework-handlers.
 
 export { checkFeasibility } from './dev/lifecycle/feasibility/feasibility.js';
 
-export { deliverViaPullRequest } from './shared/deliver-ticket/deliver-ticket.js';
+export { deliverViaPullRequest } from './dev/lifecycle/deliver-ticket/deliver-ticket.js';
 
-export { deliverEpicToBase } from './shared/deliver-epic/deliver-epic.js';
+export { deliverEpicToBase } from './dev/lifecycle/deliver-epic/deliver-epic.js';
 
 export { ensureEpicBranch } from './dev/lifecycle/epic/epic.js';
 
