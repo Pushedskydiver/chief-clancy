@@ -1,0 +1,126 @@
+name: E2E
+
+on:
+  schedule:
+    # Weekly — Monday 06:00 UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch: {}
+
+concurrency:
+  group: e2e
+  cancel-in-progress: true
+
+jobs:
+  gc:
+    name: Garbage collector
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm build
+
+      - name: Clean up orphan test tickets
+        working-directory: packages/terminal
+        run: pnpm exec tsx test/e2e/helpers/gc/gc.ts
+        env:
+          GITHUB_TOKEN: ${{ secrets.E2E_GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ secrets.E2E_GITHUB_REPO }}
+          JIRA_BASE_URL: ${{ secrets.E2E_JIRA_BASE_URL }}
+          JIRA_USER: ${{ secrets.E2E_JIRA_USER }}
+          JIRA_API_TOKEN: ${{ secrets.E2E_JIRA_API_TOKEN }}
+          JIRA_PROJECT_KEY: ${{ secrets.E2E_JIRA_PROJECT_KEY }}
+          LINEAR_API_KEY: ${{ secrets.E2E_LINEAR_API_KEY }}
+          LINEAR_TEAM_ID: ${{ secrets.E2E_LINEAR_TEAM_ID }}
+          SHORTCUT_TOKEN: ${{ secrets.E2E_SHORTCUT_TOKEN }}
+          NOTION_TOKEN: ${{ secrets.E2E_NOTION_TOKEN }}
+          NOTION_DATABASE_ID: ${{ secrets.E2E_NOTION_DATABASE_ID }}
+          AZURE_ORG: ${{ secrets.E2E_AZURE_ORG }}
+          AZURE_PROJECT: ${{ secrets.E2E_AZURE_PROJECT }}
+          AZURE_PAT: ${{ secrets.E2E_AZURE_PAT }}
+
+  pipeline:
+    name: E2E — ${{ matrix.board }}
+    needs: gc
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        board: [github, jira, linear, shortcut, notion, azdo]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm build
+
+      - name: Run ${{ matrix.board }} pipeline test
+        working-directory: packages/terminal
+        run: pnpm vitest run --config vitest.config.e2e.ts "pipeline/${{ matrix.board }}-pipeline"
+        env:
+          GITHUB_TOKEN: ${{ secrets.E2E_GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ secrets.E2E_GITHUB_REPO }}
+          JIRA_BASE_URL: ${{ secrets.E2E_JIRA_BASE_URL }}
+          JIRA_USER: ${{ secrets.E2E_JIRA_USER }}
+          JIRA_API_TOKEN: ${{ secrets.E2E_JIRA_API_TOKEN }}
+          JIRA_PROJECT_KEY: ${{ secrets.E2E_JIRA_PROJECT_KEY }}
+          LINEAR_API_KEY: ${{ secrets.E2E_LINEAR_API_KEY }}
+          LINEAR_TEAM_ID: ${{ secrets.E2E_LINEAR_TEAM_ID }}
+          SHORTCUT_TOKEN: ${{ secrets.E2E_SHORTCUT_TOKEN }}
+          NOTION_TOKEN: ${{ secrets.E2E_NOTION_TOKEN }}
+          NOTION_DATABASE_ID: ${{ secrets.E2E_NOTION_DATABASE_ID }}
+          AZURE_ORG: ${{ secrets.E2E_AZURE_ORG }}
+          AZURE_PROJECT: ${{ secrets.E2E_AZURE_PROJECT }}
+          AZURE_PAT: ${{ secrets.E2E_AZURE_PAT }}
+
+  schema-validation:
+    name: Schema validation
+    needs: gc
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm build
+
+      - name: Validate auth-endpoint schemas
+        working-directory: packages/terminal
+        run: pnpm vitest run --config vitest.config.e2e.ts "schema/schema-validation"
+        env:
+          GITHUB_TOKEN: ${{ secrets.E2E_GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ secrets.E2E_GITHUB_REPO }}
+          JIRA_BASE_URL: ${{ secrets.E2E_JIRA_BASE_URL }}
+          JIRA_USER: ${{ secrets.E2E_JIRA_USER }}
+          JIRA_API_TOKEN: ${{ secrets.E2E_JIRA_API_TOKEN }}
+          JIRA_PROJECT_KEY: ${{ secrets.E2E_JIRA_PROJECT_KEY }}
+          LINEAR_API_KEY: ${{ secrets.E2E_LINEAR_API_KEY }}
+          LINEAR_TEAM_ID: ${{ secrets.E2E_LINEAR_TEAM_ID }}
+          SHORTCUT_TOKEN: ${{ secrets.E2E_SHORTCUT_TOKEN }}
+          NOTION_TOKEN: ${{ secrets.E2E_NOTION_TOKEN }}
+          NOTION_DATABASE_ID: ${{ secrets.E2E_NOTION_DATABASE_ID }}
+          AZURE_ORG: ${{ secrets.E2E_AZURE_ORG }}
+          AZURE_PROJECT: ${{ secrets.E2E_AZURE_PROJECT }}
+          AZURE_PAT: ${{ secrets.E2E_AZURE_PAT }}
