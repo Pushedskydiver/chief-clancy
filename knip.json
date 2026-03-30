@@ -1,7 +1,11 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignoreDependencies": ["@changesets/cli"],
   "ignoreWorkspaces": ["packages/chief-clancy"],
   "workspaces": {
+    ".": {
+      "entry": ["scripts/*.ts"]
+    },
     "packages/core": {
       "project": ["src/**/*.ts"]
     },
