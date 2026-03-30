@@ -10,7 +10,7 @@
 - **12.8** (#136): Linear e2e — GraphQL-based board using `setupE2EPipeline`. Creates real Linear issue, runs pipeline, verifies PR. `GITHUB_REPO` intentionally omitted from env vars (detectBoard would misdetect as GitHub Issues). Cleanup uses ticket UUID not key.
 - **12.9** (#137): Shortcut e2e — REST API board using `setupE2EPipeline`. Env var mapping: `SHORTCUT_TOKEN` (e2e env) → `SHORTCUT_API_TOKEN` (runtime schema). `GITHUB_REPO` omitted (same as Linear). Cleanup uses numeric story ID.
 - **12.10** (#138): Notion e2e — requires schema discovery (`discoverNotionSchema`) before pipeline setup. Conditional env vars: `CLANCY_NOTION_TODO` (status option name), `CLANCY_NOTION_LABELS` + `CLANCY_LABEL_BUILD` (set together when labels property exists). Exported `discoverNotionSchema` from ticket factory. Cleanup archives page (no hard delete).
-- **12.11** (#TBD): Azure DevOps e2e — WIQL-based board using `setupE2EPipeline`. Env var mapping: `AZURE_*` (e2e env) → `AZDO_*` (runtime schema). `GITHUB_REPO` omitted. Cleanup tries hard delete, falls back to close + tag. No old reference test — new port following established pattern.
+- **12.11** (#139): Azure DevOps e2e — WIQL-based board using `setupE2EPipeline`. Env var mapping: `AZURE_*` (e2e env) → `AZDO_*` (runtime schema). `GITHUB_REPO` omitted. Cleanup tries hard delete, falls back to close + tag. No old reference test — new port following established pattern.
 
 ### Key decisions
 
