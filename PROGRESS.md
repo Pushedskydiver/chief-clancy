@@ -1,5 +1,26 @@
 # Monorepo Progress
 
+## Session 43 Handoff
+
+**Phase 12 in progress — 7 of 13 PRs done.** 1574 core tests, 756 terminal tests.
+
+### What was done
+
+- **12.7** (#TBD): Jira e2e — port from old repo using `setupE2EPipeline`. Creates real Jira issue, runs full pipeline with Claude simulator, verifies PR creation on GitHub sandbox. Uses both Jira + GitHub credentials. Jira-specific: `clancy-build` label (dash, not colon), strongly consistent API (no pause needed).
+
+### Key decisions
+
+- **`cleanupPullRequest` over `cleanupGitHubPullRequest`:** Jira test uses the generic board-agnostic wrapper since all boards share the same GitHub sandbox for PRs.
+- **No consistency pause:** Jira issue API is strongly consistent unlike GitHub Issues list API. Added explanatory comment.
+- **`GITHUB_REPO` env var required:** Caught by DA review — the deliver phase needs it to create PRs on the sandbox repo.
+
+### Next up
+
+- **12.8**: Linear e2e (GraphQL)
+- **12.9**: Shortcut e2e
+
+---
+
 ## Session 42 Handoff
 
 **Phase 12 in progress — 6 of 13 PRs done.** 1574 core tests, 756 terminal tests.
