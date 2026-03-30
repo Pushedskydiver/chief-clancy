@@ -254,7 +254,7 @@ export { postReworkActions } from './shared/rework/rework.js';
 export type { PlatformReworkHandlers } from './shared/rework/rework-handlers.js';
 export { resolvePlatformHandlers } from './shared/rework/rework-handlers.js';
 
-export { checkFeasibility } from './shared/feasibility/feasibility.js';
+export { checkFeasibility } from './dev/lifecycle/feasibility/feasibility.js';
 
 export { deliverViaPullRequest } from './shared/deliver-ticket/deliver-ticket.js';
 
@@ -266,18 +266,18 @@ export {
   getQualityData,
   recordDelivery,
   recordRework,
-} from './shared/quality/quality.js';
-export type { QualityFs } from './shared/quality/quality.js';
+} from './dev/lifecycle/quality/quality.js';
+export type { QualityFs } from './dev/lifecycle/quality/quality.js';
 
 export type { FetchFn } from './shared/pr-creation/pr-creation.js';
 export { attemptPrCreation } from './shared/pr-creation/pr-creation.js';
-export { resolveCommitType } from './shared/commit-type/commit-type.js';
+export { resolveCommitType } from './dev/lifecycle/commit-type/commit-type.js';
 export { buildPrBody } from './shared/pull-request/pr-body/pr-body.js';
 
-export type { CostFs } from './shared/cost/cost.js';
-export { appendCostEntry } from './shared/cost/cost.js';
+export type { CostFs } from './dev/lifecycle/cost/cost.js';
+export { appendCostEntry } from './dev/lifecycle/cost/cost.js';
 
-export { formatDuration } from './shared/format/format.js';
+export { formatDuration } from './dev/lifecycle/format/format.js';
 
 export { detectBoard, sharedEnv } from './board/index.js';
 export { createBoard } from './board/factory/index.js';

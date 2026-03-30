@@ -12,7 +12,7 @@ import type { FetchFn } from '~/c/shared/pr-creation/index.js';
 import type { ProgressFs } from '~/c/shared/progress/index.js';
 import type { PrCreationResult, RemoteInfo } from '~/c/types/remote.js';
 
-import { resolveCommitType } from '~/c/shared/commit-type/index.js';
+import { resolveCommitType } from '~/c/dev/lifecycle/commit-type/index.js';
 import { gatherChildEntries } from '~/c/shared/epic/index.js';
 import { detectRemote } from '~/c/shared/git-ops/index.js';
 import {
