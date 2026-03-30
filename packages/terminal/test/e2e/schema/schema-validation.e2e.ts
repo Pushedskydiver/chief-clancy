@@ -20,6 +20,7 @@ import {
   linearViewerResponseSchema,
   notionUserResponseSchema,
   shortcutMemberInfoResponseSchema,
+  shortcutWorkflowsResponseSchema,
 } from '@chief-clancy/core';
 
 import {
@@ -128,23 +129,41 @@ describe.skipIf(!hasCredentials('linear'))('Schema validation: Linear', () => {
 describe.skipIf(!hasCredentials('shortcut'))(
   'Schema validation: Shortcut',
   () => {
-    it('GET /member-info matches shortcutMemberInfoResponseSchema', async () => {
+    // Shortcut ping has a fallback: /member-info first, then /workflows.
+    // Some token types return 404 on /member-info — mirrors pingShortcut().
+    it('GET /member-info or /workflows matches Shortcut schema', async () => {
       const { token } = getShortcutCredentials()!;
+      const headers = {
+        'Shortcut-Token': token,
+        'Content-Type': 'application/json',
+      };
 
-      const response = await fetchWithTimeout(
+      const memberRes = await fetchWithTimeout(
         'https://api.app.shortcut.com/api/v3/member-info',
-        {
-          headers: {
-            'Shortcut-Token': token,
-            'Content-Type': 'application/json',
-          },
-        },
+        { headers },
       );
 
-      expect(response.ok).toBe(true);
+      if (memberRes.ok) {
+        const json: unknown = await memberRes.json();
+        const parsed = shortcutMemberInfoResponseSchema.safeParse(json);
 
-      const json: unknown = await response.json();
-      const parsed = shortcutMemberInfoResponseSchema.safeParse(json);
+        if (!parsed.success) {
+          console.error('Shortcut schema drift:', parsed.error.issues);
+        }
+        expect(parsed.success).toBe(true);
+        return;
+      }
+
+      // Fallback to /workflows (same as production pingShortcut)
+      const workflowsRes = await fetchWithTimeout(
+        'https://api.app.shortcut.com/api/v3/workflows',
+        { headers },
+      );
+
+      expect(workflowsRes.ok).toBe(true);
+
+      const json: unknown = await workflowsRes.json();
+      const parsed = shortcutWorkflowsResponseSchema.safeParse(json);
 
       if (!parsed.success) {
         console.error('Shortcut schema drift:', parsed.error.issues);
