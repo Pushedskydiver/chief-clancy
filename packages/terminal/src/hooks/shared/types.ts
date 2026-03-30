@@ -53,6 +53,9 @@ export type HookFs = {
 /**
  * Check whether a value is a plain object (not null, not an array).
  *
+ * Intentionally duplicated in `installer/shared/type-guards/` — hooks are
+ * self-contained esbuild bundles and cannot share code with the installer.
+ *
  * @param value - The value to check.
  * @returns `true` if the value is a non-null, non-array object.
  */
