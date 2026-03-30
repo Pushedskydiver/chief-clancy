@@ -1,5 +1,26 @@
 # Monorepo Progress
 
+## Session 46 Handoff
+
+**Audit cleanup complete — all 14 PRs (C44–C57) merged.** 1608 core tests, 756 terminal tests.
+
+### What was done
+
+- **C50** (#148): Extract `relevantNotes` intermediate in GitLab `extractFeedback` to fix 4-chain violation. GitHub chains verified compliant.
+- **C51** (#149): Add `@param` JSDoc tags to `writeLock`, `readLock`, `deleteLock` in lock module.
+- **C52** (#150): Add bundle-isolation justification comments to duplicate `isPlainObject` in hooks and installer.
+- **C53** (#151): Add 23 tests for `rework-builders.ts` — handler shape, noop values, argument forwarding, username guard.
+- **C54** (#152): Resolve Linear team key → UUID in GC cleanup via existing `resolveLinearTeamUuid`.
+- **C55** (#153): Core readability — rename `const fetch` → `doFetch` (3 board files), simplify `.map` wrapper, fix JSDoc placement, extract `isBlockedByActive`.
+- **C56** (#154): Terminal readability — inline narrowing (monitor-guards), remove redundant casts (hook-installer), use `hasErrorCode` (file-ops), simplify error code check (session-report).
+- **C57** (#155): Docs + security hardening — remove stale CONVENTIONS.md boundary refs, fix TOCTOU in env-parser, narrow bare catch to ENOENT in lock module, add defense-in-depth JQL validation in `buildJql`.
+
+### Next up
+
+- **Phase 13**: Bundle verification (next phase)
+
+---
+
 ## Session 45 Handoff
 
 **Audit cleanup C44–C49 done — 6 of 14 PRs merged.** 1580 core tests, 756 terminal tests.
