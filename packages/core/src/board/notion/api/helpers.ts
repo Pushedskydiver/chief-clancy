@@ -92,6 +92,8 @@ export function getArrayProperty(
   const prop = page.properties[propName];
   if (!prop || prop.type !== propType) return undefined;
 
+  // Safe: prop.type === propType narrows the union, but TS can't follow the
+  // dynamic propType parameter — each branch casts to the known shape.
   switch (propType) {
     case 'multi_select': {
       const p = prop as {

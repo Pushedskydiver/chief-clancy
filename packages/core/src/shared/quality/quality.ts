@@ -92,6 +92,7 @@ function isValidEntry(entry: unknown): entry is QualityEntry {
     typeof entry === 'object' &&
     'reworkCycles' in entry &&
     'verificationRetries' in entry &&
+    // Safe: `in` checks above confirm the properties exist
     Number.isFinite((entry as QualityEntry).reworkCycles) &&
     Number.isFinite((entry as QualityEntry).verificationRetries)
   );
@@ -189,7 +190,9 @@ export function readQualityData(
     );
 
     if (hasTicketsRecord(raw)) {
+      // Safe: hasTicketsRecord narrows raw.tickets to object
       const rawTickets = raw.tickets as Record<string, unknown>;
+      // Safe: isValidEntry filter ensures all remaining values are QualityEntry
       const tickets: Record<string, QualityEntry> = Object.fromEntries(
         Object.entries(rawTickets).filter(([, v]) => isValidEntry(v)),
       ) as Record<string, QualityEntry>;
