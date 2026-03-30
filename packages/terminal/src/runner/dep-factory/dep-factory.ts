@@ -91,6 +91,12 @@ function makeAppendProgress(
   return (opts) => appendProgress(progressFs, projectRoot, opts);
 }
 
+/** Resolve the build label from CLANCY_LABEL_BUILD (preferred) or CLANCY_LABEL (legacy). */
+function resolveBuildLabel(ctx: RunContext): string | undefined {
+  const env = ctx.config?.env;
+  return env?.CLANCY_LABEL_BUILD ?? env?.CLANCY_LABEL;
+}
+
 function hasParent(
   entry: ProgressEntry,
 ): entry is ProgressEntry & { readonly parent: string } {
@@ -223,7 +229,8 @@ function wireTicketPhases(opts: DepFactoryOpts, progress: AppendFn) {
 
     ticketFetch: (ctx: RunContext) =>
       ticketFetch(ctx, {
-        fetchTicket: (board: Board) => board.fetchTicket({}),
+        fetchTicket: (board: Board) =>
+          board.fetchTicket({ buildLabel: resolveBuildLabel(ctx) }),
         countReworkCycles: (key: string) =>
           countReworkCycles(progressFs, projectRoot, key),
         appendProgress: progress,
