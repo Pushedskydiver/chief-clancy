@@ -4,8 +4,8 @@
  * Constructs the pull request description with a link back to the
  * board ticket and a Clancy footer.
  */
+import type { ProgressEntry } from '~/c/dev/lifecycle/progress/index.js';
 import type { BoardConfig } from '~/c/schemas/env/env.js';
-import type { ProgressEntry } from '~/c/shared/progress/index.js';
 import type { Ticket } from '~/c/types/index.js';
 
 /** Epic context for child PRs targeting an epic/milestone branch. */
