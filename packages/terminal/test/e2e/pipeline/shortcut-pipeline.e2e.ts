@@ -103,6 +103,7 @@ describe.skipIf(!canRun)('E2E: Shortcut — full pipeline', () => {
         SHORTCUT_API_TOKEN: shortcutCreds.token,
         GITHUB_TOKEN: githubCreds.token,
         CLANCY_BASE_BRANCH: 'main',
+        CLANCY_LABEL: 'clancy:build',
         CLANCY_LABEL_BUILD: 'clancy:build',
       },
       ticketKey: ticketKey!,
