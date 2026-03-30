@@ -335,9 +335,11 @@ function extractFeedback(
   readonly discussionIds: readonly string[];
 } {
   const pairs = discussions.map((d) => {
-    const feedback = d.notes
+    const relevantNotes = d.notes
       .filter((n) => !n.system && !isClancyComment(n.body))
-      .filter((n) => !since || !n.created_at || n.created_at > since)
+      .filter((n) => !since || !n.created_at || n.created_at > since);
+
+    const feedback = relevantNotes
       .flatMap((n) => formatNote(n))
       .filter((s) => s !== undefined);
 
