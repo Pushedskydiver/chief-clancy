@@ -6,6 +6,7 @@
  */
 import { getLinearCredentials } from '../env.js';
 import { fetchWithTimeout } from '../fetch-timeout.js';
+import { resolveLinearTeamUuid } from '../ticket-factory/linear.js';
 
 const LINEAR_API_URL = 'https://api.linear.app/graphql';
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
@@ -33,6 +34,7 @@ export async function cleanupLinearOrphans(): Promise<number> {
   }
 
   const headers = linearHeaders(creds.apiKey);
+  const teamUuid = await resolveLinearTeamUuid(creds.apiKey, creds.teamId);
 
   const searchResp = await fetchWithTimeout(LINEAR_API_URL, {
     method: 'POST',
@@ -46,7 +48,7 @@ export async function cleanupLinearOrphans(): Promise<number> {
           nodes { id title createdAt }
         }
       }`,
-      variables: { teamId: creds.teamId },
+      variables: { teamId: teamUuid },
     }),
   });
 
