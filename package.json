@@ -17,6 +17,8 @@
     "typecheck": "turbo typecheck",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "test:e2e": "pnpm --filter @chief-clancy/terminal test:e2e",
+    "gc": "pnpm --filter @chief-clancy/terminal exec tsx test/e2e/helpers/gc/gc.ts",
     "knip": "knip",
     "publint": "publint packages/core && publint packages/terminal",
     "attw": "attw --pack packages/core --ignore-rules cjs-resolves-to-esm no-resolution && attw --pack packages/terminal --ignore-rules cjs-resolves-to-esm no-resolution",
