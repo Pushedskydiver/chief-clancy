@@ -16,6 +16,7 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 
+import { hasErrorCode } from '~/t/installer/shared/fs-errors/index.js';
 import { rejectSymlink } from '~/t/installer/shared/fs-guards/index.js';
 
 /**
@@ -85,10 +86,7 @@ const resolveWorkflowRef = (
 
     return readFileSync(workflowFile, 'utf8');
   } catch (error: unknown) {
-    // Safe: rejectSymlink already swallows ENOENT internally
-    const code = (error as { readonly code?: string }).code;
-
-    if (code === 'ENOENT') return fullMatch;
+    if (hasErrorCode(error, 'ENOENT')) return fullMatch;
 
     throw error;
   }

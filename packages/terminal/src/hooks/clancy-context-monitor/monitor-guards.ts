@@ -115,10 +115,9 @@ export function runContextGuard(
 
   if (!metrics) return unchanged;
 
-  const hasTimestamp = metrics.timestamp !== undefined;
   const isStale =
-    // Safe: hasTimestamp confirms timestamp is defined
-    hasTimestamp && nowSeconds - metrics.timestamp! > STALE_SECONDS;
+    metrics.timestamp !== undefined &&
+    nowSeconds - metrics.timestamp > STALE_SECONDS;
 
   if (isStale) return unchanged;
 
@@ -288,13 +287,11 @@ export function parseBridgeMetrics(raw: string): BridgeMetrics | null {
       used_pct: used,
     };
 
+    const timestamp = parsed.timestamp;
     const hasTimestamp =
-      typeof parsed.timestamp === 'number' && Number.isFinite(parsed.timestamp);
+      typeof timestamp === 'number' && Number.isFinite(timestamp);
 
-    // Safe: hasTimestamp confirms parsed.timestamp is a finite number
-    return hasTimestamp
-      ? { ...result, timestamp: parsed.timestamp as number }
-      : result;
+    return hasTimestamp ? { ...result, timestamp } : result;
   } catch {
     return null;
   }
