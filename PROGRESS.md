@@ -2,12 +2,12 @@
 
 ## Session 44 Handoff
 
-**Phase 12 complete — 13 of 13 PRs done.** 1578 core tests, 756 terminal tests.
+**Phase 12 complete — 13 of 13 PRs done.** 1579 core tests, 756 terminal tests.
 
 ### What was done
 
 - **12.12** (#140): Live schema validation — auth-endpoint checks against Zod schemas for API drift detection. Added `githubRepoPingSchema` and `jiraProjectPingSchema` (GitHub/Jira ping endpoints had no response schemas). Created `schema-validation.e2e.ts` with 6 board tests that call real auth endpoints and validate responses. Read-only tests — no ticket creation, no cleanup needed. Each board uses `describe.skipIf(!hasCredentials(...))` for conditional execution.
-- **12.13** (#TBD): E2E CI workflow — GitHub Actions workflow (`e2e.yml`) with weekly cron schedule, GC pre-step, 6-board pipeline matrix (`fail-fast: false`), and schema validation post-step. Added `tsx` as root devDependency for GC script execution. Secrets scoped to step-level env to avoid shadowing the built-in `GITHUB_TOKEN`.
+- **12.13** (#141): E2E CI workflow — GitHub Actions workflow (`e2e.yml`) with weekly cron schedule, GC pre-step, 6-board pipeline matrix (`fail-fast: false`), and schema validation post-step. Added `tsx` as root devDependency for GC script execution. Secrets scoped to step-level env to avoid shadowing the built-in `GITHUB_TOKEN`.
 
 ### Key decisions
 
@@ -62,7 +62,7 @@
 
 - **12.4** (#132): Cleanup helpers — `cleanupTicket()` dispatch for 6 boards, `cleanupPullRequest()`, `cleanupBranch()`. Split into 8 files matching ticket-factory pattern. Exported `E2EBoard` from `env.ts`, updated ticket-factory to import it. 6 tests.
 - **12.5** (#133): Garbage collector — `cleanupOrphanTickets()` dispatch for 6 boards + CLI entry point (`npx tsx gc.ts`). Searches for `[QA]` tickets >24h and closes/deletes them. GitHub GC also cleans orphan PRs and `feature/*` branches. Split into 8 files. 3 tests.
-- **12.6** (#TBD): GitHub e2e tracer bullet — first real E2E test. `setupE2EPipeline` shared helper (temp repo with real remote, Claude simulator that creates commits, real `fetch`). Verifies full pipeline: ticket creation, branch, PR, progress entry, PR body, issue state.
+- **12.6** (#134): GitHub e2e tracer bullet — first real E2E test. `setupE2EPipeline` shared helper (temp repo with real remote, Claude simulator that creates commits, real `fetch`). Verifies full pipeline: ticket creation, branch, PR, progress entry, PR body, issue state.
 
 ### Key decisions
 
@@ -174,11 +174,11 @@ Location: `packages/terminal/test/e2e/`. File convention: `*.e2e.ts` (not picked
 | 12.6  | GitHub e2e               | Tracer bullet — first e2e test: `runPipeline` + real GitHub fetcher + Claude simulator        | Done (#134) |
 | 12.7  | Jira e2e                 | Jira board e2e test                                                                           | Done (#135) |
 | 12.8  | Linear e2e               | Linear board e2e test (GraphQL)                                                               | Done (#136) |
-| 12.9  | Shortcut e2e             | Shortcut board e2e test                                                                       | Done (#TBD) |
+| 12.9  | Shortcut e2e             | Shortcut board e2e test                                                                       | Done (#137) |
 | 12.10 | Notion e2e               | Notion board e2e test                                                                         | Done (#138) |
-| 12.11 | Azure DevOps e2e         | Azure DevOps board e2e test (WIQL)                                                            | Done (#TBD) |
-| 12.12 | Live schema validation   | Auth-endpoint checks against Zod schemas — API drift detection                                | Pending     |
-| 12.13 | CI workflow              | GitHub Actions: weekly schedule, GC pre-step, board matrix, schema validation post-step       | Pending     |
+| 12.11 | Azure DevOps e2e         | Azure DevOps board e2e test (WIQL)                                                            | Done (#139) |
+| 12.12 | Live schema validation   | Auth-endpoint checks against Zod schemas — API drift detection                                | Done (#140) |
+| 12.13 | CI workflow              | GitHub Actions: weekly schedule, GC pre-step, board matrix, schema validation post-step       | Done (#141) |
 
 ### Dependencies
 
