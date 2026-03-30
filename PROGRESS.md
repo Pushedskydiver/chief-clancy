@@ -13,6 +13,7 @@ Hook bundles already worked (esbuild.hooks.ts builds 8 self-contained CJS bundle
 #### Code PRs
 
 **14.1** — `bin/clancy.js` entry point
+
 - Create ESM script with `#!/usr/bin/env node` shebang
 - Import `runInstall` from `@chief-clancy/terminal` and delegate
 - The old repo's bin pointed to `dist/installer/install.js` — same pattern
@@ -20,6 +21,7 @@ Hook bundles already worked (esbuild.hooks.ts builds 8 self-contained CJS bundle
 - Exit criteria: `npx chief-clancy` triggers the installer flow
 
 **14.2** — GitHub Actions publish workflow
+
 - New `.github/workflows/publish.yml` using `@changesets/action`
 - Trigger on push to main when changeset PR merges
 - Publish changed packages to npm (`access: public` already in `.changeset/config.json`)
@@ -29,34 +31,41 @@ Hook bundles already worked (esbuild.hooks.ts builds 8 self-contained CJS bundle
 #### Doc rewrites (4 new files — 1 PR each)
 
 **14.3a** — `docs/ARCHITECTURE.md`
+
 - Module map, dependency graph, core→terminal boundary, barrel exports
 - Reference: `~/Desktop/alex/clancy/docs/ARCHITECTURE.md` (rewrite for monorepo)
 
 **14.3b** — `docs/VISUAL-ARCHITECTURE.md`
+
 - Mermaid diagrams: package boundaries, build pipeline, phase flow
 - Reference: `~/Desktop/alex/clancy/docs/VISUAL-ARCHITECTURE.md`
 
 **14.3c** — `docs/TESTING.md`
+
 - Per-package vitest configs, test patterns, fast-check usage, coverage
 - Reference: `~/Desktop/alex/clancy/docs/TESTING.md`
 
 **14.3d** — `docs/TECHNICAL-REFERENCE.md`
+
 - Board details, hook mechanics, delivery pipeline, build system
 - Reference: `~/Desktop/alex/clancy/docs/TECHNICAL-REFERENCE.md`
 
 #### Doc updates (3 PRs)
 
 **14.4a** — Core doc updates
+
 - Update `docs/SELF-REVIEW.md` paths/commands for new structure
 - Update `docs/DEVELOPMENT.md` for Phase 14–15 workflows
 - Create `docs/LIFECYCLE.md` (port from old repo, update for monorepo)
 - Create `docs/COMPARISON.md` (port from old repo as-is)
 
 **14.4b** — Role documentation
+
 - Create `docs/roles/` with 5 role overview files (SETUP, STRATEGIST, PLANNER, IMPLEMENTER, REVIEWER)
 - Reference role commands in `packages/terminal/src/roles/`
 
 **14.4c** — Guide documentation
+
 - Create `docs/guides/` with CONFIGURATION.md, SECURITY.md, TROUBLESHOOTING.md
 - Reference: `~/Desktop/alex/clancy/docs/guides/`
 
