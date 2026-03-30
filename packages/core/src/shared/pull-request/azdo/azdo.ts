@@ -85,10 +85,13 @@ export async function createPullRequest(
 ): Promise<PrCreationResult> {
   const { fetchFn, org, project, repo, pat } = opts;
   const { sourceBranch, targetBranch, title, description } = opts;
+  const o = encodeURIComponent(org);
+  const p = encodeURIComponent(project);
+  const r = encodeURIComponent(repo);
 
   return postPullRequest({
     fetchFn,
-    url: `${AZDO_API}/${org}/${project}/_apis/git/repositories/${repo}/pullrequests?${API_VERSION}`,
+    url: `${AZDO_API}/${o}/${p}/_apis/git/repositories/${r}/pullrequests?${API_VERSION}`,
     headers: { Authorization: basicAuth('', pat) },
     body: {
       sourceRefName: `refs/heads/${sourceBranch}`,
@@ -100,7 +103,7 @@ export async function createPullRequest(
       const data = azdoPrCreatedSchema.parse(json);
       const prId = data.pullRequestId ?? 0;
       return {
-        url: `${AZDO_API}/${org}/${project}/_git/${repo}/pullrequest/${prId}`,
+        url: `${AZDO_API}/${o}/${p}/_git/${r}/pullrequest/${prId}`,
         number: prId,
       };
     },
@@ -191,7 +194,7 @@ export async function checkPrReviewState(
     return {
       changesRequested: hasInline || hasReworkConvo,
       prNumber: pr.pullRequestId,
-      prUrl: `${AZDO_API}/${org}/${project}/_git/${repo}/pullrequest/${pr.pullRequestId}`,
+      prUrl: `${AZDO_API}/${encodeURIComponent(org)}/${encodeURIComponent(project)}/_git/${encodeURIComponent(repo)}/pullrequest/${pr.pullRequestId}`,
     };
   } catch {
     return undefined;
@@ -237,7 +240,10 @@ export async function fetchPrReviewComments(
 
 /** Build the pull requests API base URL. */
 function prBaseUrl(org: string, project: string, repo: string): string {
-  return `${AZDO_API}/${org}/${project}/_apis/git/repositories/${repo}/pullrequests`;
+  const o = encodeURIComponent(org);
+  const p = encodeURIComponent(project);
+  const r = encodeURIComponent(repo);
+  return `${AZDO_API}/${o}/${p}/_apis/git/repositories/${r}/pullrequests`;
 }
 
 /** Options for {@link fetchThreads}. */

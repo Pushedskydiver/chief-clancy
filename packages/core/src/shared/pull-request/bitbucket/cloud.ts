@@ -85,7 +85,7 @@ export async function createPullRequest(
 
   return postPullRequest({
     fetchFn,
-    url: `${CLOUD_API}/repositories/${workspace}/${repoSlug}/pullrequests`,
+    url: `${CLOUD_API}/repositories/${encodeURIComponent(workspace)}/${encodeURIComponent(repoSlug)}/pullrequests`,
     headers: { Authorization: basicAuth(username, token) },
     body: {
       title,
@@ -118,7 +118,7 @@ export async function postCloudPrComment(
 
   try {
     const res = await fetchFn(
-      `${CLOUD_API}/repositories/${workspace}/${repoSlug}/pullrequests/${prId}/comments`,
+      `${CLOUD_API}/repositories/${encodeURIComponent(workspace)}/${encodeURIComponent(repoSlug)}/pullrequests/${prId}/comments`,
       {
         method: 'POST',
         headers: {
@@ -153,7 +153,7 @@ export async function checkPrReviewState(
 
   try {
     const prRes = await fetchFn(
-      `${CLOUD_API}/repositories/${workspace}/${repoSlug}/pullrequests?q=source.branch.name="${encodeURIComponent(branch)}"&state=OPEN`,
+      `${CLOUD_API}/repositories/${encodeURIComponent(workspace)}/${encodeURIComponent(repoSlug)}/pullrequests?q=source.branch.name="${encodeURIComponent(branch)}"&state=OPEN`,
       { headers: { Authorization: auth } },
     );
     if (!prRes.ok) return undefined;
@@ -240,7 +240,7 @@ async function fetchCloudComments(
   const { fetchFn, auth, workspace, repoSlug, prId } = opts;
 
   const res = await fetchFn(
-    `${CLOUD_API}/repositories/${workspace}/${repoSlug}/pullrequests/${prId}/comments?pagelen=100`,
+    `${CLOUD_API}/repositories/${encodeURIComponent(workspace)}/${encodeURIComponent(repoSlug)}/pullrequests/${prId}/comments?pagelen=100`,
     { headers: { Authorization: auth } },
   );
   if (!res.ok) return undefined;
