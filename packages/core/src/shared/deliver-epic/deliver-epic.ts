@@ -13,6 +13,7 @@ import type { ExecGit } from '~/c/shared/git-ops/index.js';
 import type { PrCreationResult, RemoteInfo } from '~/c/types/remote.js';
 
 import { resolveCommitType } from '~/c/dev/lifecycle/commit-type/index.js';
+import { gatherChildEntries } from '~/c/dev/lifecycle/epic/index.js';
 import {
   computeDeliveryOutcome,
   progressForOutcome,
@@ -20,7 +21,6 @@ import {
 import { attemptPrCreation } from '~/c/dev/lifecycle/pr-creation/index.js';
 import { appendProgress } from '~/c/dev/lifecycle/progress/index.js';
 import { buildEpicPrBody } from '~/c/dev/lifecycle/pull-request/pr-body/index.js';
-import { gatherChildEntries } from '~/c/shared/epic/index.js';
 import { detectRemote } from '~/c/shared/git-ops/index.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
