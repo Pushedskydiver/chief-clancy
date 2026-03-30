@@ -2,21 +2,22 @@
 
 ## Session 43 Handoff
 
-**Phase 12 in progress — 7 of 13 PRs done.** 1574 core tests, 756 terminal tests.
+**Phase 12 in progress — 8 of 13 PRs done.** 1574 core tests, 756 terminal tests.
 
 ### What was done
 
-- **12.7** (#TBD): Jira e2e — port from old repo using `setupE2EPipeline`. Creates real Jira issue, runs full pipeline with Claude simulator, verifies PR creation on GitHub sandbox. Uses both Jira + GitHub credentials. Jira-specific: `clancy-build` label (dash, not colon), strongly consistent API (no pause needed).
+- **12.7** (#135): Jira e2e — port from old repo using `setupE2EPipeline`. Creates real Jira issue, runs full pipeline with Claude simulator, verifies PR creation on GitHub sandbox. Uses both Jira + GitHub credentials. Jira-specific: `clancy-build` label (dash, not colon), strongly consistent API (no pause needed).
+- **12.8** (#TBD): Linear e2e — GraphQL-based board using `setupE2EPipeline`. Creates real Linear issue, runs pipeline, verifies PR. `GITHUB_REPO` intentionally omitted from env vars (detectBoard would misdetect as GitHub Issues). Cleanup uses ticket UUID not key.
 
 ### Key decisions
 
-- **`cleanupPullRequest` over `cleanupGitHubPullRequest`:** Jira test uses the generic board-agnostic wrapper since all boards share the same GitHub sandbox for PRs.
-- **No consistency pause:** Jira issue API is strongly consistent unlike GitHub Issues list API. Added explanatory comment.
-- **`GITHUB_REPO` env var required:** Caught by DA review — the deliver phase needs it to create PRs on the sandbox repo.
+- **`cleanupPullRequest` over `cleanupGitHubPullRequest`:** Both Jira and Linear tests use the generic board-agnostic wrapper since all boards share the same GitHub sandbox for PRs.
+- **No consistency pause:** Jira and Linear APIs are strongly consistent unlike GitHub Issues list API.
+- **`GITHUB_REPO` omission for Linear:** `detectBoard` checks `GITHUB_TOKEN + GITHUB_REPO` before Linear. `GITHUB_TOKEN` alone suffices for git host auth (PR creation via `sharedEnvSchema`).
+- **Linear cleanup uses UUID:** `cleanupLinearTicket(ticketId)` takes the UUID, not the identifier key. Progress assertions use the key (`CLA-5`).
 
 ### Next up
 
-- **12.8**: Linear e2e (GraphQL)
 - **12.9**: Shortcut e2e
 
 ---
@@ -139,8 +140,8 @@ Location: `packages/terminal/test/e2e/`. File convention: `*.e2e.ts` (not picked
 | 12.4  | Cleanup helpers          | `cleanupTicket()`, `cleanupPullRequest()`, `cleanupBranch()` — per-board teardown             | Done (#132) |
 | 12.5  | Garbage collector        | Orphan cleanup for stale `[QA]` tickets >24h. Standalone CLI + importable                     | Done (#133) |
 | 12.6  | GitHub e2e               | Tracer bullet — first e2e test: `runPipeline` + real GitHub fetcher + Claude simulator        | Done (#134) |
-| 12.7  | Jira e2e                 | Jira board e2e test                                                                           | Pending     |
-| 12.8  | Linear e2e               | Linear board e2e test (GraphQL)                                                               | Pending     |
+| 12.7  | Jira e2e                 | Jira board e2e test                                                                           | Done (#135) |
+| 12.8  | Linear e2e               | Linear board e2e test (GraphQL)                                                               | Done (#136) |
 | 12.9  | Shortcut e2e             | Shortcut board e2e test                                                                       | Pending     |
 | 12.10 | Notion e2e               | Notion board e2e test                                                                         | Pending     |
 | 12.11 | Azure DevOps e2e         | Azure DevOps board e2e test (WIQL)                                                            | Pending     |
