@@ -15,6 +15,13 @@ pnpm format:check       # Check formatting
 # Pre-push quality suite (run before every git push — no exceptions)
 pnpm test && pnpm lint && pnpm typecheck && pnpm format:check && pnpm knip && pnpm publint && pnpm attw
 
+# E2E tests (run from packages/terminal)
+cd packages/terminal
+pnpm test:e2e                              # Run all e2e tests
+pnpm test:e2e "pipeline/github-pipeline"   # Run a single board
+pnpm test:e2e "schema/schema-validation"   # Run schema validation
+pnpm exec tsx test/e2e/helpers/gc/gc.ts    # Run garbage collector
+
 # Changesets
 pnpm changeset          # Create a changeset
 pnpm changeset version  # Apply version bumps

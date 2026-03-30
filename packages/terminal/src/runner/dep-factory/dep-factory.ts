@@ -92,7 +92,7 @@ function makeAppendProgress(
 }
 
 /** Default build-queue label when no env var is configured. */
-export const DEFAULT_BUILD_LABEL = 'clancy:build';
+const DEFAULT_BUILD_LABEL = 'clancy:build';
 
 /**
  * Resolve the build label: CLANCY_LABEL_BUILD → CLANCY_LABEL → default.
