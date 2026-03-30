@@ -209,7 +209,7 @@ export async function fetchTickets(
 
   if (!data) return [];
 
-  return data.issues.map((issue) => mapIssueToTicket(issue));
+  return data.issues.map(mapIssueToTicket);
 }
 
 /** Shape of a Jira issue from the search response. */

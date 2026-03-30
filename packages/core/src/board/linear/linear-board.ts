@@ -123,7 +123,7 @@ export function createLinearBoard(env: LinearEnv, fetcher?: Fetcher): Board {
     fetcher,
   };
 
-  const fetch = (opts: FetchTicketOpts) => fetchLinearTickets(ctx, opts);
+  const doFetch = (opts: FetchTicketOpts) => fetchLinearTickets(ctx, opts);
 
   return {
     ping: () => pingLinear(ctx.apiKey, ctx.fetcher),
@@ -133,9 +133,9 @@ export function createLinearBoard(env: LinearEnv, fetcher?: Fetcher): Board {
         ? undefined
         : '✗ LINEAR_TEAM_ID contains invalid characters',
 
-    fetchTicket: async (opts) => (await fetch(opts))[0],
+    fetchTicket: async (opts) => (await doFetch(opts))[0],
 
-    fetchTickets: fetch,
+    fetchTickets: doFetch,
 
     async fetchBlockerStatus(ticket) {
       if (!ticket.issueId) return false;

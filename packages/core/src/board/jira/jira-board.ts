@@ -119,7 +119,7 @@ export function createJiraBoard(env: JiraEnv, fetcher?: Fetcher): Board {
     auth: ctx.auth,
     fetcher: ctx.fetcher,
   };
-  const fetch = (opts: FetchTicketOpts) => fetchJiraTickets(ctx, opts, env);
+  const doFetch = (opts: FetchTicketOpts) => fetchJiraTickets(ctx, opts, env);
 
   return {
     ping: () =>
@@ -131,8 +131,8 @@ export function createJiraBoard(env: JiraEnv, fetcher?: Fetcher): Board {
       }),
     validateInputs: () => validateJqlInputs(env),
 
-    fetchTicket: async (opts) => (await fetch(opts))[0],
-    fetchTickets: fetch,
+    fetchTicket: async (opts) => (await doFetch(opts))[0],
+    fetchTickets: doFetch,
 
     fetchBlockerStatus: (ticket) =>
       fetchBlockerStatus({

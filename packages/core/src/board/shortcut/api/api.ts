@@ -114,13 +114,6 @@ export async function fetchWorkflows(
   return data ?? [];
 }
 
-/**
- * Resolve a workflow state name to its numeric ID.
- *
- * @param stateName - The state name (case-insensitive).
- * @param opts - Token, cache, and optional workflow name.
- * @returns The state ID, or `undefined` if not found.
- */
 /** Options for {@link resolveWorkflowStateId}. */
 type ResolveStateOpts = {
   readonly token: string;
@@ -129,6 +122,13 @@ type ResolveStateOpts = {
   readonly fetcher?: Fetcher;
 };
 
+/**
+ * Resolve a workflow state name to its numeric ID.
+ *
+ * @param stateName - The state name (case-insensitive).
+ * @param opts - Token, cache, and optional workflow name.
+ * @returns The state ID, or `undefined` if not found.
+ */
 export async function resolveWorkflowStateId(
   stateName: string,
   opts: ResolveStateOpts,
