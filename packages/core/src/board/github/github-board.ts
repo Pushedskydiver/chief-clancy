@@ -98,7 +98,7 @@ export function createGitHubBoard(env: GitHubEnv, fetcher?: Fetcher): Board {
     usernameCache: new Cached<string>(),
     fetcher,
   };
-  const fetch = (opts: FetchTicketOpts) => fetchGitHubTickets(ctx, opts);
+  const doFetch = (opts: FetchTicketOpts) => fetchGitHubTickets(ctx, opts);
   return {
     ping: () => pingGitHub(ctx.token, ctx.repo, ctx.fetcher),
 
@@ -107,9 +107,9 @@ export function createGitHubBoard(env: GitHubEnv, fetcher?: Fetcher): Board {
         ? undefined
         : '✗ GITHUB_REPO format is invalid — expected owner/repo',
 
-    fetchTicket: async (opts) => (await fetch(opts))[0],
+    fetchTicket: async (opts) => (await doFetch(opts))[0],
 
-    fetchTickets: fetch,
+    fetchTickets: doFetch,
 
     async fetchBlockerStatus(ticket) {
       const n = parseIssueNumber(ticket.key);

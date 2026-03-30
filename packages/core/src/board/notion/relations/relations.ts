@@ -110,17 +110,17 @@ async function checkDescriptionBlockers(
   const allPages = await queryAllPages({ ctx });
   if (!allPages.length) return false;
 
-  return blockerMatch.some((match) => {
+  const isBlockedByActive = (match: string): boolean => {
     const shortId = match.replace(/blocked by notion-/i, '').toLowerCase();
     if (shortId === selfShortId) return false;
 
     const candidate = allPages.find(
       (p) => p.id.replace(/-/g, '').slice(0, 8) === shortId,
     );
-    if (!candidate) return false;
+    return candidate != null && hasActiveStatus(candidate, statusProp);
+  };
 
-    return hasActiveStatus(candidate, statusProp);
-  });
+  return blockerMatch.some(isBlockedByActive);
 }
 
 // ─── Children status ─────────────────────────────────────────────────────────
