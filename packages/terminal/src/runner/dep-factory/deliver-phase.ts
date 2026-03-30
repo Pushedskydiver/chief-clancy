@@ -23,6 +23,8 @@ import {
   resolvePlatformHandlers,
 } from '@chief-clancy/core';
 
+import { resolveBuildLabel } from './dep-factory.js';
+
 type DeliverOpts = {
   readonly projectRoot: string;
   readonly exec: ExecGit;
@@ -74,12 +76,7 @@ export function wireDeliver(
           recordRework(qualityFs, projectRoot, ctx.ticket!.key),
         removeBuildLabel: async (ticketKey) => {
           // Safe: deliver runs after preflight (config + board populated)
-          const env = ctx.config!.env;
-          const label = env.CLANCY_LABEL_BUILD ?? env.CLANCY_LABEL;
-
-          if (!label) return;
-
-          await ctx.board!.removeLabel(ticketKey, label);
+          await ctx.board!.removeLabel(ticketKey, resolveBuildLabel(ctx));
         },
         postReworkActions: async (reworkCallOpts) => {
           const remote = detectRemote(exec);

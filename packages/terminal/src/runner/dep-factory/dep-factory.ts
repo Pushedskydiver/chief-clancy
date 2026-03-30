@@ -91,10 +91,18 @@ function makeAppendProgress(
   return (opts) => appendProgress(progressFs, projectRoot, opts);
 }
 
-/** Resolve the build label from CLANCY_LABEL_BUILD (preferred) or CLANCY_LABEL (legacy). */
-function resolveBuildLabel(ctx: RunContext): string | undefined {
+/** Default build-queue label when no env var is configured. */
+export const DEFAULT_BUILD_LABEL = 'clancy:build';
+
+/**
+ * Resolve the build label: CLANCY_LABEL_BUILD → CLANCY_LABEL → default.
+ *
+ * @param ctx - Pipeline context (config may be undefined before preflight).
+ * @returns The resolved build label string.
+ */
+export function resolveBuildLabel(ctx: RunContext): string {
   const env = ctx.config?.env;
-  return env?.CLANCY_LABEL_BUILD ?? env?.CLANCY_LABEL;
+  return env?.CLANCY_LABEL_BUILD ?? env?.CLANCY_LABEL ?? DEFAULT_BUILD_LABEL;
 }
 
 function hasParent(
