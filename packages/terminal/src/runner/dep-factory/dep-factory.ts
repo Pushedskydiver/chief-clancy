@@ -91,6 +91,20 @@ function makeAppendProgress(
   return (opts) => appendProgress(progressFs, projectRoot, opts);
 }
 
+/** Default build-queue label when no env var is configured. */
+const DEFAULT_BUILD_LABEL = 'clancy:build';
+
+/**
+ * Resolve the build label: CLANCY_LABEL_BUILD → CLANCY_LABEL → default.
+ *
+ * @param ctx - Pipeline context (config may be undefined before preflight).
+ * @returns The resolved build label string.
+ */
+export function resolveBuildLabel(ctx: RunContext): string {
+  const env = ctx.config?.env;
+  return env?.CLANCY_LABEL_BUILD ?? env?.CLANCY_LABEL ?? DEFAULT_BUILD_LABEL;
+}
+
 function hasParent(
   entry: ProgressEntry,
 ): entry is ProgressEntry & { readonly parent: string } {
@@ -223,7 +237,8 @@ function wireTicketPhases(opts: DepFactoryOpts, progress: AppendFn) {
 
     ticketFetch: (ctx: RunContext) =>
       ticketFetch(ctx, {
-        fetchTicket: (board: Board) => board.fetchTicket({}),
+        fetchTicket: (board: Board) =>
+          board.fetchTicket({ buildLabel: resolveBuildLabel(ctx) }),
         countReworkCycles: (key: string) =>
           countReworkCycles(progressFs, projectRoot, key),
         appendProgress: progress,

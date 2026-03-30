@@ -2,11 +2,12 @@
 
 ## Session 44 Handoff
 
-**Phase 12 in progress — 12 of 13 PRs done.** 1578 core tests, 756 terminal tests.
+**Phase 12 complete — 13 of 13 PRs done.** 1578 core tests, 756 terminal tests.
 
 ### What was done
 
-- **12.12** (#TBD): Live schema validation — auth-endpoint checks against Zod schemas for API drift detection. Added `githubRepoPingSchema` and `jiraProjectPingSchema` (GitHub/Jira ping endpoints had no response schemas). Created `schema-validation.e2e.ts` with 6 board tests that call real auth endpoints and validate responses. Read-only tests — no ticket creation, no cleanup needed. Each board uses `describe.skipIf(!hasCredentials(...))` for conditional execution.
+- **12.12** (#140): Live schema validation — auth-endpoint checks against Zod schemas for API drift detection. Added `githubRepoPingSchema` and `jiraProjectPingSchema` (GitHub/Jira ping endpoints had no response schemas). Created `schema-validation.e2e.ts` with 6 board tests that call real auth endpoints and validate responses. Read-only tests — no ticket creation, no cleanup needed. Each board uses `describe.skipIf(!hasCredentials(...))` for conditional execution.
+- **12.13** (#TBD): E2E CI workflow — GitHub Actions workflow (`e2e.yml`) with weekly cron schedule, GC pre-step, 6-board pipeline matrix (`fail-fast: false`), and schema validation post-step. Added `tsx` as root devDependency for GC script execution. Secrets scoped to step-level env to avoid shadowing the built-in `GITHUB_TOKEN`.
 
 ### Key decisions
 
@@ -14,10 +15,13 @@
 - **Read-only tests, separate directory:** Schema validation tests live in `test/e2e/schema/` (not `pipeline/`) because they don't create tickets, branches, or PRs — just authenticate and parse. No cleanup needed.
 - **Error logging before assertion:** DA review caught that `console.error(drift details)` after `expect(success).toBe(true)` is dead code (vitest throws first). Reordered so drift details are visible in test output.
 - **Headers match production exactly:** Each board's auth call uses the same URL, method, and header construction as the production `ping*()` function to ensure the schema validation tests exercise the same endpoints.
+- **Step-level secrets, not workflow-level:** DA review caught that workflow-level `GITHUB_TOKEN` would shadow the Actions built-in token, breaking `actions/checkout`. Moved all secrets to step-level `env:` blocks — only the test/GC steps see them.
+- **Schema validation depends on GC only:** Schema validation is independent of pipeline results — depends on `gc` job, runs in parallel with pipeline matrix. A flaky board API doesn't block drift detection.
+- **Exact vitest filter:** Matrix filter uses `"pipeline/${{ matrix.board }}-pipeline"` (not just `"pipeline/${{ matrix.board }}"`) to prevent substring false-matches.
 
 ### Next up
 
-- **12.13**: CI workflow
+- **Phase 13**: Bundle verification (next phase)
 
 ---
 

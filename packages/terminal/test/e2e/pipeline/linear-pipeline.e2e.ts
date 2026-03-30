@@ -37,6 +37,7 @@ import {
 } from '../helpers/env.js';
 import { fetchWithTimeout } from '../helpers/fetch-timeout.js';
 import { cleanupGitAuth, configureGitAuth } from '../helpers/git-auth.js';
+import { resolveLinearTeamUuid } from '../helpers/ticket-factory/linear.js';
 import {
   createTestTicket,
   generateRunId,
@@ -56,12 +57,20 @@ describe.skipIf(!canRun)('E2E: Linear — full pipeline', () => {
   let ticketId: string | undefined;
   let ticketKey: string | undefined;
   let ticketBranch: string | undefined;
+  let teamUuid: string | undefined;
   let prNumber: string | undefined;
   let pipeline: E2EPipelineSetup | undefined;
 
   beforeAll(async () => {
     const githubCreds = getGitHubCredentials()!;
+    const linearCreds = getLinearCredentials()!;
     configureGitAuth(githubCreds.token);
+
+    // Resolve team key → UUID (pipeline expects UUID, not key)
+    teamUuid = await resolveLinearTeamUuid(
+      linearCreds.apiKey,
+      linearCreds.teamId,
+    );
 
     // Create a real test ticket on the Linear team
     const ticket = await createTestTicket('linear', runId);
@@ -93,11 +102,12 @@ describe.skipIf(!canRun)('E2E: Linear — full pipeline', () => {
 
     // Set up pipeline with real GitHub remote + Linear credentials.
     // GITHUB_REPO is intentionally omitted — see file-level JSDoc.
+    // LINEAR_TEAM_ID must be the UUID (resolved in beforeAll), not the key.
     pipeline = setupE2EPipeline({
       remoteUrl: `https://github.com/${githubCreds.repo}.git`,
       envVars: {
         LINEAR_API_KEY: linearCreds.apiKey,
-        LINEAR_TEAM_ID: linearCreds.teamId,
+        LINEAR_TEAM_ID: teamUuid!,
         GITHUB_TOKEN: githubCreds.token,
         CLANCY_BASE_BRANCH: 'main',
         CLANCY_LABEL_BUILD: 'clancy:build',

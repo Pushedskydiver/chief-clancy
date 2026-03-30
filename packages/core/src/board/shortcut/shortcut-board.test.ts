@@ -85,6 +85,7 @@ describe('createShortcutBoard', () => {
         name: 'Fix bug',
         description: 'A bug',
         epic_id: 10,
+        workflow_state_id: 100,
         labels: [{ id: 1, name: 'bug' }],
       },
     ]);
@@ -106,8 +107,8 @@ describe('createShortcutBoard', () => {
 
   it('fetchTicket returns first ticket', async () => {
     const mockFetch = stubWorkflowsAndStories([
-      { id: 1, name: 'First' },
-      { id: 2, name: 'Second' },
+      { id: 1, name: 'First', workflow_state_id: 100 },
+      { id: 2, name: 'Second', workflow_state_id: 100 },
     ]);
 
     const board = createShortcutBoard(makeEnv(), mockFetch);
@@ -125,7 +126,7 @@ describe('createShortcutBoard', () => {
 
   it('parentInfo defaults to "none" when no epicId', async () => {
     const mockFetch = stubWorkflowsAndStories([
-      { id: 1, name: 'Story', epic_id: null },
+      { id: 1, name: 'Story', epic_id: null, workflow_state_id: 100 },
     ]);
 
     const board = createShortcutBoard(makeEnv(), mockFetch);
@@ -167,7 +168,9 @@ describe('createShortcutBoard', () => {
   });
 
   it('fetchChildrenStatus delegates to relations module', async () => {
-    const mockFetch = stubWorkflowsAndStories([{ id: 1, name: 'Warm' }]);
+    const mockFetch = stubWorkflowsAndStories([
+      { id: 1, name: 'Warm', workflow_state_id: 100 },
+    ]);
     // fetchChildrenByDescription (search stories — needs workflow state IDs)
     mockFetch.mockResolvedValueOnce({
       ok: true,
@@ -257,7 +260,7 @@ describe('createShortcutBoard', () => {
     expect(body.label_name).toBe('custom:label');
   });
 
-  it('uses SHORTCUT_WORKFLOW for workflow scoping', async () => {
+  it('does not send workflow_state_id in search body', async () => {
     const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
       new Response(
         JSON.stringify([
@@ -282,10 +285,11 @@ describe('createShortcutBoard', () => {
     );
     await board.fetchTickets({});
 
-    // The search body should use state 100 (Engineering), not 200 (Design)
+    // Shortcut removed workflow_state_id from /stories/search (2026).
+    // State filtering is now client-side — body should not include it.
     const body = JSON.parse(
       (mockFetch.mock.calls[1]?.[1] as RequestInit).body as string,
     ) as Record<string, unknown>;
-    expect(body.workflow_state_id).toBe(100);
+    expect(body).not.toHaveProperty('workflow_state_id');
   });
 });

@@ -101,6 +101,8 @@ export async function createShortcutTicket(
       workflow_state_id: stateId,
       owner_ids: [memberId],
       labels: [{ name: 'clancy:build' }],
+      // Explicitly no epic — prevents workspace automation assigning one
+      epic_id: null,
     }),
   });
 

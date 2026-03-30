@@ -63,8 +63,7 @@ async function linearGraphql<T>(
  * @param teamIdOrKey - Team ID or key.
  * @returns The resolved team UUID.
  */
-// Export when needed by GC or other consumers
-async function resolveLinearTeamUuid(
+export async function resolveLinearTeamUuid(
   apiKey: string,
   teamIdOrKey: string,
 ): Promise<string> {
