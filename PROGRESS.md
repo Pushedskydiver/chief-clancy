@@ -8,19 +8,59 @@
 
 Hook bundles already worked (esbuild.hooks.ts builds 8 self-contained CJS bundles). Added 19 smoke tests verifying bundle existence, clean loading, and PreToolUse JSON output. The old repo's runtime script bundles (`clancy-once.js`, `clancy-afk.js`) are Phase 14 scope — they depend on `bin/clancy.js`.
 
-### What's next — Phase 14: Wrapper & publish prep
+### What's next — Phase 14: Wrapper & publish prep (9 PRs)
 
-**14.1** — `bin/clancy.js`: Create CLI entry point delegating to terminal's CLI bridge. Package.json and bin field already configured.
+#### Code PRs
 
-**14.2** — Publish workflow: GitHub Actions with changesets for multi-package publish. `.changeset/config.json` already configured.
+**14.1** — `bin/clancy.js` entry point
+- Create ESM script with `#!/usr/bin/env node` shebang
+- Import `runInstall` from `@chief-clancy/terminal` and delegate
+- The old repo's bin pointed to `dist/installer/install.js` — same pattern
+- `packages/chief-clancy/package.json` already has bin field and `@chief-clancy/terminal` dep
+- Exit criteria: `npx chief-clancy` triggers the installer flow
 
-**14.3** — Doc rewrites (4 new files): ARCHITECTURE.md, VISUAL-ARCHITECTURE.md, TESTING.md, TECHNICAL-REFERENCE.md. Consider splitting into 1 PR per doc.
+**14.2** — GitHub Actions publish workflow
+- New `.github/workflows/publish.yml` using `@changesets/action`
+- Trigger on push to main when changeset PR merges
+- Publish changed packages to npm (`access: public` already in `.changeset/config.json`)
+- Tag conventions for multi-package releases
+- Exit criteria: workflow triggers correctly on version bumps
 
-**14.4** — Doc updates: SELF-REVIEW.md, DEVELOPMENT.md updates + create LIFECYCLE.md, COMPARISON.md, docs/roles/, docs/guides/. Consider splitting into 2–3 PRs.
+#### Doc rewrites (4 new files — 1 PR each)
+
+**14.3a** — `docs/ARCHITECTURE.md`
+- Module map, dependency graph, core→terminal boundary, barrel exports
+- Reference: `~/Desktop/alex/clancy/docs/ARCHITECTURE.md` (rewrite for monorepo)
+
+**14.3b** — `docs/VISUAL-ARCHITECTURE.md`
+- Mermaid diagrams: package boundaries, build pipeline, phase flow
+- Reference: `~/Desktop/alex/clancy/docs/VISUAL-ARCHITECTURE.md`
+
+**14.3c** — `docs/TESTING.md`
+- Per-package vitest configs, test patterns, fast-check usage, coverage
+- Reference: `~/Desktop/alex/clancy/docs/TESTING.md`
+
+**14.3d** — `docs/TECHNICAL-REFERENCE.md`
+- Board details, hook mechanics, delivery pipeline, build system
+- Reference: `~/Desktop/alex/clancy/docs/TECHNICAL-REFERENCE.md`
+
+#### Doc updates (3 PRs)
+
+**14.4a** — Core doc updates
+- Update `docs/SELF-REVIEW.md` paths/commands for new structure
+- Update `docs/DEVELOPMENT.md` for Phase 14–15 workflows
+- Create `docs/LIFECYCLE.md` (port from old repo, update for monorepo)
+- Create `docs/COMPARISON.md` (port from old repo as-is)
+
+**14.4b** — Role documentation
+- Create `docs/roles/` with 5 role overview files (SETUP, STRATEGIST, PLANNER, IMPLEMENTER, REVIEWER)
+- Reference role commands in `packages/terminal/src/roles/`
+
+**14.4c** — Guide documentation
+- Create `docs/guides/` with CONFIGURATION.md, SECURITY.md, TROUBLESHOOTING.md
+- Reference: `~/Desktop/alex/clancy/docs/guides/`
 
 ### Capability directory reorganization (PRs #156–#164)
-
-### Capability directory reorganization (PRs #156–#163)
 
 Reorganized `packages/core/src/` by future package boundaries per the approved ADR (`docs/decisions/architecture/package-evolution.md`).
 
