@@ -145,9 +145,8 @@ export function bbCloudHandlers(
   ctx: ReworkCtx,
   remote: BitbucketRemote,
 ): PlatformReworkHandlers {
-  const { fetchFn, token } = ctx;
-  // Safe: resolveGitToken always sets username for Bitbucket Cloud
-  const username = ctx.username!;
+  const { fetchFn, token, username } = ctx;
+  if (!username) throw new Error('Bitbucket Cloud requires a username');
   return {
     checkReviewState: (branch, since) =>
       checkBbCloudReviewState({

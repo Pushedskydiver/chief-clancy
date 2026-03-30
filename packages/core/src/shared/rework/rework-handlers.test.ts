@@ -10,6 +10,7 @@ import type {
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { bbCloudHandlers } from './rework-builders.js';
 import { resolvePlatformHandlers } from './rework-handlers.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -439,5 +440,22 @@ describe('per-platform credential resolution', () => {
     });
 
     expect(handlers).toBeUndefined();
+  });
+});
+
+// ─── Bitbucket Cloud username guard ─────────────────────────────────────────
+
+describe('bbCloudHandlers', () => {
+  it('throws when username is missing', () => {
+    const ctx = {
+      fetchFn: mockFetchFn,
+      token: 'bbtoken',
+      apiBase: 'https://api.bitbucket.org/2.0',
+      username: undefined,
+    };
+
+    expect(() => bbCloudHandlers(ctx, bbCloudRemote)).toThrow(
+      'Bitbucket Cloud requires a username',
+    );
   });
 });
