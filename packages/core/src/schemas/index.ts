@@ -43,6 +43,7 @@ export type {
   GitHubPrComment,
   GitHubPrComments,
   GitHubPrList,
+  GitHubRepoPing,
   GitHubReview,
   GitHubReviewList,
 } from './github/github.js';
@@ -55,6 +56,7 @@ export {
   githubPrCommentsSchema,
   githubPrListSchema,
   githubPrSchema,
+  githubRepoPingSchema,
   githubReviewListSchema,
   githubReviewSchema,
 } from './github/github.js';
@@ -62,12 +64,14 @@ export {
 export type {
   JiraIssueLabelsResponse,
   JiraIssueLinksResponse,
+  JiraProjectPing,
   JiraSearchResponse,
   JiraTransitionsResponse,
 } from './jira/jira.js';
 export {
   jiraIssueLabelsResponseSchema,
   jiraIssueLinksResponseSchema,
+  jiraProjectPingSchema,
   jiraSearchResponseSchema,
   jiraTransitionsResponseSchema,
 } from './jira/jira.js';

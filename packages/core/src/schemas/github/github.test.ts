@@ -6,6 +6,7 @@ import {
   githubIssuesResponseSchema,
   githubPrCommentsSchema,
   githubPrListSchema,
+  githubRepoPingSchema,
   githubReviewListSchema,
 } from './github.js';
 
@@ -56,6 +57,28 @@ const prComment = {
 };
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
+
+describe('githubRepoPingSchema', () => {
+  it('validates a repo ping response', () => {
+    const result = githubRepoPingSchema.safeParse({
+      id: 123456,
+      name: 'clancy-qa-sandbox',
+      full_name: 'Pushedskydiver/clancy-qa-sandbox',
+    });
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+
+    expect(result.data.id).toBe(123456);
+    expect(result.data.full_name).toBe('Pushedskydiver/clancy-qa-sandbox');
+  });
+
+  it('rejects when required fields are missing', () => {
+    const result = githubRepoPingSchema.safeParse({ id: 1 });
+
+    expect(result.success).toBe(false);
+  });
+});
 
 describe('githubIssueSchema', () => {
   it('validates a full issue', () => {

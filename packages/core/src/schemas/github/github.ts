@@ -76,6 +76,16 @@ export const githubPrCommentSchema = z.object({
 /** Response from `GET /repos/{owner}/{repo}/pulls/{number}/comments`. */
 export const githubPrCommentsSchema = z.array(githubPrCommentSchema);
 
+/** Response from `GET /repos/{owner}/{repo}` — ping endpoint. */
+export const githubRepoPingSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  full_name: z.string(),
+});
+
+/** Inferred type for the GitHub repo ping response. */
+export type GitHubRepoPing = z.infer<typeof githubRepoPingSchema>;
+
 /** Inferred type for a single GitHub issue. */
 export type GitHubIssue = z.infer<typeof githubIssueSchema>;
 
