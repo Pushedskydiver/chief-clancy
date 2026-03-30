@@ -42,7 +42,7 @@ describe('createEnvBuilder', () => {
 
     const envPath = join(builder.root, '.clancy', '.env');
 
-    expect(builder.fs.exists(envPath)).toBe(true);
+    expect(builder.fs.exists!(envPath)).toBe(true);
     expect(builder.fs.readFile(envPath)).toBe('LINEAR_API_KEY="lin_test"');
   });
 
@@ -50,7 +50,7 @@ describe('createEnvBuilder', () => {
     const builder = createEnvBuilder({ KEY: 'val' });
     cleanup = builder.cleanup;
 
-    expect(builder.fs.exists(join(builder.root, 'nonexistent'))).toBe(false);
+    expect(builder.fs.exists!(join(builder.root, 'nonexistent'))).toBe(false);
   });
 
   it('cleanup removes the temp directory', () => {

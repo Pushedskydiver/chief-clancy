@@ -32,13 +32,10 @@ Standards enforced across the `@chief-clancy` monorepo. All rules are configured
 
 ## Architecture Enforcement (eslint-plugin-boundaries)
 
-| Rule                                       | Effect   |
-| ------------------------------------------ | -------- |
-| Core imports nothing from terminal or chat | Enforced |
-| Terminal imports from core only            | Enforced |
-| Chat imports from core only                | Enforced |
-| Wrapper imports from terminal only         | Enforced |
-| No cross-imports between terminal and chat | Enforced |
+| Rule                               | Effect   |
+| ---------------------------------- | -------- |
+| Core imports nothing from terminal | Enforced |
+| Terminal imports from core only    | Enforced |
 
 ---
 

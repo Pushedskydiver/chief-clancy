@@ -91,8 +91,10 @@ export function readLock(
 export function deleteLock(fs: LockFs, projectRoot: string): void {
   try {
     fs.deleteFile(join(projectRoot, LOCK_PATH));
-  } catch {
-    // File may not exist — that's fine
+  } catch (err: unknown) {
+    const isNotFound =
+      err instanceof Error && 'code' in err && err.code === 'ENOENT';
+    if (!isNotFound) throw err;
   }
 }
 
@@ -127,8 +129,10 @@ function isPidAlive(pid: number): boolean {
 export function deleteVerifyAttempt(fs: LockFs, projectRoot: string): void {
   try {
     fs.deleteFile(join(projectRoot, VERIFY_ATTEMPT_PATH));
-  } catch {
-    // File may not exist — that's fine
+  } catch (err: unknown) {
+    const isNotFound =
+      err instanceof Error && 'code' in err && err.code === 'ENOENT';
+    if (!isNotFound) throw err;
   }
 }
 

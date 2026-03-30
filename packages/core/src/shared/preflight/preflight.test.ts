@@ -81,7 +81,11 @@ describe('runPreflight', () => {
   });
 
   it('returns error when .env file does not exist', () => {
-    const envFs = makeEnvFs({ exists: vi.fn(() => false) });
+    const envFs = makeEnvFs({
+      readFile: vi.fn(() => {
+        throw new Error('ENOENT');
+      }),
+    });
 
     const result = runPreflight('/project', makeDeps({ envFs }));
 
@@ -168,7 +172,7 @@ describe('runPreflight', () => {
 
     runPreflight('/my/project', makeDeps({ envFs }));
 
-    expect(envFs.exists).toHaveBeenCalledWith('/my/project/.clancy/.env');
+    expect(envFs.readFile).toHaveBeenCalledWith('/my/project/.clancy/.env');
   });
 
   it('returns typed PreflightResult on success', () => {

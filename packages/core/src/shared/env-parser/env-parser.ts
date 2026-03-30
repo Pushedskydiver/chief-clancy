@@ -85,7 +85,8 @@ export const parseEnvContent = (content: string): Record<string, string> => {
 
 /** File system operations required by {@link loadClancyEnv}. */
 export type EnvFileSystem = {
-  readonly exists: (path: string) => boolean;
+  /** @deprecated No longer called — kept for backward compatibility. */
+  readonly exists?: (path: string) => boolean;
   readonly readFile: (path: string) => string;
 };
 
@@ -98,10 +99,9 @@ export type EnvFileSystem = {
  *
  * @example
  * ```ts
- * import { existsSync, readFileSync } from 'node:fs';
+ * import { readFileSync } from 'node:fs';
  *
  * const env = loadClancyEnv('/path/to/project', {
- *   exists: existsSync,
  *   readFile: (p) => readFileSync(p, 'utf8'),
  * });
  * ```
@@ -112,7 +112,9 @@ export const loadClancyEnv = (
 ): Record<string, string> | undefined => {
   const envPath = join(projectRoot, '.clancy', '.env');
 
-  if (!fs.exists(envPath)) return undefined;
-
-  return parseEnvContent(fs.readFile(envPath));
+  try {
+    return parseEnvContent(fs.readFile(envPath));
+  } catch {
+    return undefined;
+  }
 };

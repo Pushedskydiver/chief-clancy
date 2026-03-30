@@ -109,8 +109,9 @@ describe('resolveInstallPaths', () => {
 
 describe('parseEnabledRoles', () => {
   const noopFs = {
-    exists: () => false,
-    readFile: () => '',
+    readFile: () => {
+      throw new Error('ENOENT');
+    },
   };
 
   it('returns null when no .clancy/.env exists (first install)', () => {
