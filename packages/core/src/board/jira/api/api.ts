@@ -15,7 +15,7 @@ import {
 import { fetchAndParse, pingEndpoint } from '~/c/shared/http/index.js';
 
 /** Pattern for safe JQL values (prevents injection). */
-const SAFE_VALUE_PATTERN = /^[a-zA-Z0-9 _\-'.]+$/;
+const SAFE_VALUE_PATTERN = /^[a-zA-Z0-9 _\-'.:]+$/;
 
 /** Pattern for valid Jira issue keys (e.g. `PROJ-123`). */
 const ISSUE_KEY_PATTERN = /^[A-Z][A-Z0-9]+-\d+$/;
@@ -110,6 +110,11 @@ type BuildJqlOpts = {
  */
 export function buildJql(opts: BuildJqlOpts): string {
   const { projectKey, status, sprint, label, excludeHitl } = opts;
+
+  const interpolated = [projectKey, status, ...(label ? [label] : [])];
+  const unsafe = interpolated.find((v) => !isSafeJqlValue(v));
+  if (unsafe) throw new Error(`Unsafe JQL value: "${unsafe}"`);
+
   const parts = [
     `project="${projectKey}"`,
     ...(sprint ? ['sprint in openSprints()'] : []),

@@ -160,17 +160,17 @@ describe('parseEnvContent (property-based)', () => {
 describe('loadClancyEnv', () => {
   it('returns parsed env when file exists', () => {
     const fs: EnvFileSystem = {
-      exists: () => true,
       readFile: () => 'FOO=bar\nBAZ=qux',
     };
 
     expect(loadClancyEnv('/project', fs)).toEqual({ FOO: 'bar', BAZ: 'qux' });
   });
 
-  it('returns undefined when file does not exist', () => {
+  it('returns undefined when readFile throws', () => {
     const fs: EnvFileSystem = {
-      exists: () => false,
-      readFile: () => '',
+      readFile: () => {
+        throw new Error('ENOENT');
+      },
     };
 
     expect(loadClancyEnv('/project', fs)).toBeUndefined();
@@ -178,13 +178,8 @@ describe('loadClancyEnv', () => {
 
   it('reads from .clancy/.env under the project root', () => {
     let readPath = '';
-    let existsPath = '';
 
     const fs: EnvFileSystem = {
-      exists: (path) => {
-        existsPath = path;
-        return true;
-      },
       readFile: (path) => {
         readPath = path;
         return 'KEY=val';
@@ -193,23 +188,21 @@ describe('loadClancyEnv', () => {
 
     loadClancyEnv('/my/project', fs);
 
-    expect(existsPath).toBe('/my/project/.clancy/.env');
     expect(readPath).toBe('/my/project/.clancy/.env');
   });
 
   it('normalises trailing slashes from projectRoot', () => {
-    let existsPath = '';
+    let readPath = '';
 
     const fs: EnvFileSystem = {
-      exists: (path) => {
-        existsPath = path;
-        return false;
+      readFile: (path) => {
+        readPath = path;
+        return 'KEY=val';
       },
-      readFile: () => '',
     };
 
     loadClancyEnv('/my/project/', fs);
 
-    expect(existsPath).toBe('/my/project/.clancy/.env');
+    expect(readPath).toBe('/my/project/.clancy/.env');
   });
 });

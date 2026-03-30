@@ -112,6 +112,24 @@ describe('buildJql', () => {
     });
     expect(jql).toContain('labels != "clancy:hitl"');
   });
+
+  it('throws on unsafe projectKey', () => {
+    expect(() =>
+      buildJql({ projectKey: 'PROJ"injection', status: 'To Do' }),
+    ).toThrow('Unsafe JQL value');
+  });
+
+  it('throws on unsafe status', () => {
+    expect(() => buildJql({ projectKey: 'PROJ', status: 'fn()' })).toThrow(
+      'Unsafe JQL value',
+    );
+  });
+
+  it('throws on unsafe label', () => {
+    expect(() =>
+      buildJql({ projectKey: 'PROJ', status: 'To Do', label: 'bad"label' }),
+    ).toThrow('Unsafe JQL value');
+  });
 });
 
 // ── extractAdfText ─────────────────────────────────────────────────

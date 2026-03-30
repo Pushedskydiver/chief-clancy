@@ -49,7 +49,10 @@ function memoryFs(): MemoryFs {
       store.set(path, content);
     }),
     deleteFile: vi.fn((path: string) => {
-      if (!store.has(path)) throw new Error('ENOENT');
+      if (!store.has(path)) {
+        const err = Object.assign(new Error('ENOENT'), { code: 'ENOENT' });
+        throw err;
+      }
       store.delete(path);
     }),
     mkdir: vi.fn(),
@@ -158,6 +161,15 @@ describe('deleteLock', () => {
 
     expect(() => deleteLock(fs, '/project')).not.toThrow();
   });
+
+  it('rethrows non-ENOENT errors', () => {
+    const fs = memoryFs();
+    vi.mocked(fs.deleteFile).mockImplementation(() => {
+      throw Object.assign(new Error('EACCES'), { code: 'EACCES' });
+    });
+
+    expect(() => deleteLock(fs, '/project')).toThrow('EACCES');
+  });
 });
 
 // ─── isLockStale ─────────────────────────────────────────────────────────────
@@ -226,5 +238,14 @@ describe('deleteVerifyAttempt', () => {
     const fs = memoryFs();
 
     expect(() => deleteVerifyAttempt(fs, '/project')).not.toThrow();
+  });
+
+  it('rethrows non-ENOENT errors', () => {
+    const fs = memoryFs();
+    vi.mocked(fs.deleteFile).mockImplementation(() => {
+      throw Object.assign(new Error('EACCES'), { code: 'EACCES' });
+    });
+
+    expect(() => deleteVerifyAttempt(fs, '/project')).toThrow('EACCES');
   });
 });
