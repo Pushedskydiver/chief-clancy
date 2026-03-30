@@ -222,27 +222,30 @@ export {
   fetchRemoteBranch,
 } from './shared/git-ops/index.js';
 
-export type { LockFs } from './shared/lock/index.js';
+export type { LockFs } from './dev/lifecycle/lock/index.js';
 export {
   deleteLock,
   deleteVerifyAttempt,
   readLock,
   writeLock,
-} from './shared/lock/index.js';
+} from './dev/lifecycle/lock/index.js';
 
-export type { ProgressEntry, ProgressFs } from './shared/progress/index.js';
+export type {
+  ProgressEntry,
+  ProgressFs,
+} from './dev/lifecycle/progress/index.js';
 export {
   appendProgress,
   countReworkCycles,
   findEntriesWithStatus,
   formatTimestamp,
   parseProgressFile,
-} from './shared/progress/index.js';
+} from './dev/lifecycle/progress/index.js';
 
 export {
   computeTargetBranch,
   computeTicketBranch,
-} from './shared/branch/index.js';
+} from './dev/lifecycle/branch/index.js';
 
 export { runPreflight } from './shared/preflight/preflight.js';
 export type { PreflightDeps } from './shared/preflight/preflight.js';

@@ -4,17 +4,20 @@
  * Ensures epic branches exist, builds epic context for child PRs,
  * and gathers child entries for the final epic PR.
  */
+import type {
+  ProgressEntry,
+  ProgressFs,
+} from '~/c/dev/lifecycle/progress/index.js';
 import type { ExecGit } from '~/c/shared/git-ops/index.js';
-import type { ProgressEntry, ProgressFs } from '~/c/shared/progress/index.js';
 import type { EpicContext } from '~/c/shared/pull-request/pr-body/index.js';
 
+import { findEntriesWithStatus } from '~/c/dev/lifecycle/progress/index.js';
 import {
   branchExists,
   fetchRemoteBranch,
   pushBranch,
   remoteBranchExists,
 } from '~/c/shared/git-ops/index.js';
-import { findEntriesWithStatus } from '~/c/shared/progress/index.js';
 import { isEpicBranch } from '~/c/shared/pull-request/pr-body/index.js';
 import { DELIVERED_STATUSES } from '~/c/types/progress.js';
 
