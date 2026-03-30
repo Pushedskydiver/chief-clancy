@@ -107,6 +107,8 @@ describe.skipIf(!canRun)('E2E: Azure DevOps — full pipeline', () => {
         GITHUB_TOKEN: githubCreds.token,
         CLANCY_BASE_BRANCH: 'main',
         CLANCY_LABEL_BUILD: 'clancy:build',
+        // AzDO QA project uses "To Do" as the initial state (not "New")
+        CLANCY_AZDO_STATUS: 'To Do',
       },
       ticketKey: ticketKey!,
     });
