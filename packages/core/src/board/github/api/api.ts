@@ -4,6 +4,7 @@
  * Low-level functions for interacting with the GitHub REST API.
  * Used by the GitHub board adapter ({@link ../github-board.ts}).
  */
+import type { GitHubIssue } from '~/c/schemas/index.js';
 import type { Fetcher } from '~/c/shared/http/index.js';
 import type { PingResult } from '~/c/types/index.js';
 
@@ -133,6 +134,20 @@ export type GitHubTicket = {
   readonly labels?: readonly string[];
 };
 
+/** Map a raw GitHub issue to a {@link GitHubTicket}. */
+function toGitHubTicket(issue: GitHubIssue): GitHubTicket {
+  return {
+    key: `#${issue.number}`,
+    title: issue.title,
+    description: issue.body ?? '',
+    provider: 'github',
+    milestone: issue.milestone?.title,
+    labels: issue.labels
+      ?.map((l) => l.name)
+      .filter((n): n is string => Boolean(n)),
+  };
+}
+
 /** Options for {@link fetchIssues}. */
 type FetchIssuesOpts = {
   readonly token: string;
@@ -190,18 +205,7 @@ export async function fetchIssues(
       )
     : withoutPrs;
 
-  return filtered.slice(0, limit).map(
-    (issue): GitHubTicket => ({
-      key: `#${issue.number}`,
-      title: issue.title,
-      description: issue.body ?? '',
-      provider: 'github',
-      milestone: issue.milestone?.title,
-      labels: issue.labels
-        ?.map((l) => l.name)
-        .filter((n): n is string => Boolean(n)),
-    }),
-  );
+  return filtered.slice(0, limit).map(toGitHubTicket);
 }
 
 /** Options for {@link closeIssue}. */
