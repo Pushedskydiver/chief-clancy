@@ -1,5 +1,26 @@
 # Monorepo Progress
 
+## Session 44 Handoff
+
+**Phase 12 in progress — 12 of 13 PRs done.** 1578 core tests, 756 terminal tests.
+
+### What was done
+
+- **12.12** (#TBD): Live schema validation — auth-endpoint checks against Zod schemas for API drift detection. Added `githubRepoPingSchema` and `jiraProjectPingSchema` (GitHub/Jira ping endpoints had no response schemas). Created `schema-validation.e2e.ts` with 6 board tests that call real auth endpoints and validate responses. Read-only tests — no ticket creation, no cleanup needed. Each board uses `describe.skipIf(!hasCredentials(...))` for conditional execution.
+
+### Key decisions
+
+- **New ping schemas for GitHub + Jira:** The four other boards already had Zod schemas for their ping response endpoints (`linearViewerResponseSchema`, `shortcutMemberInfoResponseSchema`, `notionUserResponseSchema`, `azdoProjectResponseSchema`). GitHub `GET /repos/{owner}/{repo}` and Jira `GET /rest/api/3/project/{key}` were missing — added minimal schemas validating just the fields that prove a valid response shape.
+- **Read-only tests, separate directory:** Schema validation tests live in `test/e2e/schema/` (not `pipeline/`) because they don't create tickets, branches, or PRs — just authenticate and parse. No cleanup needed.
+- **Error logging before assertion:** DA review caught that `console.error(drift details)` after `expect(success).toBe(true)` is dead code (vitest throws first). Reordered so drift details are visible in test output.
+- **Headers match production exactly:** Each board's auth call uses the same URL, method, and header construction as the production `ping*()` function to ensure the schema validation tests exercise the same endpoints.
+
+### Next up
+
+- **12.13**: CI workflow
+
+---
+
 ## Session 43 Handoff
 
 **Phase 12 in progress — 11 of 13 PRs done.** 1574 core tests, 756 terminal tests.

@@ -68,6 +68,7 @@ export type {
   // Jira API types
   JiraIssueLabelsResponse,
   JiraIssueLinksResponse,
+  JiraProjectPing,
   JiraSearchResponse,
   JiraTransitionsResponse,
   // GitHub API types
@@ -79,6 +80,7 @@ export type {
   GitHubPrComment,
   GitHubPrComments,
   GitHubPrList,
+  GitHubRepoPing,
   GitHubReview,
   GitHubReviewList,
   // Azure DevOps API types
@@ -128,6 +130,7 @@ export {
   // Jira API schemas
   jiraIssueLabelsResponseSchema,
   jiraIssueLinksResponseSchema,
+  jiraProjectPingSchema,
   jiraSearchResponseSchema,
   jiraTransitionsResponseSchema,
   // GitHub API schemas
@@ -139,6 +142,7 @@ export {
   githubPrCommentsSchema,
   githubPrListSchema,
   githubPrSchema,
+  githubRepoPingSchema,
   githubReviewListSchema,
   githubReviewSchema,
   // Azure DevOps API schemas

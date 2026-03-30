@@ -82,6 +82,16 @@ export const jiraIssueLabelsResponseSchema = z.object({
   ),
 });
 
+/** Response from `GET /rest/api/3/project/{key}` — ping endpoint. */
+export const jiraProjectPingSchema = z.object({
+  id: z.string(),
+  key: z.string(),
+  name: z.string(),
+});
+
+/** Inferred type for the Jira project ping response. */
+export type JiraProjectPing = z.infer<typeof jiraProjectPingSchema>;
+
 /** Inferred type for the Jira search response. */
 export type JiraSearchResponse = z.infer<typeof jiraSearchResponseSchema>;
 

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   jiraIssueLabelsResponseSchema,
   jiraIssueLinksResponseSchema,
+  jiraProjectPingSchema,
   jiraSearchResponseSchema,
   jiraTransitionsResponseSchema,
 } from './jira.js';
@@ -71,6 +72,28 @@ const issueLabelsResponse = {
 };
 
 // ─── Tests ───────────────────────────────────────────────────────────────────
+
+describe('jiraProjectPingSchema', () => {
+  it('validates a project ping response', () => {
+    const result = jiraProjectPingSchema.safeParse({
+      id: '10001',
+      key: 'CLANCYQA',
+      name: 'Clancy QA Sandbox',
+    });
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+
+    expect(result.data.key).toBe('CLANCYQA');
+    expect(result.data.name).toBe('Clancy QA Sandbox');
+  });
+
+  it('rejects when required fields are missing', () => {
+    const result = jiraProjectPingSchema.safeParse({ id: '10001' });
+
+    expect(result.success).toBe(false);
+  });
+});
 
 describe('jiraSearchResponseSchema', () => {
   it('validates a full search response', () => {
