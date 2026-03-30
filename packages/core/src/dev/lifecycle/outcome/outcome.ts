@@ -8,7 +8,7 @@
 import type { ProgressStatus } from '~/c/types/progress.js';
 import type { PrCreationResult, RemoteInfo } from '~/c/types/remote.js';
 
-import { buildManualPrUrl } from '~/c/shared/pr-creation/index.js';
+import { buildManualPrUrl } from '~/c/dev/lifecycle/pr-creation/index.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

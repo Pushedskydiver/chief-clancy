@@ -6,22 +6,22 @@
  * creates the PR, and appends progress. Returns structured results —
  * no console output. Board transitions are the caller's responsibility.
  */
+import type { FetchFn } from '~/c/dev/lifecycle/pr-creation/index.js';
 import type { ProgressFs } from '~/c/dev/lifecycle/progress/index.js';
 import type { BoardConfig } from '~/c/schemas/env/env.js';
 import type { ExecGit } from '~/c/shared/git-ops/index.js';
-import type { FetchFn } from '~/c/shared/pr-creation/index.js';
 import type { PrCreationResult, RemoteInfo } from '~/c/types/remote.js';
 
 import { resolveCommitType } from '~/c/dev/lifecycle/commit-type/index.js';
-import { appendProgress } from '~/c/dev/lifecycle/progress/index.js';
-import { gatherChildEntries } from '~/c/shared/epic/index.js';
-import { detectRemote } from '~/c/shared/git-ops/index.js';
 import {
   computeDeliveryOutcome,
   progressForOutcome,
-} from '~/c/shared/outcome/index.js';
-import { attemptPrCreation } from '~/c/shared/pr-creation/index.js';
-import { buildEpicPrBody } from '~/c/shared/pull-request/pr-body/index.js';
+} from '~/c/dev/lifecycle/outcome/index.js';
+import { attemptPrCreation } from '~/c/dev/lifecycle/pr-creation/index.js';
+import { appendProgress } from '~/c/dev/lifecycle/progress/index.js';
+import { buildEpicPrBody } from '~/c/dev/lifecycle/pull-request/pr-body/index.js';
+import { gatherChildEntries } from '~/c/shared/epic/index.js';
+import { detectRemote } from '~/c/shared/git-ops/index.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
