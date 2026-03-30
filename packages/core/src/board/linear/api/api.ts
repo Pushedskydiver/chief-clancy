@@ -5,6 +5,7 @@
  * Personal API keys are passed directly (no "Bearer" prefix) per
  * Linear's documentation.
  */
+import type { LinearIssueNode } from '~/c/schemas/index.js';
 import type { Fetcher } from '~/c/shared/http/index.js';
 import type { PingResult } from '~/c/types/index.js';
 
@@ -150,6 +151,21 @@ type LinearTicket = {
   readonly labels?: readonly string[];
 };
 
+/** Map a raw Linear issue node to a {@link LinearTicket}. */
+function toLinearTicket(issue: LinearIssueNode): LinearTicket {
+  return {
+    key: issue.identifier,
+    title: issue.title,
+    description: issue.description ?? '',
+    provider: 'linear',
+    issueId: issue.id,
+    parentIdentifier: issue.parent?.identifier,
+    labels: issue.labels?.nodes
+      ?.map((l) => l.name)
+      .filter((n): n is string => Boolean(n)),
+  };
+}
+
 /** Options for {@link fetchIssues}. */
 type FetchIssuesOpts = {
   readonly apiKey: string;
@@ -245,17 +261,5 @@ export async function fetchIssues(
     ? allNodes.filter((n) => !isHitlIssue(n))
     : allNodes;
 
-  return filtered.slice(0, limit).map(
-    (issue): LinearTicket => ({
-      key: issue.identifier,
-      title: issue.title,
-      description: issue.description ?? '',
-      provider: 'linear',
-      issueId: issue.id,
-      parentIdentifier: issue.parent?.identifier,
-      labels: issue.labels?.nodes
-        ?.map((l) => l.name)
-        .filter((n): n is string => Boolean(n)),
-    }),
-  );
+  return filtered.slice(0, limit).map(toLinearTicket);
 }
