@@ -1,5 +1,31 @@
 # Monorepo Progress
 
+## Session 45 Handoff
+
+**Audit cleanup C44–C49 done — 6 of 14 PRs merged.** 1580 core tests, 756 terminal tests.
+
+### What was done
+
+- **C44** (#142): Fix stale `#TBD` entries and wrong statuses in PROGRESS.md — 4 PR numbers, 1 test count, 2 statuses.
+- **C45** (#143): Replace Bitbucket Cloud `username!` non-null assertions with runtime guards in `pr-creation.ts` and `rework-builders.ts`. Added test.
+- **C46** (#144): Add error context to E2E pipeline assertions — custom messages on `result.status` (surfaces phase + error) and `prMatch` (dumps progress content) across all 6 pipeline tests.
+- **C47** (#145): Add `encodeURIComponent` to URL path/query components in AzDO, Bitbucket Cloud, Bitbucket Server, and `buildManualPrUrl`.
+- **C48** (#146): Add `// Safe:` justification comments to `as` casts in jira/api, notion/helpers, and quality modules.
+- **C49** (#147): Extract `toGitHubTicket` and `toLinearTicket` from inline `.map()` callbacks into named functions.
+
+### What's next — 8 remaining cleanup PRs
+
+- **C50**: Chain length violations in github.ts and gitlab.ts
+- **C51**: Lock module JSDoc `@param` tags
+- **C52**: Duplicate `isPlainObject` across hooks and installer
+- **C53**: Missing `rework-builders.test.ts` (5 exported functions, 0 tests)
+- **C54**: Linear GC team UUID resolution
+- **C55**: Core readability — rename `const fetch` → `doFetch`, redundant `.map` wrapper, JSDoc placement
+- **C56**: Terminal readability — inline narrowing, redundant casts, `hasErrorCode` consistency
+- **C57**: Docs + security hardening — CONVENTIONS.md chat reference, TOCTOU in env-parser, bare catch in lock, JQL validation
+
+---
+
 ## Session 44 Handoff
 
 **Phase 12 complete — 13 of 13 PRs done.** 1579 core tests, 756 terminal tests.
