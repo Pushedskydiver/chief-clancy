@@ -47,6 +47,9 @@ const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
 /**
  * Write lock data to `.clancy/lock.json`.
  *
+ * @param fs - Injected filesystem operations.
+ * @param projectRoot - The root directory of the project.
+ * @param data - Lock data to persist.
  * @returns Nothing. Creates the `.clancy` directory if needed.
  */
 export function writeLock(
@@ -61,6 +64,8 @@ export function writeLock(
 /**
  * Read lock data from `.clancy/lock.json`.
  *
+ * @param fs - Injected filesystem operations.
+ * @param projectRoot - The root directory of the project.
  * @returns Parsed lock data, or `undefined` if missing/corrupt/invalid.
  */
 export function readLock(
@@ -79,6 +84,8 @@ export function readLock(
 /**
  * Delete `.clancy/lock.json`. No-op if the file does not exist.
  *
+ * @param fs - Injected filesystem operations.
+ * @param projectRoot - The root directory of the project.
  * @returns Nothing.
  */
 export function deleteLock(fs: LockFs, projectRoot: string): void {
