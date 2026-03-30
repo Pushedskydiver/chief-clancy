@@ -266,6 +266,7 @@ describe('fetchStories', () => {
               name: 'Fix bug',
               description: 'A bug',
               epic_id: 10,
+              workflow_state_id: 100,
               labels: [{ id: 1, name: 'bug' }],
             },
           ],
@@ -290,11 +291,35 @@ describe('fetchStories', () => {
     });
   });
 
+  it('filters stories by workflow state client-side', async () => {
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: [
+            { id: 1, name: 'Matching', workflow_state_id: 100 },
+            { id: 2, name: 'Wrong state', workflow_state_id: 200 },
+          ],
+        }),
+    } as Response);
+
+    const result = await fetchStories({
+      token: 'tok',
+      workflowStateIds: [100],
+      fetcher: mockFetch,
+    });
+
+    expect(result).toHaveLength(1);
+    expect(result[0]?.key).toBe('sc-1');
+  });
+
   it('handles bare array response shape', async () => {
     const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
       ok: true,
       json: () =>
-        Promise.resolve([{ id: 1, name: 'Story', description: null }]),
+        Promise.resolve([
+          { id: 1, name: 'Story', description: null, workflow_state_id: 100 },
+        ]),
     } as Response);
 
     const result = await fetchStories({
@@ -313,10 +338,16 @@ describe('fetchStories', () => {
       json: () =>
         Promise.resolve({
           data: [
-            { id: 1, name: 'Normal', labels: [{ id: 1, name: 'bug' }] },
+            {
+              id: 1,
+              name: 'Normal',
+              workflow_state_id: 100,
+              labels: [{ id: 1, name: 'bug' }],
+            },
             {
               id: 2,
               name: 'HITL',
+              workflow_state_id: 100,
               labels: [{ id: 2, name: 'clancy:hitl' }],
             },
           ],
@@ -334,7 +365,7 @@ describe('fetchStories', () => {
     expect(result[0]?.key).toBe('sc-1');
   });
 
-  it('includes label filter in search body', async () => {
+  it('does not include workflow_state_id in search body', async () => {
     const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ data: [] }),
@@ -351,12 +382,15 @@ describe('fetchStories', () => {
       (mockFetch.mock.calls[0]?.[1] as RequestInit).body as string,
     ) as Record<string, unknown>;
     expect(body.label_name).toBe('clancy:build');
+    expect(body).not.toHaveProperty('workflow_state_id');
   });
 
   it('returns empty array on API failure', async () => {
-    const mockFetch = vi
-      .fn<Fetcher>()
-      .mockResolvedValue({ ok: false, status: 500 } as Response);
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: false,
+      status: 500,
+      text: () => Promise.resolve('Internal Server Error'),
+    } as Response);
 
     const result = await fetchStories({
       token: 'tok',
@@ -382,7 +416,9 @@ describe('fetchStories', () => {
       ok: true,
       json: () =>
         Promise.resolve({
-          data: [{ id: 1, name: 'Story', description: null }],
+          data: [
+            { id: 1, name: 'Story', description: null, workflow_state_id: 100 },
+          ],
         }),
     } as Response);
 

@@ -238,26 +238,12 @@ function toShortcutTicket(story: ShortcutStoryNode): ShortcutTicket {
  * @param opts - Token, workflow state IDs, and optional filters.
  * @returns Array of fetched tickets (may be empty).
  */
-export async function fetchStories(
-  opts: FetchStoriesOpts,
-): Promise<readonly ShortcutTicket[]> {
-  const {
-    token,
-    workflowStateIds,
-    label,
-    excludeHitl,
-    limit = 5,
-    fetcher,
-  } = opts;
-  if (!workflowStateIds.length) return [];
-
-  // Shortcut removed workflow_state_ids (plural) — the API now
-  // accepts only workflow_state_id (singular). We use the first ID.
-  const body = {
-    workflow_state_id: workflowStateIds[0],
-    ...(label ? { label_name: label } : {}),
-  };
-
+/** Execute the /stories/search POST and parse the response. */
+async function searchStories(
+  token: string,
+  body: Record<string, unknown>,
+  fetcher?: Fetcher,
+): Promise<readonly ShortcutStoryNode[]> {
   const doFetch = fetcher ?? fetch;
   const response = await doFetch(`${SHORTCUT_API}/stories/search`, {
     method: 'POST',
@@ -273,7 +259,10 @@ export async function fetchStories(
   if (!response) return [];
 
   if (!response.ok) {
-    console.warn(`⚠ Shortcut API returned HTTP ${response.status}`);
+    const text = await response.text().catch(() => '');
+    console.warn(
+      `⚠ Shortcut story search returned HTTP ${response.status} — ${text}`,
+    );
     return [];
   }
 
@@ -282,14 +271,45 @@ export async function fetchStories(
     return undefined;
   });
 
-  if (json === undefined) return [];
+  return json === undefined ? [] : parseSearchResponse(json);
+}
 
-  const stories = parseSearchResponse(json);
-  const filtered = excludeHitl
-    ? stories.filter((s) => !s.labels?.some((l) => l.name === 'clancy:hitl'))
-    : stories;
+/**
+ * Fetch candidate stories from Shortcut.
+ *
+ * @param opts - Token, workflow state IDs, and optional filters.
+ * @returns Array of fetched tickets (may be empty).
+ */
+export async function fetchStories(
+  opts: FetchStoriesOpts,
+): Promise<readonly ShortcutTicket[]> {
+  const { token, workflowStateIds, label, excludeHitl, limit = 5 } = opts;
+  if (!workflowStateIds.length) return [];
 
-  return filtered.slice(0, limit).map(toShortcutTicket);
+  // Shortcut removed workflow_state_id from /stories/search (2026).
+  // Filter by label server-side, then by workflow state client-side.
+  // archived: false is required — empty body returns no results.
+  const stateSet = new Set(workflowStateIds);
+  const body = {
+    archived: false,
+    ...(label ? { label_name: label } : {}),
+  };
+
+  const stories = await searchStories(token, body, opts.fetcher);
+
+  // Client-side workflow state filter (was server-side before API change)
+  const stateFiltered = stories.filter(
+    (s) =>
+      s.workflow_state_id !== undefined && stateSet.has(s.workflow_state_id),
+  );
+
+  const hitlFiltered = excludeHitl
+    ? stateFiltered.filter(
+        (s) => !s.labels?.some((l) => l.name === 'clancy:hitl'),
+      )
+    : stateFiltered;
+
+  return hitlFiltered.slice(0, limit).map(toShortcutTicket);
 }
 
 /** Options for {@link transitionStory}. */
