@@ -12,7 +12,10 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "src/roles",
+    "src/agents",
+    "src/templates"
   ],
   "dependencies": {
     "@chief-clancy/core": "workspace:*"
