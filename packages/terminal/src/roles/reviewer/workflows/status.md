@@ -104,7 +104,7 @@ Next up:
    Epic: {epic key} — {epic title}
    Status: {status}
 
-"Let me check the dispatch..." — Run /clancy:once to pick up #1, or /clancy:run to process the queue.
+"Let me check the dispatch..." — Run /clancy:implement to pick up #1, or /clancy:autopilot to process the queue.
 ```
 
 If no tickets found:

@@ -87,8 +87,8 @@ function createSourceFixtures(baseDir: string) {
   mkdirSync(join(rolesDir, 'strategist', 'commands'), { recursive: true });
 
   writeFileSync(
-    join(rolesDir, 'implementer', 'commands', 'run.md'),
-    '# /clancy:run\nRun Clancy.',
+    join(rolesDir, 'implementer', 'commands', 'autopilot.md'),
+    '# /clancy:autopilot\nRun Clancy.',
   );
   writeFileSync(
     join(rolesDir, 'implementer', 'workflows', 'deploy.md'),
@@ -103,8 +103,8 @@ function createSourceFixtures(baseDir: string) {
   HOOK_FILES.forEach((f) => writeFileSync(join(hooksDir, f), `// ${f}`));
 
   mkdirSync(bundleDir, { recursive: true });
-  writeFileSync(join(bundleDir, 'clancy-once.js'), '// once');
-  writeFileSync(join(bundleDir, 'clancy-afk.js'), '// afk');
+  writeFileSync(join(bundleDir, 'clancy-implement.js'), '// once');
+  writeFileSync(join(bundleDir, 'clancy-autopilot.js'), '// afk');
 
   mkdirSync(agentsDir, { recursive: true });
   writeFileSync(
@@ -151,7 +151,7 @@ describe('runInstall — integration', () => {
     });
 
     it('creates commands and workflows in .claude/', () => {
-      expect(existsSync(join(paths.commandsDest, 'run.md'))).toBe(true);
+      expect(existsSync(join(paths.commandsDest, 'autopilot.md'))).toBe(true);
       expect(existsSync(join(paths.commandsDest, 'brief.md'))).toBe(true);
       expect(existsSync(join(paths.workflowsDest, 'deploy.md'))).toBe(true);
     });
@@ -175,12 +175,12 @@ describe('runInstall — integration', () => {
     });
 
     it('copies bundle scripts to .clancy/', () => {
-      expect(existsSync(join(paths.clancyProjectDir, 'clancy-once.js'))).toBe(
-        true,
-      );
-      expect(existsSync(join(paths.clancyProjectDir, 'clancy-afk.js'))).toBe(
-        true,
-      );
+      expect(
+        existsSync(join(paths.clancyProjectDir, 'clancy-implement.js')),
+      ).toBe(true);
+      expect(
+        existsSync(join(paths.clancyProjectDir, 'clancy-autopilot.js')),
+      ).toBe(true);
     });
 
     it('writes version.json with injected timestamp', () => {
@@ -258,7 +258,10 @@ describe('runInstall — integration', () => {
       };
 
       await runInstall(options);
-      writeFileSync(join(paths.commandsDest, 'run.md'), '# Modified by user');
+      writeFileSync(
+        join(paths.commandsDest, 'autopilot.md'),
+        '# Modified by user',
+      );
       await runInstall(options);
 
       const metaPath = join(paths.patchesDir, 'backup-meta.json');
@@ -267,7 +270,7 @@ describe('runInstall — integration', () => {
       const meta = JSON.parse(readFileSync(metaPath, 'utf8')) as {
         backed_up: readonly string[];
       };
-      expect(meta.backed_up).toContain('run.md');
+      expect(meta.backed_up).toContain('autopilot.md');
     });
 
     it('overwrites files with fresh source content after backup', async () => {
@@ -286,11 +289,17 @@ describe('runInstall — integration', () => {
       };
 
       await runInstall(options);
-      writeFileSync(join(paths.commandsDest, 'run.md'), '# Modified by user');
+      writeFileSync(
+        join(paths.commandsDest, 'autopilot.md'),
+        '# Modified by user',
+      );
       await runInstall(options);
 
-      const content = readFileSync(join(paths.commandsDest, 'run.md'), 'utf8');
-      expect(content).toBe('# /clancy:run\nRun Clancy.');
+      const content = readFileSync(
+        join(paths.commandsDest, 'autopilot.md'),
+        'utf8',
+      );
+      expect(content).toBe('# /clancy:autopilot\nRun Clancy.');
     });
 
     it('is idempotent — running twice produces the same state', async () => {
@@ -336,7 +345,10 @@ describe('runInstall — integration', () => {
         now: () => FIXED_TIME,
       });
 
-      writeFileSync(join(paths.commandsDest, 'run.md'), '# Modified by user');
+      writeFileSync(
+        join(paths.commandsDest, 'autopilot.md'),
+        '# Modified by user',
+      );
 
       await runInstall({
         mode: 'local',
@@ -350,7 +362,10 @@ describe('runInstall — integration', () => {
         now: () => FIXED_TIME,
       });
 
-      const content = readFileSync(join(paths.commandsDest, 'run.md'), 'utf8');
+      const content = readFileSync(
+        join(paths.commandsDest, 'autopilot.md'),
+        'utf8',
+      );
       expect(content).toBe('# Modified by user');
 
       const version = readFileSync(join(paths.commandsDest, 'VERSION'), 'utf8');

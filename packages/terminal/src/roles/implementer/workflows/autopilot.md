@@ -10,7 +10,7 @@ Before doing anything else, check for updates:
 
 ---
 
-# Clancy Run Workflow
+# Clancy Autopilot Workflow
 
 ## Overview
 
@@ -20,7 +20,7 @@ Run Clancy in loop mode. Processes tickets from the Kanban board until the queue
 
 ## Step 1 — Parse argument
 
-The command may be invoked as `/clancy:run` or `/clancy:run N` where N is a positive integer.
+The command may be invoked as `/clancy:autopilot` or `/clancy:autopilot N` where N is a positive integer.
 
 - If N is provided: use it as `MAX_ITERATIONS` for this session only. Never write it to `.clancy/.env`.
 - If no argument: read `MAX_ITERATIONS` from `.clancy/.env`. If not set there, default to 5.
@@ -28,7 +28,7 @@ The command may be invoked as `/clancy:run` or `/clancy:run N` where N is a posi
 If the resolved value of `MAX_ITERATIONS` is **10 or greater**, show a warning before continuing:
 
 ```
-🚨 Clancy — Run
+🚨 Clancy — Autopilot
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ⚠️ You're about to run Clancy for up to {N} tickets.
@@ -38,7 +38,7 @@ At rough estimates per ticket (Sonnet):
   Complex tickets ~$2.00–$5.00 each  →  up to ~${high} total
 
 "Slow down there, cowboy..." — Mistakes compound. If Claude misreads a ticket, it will do so {N} times.
-Consider /clancy:once or a smaller run to validate first.
+Consider /clancy:implement or a smaller run to validate first.
 
 Continue with {N} tickets? [Y/n]
 ```
@@ -81,9 +81,9 @@ If the user types `n` or `N`: print `Cancelled.` and stop. Any other input (incl
 
    Stop.
 
-4. Check `.clancy/clancy-afk.js` exists. If not:
+4. Check `.clancy/clancy-autopilot.js` exists. If not:
    ```
-   .clancy/clancy-afk.js not found. Run /clancy:init to scaffold scripts.
+   .clancy/clancy-autopilot.js not found. Run /clancy:init to scaffold scripts.
    ```
    Stop.
 
@@ -94,7 +94,7 @@ If the user types `n` or `N`: print `Cancelled.` and stop. Any other input (incl
 Display (only if the high-iteration warning was not already shown):
 
 ```
-🚨 Clancy — Run
+🚨 Clancy — Autopilot
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 "All right, let's do this." — Processing up to {N} ticket(s). Ctrl+C to stop early.
@@ -107,7 +107,7 @@ Display (only if the high-iteration warning was not already shown):
 Execute:
 
 ```bash
-MAX_ITERATIONS={N} node .clancy/clancy-afk.js
+MAX_ITERATIONS={N} node .clancy/clancy-autopilot.js
 ```
 
 Stream output directly — do not buffer or summarise.
@@ -118,12 +118,12 @@ Stream output directly — do not buffer or summarise.
 
 When the script exits, echo the final summary line from the output.
 
-If `clancy-afk.js` exits with a non-zero status:
+If `clancy-autopilot.js` exits with a non-zero status:
 
 ```
 ❌ Clancy stopped with an error. Check the output above.
 
-"Looks like we've got ourselves a 23-19." — Run /clancy:once for more detail on the next ticket.
+"Looks like we've got ourselves a 23-19." — Run /clancy:implement for more detail on the next ticket.
 ```
 
 ---

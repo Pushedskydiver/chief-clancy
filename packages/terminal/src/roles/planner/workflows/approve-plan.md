@@ -875,9 +875,9 @@ On success, display a board-specific message:
 **GitHub:**
 
 ```
-Plan promoted. Label swapped: {CLANCY_LABEL_PLAN} → {CLANCY_LABEL_BUILD}. Ready for /clancy:once.
+Plan promoted. Label swapped: {CLANCY_LABEL_PLAN} → {CLANCY_LABEL_BUILD}. Ready for /clancy:implement.
 
-"Book 'em, Lou." — The ticket is ready for /clancy:once.
+"Book 'em, Lou." — The ticket is ready for /clancy:implement.
 ```
 
 **Jira (with transition):**
@@ -885,23 +885,23 @@ Plan promoted. Label swapped: {CLANCY_LABEL_PLAN} → {CLANCY_LABEL_BUILD}. Read
 ```
 Plan promoted. Ticket transitioned to {CLANCY_STATUS_PLANNED}.
 
-"Book 'em, Lou." -- The ticket is ready for /clancy:once.
+"Book 'em, Lou." -- The ticket is ready for /clancy:implement.
 ```
 
 **Jira (no transition configured):**
 
 ```
-Plan promoted. Move [{KEY}] to your implementation queue for /clancy:once.
+Plan promoted. Move [{KEY}] to your implementation queue for /clancy:implement.
 
-"Book 'em, Lou." -- The ticket is ready for /clancy:once.
+"Book 'em, Lou." -- The ticket is ready for /clancy:implement.
 ```
 
 **Linear:**
 
 ```
-Plan promoted. Moved to unstarted. Ready for /clancy:once.
+Plan promoted. Moved to unstarted. Ready for /clancy:implement.
 
-"Book 'em, Lou." -- The ticket is ready for /clancy:once.
+"Book 'em, Lou." -- The ticket is ready for /clancy:implement.
 ```
 
 **Azure DevOps (with transition):**
@@ -909,23 +909,23 @@ Plan promoted. Moved to unstarted. Ready for /clancy:once.
 ```
 Plan promoted. Work item transitioned to {CLANCY_STATUS_PLANNED}.
 
-"Book 'em, Lou." -- The ticket is ready for /clancy:once.
+"Book 'em, Lou." -- The ticket is ready for /clancy:implement.
 ```
 
 **Azure DevOps (no transition configured):**
 
 ```
-Plan promoted. Move work item {ID} to your implementation queue for /clancy:once.
+Plan promoted. Move work item {ID} to your implementation queue for /clancy:implement.
 
-"Book 'em, Lou." -- The ticket is ready for /clancy:once.
+"Book 'em, Lou." -- The ticket is ready for /clancy:implement.
 ```
 
 **Shortcut:**
 
 ```
-Plan promoted. Moved to unstarted. Ready for /clancy:once.
+Plan promoted. Moved to unstarted. Ready for /clancy:implement.
 
-"Book 'em, Lou." -- The ticket is ready for /clancy:once.
+"Book 'em, Lou." -- The ticket is ready for /clancy:implement.
 ```
 
 **Notion (with transition):**
@@ -933,15 +933,15 @@ Plan promoted. Moved to unstarted. Ready for /clancy:once.
 ```
 Plan promoted to page content. Status updated to {CLANCY_STATUS_PLANNED}.
 
-"Book 'em, Lou." -- The ticket is ready for /clancy:once.
+"Book 'em, Lou." -- The ticket is ready for /clancy:implement.
 ```
 
 **Notion (no transition configured):**
 
 ```
-Plan promoted to page content. Move the page to your implementation queue for /clancy:once.
+Plan promoted to page content. Move the page to your implementation queue for /clancy:implement.
 
-"Book 'em, Lou." -- The ticket is ready for /clancy:once.
+"Book 'em, Lou." -- The ticket is ready for /clancy:implement.
 ```
 
 Append to `.clancy/progress.txt`:

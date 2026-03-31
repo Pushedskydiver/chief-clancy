@@ -42,7 +42,7 @@ All hook source lives in `packages/terminal/src/hooks/`, built to CJS bundles by
 - Monorepo uses pnpm workspaces + Turbo for parallel builds
 - TypeScript modules use `zod/mini` for all runtime validation of external data (not full `zod`)
 - Path aliases: `~/c/` resolves to `core/src/*`, `~/t/` resolves to `terminal/src/*` — rewritten by `tsc-alias` at build time
-- Runtime scripts (`clancy-once.js`, `clancy-afk.js`) are esbuild bundles — self-contained, zero runtime dependency on the npm package
+- Runtime scripts (`clancy-implement.js`, `clancy-autopilot.js`) are esbuild bundles — self-contained, zero runtime dependency on the npm package
 - `dist/bundle/` in the terminal package contains the bundled scripts; the installer copies them to `.clancy/` during install
 - Hook bundles are built by `esbuild.hooks.ts` — self-contained CJS, each with its own entry point
 - `chief-clancy` package is a thin CLI wrapper — `bin/clancy.js` resolves the terminal package on disk and delegates to `runInstall`
@@ -63,7 +63,7 @@ Delivery modules live in `packages/core/src/dev/lifecycle/`. PR creation lives i
 - GitHub Issues reuse `GITHUB_TOKEN` for PR creation; Jira/Linear users configure a separate git host token
 - Lock file (`.clancy/lock.json`): prevents double-runs, enables crash recovery via PID check + resume detection (`core/dev/lifecycle/lock/`)
 - Cost logging: duration-based token estimate per ticket appended to `.clancy/costs.log` using `CLANCY_TOKEN_RATE` (default 6600 tokens/min) (`core/dev/lifecycle/cost/`)
-- Session report: `.clancy/session-report.md` generated after `/clancy:run` summarises completed/failed tickets (`terminal/runner/session-report/`)
+- Session report: `.clancy/session-report.md` generated after `/clancy:autopilot` summarises completed/failed tickets (`terminal/runner/session-report/`)
 
 ## Pipeline Labels
 

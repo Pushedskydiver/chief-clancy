@@ -597,7 +597,7 @@ Store the detected (or confirmed) value as `CLANCY_BASE_BRANCH` in `.clancy/.env
 
 Create `.clancy/` directory and the following:
 
-1. Verify `.clancy/clancy-once.js` and `.clancy/clancy-afk.js` exist (copied by the installer). If missing, tell the user to run `npx -y chief-clancy@latest` and stop.
+1. Verify `.clancy/clancy-implement.js` and `.clancy/clancy-autopilot.js` exist (copied by the installer). If missing, tell the user to run `npx -y chief-clancy@latest` and stop.
 2. Create `.clancy/docs/` with 10 empty template files (UPPERCASE.md with section headings only):
    - STACK.md, INTEGRATIONS.md, ARCHITECTURE.md, CONVENTIONS.md, TESTING.md
    - GIT.md, DESIGN-SYSTEM.md, ACCESSIBILITY.md, DEFINITION-OF-DONE.md, CONCERNS.md
@@ -869,7 +869,7 @@ Output:
 ```
 Clancy is set up. A few optional enhancements are available:
 
-  1. Max iterations   — set how many tickets /clancy:run processes per session
+  1. Max iterations   — set how many tickets /clancy:autopilot processes per session
   2. Figma MCP        — fetch design specs when tickets include a Figma URL
   3. Playwright       — screenshot and verify UI after implementing tickets
   4. Notifications    — post to Slack or Teams when a ticket completes or errors
@@ -889,8 +889,8 @@ If yes, walk through each in order. After each enhancement (whether configured o
 Output:
 
 ```
-How many tickets should /clancy:run process before stopping? [5]
-(You can override this per-session with /clancy:run 20)
+How many tickets should /clancy:autopilot process before stopping? [5]
+(You can override this per-session with /clancy:autopilot 20)
 ```
 
 Validate the input is a positive integer between 1 and 100. If invalid, re-prompt.
@@ -1087,10 +1087,10 @@ Output:
 ║  ✅ Clancy is ready.                                     ║
 ╚═══════════════════════════════════════════════════════════╝
 
-- Scripts: `.clancy/clancy-once.js`, `.clancy/clancy-afk.js`
+- Scripts: `.clancy/clancy-implement.js`, `.clancy/clancy-autopilot.js`
 - Docs: `.clancy/docs/` (10 files)
 - Config: `.clancy/.env`
 - CLAUDE.md: updated
 
-"Clancy's on the beat." — Run /clancy:plan to refine backlog tickets, /clancy:dry-run to preview, or /clancy:once to pick up a ticket.
+"Clancy's on the beat." — Run /clancy:plan to refine backlog tickets, /clancy:dry-run to preview, or /clancy:implement to pick up a ticket.
 ```

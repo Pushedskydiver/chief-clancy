@@ -49,7 +49,7 @@ This is a **living document** — when CodeRabbit catches something the self-rev
 ## Lint-staged safety
 
 - Do test helper return types expose mutable collections (`Map`, `Set`, `Array`)? `eslint --fix` auto-converts them to `ReadonlyMap`/`ReadonlySet`/`ReadonlyArray`, breaking `.set()`/`.add()`/`.push()` calls. Use accessor methods instead (PR #49 CI failure)
-- After writing a new test file, run `npx eslint --fix <file> && pnpm typecheck` to verify lint-staged won't break it on commit
+- After writing a new test file, run `pnpm eslint --fix <file> && pnpm typecheck` to verify lint-staged won't break it on commit
 
 ## Monorepo-specific
 

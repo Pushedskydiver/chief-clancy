@@ -333,7 +333,7 @@ Check whether a `.prettierignore` file exists in the project root.
 
 ## Runtime scripts
 
-The installer copies bundled runtime scripts (`clancy-once.js` and `clancy-afk.js`) directly into `.clancy/` during installation. These are self-contained — they have zero runtime dependency on the `chief-clancy` npm package.
+The installer copies bundled runtime scripts (`clancy-implement.js` and `clancy-autopilot.js`) directly into `.clancy/` during installation. These are self-contained — they have zero runtime dependency on the `chief-clancy` npm package.
 
 **Do NOT write or modify these files during init.** They are managed by the installer and updated automatically via `/clancy:update`.
 
@@ -382,7 +382,7 @@ CLANCY_JQL_STATUS="To Do"
 CLANCY_BASE_BRANCH=main
 
 # ─── Loop ─────────────────────────────────────────────────────────────────────
-# Max tickets to process per /clancy:run session (default: 5)
+# Max tickets to process per /clancy:autopilot session (default: 5)
 MAX_ITERATIONS=5
 
 # ─── Model ────────────────────────────────────────────────────────────────────
@@ -527,7 +527,7 @@ CLANCY_BASE_BRANCH=main
 # PR using your GITHUB_TOKEN above. No extra config needed for GitHub Issues users.
 
 # ─── Loop ─────────────────────────────────────────────────────────────────────
-# Max tickets to process per /clancy:run session (default: 20)
+# Max tickets to process per /clancy:autopilot session (default: 20)
 MAX_ITERATIONS=20
 
 # ─── Model ────────────────────────────────────────────────────────────────────
@@ -771,7 +771,7 @@ LINEAR_TEAM_ID=your-team-uuid
 CLANCY_BASE_BRANCH=main
 
 # ─── Loop ─────────────────────────────────────────────────────────────────────
-# Max tickets to process per /clancy:run session (default: 20)
+# Max tickets to process per /clancy:autopilot session (default: 20)
 MAX_ITERATIONS=20
 
 # ─── Model ────────────────────────────────────────────────────────────────────

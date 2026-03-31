@@ -118,7 +118,7 @@ chief-clancy               — CLI wrapper (npx chief-clancy)
    - Optional roles (planner, strategist) are only installed if listed in `CLANCY_ROLES` env var in `.clancy/.env`, or if no `.clancy/.env` exists yet (first install = install all)
 3. Walks `roles/*/workflows/` and copies workflow files flat to `{dest}/clancy/workflows/`
 4. Copies hook bundles (`dist/hooks/*.js`) to `{dest}/hooks/`
-5. Copies bundled runtime scripts (`dist/bundle/clancy-once.js`, `clancy-afk.js`) to `.clancy/`
+5. Copies bundled runtime scripts (`dist/bundle/clancy-implement.js`, `clancy-autopilot.js`) to `.clancy/`
 6. Registers hooks in Claude's `settings.json` (PreToolUse, PostToolUse, SessionStart, Statusline)
 7. Writes `{"type":"commonjs"}` package.json into hooks dir (ESM compatibility)
 8. Generates SHA-256 manifests for patch preservation on future updates
@@ -129,7 +129,7 @@ chief-clancy               — CLI wrapper (npx chief-clancy)
 Commands are thin wrappers. Each command file references a workflow:
 
 ```
-/clancy:once  ->  roles/implementer/commands/once.md  ->  @clancy/workflows/once.md
+/clancy:implement  ->  roles/implementer/commands/once.md  ->  @clancy/workflows/once.md
 ```
 
 Commands are user-facing (appear in Claude Code's `/` menu). Workflows contain the actual implementation logic and are never exposed directly.
@@ -217,7 +217,7 @@ Backlog ticket
   v
 Human reviews plan on the board
   |
-  +- Approves -> /clancy:approve-plan {KEY} -> plan promoted to description -> ticket transitioned -> ready for /clancy:once
+  +- Approves -> /clancy:approve-plan {KEY} -> plan promoted to description -> ticket transitioned -> ready for /clancy:implement
   |
   +- Rejects (leaves feedback) -> /clancy:plan -> auto-detects feedback, generates improved plan
 ```
@@ -248,13 +248,13 @@ After `/clancy:init` + `/clancy:map-codebase`:
 
 ```
 .clancy/
-  clancy-once.js        — bundled once orchestrator (self-contained)
-  clancy-afk.js         — bundled AFK loop runner (self-contained)
+  clancy-implement.js        — bundled once orchestrator (self-contained)
+  clancy-autopilot.js         — bundled AFK loop runner (self-contained)
   docs/                 — structured docs (read before every run)
   progress.txt          — append-only completion log
   costs.log             — duration-based token cost estimates per ticket
   lock.json             — lock file for crash recovery (transient)
-  session-report.md     — AFK session summary (generated after /clancy:run)
+  session-report.md     — AFK session summary (generated after /clancy:autopilot)
   .env                  — board credentials (gitignored)
   .env.example          — credential template
 ```

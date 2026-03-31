@@ -10,7 +10,7 @@ Before doing anything else, check for updates:
 
 ---
 
-# Clancy Once Workflow
+# Clancy Implement Workflow
 
 ## Overview
 
@@ -36,12 +36,12 @@ Pick up exactly one ticket from the Kanban board, implement it, commit, push, cr
 
    Stop.
 
-3. The script to run is always `.clancy/clancy-once.js` regardless of board.
-   `/clancy:init` copies the correct board variant as `clancy-once.js` during setup.
+3. The script to run is always `.clancy/clancy-implement.js` regardless of board.
+   `/clancy:init` copies the correct board variant as `clancy-implement.js` during setup.
 
-4. Check `.clancy/clancy-once.js` exists. If not:
+4. Check `.clancy/clancy-implement.js` exists. If not:
    ```
-   .clancy/clancy-once.js not found. Run /clancy:init to scaffold scripts.
+   .clancy/clancy-implement.js not found. Run /clancy:init to scaffold scripts.
    ```
    Stop.
 
@@ -65,7 +65,7 @@ Display:
 Execute:
 
 ```bash
-node .clancy/clancy-once.js --dry-run
+node .clancy/clancy-implement.js --dry-run
 ```
 
 Stream output directly — do not buffer or summarise. Stop here (do not continue to Step 3).
@@ -75,7 +75,7 @@ Stream output directly — do not buffer or summarise. Stop here (do not continu
 Display:
 
 ```
-🚨 Clancy — Once
+🚨 Clancy — Implement
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 "I'm on the case." — Running for one ticket.
@@ -86,7 +86,7 @@ Display:
 Execute a dry-run first to retrieve ticket details:
 
 ```bash
-node .clancy/clancy-once.js --dry-run
+node .clancy/clancy-implement.js --dry-run
 ```
 
 Stream output directly. If the output contains `No tickets found` or a preflight error (`✗`), stop — there is nothing to do.
@@ -119,7 +119,7 @@ Stop here.
 If the ticket is feasible, run the full lifecycle (skipping the script's built-in feasibility check since we just evaluated it):
 
 ```bash
-node .clancy/clancy-once.js --skip-feasibility
+node .clancy/clancy-implement.js --skip-feasibility
 ```
 
 Stream output directly — do not buffer or summarise.

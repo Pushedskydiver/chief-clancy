@@ -154,7 +154,7 @@ Confidence: {score}% — {badge} {band label}
 | Score   | Badge | Label                   | Verdict action                                                                  |
 | ------- | ----- | ----------------------- | ------------------------------------------------------------------------------- |
 | 85–100% | 🟢    | Ready                   | "Run with confidence."                                                          |
-| 65–84%  | 🟡    | Good to go with caveats | "Review the warnings above, then run /clancy:once."                             |
+| 65–84%  | 🟡    | Good to go with caveats | "Review the warnings above, then run /clancy:implement."                        |
 | 40–64%  | 🟠    | Needs work              | "Address the ❌ items in the ticket, then re-run /clancy:review."               |
 | 0–39%   | 🔴    | Not ready               | "This ticket needs significant rework before Clancy can implement it reliably." |
 
@@ -172,8 +172,8 @@ Confidence: {score}% — {badge} {band label}
 
 Append a Wiggum-themed quote after the verdict to add personality. Never suggest bypassing the review on low-confidence tickets:
 
-- **🟢 Ready:** `"Bake 'em away, toys." — Run /clancy:once to pick it up.`
-- **🟡 Good to go:** `"I'd rather let Herman go. I don't think we've got enough to nail him." — Fix the warnings, then run /clancy:once.`
+- **🟢 Ready:** `"Bake 'em away, toys." — Run /clancy:implement to pick it up.`
+- **🟡 Good to go:** `"I'd rather let Herman go. I don't think we've got enough to nail him." — Fix the warnings, then run /clancy:implement.`
 - **🟠 Needs work:** `"Uh, no. You got the wrong number. This is 9-1... 2." — Update the ticket, then re-run /clancy:review.`
 - **🔴 Not ready:** `"This is Papa Bear. Put out an APB for a better ticket spec." — Rework the ticket first.`
 

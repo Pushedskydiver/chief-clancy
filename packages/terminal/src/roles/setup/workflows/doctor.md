@@ -42,8 +42,8 @@ Print `✅` or `❌` for each.
 ## Step 3 — Check project setup
 
 - `.clancy/` exists → `✅ .clancy/ found`
-- `.clancy/clancy-once.js` exists → `✅ clancy-once.js`
-- `.clancy/clancy-afk.js` exists → `✅ clancy-afk.js`
+- `.clancy/clancy-implement.js` exists → `✅ clancy-implement.js`
+- `.clancy/clancy-autopilot.js` exists → `✅ clancy-autopilot.js`
 - `.clancy/.env` exists → `✅ .clancy/.env found`
 - `.clancy/docs/` has non-empty files → `✅ codebase docs present ({N} files)`
 
@@ -114,7 +114,7 @@ Source `.clancy/.env` and detect which board is configured:
 ✅ Figma connected — alex@example.com (check plan at figma.com/settings)
 ❌ PLAYWRIGHT_STORYBOOK_PORT — not set in .clancy/.env
 
-Fix the ❌ items, then run /clancy:once to verify end-to-end.
+Fix the ❌ items, then run /clancy:implement to verify end-to-end.
 
 "We've got a 415 in progress — a config disturbance."
 ```
@@ -127,5 +127,5 @@ If all checks pass:
 
 All {N} checks passed.
 
-"Nothing to see here, folks. Move along." — Run /clancy:once to pick up your first ticket.
+"Nothing to see here, folks. Move along." — Run /clancy:implement to pick up your first ticket.
 ```
