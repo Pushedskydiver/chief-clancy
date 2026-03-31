@@ -3,4 +3,4 @@
 'chief-clancy': patch
 ---
 
-Replace detached child process in check-update hook with synchronous npm check. The detached spawn caused Claude Code to report "SessionStart:startup hook error". Now reuses the existing `fetchLatestVersion` and `buildUpdateCache` pure functions instead of duplicating logic in an inline child script.
+Fix hook errors: add required `matcher` field to settings.json hook entries, replace detached child process in check-update with synchronous npm check (5s timeout), and show installed version in the statusline.

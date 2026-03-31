@@ -161,9 +161,9 @@ function filterNewEntries(
   });
 }
 
-/** Ensure a hook entry has the required `matcher` field. */
+/** Ensure a hook entry has a valid string `matcher` field. */
 function ensureMatcher(entry: HookEntry): HookEntry {
-  return entry.matcher !== undefined ? entry : { ...entry, matcher: '' };
+  return typeof entry.matcher === 'string' ? entry : { ...entry, matcher: '' };
 }
 
 /** Merge desired entries into existing for a single event, deduplicating. */
