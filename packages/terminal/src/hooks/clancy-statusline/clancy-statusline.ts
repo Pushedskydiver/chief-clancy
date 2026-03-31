@@ -38,7 +38,12 @@ readAsyncInput({ stdin: process.stdin })
 
 function handleEvent(event: HookEvent): void {
   const sessionId = event.session_id ?? '';
-  const remaining = event.context_window?.remaining_percentage;
+  const rawRemaining = event.context_window?.remaining_percentage;
+
+  // Claude Code sends remaining_percentage: 0 on the first statusline call
+  // before context data is available. Treat 0 as "no data" — auto-compact
+  // fires at ~16.5%, so 0 is never reachable in practice.
+  const remaining = rawRemaining === 0 ? undefined : rawRemaining;
 
   // ── Bridge file ─────────────────────────────────────────────────
   const hasBridgeData = sessionId !== '' && remaining !== undefined;
