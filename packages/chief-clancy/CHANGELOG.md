@@ -1,5 +1,14 @@
 # chief-clancy
 
+## 0.9.5
+
+### Patch Changes
+
+- Fix statusline showing 100% context used at session start by treating remaining_percentage: 0 as uninitialized data.
+
+- Updated dependencies []:
+  - @chief-clancy/terminal@0.1.4
+
 ## 0.9.4
 
 ### Patch Changes
