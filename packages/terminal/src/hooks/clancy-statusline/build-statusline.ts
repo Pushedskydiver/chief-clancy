@@ -193,24 +193,58 @@ export function resolveCachePath(deps: CachePathDeps): string {
 // ---------------------------------------------------------------------------
 
 /**
+ * Read the installed Clancy version from the VERSION file.
+ *
+ * Checks the local project first, then falls back to the global
+ * home directory. Returns `undefined` if not found.
+ *
+ * @param cwd - Current working directory.
+ * @param home - User home directory.
+ * @param deps - Filesystem reader.
+ * @returns Version string, or `undefined`.
+ */
+export function readInstalledVersion(
+  cwd: string,
+  home: string,
+  deps: HookFs,
+): string | undefined {
+  const localPath = join(cwd, '.claude', 'commands', 'clancy', 'VERSION');
+  const globalPath = join(home, '.claude', 'commands', 'clancy', 'VERSION');
+
+  return safeReadTrim(localPath, deps) ?? safeReadTrim(globalPath, deps);
+}
+
+function safeReadTrim(path: string, deps: HookFs): string | undefined {
+  try {
+    const value = deps.readFileSync(path, 'utf8').trim();
+    return value || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
  * Compose the full statusline string from its parts.
  *
  * @param updateAvailable - Whether to show the update badge.
  * @param remaining - Raw remaining percentage, or `undefined` if unavailable.
+ * @param version - Installed version string, or `undefined`.
  * @returns The final statusline string for stdout.
  */
 export function buildStatusline(
   updateAvailable: boolean,
   remaining: number | undefined,
+  version?: string,
 ): string {
   const updateBadge = updateAvailable
     ? `${YELLOW}\u2B06 /clancy:update${RESET}`
     : undefined;
 
+  const versionSuffix = version ? ` ${DIM}v${version}${RESET}` : '';
   const hasContext = remaining !== undefined;
   const clancyLabel = hasContext
-    ? `${DIM}Clancy${RESET} ${buildContextBar(normalizeContextUsage(remaining).usedPct)}`
-    : `${DIM}Clancy${RESET}`;
+    ? `${DIM}Clancy${RESET}${versionSuffix} ${buildContextBar(normalizeContextUsage(remaining).usedPct)}`
+    : `${DIM}Clancy${RESET}${versionSuffix}`;
 
   return [updateBadge, clancyLabel].filter(Boolean).join(SEPARATOR);
 }

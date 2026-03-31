@@ -13,6 +13,7 @@ import type { HookEvent } from '../shared/types.js';
 
 import { readFileSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
+import { cwd } from 'node:process';
 
 import { readAsyncInput } from '../shared/stdin-reader/index.js';
 import { bridgePath } from '../shared/tmpdir/index.js';
@@ -20,6 +21,7 @@ import {
   buildBridgeData,
   buildStatusline,
   checkUpdateAvailable,
+  readInstalledVersion,
   resolveCachePath,
 } from './build-statusline.js';
 
@@ -51,7 +53,8 @@ function handleEvent(event: HookEvent): void {
     homedir,
   });
   const updateAvailable = checkUpdateAvailable(cachePath, { readFileSync });
-  const statusline = buildStatusline(updateAvailable, remaining);
+  const version = readInstalledVersion(cwd(), homedir(), { readFileSync });
+  const statusline = buildStatusline(updateAvailable, remaining, version);
 
   process.stdout.write(statusline);
 }

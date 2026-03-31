@@ -6,6 +6,7 @@ import {
   buildStatusline,
   checkUpdateAvailable,
   normalizeContextUsage,
+  readInstalledVersion,
   resolveCachePath,
 } from './build-statusline.js';
 
@@ -248,6 +249,56 @@ describe('buildStatusline', () => {
 
     expect(result).toContain('\u{1F480}');
     expect(result).toContain('100%');
+  });
+
+  it('shows version when provided', () => {
+    const result = buildStatusline(false, 80, '0.9.3');
+
+    expect(stripAnsi(result)).toContain('v0.9.3');
+  });
+
+  it('omits version when undefined', () => {
+    const result = buildStatusline(false, 80);
+
+    expect(stripAnsi(result)).not.toContain('v');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// readInstalledVersion
+// ---------------------------------------------------------------------------
+
+describe('readInstalledVersion', () => {
+  it('reads version from local project VERSION file', () => {
+    const deps = {
+      readFileSync: (path: string) => {
+        if (path.includes('/project/')) return '0.9.3\n';
+        throw new Error('ENOENT');
+      },
+    };
+
+    expect(readInstalledVersion('/project', '/home', deps)).toBe('0.9.3');
+  });
+
+  it('falls back to global home VERSION file', () => {
+    const deps = {
+      readFileSync: (path: string) => {
+        if (path.includes('/home/')) return '0.9.2\n';
+        throw new Error('ENOENT');
+      },
+    };
+
+    expect(readInstalledVersion('/project', '/home', deps)).toBe('0.9.2');
+  });
+
+  it('returns undefined when neither file exists', () => {
+    const deps = {
+      readFileSync: () => {
+        throw new Error('ENOENT');
+      },
+    };
+
+    expect(readInstalledVersion('/project', '/home', deps)).toBeUndefined();
   });
 });
 
