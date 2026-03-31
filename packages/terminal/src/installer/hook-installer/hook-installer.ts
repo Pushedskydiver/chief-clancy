@@ -24,7 +24,10 @@ type AgentHook = {
 };
 
 /** A single hook entry in Claude's settings.json. */
-type HookEntry = { readonly hooks: readonly (CommandHook | AgentHook)[] };
+type HookEntry = {
+  readonly matcher: string;
+  readonly hooks: readonly (CommandHook | AgentHook)[];
+};
 
 /** A record of event names to their hook entries. */
 type HookRegistrations = Record<string, readonly HookEntry[]>;
@@ -55,12 +58,12 @@ function buildNodeCommand(hooksDir: string, fileName: string): string {
 
 /** Wrap a command string in a single-hook entry. */
 function commandEntry(command: string): HookEntry {
-  return { hooks: [{ type: 'command', command }] };
+  return { matcher: '', hooks: [{ type: 'command', command }] };
 }
 
 /** Wrap an agent prompt in a single-hook entry. */
 function agentEntry(prompt: string, timeout: number): HookEntry {
-  return { hooks: [{ type: 'agent', prompt, timeout }] };
+  return { matcher: '', hooks: [{ type: 'agent', prompt, timeout }] };
 }
 
 /** Check whether a single hook matches a given command string. */
@@ -158,14 +161,20 @@ function filterNewEntries(
   });
 }
 
+/** Ensure a hook entry has the required `matcher` field. */
+function ensureMatcher(entry: HookEntry): HookEntry {
+  return entry.matcher !== undefined ? entry : { ...entry, matcher: '' };
+}
+
 /** Merge desired entries into existing for a single event, deduplicating. */
 function mergeEventEntries(
   existing: readonly HookEntry[],
   desired: readonly HookEntry[],
 ): readonly HookEntry[] {
   const newEntries = filterNewEntries(existing, desired);
+  const patched = existing.map(ensureMatcher);
 
-  return [...existing, ...newEntries];
+  return [...patched, ...newEntries];
 }
 
 /**
