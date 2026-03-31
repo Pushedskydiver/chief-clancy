@@ -129,7 +129,7 @@ chief-clancy               — CLI wrapper (npx chief-clancy)
 Commands are thin wrappers. Each command file references a workflow:
 
 ```
-/clancy:once  ->  roles/implementer/commands/once.md  ->  @clancy/workflows/once.md
+/clancy:implement  ->  roles/implementer/commands/once.md  ->  @clancy/workflows/once.md
 ```
 
 Commands are user-facing (appear in Claude Code's `/` menu). Workflows contain the actual implementation logic and are never exposed directly.
@@ -217,7 +217,7 @@ Backlog ticket
   v
 Human reviews plan on the board
   |
-  +- Approves -> /clancy:approve-plan {KEY} -> plan promoted to description -> ticket transitioned -> ready for /clancy:once
+  +- Approves -> /clancy:approve-plan {KEY} -> plan promoted to description -> ticket transitioned -> ready for /clancy:implement
   |
   +- Rejects (leaves feedback) -> /clancy:plan -> auto-detects feedback, generates improved plan
 ```
@@ -254,7 +254,7 @@ After `/clancy:init` + `/clancy:map-codebase`:
   progress.txt          — append-only completion log
   costs.log             — duration-based token cost estimates per ticket
   lock.json             — lock file for crash recovery (transient)
-  session-report.md     — AFK session summary (generated after /clancy:run)
+  session-report.md     — AFK session summary (generated after /clancy:autopilot)
   .env                  — board credentials (gitignored)
   .env.example          — credential template
 ```

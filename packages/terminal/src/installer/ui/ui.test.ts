@@ -118,8 +118,8 @@ describe('printSuccess', () => {
     printSuccess(null);
 
     const output = captureOutput(logSpy);
-    expect(output).toContain('/clancy:once');
-    expect(output).toContain('/clancy:run');
+    expect(output).toContain('/clancy:implement');
+    expect(output).toContain('/clancy:autopilot');
     expect(output).toContain('/clancy:dry-run');
   });
 

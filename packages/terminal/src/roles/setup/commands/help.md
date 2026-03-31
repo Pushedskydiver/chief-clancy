@@ -33,12 +33,12 @@ integration (6 boards), structured codebase docs, and a git workflow built for t
 
 ### Implementer
 
-| Command           | Description                                                     |
-| ----------------- | --------------------------------------------------------------- |
-| `/clancy:once`    | Pick up one ticket and stop — good for first runs and debugging |
-| `/clancy:run`     | Run in loop mode until queue is empty or MAX_ITERATIONS hit     |
-| `/clancy:run 20`  | Same, but override MAX_ITERATIONS to 20 for this session        |
-| `/clancy:dry-run` | Preview next ticket without making any changes                  |
+| Command                | Description                                                     |
+| ---------------------- | --------------------------------------------------------------- |
+| `/clancy:implement`    | Pick up one ticket and stop — good for first runs and debugging |
+| `/clancy:autopilot`    | Run in loop mode until queue is empty or MAX_ITERATIONS hit     |
+| `/clancy:autopilot 20` | Same, but override MAX_ITERATIONS to 20 for this session        |
+| `/clancy:dry-run`      | Preview next ticket without making any changes                  |
 
 ### Reviewer
 
@@ -65,7 +65,7 @@ integration (6 boards), structured codebase docs, and a git workflow built for t
 
 1. Run `/clancy:init` to connect your Kanban board and scaffold .clancy/
 2. Run `/clancy:map-codebase` to generate codebase docs (or say yes during init)
-3. Run `/clancy:dry-run` to preview the first ticket, then `/clancy:once` to run it — then go AFK with `/clancy:run`
+3. Run `/clancy:dry-run` to preview the first ticket, then `/clancy:implement` to run it — then go AFK with `/clancy:autopilot`
 
 Clancy picks one ticket per loop, fresh context every iteration. No context rot.
 

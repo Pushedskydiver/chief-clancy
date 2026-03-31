@@ -10,6 +10,6 @@ Shows:
 
 Nothing is written, no git operations run, Claude is not invoked.
 
-@.claude/clancy/workflows/once.md
+@.claude/clancy/workflows/implement.md
 
-Run the once workflow with `--dry-run` as documented above. Treat this invocation as if the user passed `--dry-run`.
+Run the implement workflow with `--dry-run` as documented above. Treat this invocation as if the user passed `--dry-run`.

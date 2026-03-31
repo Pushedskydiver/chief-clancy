@@ -114,7 +114,7 @@ Source `.clancy/.env` and detect which board is configured:
 ✅ Figma connected — alex@example.com (check plan at figma.com/settings)
 ❌ PLAYWRIGHT_STORYBOOK_PORT — not set in .clancy/.env
 
-Fix the ❌ items, then run /clancy:once to verify end-to-end.
+Fix the ❌ items, then run /clancy:implement to verify end-to-end.
 
 "We've got a 415 in progress — a config disturbance."
 ```
@@ -127,5 +127,5 @@ If all checks pass:
 
 All {N} checks passed.
 
-"Nothing to see here, folks. Move along." — Run /clancy:once to pick up your first ticket.
+"Nothing to see here, folks. Move along." — Run /clancy:implement to pick up your first ticket.
 ```

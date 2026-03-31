@@ -7,7 +7,7 @@ Interactive diagrams showing how packages, roles, commands, and flows connect. R
 1. [Package Boundaries](#1-package-boundaries) — monorepo structure and dependency flow
 2. [Role & Command Map](#2-role--command-map) — all roles and their commands
 3. [Ticket Lifecycle](#3-ticket-lifecycle--end-to-end) — state machine from idea to merged code
-4. [Once Orchestrator](#4-the-once-orchestrator--implementation-flow) — what happens inside `/clancy:once`
+4. [Implementation Flow](#4-implementation-flow) — what happens inside `/clancy:implement`
 5. [Strategist Flow](#5-strategist-flow--brief-to-tickets) — `/clancy:brief` and `/clancy:approve-brief`
 6. [Board API Matrix](#6-board-api-interaction-matrix) — which commands talk to which APIs
 7. [File Artifacts](#7-file-artifacts--what-lives-in-clancy) — everything in `.clancy/`
@@ -94,8 +94,8 @@ graph TB
     end
 
     subgraph IMPLEMENTER["Implementer (core)"]
-        once["/clancy:once"]
-        run["/clancy:run"]
+        once["/clancy:implement"]
+        run["/clancy:autopilot"]
         dryrun["/clancy:dry-run"]
     end
 
@@ -149,7 +149,7 @@ stateDiagram-v2
     }
 
     state "Implementer" as impl {
-        Ready --> InProgress: /clancy:once or /clancy:run\nfilters by clancy:build
+        Ready --> InProgress: /clancy:implement or /clancy:autopilot\nfilters by clancy:build
         InProgress --> Claude: Invoke Claude session
         Claude --> Deliver: Code committed
     }
@@ -184,13 +184,13 @@ stateDiagram-v2
 
 ---
 
-## 4. The Once Orchestrator — Implementation Flow
+## 4. Implementation Flow
 
-What happens inside `/clancy:once` (and each iteration of `/clancy:run`). Phase logic lives in `core/dev/pipeline/phases/`; Claude invocation lives in `terminal/runner/`.
+What happens inside `/clancy:implement` (and each iteration of `/clancy:autopilot`). Phase logic lives in `core/dev/pipeline/phases/`; Claude invocation lives in `terminal/runner/`.
 
 ```mermaid
 flowchart TD
-    Start(["/clancy:once"]) --> LockCheck
+    Start(["/clancy:implement"]) --> LockCheck
 
     LockCheck{"Lock file\nexists?"} -->|No| AcquireLock["Acquire lock\n(.clancy/lock.json)"]
     LockCheck -->|"Yes — PID alive"| Stop0["Another session running ✗"]
@@ -328,7 +328,7 @@ graph LR
         approvebrief["/clancy:approve-brief"]
         plan["/clancy:plan"]
         approveplan["/clancy:approve-plan"]
-        once["/clancy:once"]
+        once["/clancy:implement"]
         status["/clancy:status"]
     end
 
@@ -455,7 +455,7 @@ graph TD
     brief(["/clancy:brief"]) -->|writes| brief1
     approvebrief(["/clancy:approve-brief"]) -->|writes| brief1a
 
-    once(["/clancy:once"]) -->|reads| env
+    once(["/clancy:implement"]) -->|reads| env
     once -->|reads| stack
     once -->|appends| progress
     once -->|executes| oncejs

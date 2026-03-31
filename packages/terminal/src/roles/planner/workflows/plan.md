@@ -93,7 +93,7 @@ Planning {N} tickets — each requires codebase exploration. Continue? [Y/n]
 
 ## Step 3 — Fetch backlog tickets
 
-Detect board from `.clancy/.env` and fetch tickets from the **planning queue** (different from the implementation queue used by `/clancy:once`).
+Detect board from `.clancy/.env` and fetch tickets from the **planning queue** (different from the implementation queue used by `/clancy:implement`).
 
 ### Specific ticket key (if provided)
 

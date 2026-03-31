@@ -1,4 +1,4 @@
-# /clancy:once
+# /clancy:implement
 
 Pick up exactly one ticket from your Kanban board, implement it, commit, push, create a PR, and stop.
 
@@ -14,6 +14,6 @@ Pass `--dry-run` to preview what Clancy would do without making any changes:
 - Shows the ticket, epic, target branch, and feature branch
 - Exits before any git operations or Claude invocation
 
-@.claude/clancy/workflows/once.md
+@.claude/clancy/workflows/implement.md
 
 Run one ticket as documented in the workflow above.

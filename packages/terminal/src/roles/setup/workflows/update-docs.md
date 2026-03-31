@@ -91,5 +91,5 @@ git commit -m "docs(clancy): update-docs — refresh .clancy/docs/"
 
 Updated: {file list}
 
-"Case files updated." — Run /clancy:once or /clancy:run when ready.
+"Case files updated." — Run /clancy:implement or /clancy:autopilot when ready.
 ```

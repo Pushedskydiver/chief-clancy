@@ -113,7 +113,7 @@ git commit -m "docs(clancy): map codebase — generate .clancy/docs/"
 ```
 ✅ Codebase mapped — 10 files written to .clancy/docs/
 
-"Case closed. All files accounted for." — Run /clancy:once to pick up your first ticket, or /clancy:run to process the queue.
+"Case closed. All files accounted for." — Run /clancy:implement to pick up your first ticket, or /clancy:autopilot to process the queue.
 ```
 
 ---

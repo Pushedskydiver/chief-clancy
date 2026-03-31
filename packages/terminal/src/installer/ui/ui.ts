@@ -36,8 +36,8 @@ const COMMAND_GROUPS: readonly CommandGroup[] = [
     name: 'Implementer',
     roleKey: null,
     commands: [
-      ['/clancy:once', 'Pick up one ticket and stop'],
-      ['/clancy:run', 'Run Clancy in loop mode'],
+      ['/clancy:implement', 'Pick up one ticket and stop'],
+      ['/clancy:autopilot', 'Run Clancy in loop mode'],
       ['/clancy:dry-run', 'Preview next ticket without changes'],
     ],
   },

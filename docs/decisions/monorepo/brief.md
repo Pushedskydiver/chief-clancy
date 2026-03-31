@@ -511,14 +511,14 @@ Already scoped. Ship it.
 
 ### Phase 9: Terminal — orchestrator
 
-| PR  | What                                                                        | Exit criteria                                 |
-| --- | --------------------------------------------------------------------------- | --------------------------------------------- |
-| 9.1 | Claude CLI bridge: `invokeClaudePrint`, `invokeClaudeSync`. I/O boundary.   | CLI bridge tested                             |
-| 9.2 | Prompt builder: construct Claude prompts (TDD blocks, board labels).        | Prompts build correctly                       |
-| 9.3 | Notifications: desktop + Slack/Teams webhooks.                              | Notifications tested                          |
-| 9.4 | ANSI utils: terminal colour codes.                                          | Colours render correctly                      |
-| 9.5 | Once orchestrator: wire terminal to core pipeline. Provide invoke callback. | `/clancy:once` flow works end-to-end in tests |
-| 9.6 | AFK runner: loop orchestration, quiet hours, session reports.               | AFK loop tested                               |
+| PR  | What                                                                        | Exit criteria                                      |
+| --- | --------------------------------------------------------------------------- | -------------------------------------------------- |
+| 9.1 | Claude CLI bridge: `invokeClaudePrint`, `invokeClaudeSync`. I/O boundary.   | CLI bridge tested                                  |
+| 9.2 | Prompt builder: construct Claude prompts (TDD blocks, board labels).        | Prompts build correctly                            |
+| 9.3 | Notifications: desktop + Slack/Teams webhooks.                              | Notifications tested                               |
+| 9.4 | ANSI utils: terminal colour codes.                                          | Colours render correctly                           |
+| 9.5 | Once orchestrator: wire terminal to core pipeline. Provide invoke callback. | `/clancy:implement` flow works end-to-end in tests |
+| 9.6 | AFK runner: loop orchestration, quiet hours, session reports.               | AFK loop tested                                    |
 
 ---
 

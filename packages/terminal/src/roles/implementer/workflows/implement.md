@@ -10,7 +10,7 @@ Before doing anything else, check for updates:
 
 ---
 
-# Clancy Once Workflow
+# Clancy Implement Workflow
 
 ## Overview
 
@@ -75,7 +75,7 @@ Stream output directly — do not buffer or summarise. Stop here (do not continu
 Display:
 
 ```
-🚨 Clancy — Once
+🚨 Clancy — Implement
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 "I'm on the case." — Running for one ticket.

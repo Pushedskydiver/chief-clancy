@@ -869,7 +869,7 @@ Output:
 ```
 Clancy is set up. A few optional enhancements are available:
 
-  1. Max iterations   — set how many tickets /clancy:run processes per session
+  1. Max iterations   — set how many tickets /clancy:autopilot processes per session
   2. Figma MCP        — fetch design specs when tickets include a Figma URL
   3. Playwright       — screenshot and verify UI after implementing tickets
   4. Notifications    — post to Slack or Teams when a ticket completes or errors
@@ -889,8 +889,8 @@ If yes, walk through each in order. After each enhancement (whether configured o
 Output:
 
 ```
-How many tickets should /clancy:run process before stopping? [5]
-(You can override this per-session with /clancy:run 20)
+How many tickets should /clancy:autopilot process before stopping? [5]
+(You can override this per-session with /clancy:autopilot 20)
 ```
 
 Validate the input is a positive integer between 1 and 100. If invalid, re-prompt.
@@ -1092,5 +1092,5 @@ Output:
 - Config: `.clancy/.env`
 - CLAUDE.md: updated
 
-"Clancy's on the beat." — Run /clancy:plan to refine backlog tickets, /clancy:dry-run to preview, or /clancy:once to pick up a ticket.
+"Clancy's on the beat." — Run /clancy:plan to refine backlog tickets, /clancy:dry-run to preview, or /clancy:implement to pick up a ticket.
 ```

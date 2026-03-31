@@ -80,7 +80,7 @@ Skip if tickets are clear enough from the brief.
 ### Interactive (one ticket at a time)
 
 ```
-👤 Run /clancy:once
+👤 Run /clancy:implement
    │
    ├─ Lock check + resume detection
    ├─ Preflight + board detection
@@ -104,18 +104,18 @@ Skip if tickets are clear enough from the brief.
    ├─ Request changes → 👤 Leave PR comments
    │    (inline comments auto-trigger rework,
    │     conversation comments need "Rework:" prefix)
-   │    Next /clancy:once auto-detects the rework
+   │    Next /clancy:implement auto-detects the rework
    └─ Close → ticket stays, Clancy moves on
 
-👤 Repeat /clancy:once for each ticket
+👤 Repeat /clancy:implement for each ticket
 ```
 
 ### AFK Mode (autonomous batch)
 
 ```
-👤 Run /clancy:run
+👤 Run /clancy:autopilot
    │
-   ├─ Loops /clancy:once up to MAX_ITERATIONS times
+   ├─ Loops /clancy:implement up to MAX_ITERATIONS times
    ├─ Skips HITL tickets (picks AFK-only)
    ├─ Auto-resumes from crashes (lock file)
    ├─ Generates session report when done
@@ -130,10 +130,10 @@ Skip if tickets are clear enough from the brief.
 
 ## HITL Tickets (human-in-the-loop)
 
-Tickets tagged HITL are skipped by `/clancy:run`.
+Tickets tagged HITL are skipped by `/clancy:autopilot`.
 
 ```
-👤 Run /clancy:once interactively for HITL tickets
+👤 Run /clancy:implement interactively for HITL tickets
    (Clancy may ask questions during implementation)
 👤 Provide credentials, design decisions, etc. as needed
 👤 Review + merge the PR
@@ -146,7 +146,7 @@ Tickets tagged HITL are skipped by `/clancy:run`.
 After all child PRs are merged into the epic branch:
 
 ```
-Next /clancy:once or /clancy:run iteration:
+Next /clancy:implement or /clancy:autopilot iteration:
    ├─ Epic completion phase detects all children complete
    ├─ Auto-creates PR from epic/{key} → base branch
    ├─ GitHub: PR includes Closes keywords for parent + all children
@@ -188,8 +188,8 @@ Labels control which role picks up a ticket. Each transition is atomic — the n
                   │ clancy:build │ ◀── implementation queue
                   └──────┬──────┘
                          │
-                    /clancy:once
-                    /clancy:run
+                    /clancy:implement
+                    /clancy:autopilot
                          │
                          ▼
                   ┌─────────────┐
@@ -207,19 +207,19 @@ Labels control which role picks up a ticket. Each transition is atomic — the n
 
 ## Human Touchpoints Summary
 
-| Step                            | Human action                      | Required?        |
-| ------------------------------- | --------------------------------- | ---------------- |
-| Create ticket                   | Write the vague idea on the board | Yes              |
-| `/clancy:brief`                 | Run the command                   | Yes              |
-| Grill answers                   | Answer Clancy's questions         | Interactive only |
-| Review brief                    | Read, give feedback or approve    | Yes              |
-| `/clancy:approve-brief`         | Confirm ticket creation           | Yes              |
-| `/clancy:plan`                  | Run if ticket needs a plan        | Optional         |
-| Review plan                     | Read, give feedback or approve    | If planning      |
-| `/clancy:once` or `/clancy:run` | Start implementation              | Yes              |
-| Review PRs                      | Approve or request changes        | Yes              |
-| Merge PRs                       | Click merge                       | Yes              |
-| HITL tickets                    | Interactive implementation        | Only for HITL    |
-| Epic PR review                  | Final feature review              | Yes              |
+| Step                                       | Human action                      | Required?        |
+| ------------------------------------------ | --------------------------------- | ---------------- |
+| Create ticket                              | Write the vague idea on the board | Yes              |
+| `/clancy:brief`                            | Run the command                   | Yes              |
+| Grill answers                              | Answer Clancy's questions         | Interactive only |
+| Review brief                               | Read, give feedback or approve    | Yes              |
+| `/clancy:approve-brief`                    | Confirm ticket creation           | Yes              |
+| `/clancy:plan`                             | Run if ticket needs a plan        | Optional         |
+| Review plan                                | Read, give feedback or approve    | If planning      |
+| `/clancy:implement` or `/clancy:autopilot` | Start implementation              | Yes              |
+| Review PRs                                 | Approve or request changes        | Yes              |
+| Merge PRs                                  | Click merge                       | Yes              |
+| HITL tickets                               | Interactive implementation        | Only for HITL    |
+| Epic PR review                             | Final feature review              | Yes              |
 
 **Minimum touchpoints for a full epic:** create ticket → brief → approve-brief → run → review/merge PRs → merge epic PR. That's **6 interactions** for an entire feature.

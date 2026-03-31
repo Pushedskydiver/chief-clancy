@@ -54,7 +54,7 @@ Show all current values. Board-specific settings only appear when that board is 
 "Welcome to headquarters."
 
 General
-  [G1] Max iterations    {MAX_ITERATIONS:-5}          tickets per /clancy:run session
+  [G1] Max iterations    {MAX_ITERATIONS:-5}          tickets per /clancy:autopilot session
   [G2] Claude model      {CLANCY_MODEL:-default}     model used for each ticket session
   [G3] Base branch       {CLANCY_BASE_BRANCH:-main}
   [G4] Max rework        {CLANCY_MAX_REWORK:-3}
@@ -141,7 +141,7 @@ After the user picks an option (by code, name, or description), handle it as bel
 
 ```
 Max iterations — current: {value}
-How many tickets should /clancy:run process per session?
+How many tickets should /clancy:autopilot process per session?
 
 [1] 5 (default)
 [2] Enter a different number
@@ -631,7 +631,7 @@ Only shown when Planner or Strategist is enabled.
 
 ```
 Build label — current: {value or "clancy:build"}
-Label applied to tickets ready for implementation. Used by /clancy:once and /clancy:run to filter the queue.
+Label applied to tickets ready for implementation. Used by /clancy:implement and /clancy:autopilot to filter the queue.
 
 [1] clancy:build (default)
 [2] Enter a different value

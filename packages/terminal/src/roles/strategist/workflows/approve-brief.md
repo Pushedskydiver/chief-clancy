@@ -1526,7 +1526,7 @@ Default: N (don't create duplicates).
 ## Notes
 
 - The `Epic: {key}` convention is always the first line of every child ticket description across all platforms — this enables cross-platform epic completion detection by `fetchChildrenStatus`
-- Mode labels (`clancy:afk` / `clancy:hitl`) are used by `/clancy:run` to decide whether to pick up a ticket autonomously or skip it for human attention
+- Mode labels (`clancy:afk` / `clancy:hitl`) are used by `/clancy:autopilot` to decide whether to pick up a ticket autonomously or skip it for human attention
 - Jira ADF construction: if complex content fails, wrap in a `codeBlock` node as fallback (matches the pattern used by `/clancy:approve-plan`)
 - The `.approved` marker filename is the full brief filename with `.approved` appended (e.g. `.clancy/briefs/2026-03-14-auth-rework.md.approved`)
 - Tickets are created sequentially (not in parallel) to maintain dependency ordering and respect rate limits

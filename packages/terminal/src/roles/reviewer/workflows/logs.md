@@ -16,7 +16,7 @@ If `.clancy/progress.txt` does not exist:
 
 No progress logged yet.
 
-"The law is powerless to help you... but not for long." — Run /clancy:once or /clancy:run to get started.
+"The law is powerless to help you... but not for long." — Run /clancy:implement or /clancy:autopilot to get started.
 ```
 
 Stop.
