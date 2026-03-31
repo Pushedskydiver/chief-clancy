@@ -119,7 +119,7 @@ export function fetchLatestVersion(deps: NpmCheckDeps): string {
   try {
     return deps
       .execFileSync('npm', ['view', 'chief-clancy', 'version'], {
-        timeout: 10_000,
+        timeout: 5000,
         encoding: 'utf8',
       })
       .trim();
