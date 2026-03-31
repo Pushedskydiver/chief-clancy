@@ -41,7 +41,7 @@ jobs:
           title: 'chore: version packages'
           commit: 'chore: version packages'
           publish: pnpm changeset publish
-          version: pnpm changeset version && pnpm exec tsx scripts/group-changelog.ts
+          version: pnpm version:ci
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

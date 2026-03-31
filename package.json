@@ -20,6 +20,7 @@
     "knip": "knip",
     "publint": "publint packages/core && publint packages/terminal",
     "attw": "attw --pack packages/core --ignore-rules cjs-resolves-to-esm no-resolution && attw --pack packages/terminal --ignore-rules cjs-resolves-to-esm no-resolution",
+    "version:ci": "changeset version && tsx scripts/group-changelog.ts",
     "prepare": "husky"
   },
   "volta": {
