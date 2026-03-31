@@ -45,6 +45,12 @@ Clancy moves tickets on your board when it picks up and completes implementation
 
 **GitHub:** Issues don't have status columns — they're `open` or `closed`. Clancy uses **labels as queues** (e.g. `needs-refinement` → `clancy`) and closes issues on completion. Status transition env vars are ignored for GitHub.
 
+**Shortcut:** Set these to the exact workflow state name (e.g. "In Progress", "Done"). Clancy resolves the `workflow_state_id` via the workflows API.
+
+**Notion:** Set these to the exact status property value name (e.g. "In Progress", "Done"). Clancy updates the page's status property.
+
+**Azure DevOps:** Set these to the work item state name (e.g. "Active", "Closed"). Use `CLANCY_AZDO_STATUS` to override the implementation queue state (default: `"New"`). Use `CLANCY_AZDO_WIT` to set the work item type (default: `"Task"`).
+
 ## Pipeline labels
 
 ```
@@ -248,6 +254,8 @@ Posts to Slack or Teams when a ticket completes. The payload format (Slack vs Te
 | `AZDO_ORG`                     | Azure DevOps | Yes      | —                  | Azure DevOps organisation name                                                              |
 | `AZDO_PROJECT`                 | Azure DevOps | Yes      | —                  | Azure DevOps project name                                                                   |
 | `AZDO_PAT`                     | Azure DevOps | Yes      | —                  | Azure DevOps personal access token                                                          |
+| `CLANCY_AZDO_STATUS`           | Azure DevOps | No       | `New`              | Implementation queue work item state                                                        |
+| `CLANCY_AZDO_WIT`              | Azure DevOps | No       | `Task`             | Work item type for ticket creation                                                          |
 
 **Note on rework detection:** Rework is detected automatically from PR comments: inline code comments always trigger rework, and conversation comments trigger with a `Rework:` prefix. On GitHub, a `CHANGES_REQUESTED` review state is an additional trigger. `CLANCY_MAX_REWORK` controls the safety limit for rework cycles.
 

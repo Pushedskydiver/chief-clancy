@@ -60,6 +60,16 @@ Clancy installs a `PreToolUse` hook (`clancy-credential-guard.js`) that scans ev
 
 This is best-effort — it won't catch every possible credential format, but it prevents the most common accidental leaks.
 
+## Branch guard
+
+Clancy installs a `PreToolUse` hook (`clancy-branch-guard.js`) that blocks dangerous git operations:
+
+- **Force push** — blocks `git push --force` and `git push -f`
+- **Protected branches** — blocks direct push to `main`, `master`, and `CLANCY_BASE_BRANCH`
+- **Destructive resets** — blocks `git reset --hard`, `git clean -f`, `git checkout .`, `git restore .`, and `git branch -D`
+
+Best-effort — catches common destructive patterns but does not intercept every possible git invocation. Runs on Bash tool calls, inspecting the command string before execution. Enable or disable via `CLANCY_BRANCH_GUARD` (default: `true`).
+
 ## Token scopes
 
 Use the minimum permissions each integration requires:
