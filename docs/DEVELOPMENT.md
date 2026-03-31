@@ -211,8 +211,6 @@ The self-review checklist is a **living document** — when CodeRabbit catches s
 
 Independent versioning managed by `@changesets/cli`. Coordinated v1.0.0 release when API surfaces are stable.
 
-Independent versioning managed by `@changesets/cli`. Coordinated v1.0.0 release when API surfaces are stable.
-
 ---
 
 ## Release Flow
