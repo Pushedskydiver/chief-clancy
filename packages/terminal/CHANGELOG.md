@@ -1,5 +1,11 @@
 # @chief-clancy/terminal
 
+## 0.1.3
+
+### Patch Changes
+
+- [#182](https://github.com/Pushedskydiver/chief-clancy/pull/182) [`e6f6fef`](https://github.com/Pushedskydiver/chief-clancy/commit/e6f6fefb8593f348f97a424dfa91530a31687947) Thanks [@Pushedskydiver](https://github.com/Pushedskydiver)! - Fix hook errors: add required `matcher` field to settings.json hook entries, replace detached child process in check-update with synchronous npm check (5s timeout), and show installed version in the statusline.
+
 ## 0.1.2
 
 ### Patch Changes
