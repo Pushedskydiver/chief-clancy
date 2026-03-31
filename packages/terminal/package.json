@@ -40,7 +40,7 @@
     "@chief-clancy/core": "workspace:*"
   },
   "scripts": {
-    "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc --project tsconfig.build.json && tsc-alias --project tsconfig.build.json && node dist/hooks/esbuild.hooks.js",
+    "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc --project tsconfig.build.json && tsc-alias --project tsconfig.build.json && node dist/hooks/esbuild.hooks.js && node dist/runner/esbuild.runtime.js",
     "test": "vitest run",
     "test:e2e": "vitest run --config vitest.config.e2e.ts",
     "lint": "eslint .",

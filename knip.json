@@ -14,7 +14,10 @@
       "entry": [
         "src/hooks/esbuild.hooks.ts",
         "src/hooks/clancy-*/clancy-*.ts",
-        "src/hooks/shared/*/index.ts"
+        "src/hooks/shared/*/index.ts",
+        "src/runner/esbuild.runtime.ts",
+        "src/runner/implement/entrypoint.ts",
+        "src/runner/autopilot/entrypoint.ts"
       ]
     }
   }
