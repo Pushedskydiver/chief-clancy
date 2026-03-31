@@ -81,9 +81,9 @@ If the user types `n` or `N`: print `Cancelled.` and stop. Any other input (incl
 
    Stop.
 
-4. Check `.clancy/clancy-afk.js` exists. If not:
+4. Check `.clancy/clancy-autopilot.js` exists. If not:
    ```
-   .clancy/clancy-afk.js not found. Run /clancy:init to scaffold scripts.
+   .clancy/clancy-autopilot.js not found. Run /clancy:init to scaffold scripts.
    ```
    Stop.
 
@@ -107,7 +107,7 @@ Display (only if the high-iteration warning was not already shown):
 Execute:
 
 ```bash
-MAX_ITERATIONS={N} node .clancy/clancy-afk.js
+MAX_ITERATIONS={N} node .clancy/clancy-autopilot.js
 ```
 
 Stream output directly — do not buffer or summarise.
@@ -118,7 +118,7 @@ Stream output directly — do not buffer or summarise.
 
 When the script exits, echo the final summary line from the output.
 
-If `clancy-afk.js` exits with a non-zero status:
+If `clancy-autopilot.js` exits with a non-zero status:
 
 ```
 ❌ Clancy stopped with an error. Check the output above.

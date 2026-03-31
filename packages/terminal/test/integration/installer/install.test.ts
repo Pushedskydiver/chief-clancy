@@ -103,8 +103,8 @@ function createSourceFixtures(baseDir: string) {
   HOOK_FILES.forEach((f) => writeFileSync(join(hooksDir, f), `// ${f}`));
 
   mkdirSync(bundleDir, { recursive: true });
-  writeFileSync(join(bundleDir, 'clancy-once.js'), '// once');
-  writeFileSync(join(bundleDir, 'clancy-afk.js'), '// afk');
+  writeFileSync(join(bundleDir, 'clancy-implement.js'), '// once');
+  writeFileSync(join(bundleDir, 'clancy-autopilot.js'), '// afk');
 
   mkdirSync(agentsDir, { recursive: true });
   writeFileSync(
@@ -175,12 +175,12 @@ describe('runInstall — integration', () => {
     });
 
     it('copies bundle scripts to .clancy/', () => {
-      expect(existsSync(join(paths.clancyProjectDir, 'clancy-once.js'))).toBe(
-        true,
-      );
-      expect(existsSync(join(paths.clancyProjectDir, 'clancy-afk.js'))).toBe(
-        true,
-      );
+      expect(
+        existsSync(join(paths.clancyProjectDir, 'clancy-implement.js')),
+      ).toBe(true);
+      expect(
+        existsSync(join(paths.clancyProjectDir, 'clancy-autopilot.js')),
+      ).toBe(true);
     });
 
     it('writes version.json with injected timestamp', () => {

@@ -145,12 +145,12 @@ describe('runInstall', () => {
       await runInstall(baseOptions);
 
       expect(stubFs.copyFile).toHaveBeenCalledWith(
-        join(sources.bundleDir, 'clancy-once.js'),
-        join(paths.clancyProjectDir, 'clancy-once.js'),
+        join(sources.bundleDir, 'clancy-implement.js'),
+        join(paths.clancyProjectDir, 'clancy-implement.js'),
       );
       expect(stubFs.copyFile).toHaveBeenCalledWith(
-        join(sources.bundleDir, 'clancy-afk.js'),
-        join(paths.clancyProjectDir, 'clancy-afk.js'),
+        join(sources.bundleDir, 'clancy-autopilot.js'),
+        join(paths.clancyProjectDir, 'clancy-autopilot.js'),
       );
     });
 

@@ -415,8 +415,8 @@ Everything Clancy creates and reads in the user's project.
 graph TD
     subgraph ".clancy/"
         env[".env\n(board credentials + config)"]
-        oncejs["clancy-once.js\n(esbuild bundle)"]
-        afkjs["clancy-afk.js\n(esbuild bundle)"]
+        oncejs["clancy-implement.js\n(esbuild bundle)"]
+        afkjs["clancy-autopilot.js\n(esbuild bundle)"]
         pkg["package.json\n({'type':'module'})"]
         progress["progress.txt\n(run log)"]
         costslog["costs.log\n(token cost estimates)"]

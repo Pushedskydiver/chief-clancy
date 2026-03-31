@@ -118,7 +118,7 @@ chief-clancy               — CLI wrapper (npx chief-clancy)
    - Optional roles (planner, strategist) are only installed if listed in `CLANCY_ROLES` env var in `.clancy/.env`, or if no `.clancy/.env` exists yet (first install = install all)
 3. Walks `roles/*/workflows/` and copies workflow files flat to `{dest}/clancy/workflows/`
 4. Copies hook bundles (`dist/hooks/*.js`) to `{dest}/hooks/`
-5. Copies bundled runtime scripts (`dist/bundle/clancy-once.js`, `clancy-afk.js`) to `.clancy/`
+5. Copies bundled runtime scripts (`dist/bundle/clancy-implement.js`, `clancy-autopilot.js`) to `.clancy/`
 6. Registers hooks in Claude's `settings.json` (PreToolUse, PostToolUse, SessionStart, Statusline)
 7. Writes `{"type":"commonjs"}` package.json into hooks dir (ESM compatibility)
 8. Generates SHA-256 manifests for patch preservation on future updates
@@ -248,8 +248,8 @@ After `/clancy:init` + `/clancy:map-codebase`:
 
 ```
 .clancy/
-  clancy-once.js        — bundled once orchestrator (self-contained)
-  clancy-afk.js         — bundled AFK loop runner (self-contained)
+  clancy-implement.js        — bundled once orchestrator (self-contained)
+  clancy-autopilot.js         — bundled AFK loop runner (self-contained)
   docs/                 — structured docs (read before every run)
   progress.txt          — append-only completion log
   costs.log             — duration-based token cost estimates per ticket

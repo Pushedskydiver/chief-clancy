@@ -200,9 +200,9 @@ describe('validateSources', () => {
   });
 
   it('throws when a bundle script is missing', () => {
-    const exists = (p: string) => !p.endsWith('clancy-once.js');
+    const exists = (p: string) => !p.endsWith('clancy-implement.js');
     expect(() => validateSources(sources, exists)).toThrow(
-      /clancy-once\.js.*not found/,
+      /clancy-implement\.js.*not found/,
     );
   });
 });

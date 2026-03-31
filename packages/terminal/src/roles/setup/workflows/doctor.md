@@ -42,8 +42,8 @@ Print `✅` or `❌` for each.
 ## Step 3 — Check project setup
 
 - `.clancy/` exists → `✅ .clancy/ found`
-- `.clancy/clancy-once.js` exists → `✅ clancy-once.js`
-- `.clancy/clancy-afk.js` exists → `✅ clancy-afk.js`
+- `.clancy/clancy-implement.js` exists → `✅ clancy-implement.js`
+- `.clancy/clancy-autopilot.js` exists → `✅ clancy-autopilot.js`
 - `.clancy/.env` exists → `✅ .clancy/.env found`
 - `.clancy/docs/` has non-empty files → `✅ codebase docs present ({N} files)`
 

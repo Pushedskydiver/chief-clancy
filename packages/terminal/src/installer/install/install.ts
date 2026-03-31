@@ -93,7 +93,7 @@ export type RunInstallOptions = {
 // ---------------------------------------------------------------------------
 
 /** Bundled runtime scripts that are copied to `.clancy/` in the project. */
-const BUNDLE_SCRIPTS = ['clancy-once.js', 'clancy-afk.js'] as const;
+const BUNDLE_SCRIPTS = ['clancy-implement.js', 'clancy-autopilot.js'] as const;
 
 // ---------------------------------------------------------------------------
 // Pure functions

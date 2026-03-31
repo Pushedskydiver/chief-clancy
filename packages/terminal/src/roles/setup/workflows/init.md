@@ -597,7 +597,7 @@ Store the detected (or confirmed) value as `CLANCY_BASE_BRANCH` in `.clancy/.env
 
 Create `.clancy/` directory and the following:
 
-1. Verify `.clancy/clancy-once.js` and `.clancy/clancy-afk.js` exist (copied by the installer). If missing, tell the user to run `npx -y chief-clancy@latest` and stop.
+1. Verify `.clancy/clancy-implement.js` and `.clancy/clancy-autopilot.js` exist (copied by the installer). If missing, tell the user to run `npx -y chief-clancy@latest` and stop.
 2. Create `.clancy/docs/` with 10 empty template files (UPPERCASE.md with section headings only):
    - STACK.md, INTEGRATIONS.md, ARCHITECTURE.md, CONVENTIONS.md, TESTING.md
    - GIT.md, DESIGN-SYSTEM.md, ACCESSIBILITY.md, DEFINITION-OF-DONE.md, CONCERNS.md
@@ -1087,7 +1087,7 @@ Output:
 ║  ✅ Clancy is ready.                                     ║
 ╚═══════════════════════════════════════════════════════════╝
 
-- Scripts: `.clancy/clancy-once.js`, `.clancy/clancy-afk.js`
+- Scripts: `.clancy/clancy-implement.js`, `.clancy/clancy-autopilot.js`
 - Docs: `.clancy/docs/` (10 files)
 - Config: `.clancy/.env`
 - CLAUDE.md: updated

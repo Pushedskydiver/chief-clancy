@@ -333,7 +333,7 @@ Check whether a `.prettierignore` file exists in the project root.
 
 ## Runtime scripts
 
-The installer copies bundled runtime scripts (`clancy-once.js` and `clancy-afk.js`) directly into `.clancy/` during installation. These are self-contained — they have zero runtime dependency on the `chief-clancy` npm package.
+The installer copies bundled runtime scripts (`clancy-implement.js` and `clancy-autopilot.js`) directly into `.clancy/` during installation. These are self-contained — they have zero runtime dependency on the `chief-clancy` npm package.
 
 **Do NOT write or modify these files during init.** They are managed by the installer and updated automatically via `/clancy:update`.
 

@@ -127,7 +127,7 @@ Your project files are preserved:
 - Custom commands not in `commands/clancy/` ✅
 - Custom hooks ✅
 
-Note: `.clancy/clancy-once.js` and `.clancy/clancy-afk.js` **will be replaced** with
+Note: `.clancy/clancy-implement.js` and `.clancy/clancy-autopilot.js` **will be replaced** with
 the latest bundled versions. The rest of `.clancy/` is untouched.
 ```
 
@@ -164,7 +164,7 @@ This touches:
 
 - `.claude/commands/clancy/` — slash commands (replaced)
 - `.claude/clancy/workflows/` — workflow files (replaced)
-- `.clancy/clancy-once.js` and `.clancy/clancy-afk.js` — bundled runtime scripts (replaced)
+- `.clancy/clancy-implement.js` and `.clancy/clancy-autopilot.js` — bundled runtime scripts (replaced)
 
 It never modifies:
 
