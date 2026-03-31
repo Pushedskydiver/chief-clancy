@@ -55,16 +55,22 @@ Print: `✅ Clancy commands removed from [location].`
 
 For each location being removed, delete these hook files if they exist:
 
-- Project-local: `.claude/hooks/clancy-check-update.js`, `.claude/hooks/clancy-statusline.js`, `.claude/hooks/clancy-context-monitor.js`, `.claude/hooks/clancy-credential-guard.js`
-- Global: `~/.claude/hooks/clancy-check-update.js`, `~/.claude/hooks/clancy-statusline.js`, `~/.claude/hooks/clancy-context-monitor.js`, `~/.claude/hooks/clancy-credential-guard.js`
+- Project-local: `.claude/hooks/clancy-branch-guard.js`, `.claude/hooks/clancy-check-update.js`, `.claude/hooks/clancy-context-monitor.js`, `.claude/hooks/clancy-credential-guard.js`, `.claude/hooks/clancy-drift-detector.js`, `.claude/hooks/clancy-notification.js`, `.claude/hooks/clancy-post-compact.js`, `.claude/hooks/clancy-statusline.js`
+- Global: `~/.claude/hooks/clancy-branch-guard.js`, `~/.claude/hooks/clancy-check-update.js`, `~/.claude/hooks/clancy-context-monitor.js`, `~/.claude/hooks/clancy-credential-guard.js`, `~/.claude/hooks/clancy-drift-detector.js`, `~/.claude/hooks/clancy-notification.js`, `~/.claude/hooks/clancy-post-compact.js`, `~/.claude/hooks/clancy-statusline.js`
+
+Also remove the hooks `package.json` if it exists (`.claude/hooks/package.json` or `~/.claude/hooks/package.json`) — this was written by the installer for CJS compatibility.
 
 Then remove the Clancy hook registrations from the corresponding `settings.json` (`.claude/settings.json` for local, `~/.claude/settings.json` for global):
 
 - Remove any entry in `hooks.SessionStart` whose `command` contains `clancy-check-update`
-- Remove any entry in `hooks.PostToolUse` whose `command` contains `clancy-context-monitor`
 - Remove any entry in `hooks.PreToolUse` whose `command` contains `clancy-credential-guard`
+- Remove any entry in `hooks.PreToolUse` whose `command` contains `clancy-branch-guard`
+- Remove any entry in `hooks.PostToolUse` whose `command` contains `clancy-context-monitor`
+- Remove any entry in `hooks.PostToolUse` whose `command` contains `clancy-drift-detector`
+- Remove any entry in `hooks.PostCompact` whose `command` contains `clancy-post-compact`
+- Remove any entry in `hooks.Notification` whose `command` contains `clancy-notification`
 - Remove the `statusLine` key if its `command` value contains `clancy-statusline`
-- If removing an entry leaves a `hooks.SessionStart`, `hooks.PostToolUse`, or `hooks.PreToolUse` array empty, remove the key entirely
+- If removing an entry leaves any `hooks.*` array empty, remove the key entirely
 
 Also remove the update check cache if it exists: `~/.claude/cache/clancy-update-check.json`
 
