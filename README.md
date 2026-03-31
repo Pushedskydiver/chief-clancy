@@ -111,7 +111,7 @@ You'll be asked: global install (`~/.claude`) or local (`./.claude`). Either wor
 **Prerequisites:**
 
 - [Claude Code](https://claude.ai/code) CLI installed
-- Node.js 22+ (`node -v`)
+- Node.js 24+ (`node -v`)
 - `git` installed (comes with most development environments)
 
 ### Permissions

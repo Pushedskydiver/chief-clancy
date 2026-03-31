@@ -19,7 +19,7 @@ Unified `Board` type abstraction with implementations for 6 platforms:
 - **Notion** — REST API, database rows as tickets, property overrides
 - **Azure DevOps** — REST API, WIQL queries, work item management
 
-All boards implement the same interface: `ping`, `fetchTicket`, `transitionTicket`, `fetchBlockerStatus`, `fetchChildrenStatus`, `ensureLabel`, `addLabel`, `removeLabel`.
+All boards implement the same interface: `ping`, `validateInputs`, `fetchTicket`, `fetchTickets`, `fetchBlockerStatus`, `fetchChildrenStatus`, `transitionTicket`, `ensureLabel`, `addLabel`, `removeLabel`, `sharedEnv`.
 
 ### Pipeline phases
 
