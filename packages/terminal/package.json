@@ -4,6 +4,25 @@
   "description": "Installer, slash commands, hooks, AFK runner, agents, Claude CLI bridge",
   "author": "Alex Clapperton",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pushedskydiver/chief-clancy.git",
+    "directory": "packages/terminal"
+  },
+  "homepage": "https://github.com/Pushedskydiver/chief-clancy#readme",
+  "bugs": {
+    "url": "https://github.com/Pushedskydiver/chief-clancy/issues"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "ai",
+    "cli",
+    "terminal",
+    "hooks",
+    "slash-commands",
+    "developer-tools"
+  ],
   "type": "module",
   "exports": {
     ".": {

@@ -4,6 +4,24 @@
   "description": "Board intelligence, schemas, types, ticket lifecycle, phase pipeline, shared utilities",
   "author": "Alex Clapperton",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pushedskydiver/chief-clancy.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/Pushedskydiver/chief-clancy#readme",
+  "bugs": {
+    "url": "https://github.com/Pushedskydiver/chief-clancy/issues"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "ai",
+    "autonomous",
+    "board",
+    "kanban",
+    "developer-tools"
+  ],
   "type": "module",
   "exports": {
     ".": {

@@ -4,6 +4,24 @@
   "description": "Autonomous, board-driven development for Claude Code",
   "author": "Alex Clapperton",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pushedskydiver/chief-clancy.git",
+    "directory": "packages/chief-clancy"
+  },
+  "homepage": "https://github.com/Pushedskydiver/chief-clancy#readme",
+  "bugs": {
+    "url": "https://github.com/Pushedskydiver/chief-clancy/issues"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "ai",
+    "autonomous",
+    "kanban",
+    "developer-tools",
+    "cli"
+  ],
   "type": "module",
   "bin": {
     "chief-clancy": "./bin/clancy.js"
