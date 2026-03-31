@@ -36,7 +36,7 @@ The implementer uses the **implementation queue** — tickets that are ready to 
 | Linear       | `state.type: "unstarted"`                                                                                      | (hardcoded to unstarted)                            |
 | Shortcut     | Story state filter                                                                                             | `CLANCY_JQL_STATUS`                                 |
 | Notion       | Status property: `"To-do"`                                                                                     | `CLANCY_NOTION_TODO`                                |
-| Azure DevOps | Work item state: `"To Do"`                                                                                     | `CLANCY_JQL_STATUS`                                 |
+| Azure DevOps | Work item state: `"New"`                                                                                       | `CLANCY_JQL_STATUS`                                 |
 
 Additional shared filters (apply to all boards):
 

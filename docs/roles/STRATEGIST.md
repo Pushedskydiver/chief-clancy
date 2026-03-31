@@ -44,7 +44,7 @@ The grill phase is the relentless clarification step before brief generation. It
 
 ### Human grill (default)
 
-Interactive mode. The strategist interviews the human — pushes back on vague answers, follows each thread to its conclusion, and explores the codebase instead of asking when the answer is in the code. Two-way: the user can ask questions back and the strategist researches and answers. Typically 2-5 rounds.
+Interactive mode. The strategist researches the codebase and board context first, then interviews the human — for each question, it provides a recommended answer based on its research. The user confirms, overrides, or asks for more detail. This speeds up the grill: confirm-or-override rather than research-from-scratch. Pushes back on vague answers, follows each thread to its conclusion. Two-way: the user can ask questions back and the strategist researches and answers. Typically 2-5 rounds.
 
 The brief is NOT generated until shared understanding is reached.
 

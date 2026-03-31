@@ -50,14 +50,14 @@ The new label is always added before the old one is removed (crash safety). Fall
 
 The planner fetches from a **separate queue** to the implementer, targeting earlier-stage tickets:
 
-| Board        | Default filter            | Env var to customise     |
-| ------------ | ------------------------- | ------------------------ |
-| Jira         | `status = "Backlog"`      | `CLANCY_PLAN_STATUS`     |
-| GitHub       | Label: `needs-refinement` | `CLANCY_PLAN_LABEL`      |
-| Linear       | `state.type: "backlog"`   | `CLANCY_PLAN_STATE_TYPE` |
-| Shortcut     | Story state filter        | `CLANCY_PLAN_STATE_TYPE` |
-| Notion       | Status property filter    | `CLANCY_PLAN_STATUS`     |
-| Azure DevOps | Work item state filter    | `CLANCY_PLAN_STATUS`     |
+| Board        | Default filter                   | Env var to customise     |
+| ------------ | -------------------------------- | ------------------------ |
+| Jira         | `status = "Backlog"`             | `CLANCY_PLAN_STATUS`     |
+| GitHub       | Label: `needs-refinement`        | `CLANCY_PLAN_LABEL`      |
+| Linear       | `state.type: "backlog"`          | `CLANCY_PLAN_STATE_TYPE` |
+| Shortcut     | Workflow state type: `"backlog"` | `CLANCY_PLAN_STATE_TYPE` |
+| Notion       | Status property filter           | `CLANCY_PLAN_STATUS`     |
+| Azure DevOps | Work item state filter           | `CLANCY_PLAN_STATUS`     |
 
 `CLANCY_PLAN_STATE_TYPE` accepts one of: `backlog`, `unstarted`, `started`, `completed`, `canceled`, `triage`.
 
@@ -83,6 +83,12 @@ Additional filters vary by board:
 5. On completion, Clancy closes the issue
 
 No GitHub Projects integration — Clancy works with the Issues REST API only.
+
+**Shortcut:** `/clancy:approve-plan` adds the build label, removes the plan label, and transitions the story to the "unstarted" workflow state via `workflow_state_id`. Best-effort — warns on failure.
+
+**Notion:** `/clancy:approve-plan` adds the build label to the page's multi-select property, removes the plan label, and transitions the status property (only if `CLANCY_STATUS_PLANNED` is set). The plan is appended to the page content rather than the description field.
+
+**Azure DevOps:** `/clancy:approve-plan` adds the build tag (semicolon-delimited), removes the plan tag, and transitions the work item state (only if `CLANCY_STATUS_PLANNED` is set). If not set, prompts the user to move the work item manually.
 
 ## The workflow
 
