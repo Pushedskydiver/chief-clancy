@@ -1,5 +1,39 @@
 # Monorepo Progress
 
+## Session 47 Handoff
+
+**Phase 14 complete.** 9 PRs merged (#166–#174). 1608 core tests, 775 terminal tests.
+
+### Phase 14 — Wrapper & publish prep
+
+#### Code PRs
+
+- **14.1** (#166): `bin/clancy.js` entry point — ESM script with shebang, wires `runInstall` from `@chief-clancy/terminal` to real fs, readline prompts, and resolved source paths. Supports `--global`/`--local` flags.
+- **14.2** (#167): GitHub Actions publish workflow — `changesets/action` with `workflow_run` trigger (gated on CI success), `@changesets/changelog-github` for PR links, `scripts/group-changelog.ts` post-processor for gitmoji category headers.
+
+#### Doc rewrites
+
+- **14.3a** (#168): `docs/ARCHITECTURE.md` — complete rewrite for monorepo. Package hierarchy, directory structure, installer flow, pipeline phases, board abstraction, hook architecture, role lifecycles, build system.
+- **14.3b** (#169): `docs/VISUAL-ARCHITECTURE.md` — 13 Mermaid diagrams ported + 2 new (package boundaries, build pipeline). Hook diagram updated with drift-detector.
+- **14.3c** (#170): `docs/TESTING.md` — two-layer test architecture (unit + E2E), vitest configs, fast-check usage, credential setup, CI schedule.
+- **14.3d** (#171): `docs/TECHNICAL-REFERENCE.md` — implementation details and gotchas rewritten with package-relative paths, new Publishing section.
+
+#### Doc updates + command rename
+
+- **14.4a** (#172): Updated SELF-REVIEW.md + DEVELOPMENT.md. Created LIFECYCLE.md + COMPARISON.md. **Renamed slash commands:** `/clancy:once` → `/clancy:implement`, `/clancy:run` → `/clancy:autopilot`. **Renamed runtime bundles:** `clancy-once.js` → `clancy-implement.js`, `clancy-afk.js` → `clancy-autopilot.js`. Updated across 42 files (commands, workflows, docs, source, tests).
+- **14.4b** (#173): Created `docs/roles/` with 5 role overviews (SETUP, STRATEGIST, PLANNER, IMPLEMENTER, REVIEWER). All verified against source code — fixed Azure DevOps default state, added missing board transitions, expanded review scoring criteria. Fixed terminal package `files` field (added `src/roles`, `src/agents`, `src/templates` for npm publish). Fixed uninstall workflow to remove all 8 hooks (was only 4).
+- **14.4c** (#174): Created `docs/guides/` with CONFIGURATION.md, SECURITY.md, TROUBLESHOOTING.md. All verified against source code — added missing Azure DevOps env vars, branch guard to security doc, all 6 boards to troubleshooting.
+
+### Bonus work (not in original plan)
+
+- Command rename: `/clancy:once` → `/clancy:implement`, `/clancy:run` → `/clancy:autopilot` (decided Phase 9, applied Phase 14)
+- Bundle rename: `clancy-once.js` → `clancy-implement.js`, `clancy-afk.js` → `clancy-autopilot.js`
+- Terminal `files` field fix — `src/roles`, `src/agents`, `src/templates` must ship alongside `dist/` for installer to work after npm publish
+- Uninstall workflow fix — was only removing 4 of 8 hooks
+- All role + guide docs verified against source code (found inaccuracies in 7 of 8 docs)
+
+---
+
 ## Session 46 Handoff
 
 **Phase 13 complete. Audit cleanup, capability directory reorganization, and bundle verification done.** 1608 core tests, 775 terminal tests.
@@ -7,67 +41,6 @@
 ### Phase 13 — Bundle verification (#165)
 
 Hook bundles already worked (esbuild.hooks.ts builds 8 self-contained CJS bundles). Added 19 smoke tests verifying bundle existence, clean loading, and PreToolUse JSON output. The old repo's runtime script bundles (`clancy-once.js`, `clancy-afk.js`) are Phase 14 scope — they depend on `bin/clancy.js`.
-
-### What's next — Phase 14: Wrapper & publish prep (9 PRs)
-
-#### Code PRs
-
-**14.1** — `bin/clancy.js` entry point
-
-- Create ESM script with `#!/usr/bin/env node` shebang
-- Import `runInstall` from `@chief-clancy/terminal` and delegate
-- The old repo's bin pointed to `dist/installer/install.js` — same pattern
-- `packages/chief-clancy/package.json` already has bin field and `@chief-clancy/terminal` dep
-- Exit criteria: `npx chief-clancy` triggers the installer flow
-
-**14.2** — GitHub Actions publish workflow
-
-- New `.github/workflows/publish.yml` using `@changesets/action`
-- Trigger on push to main when changeset PR merges
-- Publish changed packages to npm (`access: public` already in `.changeset/config.json`)
-- Tag conventions for multi-package releases
-- Exit criteria: workflow triggers correctly on version bumps
-
-#### Doc rewrites (4 new files — 1 PR each)
-
-**14.3a** — `docs/ARCHITECTURE.md`
-
-- Module map, dependency graph, core→terminal boundary, barrel exports
-- Reference: `~/Desktop/alex/clancy/docs/ARCHITECTURE.md` (rewrite for monorepo)
-
-**14.3b** — `docs/VISUAL-ARCHITECTURE.md`
-
-- Mermaid diagrams: package boundaries, build pipeline, phase flow
-- Reference: `~/Desktop/alex/clancy/docs/VISUAL-ARCHITECTURE.md`
-
-**14.3c** — `docs/TESTING.md`
-
-- Per-package vitest configs, test patterns, fast-check usage, coverage
-- Reference: `~/Desktop/alex/clancy/docs/TESTING.md`
-
-**14.3d** — `docs/TECHNICAL-REFERENCE.md`
-
-- Board details, hook mechanics, delivery pipeline, build system
-- Reference: `~/Desktop/alex/clancy/docs/TECHNICAL-REFERENCE.md`
-
-#### Doc updates (3 PRs)
-
-**14.4a** — Core doc updates
-
-- Update `docs/SELF-REVIEW.md` paths/commands for new structure
-- Update `docs/DEVELOPMENT.md` for Phase 14–15 workflows
-- Create `docs/LIFECYCLE.md` (port from old repo, update for monorepo)
-- Create `docs/COMPARISON.md` (port from old repo as-is)
-
-**14.4b** — Role documentation
-
-- Create `docs/roles/` with 5 role overview files (SETUP, STRATEGIST, PLANNER, IMPLEMENTER, REVIEWER)
-- Reference role commands in `packages/terminal/src/roles/`
-
-**14.4c** — Guide documentation
-
-- Create `docs/guides/` with CONFIGURATION.md, SECURITY.md, TROUBLESHOOTING.md
-- Reference: `~/Desktop/alex/clancy/docs/guides/`
 
 ### Capability directory reorganization (PRs #156–#164)
 
