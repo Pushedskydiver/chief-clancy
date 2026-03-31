@@ -76,28 +76,34 @@ describe('hook bundle loads without crashing', () => {
 // ─── PreToolUse hooks return JSON decisions ─────────────────────────────────
 
 describe('PreToolUse hook decisions', () => {
-  it('branch-guard approves safe commands', () => {
+  it('branch-guard allows safe commands', () => {
     const { stdout } = runHook('clancy-branch-guard');
-    const parsed = JSON.parse(stdout) as { decision: string };
+    const parsed = JSON.parse(stdout) as {
+      hookSpecificOutput: { permissionDecision: string };
+    };
 
-    expect(parsed.decision).toBe('approve');
+    expect(parsed.hookSpecificOutput.permissionDecision).toBe('allow');
   });
 
-  it('branch-guard blocks force push', () => {
+  it('branch-guard denies force push', () => {
     const input = JSON.stringify({
       tool_name: 'Bash',
       tool_input: { command: 'git push --force origin main' },
     });
     const { stdout } = runHook('clancy-branch-guard', input);
-    const parsed = JSON.parse(stdout) as { decision: string };
+    const parsed = JSON.parse(stdout) as {
+      hookSpecificOutput: { permissionDecision: string };
+    };
 
-    expect(parsed.decision).toBe('block');
+    expect(parsed.hookSpecificOutput.permissionDecision).toBe('deny');
   });
 
-  it('credential-guard approves non-secret commands', () => {
+  it('credential-guard allows non-secret commands', () => {
     const { stdout } = runHook('clancy-credential-guard');
-    const parsed = JSON.parse(stdout) as { decision: string };
+    const parsed = JSON.parse(stdout) as {
+      hookSpecificOutput: { permissionDecision: string };
+    };
 
-    expect(parsed.decision).toBe('approve');
+    expect(parsed.hookSpecificOutput.permissionDecision).toBe('allow');
   });
 });

@@ -2,27 +2,41 @@
  * Hook output builders.
  *
  * Pure data constructors for the JSON shapes Claude Code expects
- * from PreToolUse (approve/block) and PostToolUse (context injection) hooks.
+ * from PreToolUse (allow/deny) and PostToolUse (context injection) hooks.
+ *
+ * PreToolUse hooks use the `hookSpecificOutput` envelope with
+ * `permissionDecision` to control tool execution.
  */
 import type { HookContextOutput, PreToolUseResult } from '../types.js';
 
 /**
- * Build a PreToolUse approve response.
+ * Build a PreToolUse allow response.
  *
- * @returns A decision object that allows the tool call to proceed.
+ * @returns A hook output that allows the tool call to proceed.
  */
 export function approve(): PreToolUseResult {
-  return { decision: 'approve' };
+  return {
+    hookSpecificOutput: {
+      hookEventName: 'PreToolUse',
+      permissionDecision: 'allow',
+    },
+  };
 }
 
 /**
- * Build a PreToolUse block response.
+ * Build a PreToolUse deny response.
  *
  * @param reason - Human-readable explanation shown to the user.
- * @returns A decision object that blocks the tool call.
+ * @returns A hook output that blocks the tool call with a reason.
  */
 export function block(reason: string): PreToolUseResult {
-  return { decision: 'block', reason };
+  return {
+    hookSpecificOutput: {
+      hookEventName: 'PreToolUse',
+      permissionDecision: 'deny',
+      permissionDecisionReason: reason,
+    },
+  };
 }
 
 /**
