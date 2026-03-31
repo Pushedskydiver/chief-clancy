@@ -3,16 +3,24 @@ import { describe, expect, it } from 'vitest';
 import { approve, block, contextOutput } from './hook-output.js';
 
 describe('approve', () => {
-  it('returns an approve decision with no reason', () => {
-    expect(approve()).toStrictEqual({ decision: 'approve' });
+  it('returns an allow decision in hookSpecificOutput envelope', () => {
+    expect(approve()).toStrictEqual({
+      hookSpecificOutput: {
+        hookEventName: 'PreToolUse',
+        permissionDecision: 'allow',
+      },
+    });
   });
 });
 
 describe('block', () => {
-  it('returns a block decision with the given reason', () => {
+  it('returns a deny decision with the given reason', () => {
     expect(block('credentials detected')).toStrictEqual({
-      decision: 'block',
-      reason: 'credentials detected',
+      hookSpecificOutput: {
+        hookEventName: 'PreToolUse',
+        permissionDecision: 'deny',
+        permissionDecisionReason: 'credentials detected',
+      },
     });
   });
 });

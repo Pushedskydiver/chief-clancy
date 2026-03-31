@@ -19,10 +19,13 @@ export type HookEvent = {
   readonly notification?: string;
 };
 
-/** PreToolUse decision output. */
+/** PreToolUse decision output matching Claude Code's hookSpecificOutput envelope. */
 export type PreToolUseResult = {
-  readonly decision: 'approve' | 'block';
-  readonly reason?: string;
+  readonly hookSpecificOutput: {
+    readonly hookEventName: 'PreToolUse';
+    readonly permissionDecision: 'allow' | 'deny';
+    readonly permissionDecisionReason?: string;
+  };
 };
 
 /** PostToolUse / other hook output with additional context injection. */
