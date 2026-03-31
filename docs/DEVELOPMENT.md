@@ -211,17 +211,19 @@ The self-review checklist is a **living document** — when CodeRabbit catches s
 
 Independent versioning managed by `@changesets/cli`. Coordinated v1.0.0 release when API surfaces are stable.
 
-**No npm publishing until feature parity with current Clancy.** GitHub release tags only during development.
+Independent versioning managed by `@changesets/cli`. Coordinated v1.0.0 release when API surfaces are stable.
 
 ---
 
 ## Release Flow
 
-1. Create a changeset: `pnpm changeset`
-2. Apply version bumps: `pnpm changeset version`
-3. Commit the version bump + changelog
-4. GitHub Actions creates release tags
-5. When ready for npm: changesets handles the publish flow
+1. Include a changeset in your PR: `pnpm changeset`
+2. Squash merge PR to main
+3. CI passes → publish workflow creates a "Version Packages" PR (bumps versions + changelogs)
+4. `scripts/group-changelog.ts` post-processes changelogs with gitmoji category headers
+5. Merge the version PR → `changesets/action` publishes to npm + creates GitHub Releases
+
+See `.github/workflows/publish.yml` for the full workflow. `NPM_TOKEN` secret required in repo settings.
 
 ---
 
