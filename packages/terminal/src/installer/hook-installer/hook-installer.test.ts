@@ -237,6 +237,40 @@ describe('installHooks', () => {
     expect(hooks.Notification).toHaveLength(1);
   });
 
+  it('adds matcher to existing entries missing it on re-install', () => {
+    const hooksDir = join(claudeDir, 'hooks');
+    const oldCommand = `node ${JSON.stringify(join(hooksDir, 'clancy-branch-guard.js'))}`;
+
+    // Simulate a pre-migration install: entries without matcher
+    writeFileSync(
+      join(claudeDir, 'settings.json'),
+      JSON.stringify(
+        {
+          hooks: {
+            PreToolUse: [{ hooks: [{ type: 'command', command: oldCommand }] }],
+          },
+        },
+        null,
+        2,
+      ),
+    );
+
+    installHooks({ claudeConfigDir: claudeDir, hooksSourceDir: hooksSource });
+
+    const settings = JSON.parse(
+      readFileSync(join(claudeDir, 'settings.json'), 'utf8'),
+    ) as Record<string, unknown>;
+    const hooks = settings.hooks as Record<
+      string,
+      readonly { matcher?: string }[]
+    >;
+
+    const allHaveMatchers = hooks.PreToolUse.every(
+      (entry) => typeof entry.matcher === 'string',
+    );
+    expect(allHaveMatchers).toBe(true);
+  });
+
   it('returns false when source hooks are missing', () => {
     const result = installHooks({
       claudeConfigDir: claudeDir,
