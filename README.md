@@ -246,15 +246,16 @@ Clancy also merges a section into your `CLAUDE.md` (or creates one) that tells C
 
 ## Packages
 
-This is a monorepo with three packages:
+This is a monorepo with four packages:
 
-| Package                                         | Purpose                                                         |
-| ----------------------------------------------- | --------------------------------------------------------------- |
-| [`chief-clancy`](./packages/chief-clancy)       | CLI wrapper — `npx chief-clancy` delegates to terminal          |
-| [`@chief-clancy/terminal`](./packages/terminal) | Installer, slash commands, hooks, runners, agents               |
-| [`@chief-clancy/core`](./packages/core)         | Board integrations, pipeline phases, lifecycle modules, schemas |
+| Package                                         | Purpose                                                                    |
+| ----------------------------------------------- | -------------------------------------------------------------------------- |
+| [`chief-clancy`](./packages/chief-clancy)       | CLI wrapper — `npx chief-clancy` delegates to terminal                     |
+| [`@chief-clancy/terminal`](./packages/terminal) | Installer, slash commands, hooks, runners, agents                          |
+| [`@chief-clancy/core`](./packages/core)         | Board integrations, pipeline phases, lifecycle modules, schemas            |
+| [`@chief-clancy/brief`](./packages/brief)       | Standalone brief generator — `npx @chief-clancy/brief` (no board required) |
 
-Dependency direction: `core` ← `terminal` ← `chief-clancy`. See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full module map.
+Dependency direction: `core` ← `terminal` ← `chief-clancy`. Brief is standalone (no core/terminal deps). See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full module map.
 
 ---
 

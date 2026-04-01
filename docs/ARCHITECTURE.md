@@ -2,7 +2,7 @@
 
 ## Overview
 
-Clancy is a monorepo of three npm packages that install Claude Code slash commands, workflows, hooks, and runtime scripts into a user's project. Board logic is implemented in TypeScript ESM modules. Hooks are pre-built CommonJS bundles. Commands and workflows are markdown.
+Clancy is a monorepo of four npm packages that install Claude Code slash commands, workflows, hooks, and runtime scripts into a user's project. Board logic is implemented in TypeScript ESM modules. Hooks are pre-built CommonJS bundles. Commands and workflows are markdown.
 
 > For visual diagrams of packages, flows, and board interactions, see [VISUAL-ARCHITECTURE.md](VISUAL-ARCHITECTURE.md).
 
@@ -12,15 +12,18 @@ Clancy is a monorepo of three npm packages that install Claude Code slash comman
 chief-clancy               — CLI wrapper (npx chief-clancy)
   └── @chief-clancy/terminal  — installer, runner, hooks, commands, agents
         └── @chief-clancy/core   — board integrations, pipeline, lifecycle, schemas
+
+@chief-clancy/brief        — standalone brief generator (no core/terminal deps)
 ```
 
-**Dependency direction: core <- terminal <- chief-clancy.** No reverse imports. Enforced by `eslint-plugin-boundaries`.
+**Dependency direction: core <- terminal <- chief-clancy.** Brief is standalone (no deps on core or terminal). No reverse imports. Enforced by `eslint-plugin-boundaries`.
 
-| Package                  | Purpose                                                         | Published      |
-| ------------------------ | --------------------------------------------------------------- | -------------- |
-| `chief-clancy`           | Thin bin wrapper — resolves paths, wires `runInstall`           | Yes (unscoped) |
-| `@chief-clancy/terminal` | Installer, hooks, runners, slash commands, agents               | Yes            |
-| `@chief-clancy/core`     | Board abstractions, pipeline phases, lifecycle modules, schemas | Yes            |
+| Package                  | Purpose                                                            | Published      |
+| ------------------------ | ------------------------------------------------------------------ | -------------- |
+| `chief-clancy`           | Thin bin wrapper — resolves paths, wires `runInstall`              | Yes (unscoped) |
+| `@chief-clancy/terminal` | Installer, hooks, runners, slash commands, agents                  | Yes            |
+| `@chief-clancy/core`     | Board abstractions, pipeline phases, lifecycle modules, schemas    | Yes            |
+| `@chief-clancy/brief`    | Standalone brief generator — slash command + lightweight installer | Yes            |
 
 ## Directory Structure
 
@@ -100,6 +103,13 @@ chief-clancy               — CLI wrapper (npx chief-clancy)
 │   │       ├── agents/              — specialist agent prompts (.md)
 │   │       ├── templates/           — CLAUDE.md template, .env.example per board
 │   │       └── shared/              — ANSI colour helpers
+│   ├── brief/                       — @chief-clancy/brief (standalone)
+│   │   ├── bin/brief.js             — ESM entry point with shebang
+│   │   └── src/
+│   │       ├── installer/           — self-contained installer (no core/terminal deps)
+│   │       ├── commands/            — brief.md slash command
+│   │       ├── workflows/           — brief.md workflow (standalone-adapted)
+│   │       └── agents/              — devils-advocate.md (AI-grill agent)
 │   └── chief-clancy/               — chief-clancy (CLI wrapper)
 │       ├── bin/clancy.js            — ESM entry point with shebang
 │       └── package.json             — bin field, depends on @chief-clancy/terminal

@@ -49,13 +49,14 @@ See [docs/GIT.md](docs/GIT.md) for full details.
 
 ## Architecture
 
-The monorepo has three packages:
+The monorepo has four packages:
 
 - **`@chief-clancy/core`** — board intelligence, types, lifecycle, pipeline. No terminal/CLI deps.
+- **`@chief-clancy/brief`** — standalone brief generator. No core/terminal deps.
 - **`@chief-clancy/terminal`** — installer, hooks, CLI bridge. Depends on core.
 - **`chief-clancy`** — thin wrapper. `npx chief-clancy` delegates to terminal.
 
-**Dependency direction:** core ← terminal ← wrapper. Enforced by ESLint. Core must never import from terminal.
+**Dependency direction:** core ← terminal ← wrapper. Brief is standalone. Enforced by ESLint. Core must never import from terminal.
 
 See [docs/CONVENTIONS.md](docs/CONVENTIONS.md) for code standards and [CLAUDE.md](CLAUDE.md) for the full project guide.
 

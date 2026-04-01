@@ -22,7 +22,7 @@ Interactive diagrams showing how packages, roles, commands, and flows connect. R
 
 ## 1. Package Boundaries
 
-Three packages with a strict dependency direction. No reverse imports.
+Four packages with a strict dependency direction. No reverse imports. Brief is standalone.
 
 ```mermaid
 graph TD
@@ -48,6 +48,13 @@ graph TD
         shared["shared/\n(cache, http, git-ops,\nenv-parser, remote)"]
     end
 
+    subgraph brief["@chief-clancy/brief (standalone)"]
+        briefInstaller["installer/"]
+        briefCommands["commands/\n(brief.md)"]
+        briefWorkflows["workflows/\n(brief.md)"]
+        briefAgents["agents/\n(devils-advocate.md)"]
+    end
+
     bin --> installer
     runner --> pipeline
     runner --> lifecycle
@@ -62,6 +69,7 @@ graph TD
     style chief stroke:#6a1b9a,stroke-width:2px
     style terminal stroke:#c62828,stroke-width:2px
     style core stroke:#1565c0,stroke-width:2px
+    style brief stroke:#2e7d32,stroke-width:2px
 ```
 
 ---

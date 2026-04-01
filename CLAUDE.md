@@ -47,21 +47,21 @@ See `docs/GIT.md` for the full type/gitmoji table (10 types).
 ```bash
 gh pr create --assignee Pushedskydiver --label "feature" --label "core"
 # Type labels: feature, fix, chore (must match branch prefix)
-# Package labels: core, terminal
+# Package labels: core, terminal, brief
 ```
 
 Merge policy: for **cleanup PRs** (C-prefixed audit fixes), watch CI and merge once all checks pass. For **regular phase PRs** (new features/modules), create the PR but leave merging to Alex.
 
 ## Architecture
 
-Dependency direction: core ← terminal ← chief-clancy. No reverse imports. Enforced by eslint-plugin-boundaries.
+Dependency direction: core ← terminal ← chief-clancy. Brief is standalone (no core/terminal deps). No reverse imports. Enforced by eslint-plugin-boundaries.
 
 ## Non-obvious constraints
 
 - `zod/mini` for all runtime validation — not `zod`
 - Hooks must be CommonJS — best-effort, must never crash
 - Runtime scripts are esbuild bundles — self-contained, zero npm dependency
-- Path aliases: `~/c/` → `core/src/*`, `~/t/` → `terminal/src/*`. Rewritten by `tsc-alias` at build time
+- Path aliases: `~/c/` → `core/src/*`, `~/t/` → `terminal/src/*`, `~/b/` → `brief/src/*`. Rewritten by `tsc-alias` at build time
 - Types/opts objects start non-exported — only export when consumed outside the file
 - Board modules: reuse header builders, schema-validate all responses, cache via `Cached<T>` class
 - See `docs/CONVENTIONS.md` for export hygiene and board implementation patterns
