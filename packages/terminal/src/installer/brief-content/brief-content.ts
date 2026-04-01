@@ -7,6 +7,7 @@
  */
 import { join } from 'node:path';
 
+import { hasErrorCode } from '~/t/installer/shared/fs-errors/index.js';
 import { rejectSymlink } from '~/t/installer/shared/fs-guards/index.js';
 
 // ---------------------------------------------------------------------------
@@ -66,12 +67,12 @@ const copyChecked = (src: string, dest: string, fs: BriefCopyFs): void => {
   fs.copyFile(src, dest);
 };
 
-/** Remove a file, ignoring errors (best-effort cleanup). */
+/** Remove a file, ignoring ENOENT. Rethrows other errors. */
 const unlinkSafe = (path: string, fs: BriefCleanFs): void => {
   try {
     fs.unlink(path);
-  } catch {
-    // Best-effort — file may not exist from a prior install.
+  } catch (err: unknown) {
+    if (!hasErrorCode(err, 'ENOENT')) throw err;
   }
 };
 
@@ -93,6 +94,7 @@ export const copyBriefContent = (options: CopyBriefContentOptions): void => {
   requireDir('workflows source', briefWorkflowsDir, fs);
   requireDir('agents source', briefAgentsDir, fs);
 
+  rejectSymlink(agentsDest);
   fs.mkdir(agentsDest);
 
   copyChecked(
@@ -156,8 +158,15 @@ export const handleBriefContent = (
 ): void => {
   const { sources, dests, enabledRoles, fs } = options;
   const { briefCommandsDir, briefWorkflowsDir, briefAgentsDir } = sources;
+  const hasAny = briefCommandsDir || briefWorkflowsDir || briefAgentsDir;
+  const hasAll = briefCommandsDir && briefWorkflowsDir && briefAgentsDir;
 
-  if (!briefCommandsDir || !briefWorkflowsDir || !briefAgentsDir) return;
+  if (!hasAny) return;
+  if (!hasAll) {
+    throw new Error(
+      'Brief source dirs must be all-or-none — some are missing.',
+    );
+  }
 
   const enabled = enabledRoles === null || enabledRoles.has('strategist');
 

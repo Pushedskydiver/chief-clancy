@@ -146,13 +146,28 @@ describe('cleanBriefContent', () => {
     );
   });
 
-  it('does not throw when unlink fails', () => {
+  it('ignores ENOENT errors from unlink', () => {
     const fs = createMockFs();
+    const enoent = Object.assign(new Error('not found'), { code: 'ENOENT' });
     fs.unlink.mockImplementation(() => {
-      throw new Error('ENOENT');
+      throw enoent;
     });
 
     expect(() => cleanBriefContent({ ...defaultDirs, fs })).not.toThrow();
+  });
+
+  it('rethrows non-ENOENT errors from unlink', () => {
+    const fs = createMockFs();
+    const eperm = Object.assign(new Error('permission denied'), {
+      code: 'EPERM',
+    });
+    fs.unlink.mockImplementation(() => {
+      throw eperm;
+    });
+
+    expect(() => cleanBriefContent({ ...defaultDirs, fs })).toThrow(
+      'permission denied',
+    );
   });
 });
 
@@ -161,6 +176,19 @@ describe('cleanBriefContent', () => {
 // ---------------------------------------------------------------------------
 
 describe('handleBriefContent', () => {
+  it('throws when only some brief source dirs are provided', () => {
+    const fs = createMockFs();
+
+    expect(() =>
+      handleBriefContent({
+        sources: { briefCommandsDir: '/pkg/src/commands' },
+        dests: defaultDests,
+        enabledRoles: null,
+        fs,
+      }),
+    ).toThrow('Brief source dirs must be all-or-none');
+  });
+
   it('is a no-op when brief source dirs are absent', () => {
     const fs = createMockFs();
 
