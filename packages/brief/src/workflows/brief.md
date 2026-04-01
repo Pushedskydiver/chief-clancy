@@ -2,47 +2,50 @@
 
 ## Overview
 
-Research an idea, interrogate it thoroughly, and generate a structured strategic brief with vertical-slice ticket decomposition. Briefs are saved locally and optionally posted as comments on the source ticket. Does not create tickets — that is `/clancy:approve-brief`.
+Research an idea, interrogate it thoroughly, and generate a structured strategic brief with vertical-slice ticket decomposition. Briefs are saved locally and optionally posted as comments on the source ticket. Does not create tickets — in **terminal mode**, use `/clancy:approve-brief` for that. In **standalone mode**, install the full pipeline (`npx chief-clancy`) to create tickets from briefs.
 
 ---
 
 ## Step 1 — Preflight checks
 
-1. Check `.clancy/` exists and `.clancy/.env` is present. If not:
+### 1. Detect installation context
 
-   ```
-   .clancy/ not found. Run /clancy:init to set up Clancy first.
-   ```
+Check for `.clancy/.env`:
 
-   Stop.
+- **Present** → **terminal mode**. Full Clancy installation detected.
+- **Absent** → **standalone mode**. Running from `@chief-clancy/brief` only.
 
-2. Source `.clancy/.env` and check board credentials are present.
+### 2. Terminal-mode preflight (skip in standalone mode)
 
-3. Check `CLANCY_ROLES` includes `strategist` (or env var is unset, which indicates a global install where all roles are available). If `CLANCY_ROLES` is set but does not include `strategist`:
+If `.clancy/.env` is present:
 
-   ```
-   The Strategist role is not enabled. Add "strategist" to CLANCY_ROLES in .clancy/.env or run /clancy:settings.
-   ```
+a. Source `.clancy/.env` and check board credentials are present.
 
-   Stop.
+b. Check `CLANCY_ROLES` includes `strategist` (or env var is unset, which indicates a global install where all roles are available). If `CLANCY_ROLES` is set but does not include `strategist`:
 
-4. Branch freshness check — run `git fetch origin` and compare the current HEAD with `origin/$CLANCY_BASE_BRANCH` (defaults to `main`). If the local branch is behind:
+```
+The Strategist role is not enabled. Add "strategist" to CLANCY_ROLES in .clancy/.env or run /clancy:settings.
+```
 
-   **AFK mode** (`--afk` flag or `CLANCY_MODE=afk`): auto-pull without prompting. Run `git pull origin $CLANCY_BASE_BRANCH` and continue.
+Stop.
 
-   **Interactive mode:**
+### 3. Branch freshness check — run `git fetch origin` and compare the current HEAD with `origin/$CLANCY_BASE_BRANCH` (defaults to `main`). If the local branch is behind:
 
-   ```
-   ⚠️  Your local branch is behind origin/{CLANCY_BASE_BRANCH} by {N} commit(s).
+**AFK mode** (`--afk` flag or `CLANCY_MODE=afk`): auto-pull without prompting. Run `git pull origin $CLANCY_BASE_BRANCH` and continue.
 
-   [1] Pull latest
-   [2] Continue anyway
-   [3] Abort
-   ```
+**Interactive mode:**
 
-   - [1] runs `git pull origin $CLANCY_BASE_BRANCH` and continues
-   - [2] continues without pulling
-   - [3] stops
+```
+⚠️  Your local branch is behind origin/{CLANCY_BASE_BRANCH} by {N} commit(s).
+
+[1] Pull latest
+[2] Continue anyway
+[3] Abort
+```
+
+- [1] runs `git pull origin $CLANCY_BASE_BRANCH` and continues
+- [2] continues without pulling
+- [3] stops
 
 ---
 
@@ -56,7 +59,7 @@ Parse the arguments passed to the command. Arguments can appear in any order.
 - **`--fresh`** — discard any existing brief and start over from scratch
 - **`--research`** — force web research agent (adds 1 web agent to the research phase)
 - **`--afk`** — use AI-grill instead of human grill (no interactive questions)
-- **`--epic {KEY}`** — hint for `/clancy:approve-brief` later. Stored in the brief's metadata. Ignored if the input is a board ticket (the source ticket is the parent).
+- **`--epic {KEY}`** — hint for the approve step later (terminal mode: `/clancy:approve-brief`). Stored in the brief's metadata. Ignored if the input is a board ticket (the source ticket is the parent).
 
 ### Input modes
 
@@ -81,6 +84,21 @@ If N > 10: `Maximum batch size is 10. Briefing 10 tickets.`
 ### --list flag handling
 
 If `--list` is present (with or without other arguments), jump to Step 11 (Brief Inventory) and stop.
+
+### Standalone board-ticket guard
+
+If running in **standalone mode** (Step 1 detected no `.clancy/.env`) and the resolved input mode is **board ticket** or **batch mode**:
+
+```
+Board credentials not found. To brief from a board ticket, install the
+full Clancy pipeline: npx chief-clancy
+
+For now, use:
+  /clancy:brief "Add dark mode"       — inline text
+  /clancy:brief --from docs/rfc.md    — from a file
+```
+
+Stop.
 
 ---
 
@@ -553,7 +571,7 @@ Same relentless energy as the human grill, but directed at the strategist itself
 2. Spawn the devil's advocate agent via the Agent tool, passing:
    - The idea text (ticket title + description, or inline text, or file content)
    - The 10-15 generated questions
-   - The path to the agent prompt: `src/agents/devils-advocate.md`
+   - The path to the agent prompt: `.claude/clancy/agents/devils-advocate.md`
 
 3. The devil's advocate agent answers each question by INTERROGATING ITS SOURCES:
    - **Codebase:** explore affected areas, read `.clancy/docs/`, check existing patterns. Don't assume — look.
@@ -774,7 +792,7 @@ Using all gathered context (idea, grill output, research findings), generate the
 
 ---
 
-_Generated by [Clancy](https://github.com/Pushedskydiver/chief-clancy). To answer open questions or request changes: comment on the source ticket or add a ## Feedback section to the brief file, then re-run `/clancy:brief` to revise. To approve: `/clancy:approve-brief`. To start over: `/clancy:brief --fresh`._
+_Generated by [Clancy](https://github.com/Pushedskydiver/chief-clancy). To answer open questions or request changes: comment on the source ticket or add a ## Feedback section to the brief file, then re-run `/clancy:brief` to revise. To create tickets: `/clancy:approve-brief` (requires full pipeline — `npx chief-clancy`). To start over: `/clancy:brief --fresh`._
 ```
 
 ### Source field format
@@ -837,7 +855,9 @@ Write to `.clancy/briefs/{YYYY-MM-DD}-{slug}.md`.
 
 ## Step 10 — Post to board
 
-Only for board-sourced briefs (ticket key was provided). Inline text and file briefs are local only.
+Only for board-sourced briefs in **terminal mode** (ticket key was provided AND `.clancy/.env` is present). In **standalone mode**, skip this step and Step 10a entirely — the local file in `.clancy/briefs/` is the source of truth.
+
+Inline text and file briefs are also local only — skip this step regardless of mode.
 
 ### GitHub — POST comment
 
@@ -951,7 +971,7 @@ Continue — do not stop. The local file is the source of truth.
 
 ## Step 10a — Apply pipeline label (board-sourced only)
 
-Only for board-sourced briefs (ticket key was provided). Inline text and file briefs skip this step.
+Only for board-sourced briefs in **terminal mode** (ticket key was provided AND `.clancy/.env` is present). In **standalone mode**, skip this step entirely (see Step 10 guard). Inline text and file briefs also skip this step.
 
 **This step is mandatory for board-sourced briefs — always apply the label.** Use `CLANCY_LABEL_BRIEF` from `.clancy/.env` if set. If not set, use `clancy:brief` as the default. Ensure the label exists on the board (create it if missing), then add it to the ticket. Also read `CLANCY_LABEL_PLAN` (default: `clancy:plan`) and `CLANCY_LABEL_BUILD` (default: `clancy:build`) for cleanup during re-briefs.
 
@@ -1219,7 +1239,8 @@ Clancy — Briefs
 
 3 unapproved drafts. 1 stale (>7 days).
 
-To approve: /clancy:approve-brief <slug or index>
+To approve (terminal mode): /clancy:approve-brief <slug or index>
+To approve (standalone):    npx chief-clancy, then /clancy:approve-brief
 To review stale briefs: open the file and add ## Feedback, or delete it.
 ```
 
@@ -1253,7 +1274,8 @@ Next Steps
     • Or add a ## Feedback section to the brief file
     Then re-run: /clancy:brief {KEY}
 
-  Approve:       /clancy:approve-brief {KEY}
+  Approve:       /clancy:approve-brief {KEY}  (terminal mode)
+  Full pipeline: npx chief-clancy             (if standalone)
   Start over:    /clancy:brief --fresh {KEY}
 ```
 
@@ -1271,8 +1293,9 @@ Next Steps
         .clancy/briefs/{date}-{slug}.feedback.md
     Then re-run: /clancy:brief
 
-  Approve:       /clancy:approve-brief {slug}
+  Approve:       /clancy:approve-brief {slug}           (terminal mode)
   With parent:   /clancy:approve-brief {slug} --epic {KEY}
+  Full pipeline: npx chief-clancy                        (if standalone)
   Start over:    /clancy:brief --fresh
 ```
 
@@ -1307,14 +1330,14 @@ Briefed {M} of {N} tickets. {K} skipped.
   ⏭️  [{KEY3}] {Title} — already briefed
   ⏭️  [{KEY4}] {Title} — not relevant
 
-Briefs saved to .clancy/briefs/. Run /clancy:approve-brief to create tickets.
+Briefs saved to .clancy/briefs/. To create tickets: /clancy:approve-brief (terminal mode) or install the full pipeline first (npx chief-clancy).
 ```
 
 ---
 
 ## Notes
 
-- This command does NOT create tickets — it generates briefs only. Ticket creation is `/clancy:approve-brief`.
+- This command does NOT create tickets — it generates briefs only. Ticket creation requires the full pipeline (`npx chief-clancy`) and `/clancy:approve-brief`.
 - Briefs are saved locally in `.clancy/briefs/` and optionally posted as comments on the source ticket.
 - The grill phase is the most important part — do not skip or rush it. Zero ambiguity is the goal.
 - Re-running without `--fresh` auto-detects feedback: if feedback exists, revises; if no feedback, stops with guidance.
@@ -1322,7 +1345,7 @@ Briefs saved to .clancy/briefs/. Run /clancy:approve-brief to create tickets.
 - The `--list` flag is an inventory display only — no brief generated, no API calls beyond the local filesystem.
 - Batch mode (`/clancy:brief 3`) implies AI-grill — each ticket is briefed autonomously.
 - All board API calls are best-effort — if a comment fails to post, print the brief and warn. The local file is the source of truth.
-- The `Clancy Strategic Brief` text in comments is the marker used by both `/clancy:brief` (to detect existing briefs and feedback) and `/clancy:approve-brief` (to find the brief). Search case-insensitively and match regardless of heading level (`#`, `##`, or plain text).
+- The `Clancy Strategic Brief` text in comments is the marker used by `/clancy:brief` (to detect existing briefs and feedback) and by `/clancy:approve-brief` in terminal mode (to find the brief for ticket creation). Search case-insensitively and match regardless of heading level (`#`, `##`, or plain text).
 - Jira uses ADF for comments (with `codeBlock` fallback). GitHub, Linear, and Shortcut accept Markdown directly.
 - Linear personal API keys do NOT use `Bearer` prefix.
 - Shortcut uses `Shortcut-Token` header (not `Authorization: Bearer`). API base: `https://api.app.shortcut.com/api/v3`. Stories use `name` (not `title`), `description` is markdown, dependencies use `story_links` with `blocks` verb, and workflow state transitions use `workflow_state_id`.
