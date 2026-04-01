@@ -1,117 +1,119 @@
 ---
-status: Approved
+status: Approved (revised 2026-04-01)
 date: 2026-03-23
+revised: 2026-04-01
 ---
 
 # Package Evolution Strategy
 
 ## Decision
 
-Ship v1 with two packages (`core` + `terminal`) but organise the code internally around future package boundaries. Extract into separate packages only when a second consumer proves the need.
+Ship v1 with two packages (`core` + `terminal`) but organise the code internally around future package boundaries. Extract into separate packages when a real consumer proves the need.
 
-## Context
+## Revision (2026-04-01)
 
-Jamie suggested decomposing Clancy by **capability** rather than **runtime boundary**:
+The original plan (9 packages extracted from core/terminal) has been refined based on session 48 learnings. Key changes:
 
-| Future Package           | Capability                                                                       |
-| ------------------------ | -------------------------------------------------------------------------------- |
-| `@chief-clancy/core`     | Board abstraction, types, schemas, env detection. The domain model.              |
-| `@chief-clancy/dev`      | Pick up ticket, branch, build, deliver PR, rework. Epic/single-ticket awareness. |
-| `@chief-clancy/brief`    | Take idea → grill → decompose → create tickets on the board.                     |
-| `@chief-clancy/plan`     | Implementation planning, TDD plans, approval flow.                               |
-| `@chief-clancy/design`   | Design specs, Stitch integration, visual verification.                           |
-| `@chief-clancy/qa`       | Verification gate, self-healing retry, code review, quality metrics.             |
-| `@chief-clancy/terminal` | CLI installer, hooks, slash commands. Wires capabilities for Claude Code.        |
-| `@chief-clancy/automate` | AFK runner, board watcher, quiet hours, session reports.                         |
-| `@chief-clancy/chat`     | Teams/Slack/Telegram interface.                                                  |
-| `chief-clancy`           | Thin wrapper. `npx chief-clancy` → terminal.                                     |
+1. **Standalone capability packages** — `brief`, `plan`, and `design` earn standalone status not because terminal needs them extracted, but because they serve non-developer audiences (designers, PMs, founders) who don't need the full pipeline.
+2. **QA stays in the pipeline** — the verification gate and quality metrics are tightly coupled to the implement/deliver loop. No standalone audience.
+3. **`@chief-clancy/cli` as discovery wizard** — interactive package selector under the org scope. `chief-clancy` (unscoped) stays as a quick alias to terminal.
+4. **Chat as a sibling to terminal** — both consume core/dev/brief/plan directly. Not a chain.
 
-The dependency chain:
+## Target package map
 
-```
-core ← dev ← terminal ← automate ← chat
-core ← brief ↗
-core ← design ↗
-core ← plan ↗
-core ← qa ↗
-```
+| Package | Purpose | Audience | Board needed? |
+| --- | --- | --- | --- |
+| `@chief-clancy/cli` | Interactive wizard — "what do you need?" | Everyone | No |
+| `@chief-clancy/core` | Domain model, types, schemas, board APIs | Library consumers | N/A |
+| `@chief-clancy/dev` | Pipeline orchestration, lifecycle modules | Automators | Yes |
+| `@chief-clancy/brief` | Grill → decompose → produce brief document | PMs, designers, founders, engineers | No |
+| `@chief-clancy/plan` | Read brief/ticket → produce implementation plan | Tech leads, engineers | No |
+| `@chief-clancy/design` | Design specs, a11y, Stitch integration, visual verification | Designers, frontend engineers | No |
+| `@chief-clancy/terminal` | Full install — consumes all above + hooks, runners, all commands | Engineers using the full pipeline | Yes |
+| `@chief-clancy/chat` | Slack/Teams conversational interface | Teams wanting chat-driven workflows | Depends on use |
+| `chief-clancy` | Unscoped alias → terminal | Existing users, quick install | Yes |
 
-## Why not extract now
-
-1. **No second consumer.** Separate packages earn their cost when someone wants one capability without the rest. That only happens when `automate` or `chat` arrives.
-2. **Overhead.** Each package needs: tsconfig, vitest config, turbo entry, knip config, publint/attw checks, barrel exports, CI steps. 9 packages × that overhead = friction with no payoff.
-3. **Internal boundaries are just as enforceable.** eslint-plugin-boundaries can enforce directory-level import rules within a package.
-
-## v1 structure (core + terminal)
-
-Code is organised by future-package directories inside `core` and `terminal`:
+## Dependency direction
 
 ```
-packages/core/src/
-  board/             → stays in core forever (domain model)
-  types/             → stays in core forever
-  schemas/           → stays in core forever
-  shared/            → stays in core forever (pure utilities)
-
-  dev/               → future @chief-clancy/dev
-    lifecycle/       →   fetch-ticket, deliver, rework, pr-creation, lock, cost, resume
-    pipeline/        →   phases, context, orchestrator
-
-  brief/             → future @chief-clancy/brief
-    strategist/      →   grill, decomposition, ticket creation
-
-  plan/              → future @chief-clancy/plan
-    planner/         →   implementation plans, approval flow
-
-  design/            → future @chief-clancy/design
-    specs/           →   component, a11y, content, layout specs
-    stitch/          →   Stitch MCP integration
-    verify/          →   Playwright, axe-core, Lighthouse
-
-  qa/                → future @chief-clancy/qa
-    verification/    →   gate, self-healing retry
-    review/          →   code review, quality metrics
-
-packages/terminal/src/
-  installer/         → stays in terminal
-  roles/             → stays in terminal (slash commands invoke core capabilities)
-  hooks/             → stays in terminal
-  shared/            → stays in terminal (ansi, prompt, notify)
-  agents/            → stays in terminal
-  templates/         → stays in terminal
-
-  automate/          → future @chief-clancy/automate
-    afk/             →   AFK runner, board watcher, quiet hours, session reports
+core
+├── brief   (light dep — types/schemas only)
+├── plan    (light dep — types/schemas only)
+├── design  (light dep — types/schemas only)
+├── dev     (heavy dep — board APIs, pipeline, lifecycle)
+│
+terminal    (consumes all above + adds installer/hooks/runners)
+chat        (consumes all above + adds Slack/Teams adapter)
+│
+cli         (interactive wizard — installs other packages)
 ```
 
-## Extraction criteria
+Terminal and chat are **siblings**, not a chain. Both wire their own I/O into core/dev.
+
+## Standalone packages (brief, plan, design)
+
+Each standalone package ships:
+- A Claude Code slash command (markdown prompt)
+- A lightweight installer (`npx @chief-clancy/brief` → copies commands to `.claude/commands/clancy/`)
+- Minimal supporting code (file I/O for storing documents)
+
+Each standalone package does NOT need:
+- Hooks
+- Runtime bundles
+- Board configuration or `.clancy/.env`
+- The pipeline
+
+### Why standalone?
+
+These capabilities serve audiences beyond developers:
+- **Brief** — a designer structuring a feature idea, a PM writing a spec, a founder validating a concept
+- **Plan** — a tech lead breaking down a project, a team planning a sprint
+- **Design** — a designer writing component specs, accessibility requirements
+
+They work with just Claude Code and a project directory. No board, no pipeline, no config.
+
+### Conflict resolution
+
+Multiple packages may install the same slash command (e.g. both `brief` and `terminal` ship `/clancy:brief`). This is handled by:
+
+1. **Idempotent file writes** — slash commands are markdown files in `.claude/commands/clancy/`. Writing the same file twice is a no-op.
+2. **Terminal is a superset** — it includes all standalone commands plus hooks/runners/board config. Installing terminal over brief just adds the extra pieces.
+3. **Uninstall is clean** — removing terminal leaves standalone commands intact if the standalone package is still installed.
+
+## What stays in terminal (not extracted)
+
+- **QA** — verification gate (Stop hook) and quality metrics are pipeline-coupled. No standalone audience.
+- **Hooks** — tightly bound to Claude Code's hook system. No other consumer.
+- **Runners** — implement and autopilot entry points. Only terminal and chat consume these.
+- **Installer** — the install/update/uninstall lifecycle.
+
+## Extraction criteria (unchanged)
 
 Extract a directory into its own package when **any** of these are true:
 
-1. **A second consumer exists.** Another package (e.g. `chat`) needs `dev/` without `terminal/`. The consumer is real, not hypothetical.
-2. **The directory exceeds 2000 lines.** It has grown into a substantial body of code that benefits from independent versioning and testing.
-3. **Independent release cadence.** The capability changes at a different rate than the rest of core — extracting it prevents unnecessary version bumps.
+1. **A second consumer exists.** Another package (e.g. `chat`) needs the capability without the rest.
+2. **The directory exceeds 2000 lines.** It has grown into a substantial body of code.
+3. **Independent release cadence.** The capability changes at a different rate than the rest.
 
 When extracting:
 
-1. Move `core/src/{dir}/` to `packages/{dir}/src/`
+1. Move the source directory to `packages/{name}/src/`
 2. Add package.json, tsconfig, vitest config
 3. Update imports across the monorepo
 4. Add boundary rule in ESLint
 5. Update turbo.json, knip.json
 
-The extraction is mechanical because internal import boundaries are already enforced.
+## Build order
 
-## What this changes
+1. **`@chief-clancy/brief`** — prove the standalone installer pattern works
+2. **`@chief-clancy/plan`** — same pattern as brief
+3. **`@chief-clancy/design`** — same pattern, but needs Stitch integration work
+4. **`@chief-clancy/dev`** — extract when chat arrives as a second consumer
+5. **`@chief-clancy/cli`** — interactive wizard, built after standalone packages exist
+6. **`@chief-clancy/chat`** — conversational interface, the big new capability
 
-- **Directory layout** in core gets nested capability directories instead of flat
-- **Nothing changes** about the phases, PRs, or execution plan
-- **ESLint boundaries** will enforce internal directory rules (dev/ cannot import from brief/, etc.)
-- **Architecture docs** document both current state (core + terminal) and target state (full package map)
+## Original context (2026-03-23)
 
-## What this does NOT change
+The original decision was to ship v1 with two packages (core + terminal) and organise code internally by future package boundaries. That decision was correct — the rebuild completed successfully with this structure.
 
-- v1 ships as two packages: `@chief-clancy/core` + `@chief-clancy/terminal`
-- The 14-phase delivery plan stays the same
-- npm publishing strategy stays the same
-- No new packages are created until extraction criteria are met
+The evolution above builds on that foundation. Internal boundaries (enforced by eslint-plugin-boundaries) remain in place. Extraction is mechanical because import rules are already enforced.
