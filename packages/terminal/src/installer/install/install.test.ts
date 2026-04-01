@@ -68,6 +68,13 @@ describe('resolveInstallPaths', () => {
       );
     });
 
+    it('resolves agents destination under ~/.claude/clancy', () => {
+      const paths = resolveInstallPaths('global', homeDir, cwd);
+      expect(paths.agentsDest).toBe(
+        join(homeDir, '.claude', 'clancy', 'agents'),
+      );
+    });
+
     it('resolves patches dir under ~/.claude/clancy', () => {
       const paths = resolveInstallPaths('global', homeDir, cwd);
       expect(paths.patchesDir).toBe(
@@ -94,6 +101,11 @@ describe('resolveInstallPaths', () => {
     it('resolves claudeConfigDir to cwd/.claude', () => {
       const paths = resolveInstallPaths('local', homeDir, cwd);
       expect(paths.claudeConfigDir).toBe(join(cwd, '.claude'));
+    });
+
+    it('resolves agents destination under cwd/.claude/clancy', () => {
+      const paths = resolveInstallPaths('local', homeDir, cwd);
+      expect(paths.agentsDest).toBe(join(cwd, '.claude', 'clancy', 'agents'));
     });
   });
 

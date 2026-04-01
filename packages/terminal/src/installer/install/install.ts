@@ -7,8 +7,10 @@
  */
 import type { EnvFileSystem } from '@chief-clancy/core';
 
+import { unlinkSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
+import { handleBriefContent } from '~/t/installer/brief-content/index.js';
 import { inlineWorkflows } from '~/t/installer/file-ops/file-ops.js';
 import { installHooks } from '~/t/installer/hook-installer/hook-installer.js';
 import {
@@ -35,12 +37,16 @@ type InstallSources = {
   readonly hooksDir: string;
   readonly bundleDir: string;
   readonly agentsDir: string;
+  readonly briefCommandsDir?: string;
+  readonly briefWorkflowsDir?: string;
+  readonly briefAgentsDir?: string;
 };
 
 /** All resolved destination paths for an installation. */
 export type InstallPaths = {
   readonly commandsDest: string;
   readonly workflowsDest: string;
+  readonly agentsDest: string;
   readonly claudeConfigDir: string;
   readonly manifestPath: string;
   readonly workflowsManifestPath: string;
@@ -65,15 +71,7 @@ type InstallerFs = {
   readonly rejectSymlink: (path: string) => void;
 };
 
-/**
- * Prompt API used by the orchestrator.
- *
- * Only `ask` is called by {@link runInstall}. The caller owns the prompt
- * lifecycle — create before calling `runInstall`, close after it returns.
- */
-type InstallerPrompts = {
-  readonly ask: (label: string) => Promise<string>;
-};
+type InstallerPrompts = { readonly ask: (label: string) => Promise<string> };
 
 /** Options for {@link runInstall}. */
 export type RunInstallOptions = {
@@ -92,7 +90,6 @@ export type RunInstallOptions = {
 // Constants
 // ---------------------------------------------------------------------------
 
-/** Bundled runtime scripts that are copied to `.clancy/` in the project. */
 const BUNDLE_SCRIPTS = ['clancy-implement.js', 'clancy-autopilot.js'] as const;
 
 // ---------------------------------------------------------------------------
@@ -138,6 +135,7 @@ export function resolveInstallPaths(
   return {
     commandsDest: join(baseDir, 'commands', 'clancy'),
     workflowsDest: join(baseDir, 'clancy', 'workflows'),
+    agentsDest: join(baseDir, 'clancy', 'agents'),
     claudeConfigDir: baseDir,
     manifestPath: join(baseDir, 'clancy', 'manifest.json'),
     workflowsManifestPath: join(baseDir, 'clancy', 'workflows-manifest.json'),
@@ -315,29 +313,41 @@ function installContent(options: {
     enabledRoles,
   });
 
+  handleBriefContent({
+    sources,
+    dests: paths,
+    enabledRoles,
+    fs: { ...fs, unlink: unlinkSync },
+  });
+
   if (mode === 'global') {
     inlineWorkflows(paths.commandsDest, paths.workflowsDest);
   }
 
+  writeVersionAndManifests(paths, version, fs);
+}
+
+/** Write VERSION file and SHA-256 manifests for commands and workflows. */
+function writeVersionAndManifests(
+  paths: InstallPaths,
+  version: string,
+  fs: InstallerFs,
+): void {
   const versionPath = join(paths.commandsDest, 'VERSION');
   fs.rejectSymlink(versionPath);
   fs.writeFile(versionPath, version);
 
   fs.mkdir(dirname(paths.manifestPath));
-  const cmdManifest = JSON.stringify(
-    buildManifest(paths.commandsDest),
-    null,
-    2,
-  );
-  const wfManifest = JSON.stringify(
-    buildManifest(paths.workflowsDest),
-    null,
-    2,
-  );
   fs.rejectSymlink(paths.manifestPath);
   fs.rejectSymlink(paths.workflowsManifestPath);
-  fs.writeFile(paths.manifestPath, cmdManifest);
-  fs.writeFile(paths.workflowsManifestPath, wfManifest);
+  fs.writeFile(
+    paths.manifestPath,
+    JSON.stringify(buildManifest(paths.commandsDest), null, 2),
+  );
+  fs.writeFile(
+    paths.workflowsManifestPath,
+    JSON.stringify(buildManifest(paths.workflowsDest), null, 2),
+  );
 }
 
 /** Copy runtime bundles and write project-level metadata. */
