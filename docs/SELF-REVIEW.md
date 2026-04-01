@@ -34,7 +34,7 @@ This is a **living document** — when CodeRabbit catches something the self-rev
 
 ## Carried-over content
 
-- When bringing files from the old repo, do hardcoded version numbers match the new repo's config? (CodeRabbit caught Node 22+ in role docs when `engines.node` requires >=24.0.0)
+- Do hardcoded version numbers match the repo's config? (CodeRabbit caught Node 22+ in role docs when `engines.node` requires >=24.0.0)
 - Do markdown code fences open and close with the same number of backticks? (CodeRabbit caught ``` opening with ```` closing — breaks rendering)
 
 ## Consistency

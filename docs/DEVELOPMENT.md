@@ -68,17 +68,16 @@ Before starting each phase, spin up two agents in parallel:
 ### Breakdown Validator
 
 - Read the phase's PR list from the brief
-- Read relevant source code from the old Clancy repo (`~/Desktop/alex/clancy`)
+- Read relevant source code in the monorepo
 - Check: Is each PR truly single-responsibility? Could any be split further?
 - Check: Are there hidden dependencies between PRs that aren't captured?
 - Check: Are the exit criteria testable and specific enough?
-- Check: What modules from the old codebase need to be read?
 - Check: Are there edge cases or cross-cutting concerns that will surface mid-PR?
 
 ### DA Agent
 
 - Read the phase's PR list from the brief
-- Read relevant source code from the old Clancy repo
+- Read relevant source code in the monorepo
 - Check: Is anything missing? Files, tests, config changes?
 - Check: Is the order right? Would a different PR sequence reduce rework?
 - Check: Are we over-scoping or under-scoping any PR?
@@ -131,11 +130,11 @@ The next session starts clean: reads the brief, reads PROGRESS.md, picks up wher
 
 ### Use subagents for exploration
 
-When investigating code in the old repo or exploring architecture options, use subagents (`Agent` tool) instead of reading files directly. Subagents run in separate context windows — they explore, summarise, and report back without filling the main conversation with file contents.
+When exploring architecture options or reviewing large sections of the codebase, use subagents (`Agent` tool) instead of reading files directly. Subagents run in separate context windows — they explore, summarise, and report back without filling the main conversation with file contents.
 
 This is especially important for:
 
-- Phase validation (reading old repo code for each PR)
+- Phase validation (reviewing existing code for each PR)
 - DA reviews (reviewing all changed files)
 - Codebase exploration before implementing a module
 

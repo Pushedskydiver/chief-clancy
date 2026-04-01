@@ -79,4 +79,4 @@ Full process: `docs/DEVELOPMENT.md` | Code standards: `docs/CONVENTIONS.md` | Gi
 
 ## Reference
 
-Old Clancy codebase: `~/Desktop/alex/clancy` — READ-ONLY reference. All work happens in this repo.
+The monorepo rebuild is complete. Historical decision docs reference the old Clancy repo (`~/Desktop/alex/clancy`) for migration context — all code now lives here.
