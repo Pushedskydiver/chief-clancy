@@ -31,6 +31,7 @@ export default defineConfig(
     settings: {
       'boundaries/elements': [
         { type: 'core', pattern: 'packages/core/*' },
+        { type: 'brief', pattern: 'packages/brief/*' },
         { type: 'terminal', pattern: 'packages/terminal/*' },
         { type: 'chat', pattern: 'packages/chat/*' },
         { type: 'wrapper', pattern: 'packages/chief-clancy/*' },
@@ -81,6 +82,10 @@ export default defineConfig(
             {
               from: { type: 'core' },
               allow: [{ to: { type: 'core' } }],
+            },
+            {
+              from: { type: 'brief' },
+              allow: [{ to: { type: 'brief' } }],
             },
             {
               from: { type: 'terminal' },

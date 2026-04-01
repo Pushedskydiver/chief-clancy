@@ -1,0 +1,48 @@
+{
+  "name": "@chief-clancy/brief",
+  "version": "0.1.0",
+  "description": "Strategic brief generator for Claude Code — grill, decompose, and document feature ideas",
+  "author": "Alex Clapperton",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pushedskydiver/chief-clancy.git",
+    "directory": "packages/brief"
+  },
+  "homepage": "https://github.com/Pushedskydiver/chief-clancy#readme",
+  "bugs": {
+    "url": "https://github.com/Pushedskydiver/chief-clancy/issues"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "ai",
+    "brief",
+    "strategy",
+    "slash-commands",
+    "developer-tools"
+  ],
+  "type": "module",
+  "bin": {
+    "clancy-brief": "./bin/brief.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "bin",
+    "src/commands",
+    "src/workflows",
+    "src/agents"
+  ],
+  "scripts": {
+    "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc --project tsconfig.build.json && tsc-alias --project tsconfig.build.json",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  }
+}
