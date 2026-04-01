@@ -119,6 +119,32 @@ function inlineWorkflow(commandsDest, workflowsDest) {
 }
 
 // ---------------------------------------------------------------------------
+// Mode selection
+// ---------------------------------------------------------------------------
+
+const MODE_MAP = { 1: 'global', 2: 'local', global: 'global', local: 'local' };
+
+/** Prompt the user for global/local and return the mode (or exit on bad input). */
+async function chooseMode() {
+  console.log(blue('  Where would you like to install?'));
+  console.log('');
+  console.log(
+    `  1) Global  ${dim('(~/.claude)')}   — available in all projects`,
+  );
+  console.log(`  2) Local   ${dim('(./.claude)')}  — this project only`);
+  console.log('');
+  const raw = await ask(cyan('  Choice [1]: '));
+  const key = (raw || '1').trim().toLowerCase();
+  const resolved = MODE_MAP[key];
+
+  if (resolved) return resolved;
+
+  console.log(red('\n  Invalid choice. Run npx @chief-clancy/brief again.'));
+  rl.close();
+  process.exit(1);
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -130,32 +156,9 @@ async function main() {
   );
   console.log('');
 
-  // Determine install mode
-  let mode = flag;
+  const mode = flag ?? (await chooseMode());
 
-  if (!mode) {
-    console.log(blue('  Where would you like to install?'));
-    console.log('');
-    console.log(
-      `  1) Global  ${dim('(~/.claude)')}   — available in all projects`,
-    );
-    console.log(`  2) Local   ${dim('(./.claude)')}  — this project only`);
-    console.log('');
-    const choice = await ask(cyan('  Choice [1]: '));
-    const trimmed = (choice || '1').trim();
-
-    if (trimmed === '1' || trimmed.toLowerCase() === 'global') {
-      mode = 'global';
-    } else if (trimmed === '2' || trimmed.toLowerCase() === 'local') {
-      mode = 'local';
-    } else {
-      console.log(
-        red('\n  Invalid choice. Run npx @chief-clancy/brief again.'),
-      );
-      rl.close();
-      process.exit(1);
-    }
-  } else {
+  if (flag) {
     console.log(dim(`  Mode: ${flag} (--${flag} flag)`));
   }
 
