@@ -42,6 +42,7 @@ Revised the package evolution strategy based on a key insight: standalone packag
 ### First: `@chief-clancy/brief`
 
 Needs:
+
 - New package at `packages/brief/`
 - Lightweight installer (copy slash commands to `.claude/commands/clancy/`)
 - `bin` entry so `npx @chief-clancy/brief` works

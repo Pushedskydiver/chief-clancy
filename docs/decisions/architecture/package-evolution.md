@@ -21,17 +21,17 @@ The original plan (9 packages extracted from core/terminal) has been refined bas
 
 ## Target package map
 
-| Package | Purpose | Audience | Board needed? |
-| --- | --- | --- | --- |
-| `@chief-clancy/cli` | Interactive wizard — "what do you need?" | Everyone | No |
-| `@chief-clancy/core` | Domain model, types, schemas, board APIs | Library consumers | N/A |
-| `@chief-clancy/dev` | Pipeline orchestration, lifecycle modules | Automators | Yes |
-| `@chief-clancy/brief` | Grill → decompose → produce brief document | PMs, designers, founders, engineers | No |
-| `@chief-clancy/plan` | Read brief/ticket → produce implementation plan | Tech leads, engineers | No |
-| `@chief-clancy/design` | Design specs, a11y, Stitch integration, visual verification | Designers, frontend engineers | No |
-| `@chief-clancy/terminal` | Full install — consumes all above + hooks, runners, all commands | Engineers using the full pipeline | Yes |
-| `@chief-clancy/chat` | Slack/Teams conversational interface | Teams wanting chat-driven workflows | Depends on use |
-| `chief-clancy` | Unscoped alias → terminal | Existing users, quick install | Yes |
+| Package                  | Purpose                                                          | Audience                            | Board needed?  |
+| ------------------------ | ---------------------------------------------------------------- | ----------------------------------- | -------------- |
+| `@chief-clancy/cli`      | Interactive wizard — "what do you need?"                         | Everyone                            | No             |
+| `@chief-clancy/core`     | Domain model, types, schemas, board APIs                         | Library consumers                   | N/A            |
+| `@chief-clancy/dev`      | Pipeline orchestration, lifecycle modules                        | Automators                          | Yes            |
+| `@chief-clancy/brief`    | Grill → decompose → produce brief document                       | PMs, designers, founders, engineers | No             |
+| `@chief-clancy/plan`     | Read brief/ticket → produce implementation plan                  | Tech leads, engineers               | No             |
+| `@chief-clancy/design`   | Design specs, a11y, Stitch integration, visual verification      | Designers, frontend engineers       | No             |
+| `@chief-clancy/terminal` | Full install — consumes all above + hooks, runners, all commands | Engineers using the full pipeline   | Yes            |
+| `@chief-clancy/chat`     | Slack/Teams conversational interface                             | Teams wanting chat-driven workflows | Depends on use |
+| `chief-clancy`           | Unscoped alias → terminal                                        | Existing users, quick install       | Yes            |
 
 ## Dependency direction
 
@@ -53,11 +53,13 @@ Terminal and chat are **siblings**, not a chain. Both wire their own I/O into co
 ## Standalone packages (brief, plan, design)
 
 Each standalone package ships:
+
 - A Claude Code slash command (markdown prompt)
 - A lightweight installer (`npx @chief-clancy/brief` → copies commands to `.claude/commands/clancy/`)
 - Minimal supporting code (file I/O for storing documents)
 
 Each standalone package does NOT need:
+
 - Hooks
 - Runtime bundles
 - Board configuration or `.clancy/.env`
@@ -66,6 +68,7 @@ Each standalone package does NOT need:
 ### Why standalone?
 
 These capabilities serve audiences beyond developers:
+
 - **Brief** — a designer structuring a feature idea, a PM writing a spec, a founder validating a concept
 - **Plan** — a tech lead breaking down a project, a team planning a sprint
 - **Design** — a designer writing component specs, accessibility requirements
