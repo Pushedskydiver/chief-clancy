@@ -7,7 +7,6 @@
  */
 import type { EnvFileSystem } from '@chief-clancy/core';
 
-import { unlinkSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
 import { handleBriefContent } from '~/t/installer/brief-content/index.js';
@@ -67,6 +66,8 @@ type InstallerFs = {
   /** Create a directory recursively (must not throw on existing dirs). */
   readonly mkdir: (path: string) => void;
   readonly copyFile: (src: string, dest: string) => void;
+  /** Remove a file. May throw on missing files — callers handle ENOENT. */
+  readonly unlink: (path: string) => void;
   /** Throw if the given path is a symlink. Swallow ENOENT. */
   readonly rejectSymlink: (path: string) => void;
 };
@@ -317,7 +318,7 @@ function installContent(options: {
     sources,
     dests: paths,
     enabledRoles,
-    fs: { ...fs, unlink: unlinkSync },
+    fs,
   });
 
   if (mode === 'global') {
