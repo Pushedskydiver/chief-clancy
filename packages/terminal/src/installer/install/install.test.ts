@@ -217,4 +217,25 @@ describe('validateSources', () => {
       /clancy-implement\.js.*not found/,
     );
   });
+
+  it('throws when only some brief source dirs are provided', () => {
+    const partial = { ...sources, briefCommandsDir: '/pkg/src/commands' };
+    expect(() => validateSources(partial, () => true)).toThrow(
+      'Brief source dirs must be all-or-none',
+    );
+  });
+
+  it('does not throw when all brief source dirs are provided', () => {
+    const full = {
+      ...sources,
+      briefCommandsDir: '/pkg/src/commands',
+      briefWorkflowsDir: '/pkg/src/workflows',
+      briefAgentsDir: '/pkg/src/agents',
+    };
+    expect(() => validateSources(full, () => true)).not.toThrow();
+  });
+
+  it('does not throw when no brief source dirs are provided', () => {
+    expect(() => validateSources(sources, () => true)).not.toThrow();
+  });
 });
