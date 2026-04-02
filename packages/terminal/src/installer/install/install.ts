@@ -177,8 +177,13 @@ export function parseEnabledRoles(
 
 /**
  * Validate that all required source directories and files exist.
- * Throws on the first missing path. `agentsDir` is not validated —
- * the verification gate prompt is read best-effort and skipped if missing.
+ *
+ * Guards against a corrupted npm package. Throws on the first missing path.
+ * `agentsDir` is intentionally not validated — the verification gate prompt
+ * is read best-effort in {@link registerHooks} and skipped if missing.
+ *
+ * @param sources - The source directories to check.
+ * @param exists - File existence check (injected for testability).
  */
 export function validateSources(
   sources: InstallSources,
