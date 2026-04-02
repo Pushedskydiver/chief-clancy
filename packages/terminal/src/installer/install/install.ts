@@ -18,6 +18,7 @@ import {
   detectModifiedFiles,
 } from '~/t/installer/manifest/manifest.js';
 import { copyRoleFiles } from '~/t/installer/role-filter/role-filter.js';
+import { requirePath } from '~/t/installer/shared/fs-guards/index.js';
 import { printSuccess } from '~/t/installer/ui/ui.js';
 import { blue, dim, green } from '~/t/shared/ansi/index.js';
 
@@ -174,27 +175,10 @@ export function parseEnabledRoles(
   return new Set(normalised);
 }
 
-/** Throw if a required path does not exist. */
-function requirePath(
-  label: string,
-  path: string,
-  exists: (p: string) => boolean,
-): void {
-  if (!exists(path)) {
-    throw new Error(`${label} not found: ${path}`);
-  }
-}
-
 /**
  * Validate that all required source directories and files exist.
- *
- * Guards against a corrupted npm package. Throws on the first missing path.
- * `agentsDir` is intentionally not validated — the verification gate prompt
- * is read best-effort in {@link registerHooks} and skipped if missing.
- *
- * @param sources - The source directories to check.
- * @param exists - File existence check (injected for testability).
- * @returns Nothing — throws on the first missing path.
+ * Throws on the first missing path. `agentsDir` is not validated —
+ * the verification gate prompt is read best-effort and skipped if missing.
  */
 export function validateSources(
   sources: InstallSources,
@@ -211,6 +195,20 @@ export function validateSources(
       exists,
     );
   });
+
+  const { briefCommandsDir, briefWorkflowsDir, briefAgentsDir } = sources;
+  const hasSome = Boolean(
+    briefCommandsDir ?? briefWorkflowsDir ?? briefAgentsDir,
+  );
+  const hasAll = Boolean(
+    briefCommandsDir && briefWorkflowsDir && briefAgentsDir,
+  );
+
+  if (hasSome && !hasAll) {
+    throw new Error(
+      'Brief source dirs must be all-or-none — some are missing.',
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------

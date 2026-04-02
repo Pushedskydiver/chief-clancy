@@ -94,6 +94,8 @@ export const copyBriefContent = (options: CopyBriefContentOptions): void => {
   requireDir('workflows source', briefWorkflowsDir, fs);
   requireDir('agents source', briefAgentsDir, fs);
 
+  rejectSymlink(commandsDest);
+  rejectSymlink(workflowsDest);
   rejectSymlink(agentsDest);
   fs.mkdir(agentsDest);
 
@@ -122,6 +124,10 @@ export const copyBriefContent = (options: CopyBriefContentOptions): void => {
  */
 export const cleanBriefContent = (options: CleanBriefContentOptions): void => {
   const { commandsDest, workflowsDest, agentsDest, fs } = options;
+
+  rejectSymlink(commandsDest);
+  rejectSymlink(workflowsDest);
+  rejectSymlink(agentsDest);
 
   unlinkSafe(join(commandsDest, BRIEF_COMMAND), fs);
   unlinkSafe(join(workflowsDest, BRIEF_WORKFLOW), fs);
@@ -158,15 +164,8 @@ export const handleBriefContent = (
 ): void => {
   const { sources, dests, enabledRoles, fs } = options;
   const { briefCommandsDir, briefWorkflowsDir, briefAgentsDir } = sources;
-  const hasAny = briefCommandsDir || briefWorkflowsDir || briefAgentsDir;
-  const hasAll = briefCommandsDir && briefWorkflowsDir && briefAgentsDir;
 
-  if (!hasAny) return;
-  if (!hasAll) {
-    throw new Error(
-      'Brief source dirs must be all-or-none — some are missing.',
-    );
-  }
+  if (!briefCommandsDir || !briefWorkflowsDir || !briefAgentsDir) return;
 
   const enabled = enabledRoles === null || enabledRoles.has('strategist');
 

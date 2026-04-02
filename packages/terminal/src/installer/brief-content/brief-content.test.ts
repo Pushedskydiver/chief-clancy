@@ -176,19 +176,6 @@ describe('cleanBriefContent', () => {
 // ---------------------------------------------------------------------------
 
 describe('handleBriefContent', () => {
-  it('throws when only some brief source dirs are provided', () => {
-    const fs = createMockFs();
-
-    expect(() =>
-      handleBriefContent({
-        sources: { briefCommandsDir: '/pkg/src/commands' },
-        dests: defaultDests,
-        enabledRoles: null,
-        fs,
-      }),
-    ).toThrow('Brief source dirs must be all-or-none');
-  });
-
   it('is a no-op when brief source dirs are absent', () => {
     const fs = createMockFs();
 
