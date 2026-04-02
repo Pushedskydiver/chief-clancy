@@ -16,7 +16,6 @@ import { rejectSymlink } from '~/t/installer/shared/fs-guards/index.js';
 
 /** File system operations for brief content copying. */
 type BriefCopyFs = {
-  readonly exists: (path: string) => boolean;
   readonly mkdir: (path: string) => void;
   readonly copyFile: (src: string, dest: string) => void;
 };
@@ -54,13 +53,6 @@ const BRIEF_AGENT = 'devils-advocate.md';
 // Helpers
 // ---------------------------------------------------------------------------
 
-/** Throw if a required source directory does not exist. */
-const requireDir = (label: string, path: string, fs: BriefCopyFs): void => {
-  if (!fs.exists(path)) {
-    throw new Error(`Brief ${label} not found: ${path}`);
-  }
-};
-
 /** Copy a single file with symlink protection. */
 const copyChecked = (src: string, dest: string, fs: BriefCopyFs): void => {
   rejectSymlink(dest);
@@ -89,10 +81,6 @@ const unlinkSafe = (path: string, fs: BriefCleanFs): void => {
 export const copyBriefContent = (options: CopyBriefContentOptions): void => {
   const { briefCommandsDir, briefWorkflowsDir, briefAgentsDir, fs } = options;
   const { commandsDest, workflowsDest, agentsDest } = options;
-
-  requireDir('commands source', briefCommandsDir, fs);
-  requireDir('workflows source', briefWorkflowsDir, fs);
-  requireDir('agents source', briefAgentsDir, fs);
 
   rejectSymlink(commandsDest);
   rejectSymlink(workflowsDest);

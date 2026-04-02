@@ -238,4 +238,18 @@ describe('validateSources', () => {
   it('does not throw when no brief source dirs are provided', () => {
     expect(() => validateSources(sources, () => true)).not.toThrow();
   });
+
+  it('throws when brief source dirs are provided but do not exist', () => {
+    const full = {
+      ...sources,
+      briefCommandsDir: '/pkg/src/commands',
+      briefWorkflowsDir: '/pkg/src/workflows',
+      briefAgentsDir: '/pkg/src/agents',
+    };
+    const exists = (p: string) => !p.includes('/pkg/src/commands');
+
+    expect(() => validateSources(full, exists)).toThrow(
+      /Brief commands source.*not found/,
+    );
+  });
 });

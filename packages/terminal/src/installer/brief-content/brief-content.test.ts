@@ -12,16 +12,11 @@ import {
 // Mock FS
 // ---------------------------------------------------------------------------
 
-const createMockFs = (existingPaths: readonly string[] = []) => {
-  const existing = new Set(existingPaths);
-
-  return {
-    exists: vi.fn((p: string) => existing.has(p)),
-    mkdir: vi.fn(),
-    copyFile: vi.fn(),
-    unlink: vi.fn(),
-  };
-};
+const createMockFs = () => ({
+  mkdir: vi.fn(),
+  copyFile: vi.fn(),
+  unlink: vi.fn(),
+});
 
 const defaultDirs = {
   briefCommandsDir: '/pkg/src/commands',
@@ -31,12 +26,6 @@ const defaultDirs = {
   workflowsDest: '/dest/clancy/workflows',
   agentsDest: '/dest/clancy/agents',
 };
-
-const allSourcesExist = [
-  defaultDirs.briefCommandsDir,
-  defaultDirs.briefWorkflowsDir,
-  defaultDirs.briefAgentsDir,
-];
 
 const defaultSources = {
   briefCommandsDir: defaultDirs.briefCommandsDir,
@@ -56,7 +45,7 @@ const defaultDests = {
 
 describe('copyBriefContent', () => {
   it('copies brief command to commands destination', () => {
-    const fs = createMockFs(allSourcesExist);
+    const fs = createMockFs();
     copyBriefContent({ ...defaultDirs, fs });
 
     expect(fs.copyFile).toHaveBeenCalledWith(
@@ -66,7 +55,7 @@ describe('copyBriefContent', () => {
   });
 
   it('copies brief workflow to workflows destination', () => {
-    const fs = createMockFs(allSourcesExist);
+    const fs = createMockFs();
     copyBriefContent({ ...defaultDirs, fs });
 
     expect(fs.copyFile).toHaveBeenCalledWith(
@@ -76,7 +65,7 @@ describe('copyBriefContent', () => {
   });
 
   it('copies devils-advocate agent to agents destination', () => {
-    const fs = createMockFs(allSourcesExist);
+    const fs = createMockFs();
     copyBriefContent({ ...defaultDirs, fs });
 
     expect(fs.copyFile).toHaveBeenCalledWith(
@@ -86,43 +75,10 @@ describe('copyBriefContent', () => {
   });
 
   it('creates agents destination directory', () => {
-    const fs = createMockFs(allSourcesExist);
+    const fs = createMockFs();
     copyBriefContent({ ...defaultDirs, fs });
 
     expect(fs.mkdir).toHaveBeenCalledWith(defaultDirs.agentsDest);
-  });
-
-  it('throws when commands source dir does not exist', () => {
-    const fs = createMockFs([
-      defaultDirs.briefWorkflowsDir,
-      defaultDirs.briefAgentsDir,
-    ]);
-
-    expect(() => copyBriefContent({ ...defaultDirs, fs })).toThrow(
-      'Brief commands source not found',
-    );
-  });
-
-  it('throws when workflows source dir does not exist', () => {
-    const fs = createMockFs([
-      defaultDirs.briefCommandsDir,
-      defaultDirs.briefAgentsDir,
-    ]);
-
-    expect(() => copyBriefContent({ ...defaultDirs, fs })).toThrow(
-      'Brief workflows source not found',
-    );
-  });
-
-  it('throws when agents source dir does not exist', () => {
-    const fs = createMockFs([
-      defaultDirs.briefCommandsDir,
-      defaultDirs.briefWorkflowsDir,
-    ]);
-
-    expect(() => copyBriefContent({ ...defaultDirs, fs })).toThrow(
-      'Brief agents source not found',
-    );
   });
 });
 
@@ -181,11 +137,7 @@ describe('handleBriefContent', () => {
 
     handleBriefContent({
       sources: {},
-      dests: {
-        commandsDest: defaultDirs.commandsDest,
-        workflowsDest: defaultDirs.workflowsDest,
-        agentsDest: defaultDirs.agentsDest,
-      },
+      dests: defaultDests,
       enabledRoles: null,
       fs,
     });
@@ -195,7 +147,7 @@ describe('handleBriefContent', () => {
   });
 
   it('copies when strategist is enabled', () => {
-    const fs = createMockFs(allSourcesExist);
+    const fs = createMockFs();
 
     handleBriefContent({
       sources: defaultSources,
@@ -209,7 +161,7 @@ describe('handleBriefContent', () => {
   });
 
   it('copies when enabledRoles is null (first install)', () => {
-    const fs = createMockFs(allSourcesExist);
+    const fs = createMockFs();
 
     handleBriefContent({
       sources: defaultSources,

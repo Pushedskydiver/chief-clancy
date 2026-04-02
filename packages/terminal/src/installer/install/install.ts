@@ -214,6 +214,12 @@ export function validateSources(
       'Brief source dirs must be all-or-none — some are missing.',
     );
   }
+
+  if (briefCommandsDir && briefWorkflowsDir && briefAgentsDir) {
+    requirePath('Brief commands source', briefCommandsDir, exists);
+    requirePath('Brief workflows source', briefWorkflowsDir, exists);
+    requirePath('Brief agents source', briefAgentsDir, exists);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -317,12 +323,7 @@ function installContent(options: {
     enabledRoles,
   });
 
-  handleBriefContent({
-    sources,
-    dests: paths,
-    enabledRoles,
-    fs,
-  });
+  handleBriefContent({ sources, dests: paths, enabledRoles, fs });
 
   if (mode === 'global') {
     inlineWorkflows(paths.commandsDest, paths.workflowsDest);
