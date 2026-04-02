@@ -1,1 +1,1 @@
-export { rejectSymlink } from './fs-guards.js';
+export { rejectSymlink, requirePath } from './fs-guards.js';

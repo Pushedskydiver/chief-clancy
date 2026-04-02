@@ -58,6 +58,7 @@ const stubFs = {
   writeFile: vi.fn(),
   mkdir: vi.fn(),
   copyFile: vi.fn(),
+  unlink: vi.fn(),
   rejectSymlink: vi.fn(),
 };
 

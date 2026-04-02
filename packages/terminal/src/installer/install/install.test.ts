@@ -68,6 +68,13 @@ describe('resolveInstallPaths', () => {
       );
     });
 
+    it('resolves agents destination under ~/.claude/clancy', () => {
+      const paths = resolveInstallPaths('global', homeDir, cwd);
+      expect(paths.agentsDest).toBe(
+        join(homeDir, '.claude', 'clancy', 'agents'),
+      );
+    });
+
     it('resolves patches dir under ~/.claude/clancy', () => {
       const paths = resolveInstallPaths('global', homeDir, cwd);
       expect(paths.patchesDir).toBe(
@@ -94,6 +101,11 @@ describe('resolveInstallPaths', () => {
     it('resolves claudeConfigDir to cwd/.claude', () => {
       const paths = resolveInstallPaths('local', homeDir, cwd);
       expect(paths.claudeConfigDir).toBe(join(cwd, '.claude'));
+    });
+
+    it('resolves agents destination under cwd/.claude/clancy', () => {
+      const paths = resolveInstallPaths('local', homeDir, cwd);
+      expect(paths.agentsDest).toBe(join(cwd, '.claude', 'clancy', 'agents'));
     });
   });
 
@@ -203,6 +215,41 @@ describe('validateSources', () => {
     const exists = (p: string) => !p.endsWith('clancy-implement.js');
     expect(() => validateSources(sources, exists)).toThrow(
       /clancy-implement\.js.*not found/,
+    );
+  });
+
+  it('throws when only some brief source dirs are provided', () => {
+    const partial = { ...sources, briefCommandsDir: '/pkg/src/commands' };
+    expect(() => validateSources(partial, () => true)).toThrow(
+      'Brief source dirs must be all-or-none',
+    );
+  });
+
+  it('does not throw when all brief source dirs are provided', () => {
+    const full = {
+      ...sources,
+      briefCommandsDir: '/pkg/src/commands',
+      briefWorkflowsDir: '/pkg/src/workflows',
+      briefAgentsDir: '/pkg/src/agents',
+    };
+    expect(() => validateSources(full, () => true)).not.toThrow();
+  });
+
+  it('does not throw when no brief source dirs are provided', () => {
+    expect(() => validateSources(sources, () => true)).not.toThrow();
+  });
+
+  it('throws when brief source dirs are provided but do not exist', () => {
+    const full = {
+      ...sources,
+      briefCommandsDir: '/pkg/src/commands',
+      briefWorkflowsDir: '/pkg/src/workflows',
+      briefAgentsDir: '/pkg/src/agents',
+    };
+    const exists = (p: string) => !p.includes('/pkg/src/commands');
+
+    expect(() => validateSources(full, exists)).toThrow(
+      /Brief commands source.*not found/,
     );
   });
 });

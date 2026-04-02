@@ -14,6 +14,7 @@ import {
   mkdtempSync,
   readFileSync,
   rmSync,
+  unlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -66,6 +67,7 @@ function createRealFs() {
     writeFile: (p: string, c: string) => writeFileSync(p, c),
     mkdir: (p: string) => mkdirSync(p, { recursive: true }),
     copyFile: copyFileSync,
+    unlink: unlinkSync,
     rejectSymlink,
   };
 }

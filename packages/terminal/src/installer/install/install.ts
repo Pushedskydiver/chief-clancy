@@ -9,6 +9,7 @@ import type { EnvFileSystem } from '@chief-clancy/core';
 
 import { dirname, join } from 'node:path';
 
+import { handleBriefContent } from '~/t/installer/brief-content/index.js';
 import { inlineWorkflows } from '~/t/installer/file-ops/file-ops.js';
 import { installHooks } from '~/t/installer/hook-installer/hook-installer.js';
 import {
@@ -17,6 +18,7 @@ import {
   detectModifiedFiles,
 } from '~/t/installer/manifest/manifest.js';
 import { copyRoleFiles } from '~/t/installer/role-filter/role-filter.js';
+import { requirePath } from '~/t/installer/shared/fs-guards/index.js';
 import { printSuccess } from '~/t/installer/ui/ui.js';
 import { blue, dim, green } from '~/t/shared/ansi/index.js';
 
@@ -35,12 +37,16 @@ type InstallSources = {
   readonly hooksDir: string;
   readonly bundleDir: string;
   readonly agentsDir: string;
+  readonly briefCommandsDir?: string;
+  readonly briefWorkflowsDir?: string;
+  readonly briefAgentsDir?: string;
 };
 
 /** All resolved destination paths for an installation. */
 export type InstallPaths = {
   readonly commandsDest: string;
   readonly workflowsDest: string;
+  readonly agentsDest: string;
   readonly claudeConfigDir: string;
   readonly manifestPath: string;
   readonly workflowsManifestPath: string;
@@ -61,19 +67,13 @@ type InstallerFs = {
   /** Create a directory recursively (must not throw on existing dirs). */
   readonly mkdir: (path: string) => void;
   readonly copyFile: (src: string, dest: string) => void;
+  /** Remove a file. May throw on missing files — callers handle ENOENT. */
+  readonly unlink: (path: string) => void;
   /** Throw if the given path is a symlink. Swallow ENOENT. */
   readonly rejectSymlink: (path: string) => void;
 };
 
-/**
- * Prompt API used by the orchestrator.
- *
- * Only `ask` is called by {@link runInstall}. The caller owns the prompt
- * lifecycle — create before calling `runInstall`, close after it returns.
- */
-type InstallerPrompts = {
-  readonly ask: (label: string) => Promise<string>;
-};
+type InstallerPrompts = { readonly ask: (label: string) => Promise<string> };
 
 /** Options for {@link runInstall}. */
 export type RunInstallOptions = {
@@ -92,7 +92,6 @@ export type RunInstallOptions = {
 // Constants
 // ---------------------------------------------------------------------------
 
-/** Bundled runtime scripts that are copied to `.clancy/` in the project. */
 const BUNDLE_SCRIPTS = ['clancy-implement.js', 'clancy-autopilot.js'] as const;
 
 // ---------------------------------------------------------------------------
@@ -138,6 +137,7 @@ export function resolveInstallPaths(
   return {
     commandsDest: join(baseDir, 'commands', 'clancy'),
     workflowsDest: join(baseDir, 'clancy', 'workflows'),
+    agentsDest: join(baseDir, 'clancy', 'agents'),
     claudeConfigDir: baseDir,
     manifestPath: join(baseDir, 'clancy', 'manifest.json'),
     workflowsManifestPath: join(baseDir, 'clancy', 'workflows-manifest.json'),
@@ -175,17 +175,6 @@ export function parseEnabledRoles(
   return new Set(normalised);
 }
 
-/** Throw if a required path does not exist. */
-function requirePath(
-  label: string,
-  path: string,
-  exists: (p: string) => boolean,
-): void {
-  if (!exists(path)) {
-    throw new Error(`${label} not found: ${path}`);
-  }
-}
-
 /**
  * Validate that all required source directories and files exist.
  *
@@ -195,7 +184,6 @@ function requirePath(
  *
  * @param sources - The source directories to check.
  * @param exists - File existence check (injected for testability).
- * @returns Nothing — throws on the first missing path.
  */
 export function validateSources(
   sources: InstallSources,
@@ -212,6 +200,26 @@ export function validateSources(
       exists,
     );
   });
+
+  const { briefCommandsDir, briefWorkflowsDir, briefAgentsDir } = sources;
+  const hasSome = Boolean(
+    briefCommandsDir ?? briefWorkflowsDir ?? briefAgentsDir,
+  );
+  const hasAll = Boolean(
+    briefCommandsDir && briefWorkflowsDir && briefAgentsDir,
+  );
+
+  if (hasSome && !hasAll) {
+    throw new Error(
+      'Brief source dirs must be all-or-none — some are missing.',
+    );
+  }
+
+  if (briefCommandsDir && briefWorkflowsDir && briefAgentsDir) {
+    requirePath('Brief commands source', briefCommandsDir, exists);
+    requirePath('Brief workflows source', briefWorkflowsDir, exists);
+    requirePath('Brief agents source', briefAgentsDir, exists);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -315,29 +323,36 @@ function installContent(options: {
     enabledRoles,
   });
 
+  handleBriefContent({ sources, dests: paths, enabledRoles, fs });
+
   if (mode === 'global') {
     inlineWorkflows(paths.commandsDest, paths.workflowsDest);
   }
 
+  writeVersionAndManifests(paths, version, fs);
+}
+
+/** Write VERSION file and SHA-256 manifests for commands and workflows. */
+function writeVersionAndManifests(
+  paths: InstallPaths,
+  version: string,
+  fs: InstallerFs,
+): void {
   const versionPath = join(paths.commandsDest, 'VERSION');
   fs.rejectSymlink(versionPath);
   fs.writeFile(versionPath, version);
 
   fs.mkdir(dirname(paths.manifestPath));
-  const cmdManifest = JSON.stringify(
-    buildManifest(paths.commandsDest),
-    null,
-    2,
-  );
-  const wfManifest = JSON.stringify(
-    buildManifest(paths.workflowsDest),
-    null,
-    2,
-  );
   fs.rejectSymlink(paths.manifestPath);
   fs.rejectSymlink(paths.workflowsManifestPath);
-  fs.writeFile(paths.manifestPath, cmdManifest);
-  fs.writeFile(paths.workflowsManifestPath, wfManifest);
+  fs.writeFile(
+    paths.manifestPath,
+    JSON.stringify(buildManifest(paths.commandsDest), null, 2),
+  );
+  fs.writeFile(
+    paths.workflowsManifestPath,
+    JSON.stringify(buildManifest(paths.workflowsDest), null, 2),
+  );
 }
 
 /** Copy runtime bundles and write project-level metadata. */
@@ -430,13 +445,8 @@ export async function runInstall(options: RunInstallOptions): Promise<void> {
     return;
   }
 
-  const enabledRoles =
-    mode === 'global'
-      ? null
-      : parseEnabledRoles(cwd, {
-          exists: fs.exists,
-          readFile: fs.readFile,
-        });
+  const envFs = { exists: fs.exists, readFile: fs.readFile };
+  const enabledRoles = mode === 'global' ? null : parseEnabledRoles(cwd, envFs);
 
   installContent({ mode, paths, sources, version, enabledRoles, fs });
   setupProjectRuntime({ paths, sources, version, fs, now });

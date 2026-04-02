@@ -14,6 +14,7 @@ import {
   lstatSync,
   mkdirSync,
   readFileSync,
+  unlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -128,6 +129,7 @@ async function main() {
       writeFile: (p, c) => writeFileSync(p, c, 'utf8'),
       mkdir: (p) => mkdirSync(p, { recursive: true }),
       copyFile: (s, d) => copyFileSync(s, d),
+      unlink: (p) => unlinkSync(p),
       // TOCTOU: narrow window between lstat and the caller's write. Acceptable
       // for a local CLI installer — no privileged paths are involved.
       rejectSymlink: (p) => {
