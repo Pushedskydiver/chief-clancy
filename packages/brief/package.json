@@ -1,6 +1,6 @@
 {
   "name": "@chief-clancy/brief",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Strategic brief generator for Claude Code — grill, decompose, and document feature ideas",
   "author": "Alex Clapperton",
   "license": "MIT",

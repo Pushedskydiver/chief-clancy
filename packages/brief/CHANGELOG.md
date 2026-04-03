@@ -1,5 +1,11 @@
 # @chief-clancy/brief
 
+## 0.1.2
+
+### Patch Changes
+
+- [`a682f18`](https://github.com/Pushedskydiver/chief-clancy/commit/a682f184a0c95d87a4ebec59cf5f906f2bc7cc59) Thanks [@Pushedskydiver](https://github.com/Pushedskydiver)! - Add /clancy:board-setup command for standalone board credential configuration. Three-state mode detection (standalone, standalone+board, terminal) unlocks board ticket mode without the full pipeline.
+
 ## 0.1.1
 
 ### Patch Changes
