@@ -96,13 +96,13 @@ Code is organised by **capability directories** that map to future packages. See
 
 ### Brief (standalone brief generator)
 
-| Path                              | Purpose                                              |
-| --------------------------------- | ---------------------------------------------------- |
-| `packages/brief/src/commands/`    | Slash commands (`brief.md`, `board-setup.md`)        |
-| `packages/brief/src/workflows/`   | Workflows (`brief.md`, `board-setup.md`)             |
-| `packages/brief/src/agents/`      | Agent prompts (`devils-advocate.md`)                 |
-| `packages/brief/src/installer/`   | Self-contained installer module (no core/terminal deps) |
-| `packages/brief/bin/brief.js`     | CLI entry point for `npx @chief-clancy/brief`        |
+| Path                            | Purpose                                                 |
+| ------------------------------- | ------------------------------------------------------- |
+| `packages/brief/src/commands/`  | Slash commands (`brief.md`, `board-setup.md`)           |
+| `packages/brief/src/workflows/` | Workflows (`brief.md`, `board-setup.md`)                |
+| `packages/brief/src/agents/`    | Agent prompts (`devils-advocate.md`)                    |
+| `packages/brief/src/installer/` | Self-contained installer module (no core/terminal deps) |
+| `packages/brief/bin/brief.js`   | CLI entry point for `npx @chief-clancy/brief`           |
 
 ### Terminal (CLI + automation)
 
