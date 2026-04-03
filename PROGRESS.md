@@ -36,7 +36,6 @@ Test counts: 1608 core, 822 terminal, 51 brief.
 
 ## Next
 
-- Changeset for `@chief-clancy/brief` patch bump (board-setup + three-state detection)
 - `@chief-clancy/plan` — same standalone pattern as brief
 
 ### Build order (remaining standalone packages)
