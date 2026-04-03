@@ -12,7 +12,7 @@ Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash comman
 - **Runtime:** Node 24+ (LTS)
 - **Package manager:** pnpm workspaces + Turborepo
 - **Build:** `tsc` per package (core builds first via `^build` dependency)
-- **Test:** Vitest (workspace projects, co-located unit tests + MSW integration tests)
+- **Test:** Vitest (workspace projects, co-located unit tests + integration tests)
 - **Lint:** ESLint flat config (`defineConfig`) + Prettier
 - **Validation:** `zod/mini` for all runtime validation of external data
 - **Versioning:** `@changesets/cli` (independent versioning)
