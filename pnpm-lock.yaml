@@ -88,6 +88,9 @@ importers:
 
   packages/chief-clancy:
     dependencies:
+      '@chief-clancy/brief':
+        specifier: workspace:*
+        version: link:../brief
       '@chief-clancy/terminal':
         specifier: workspace:*
         version: link:../terminal

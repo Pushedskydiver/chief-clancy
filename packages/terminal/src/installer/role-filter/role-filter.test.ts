@@ -72,7 +72,7 @@ describe('copyRoleFiles', () => {
   it('installs core + specified optional roles', () => {
     createRole('implementer', 'commands', ['run.md']);
     createRole('planner', 'commands', ['plan.md']);
-    createRole('strategist', 'commands', ['brief.md']);
+    createRole('strategist', 'commands', ['approve-brief.md']);
 
     const dest = join(testDir, 'dest');
     copyRoleFiles({
@@ -84,7 +84,7 @@ describe('copyRoleFiles', () => {
 
     expect(existsSync(join(dest, 'run.md'))).toBe(true);
     expect(existsSync(join(dest, 'plan.md'))).toBe(true);
-    expect(existsSync(join(dest, 'brief.md'))).toBe(false);
+    expect(existsSync(join(dest, 'approve-brief.md'))).toBe(false);
   });
 
   it('removes previously-installed files for disabled optional roles', () => {
