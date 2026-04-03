@@ -1,43 +1,32 @@
 # Progress
 
-## Session 49 Summary
+## Session 50 Summary
 
-### @chief-clancy/brief package (complete)
+### Terminal consumes brief — PR 2 (complete)
 
-First standalone package in the monorepo — proves the lightweight installer pattern for non-developer audiences (PMs, designers, founders).
+**PR #190** — Delete strategist duplicates + wire bin script:
 
-**PR #184** — Scaffold + installer:
+- Deleted `strategist/commands/brief.md` and `strategist/workflows/brief.md` (approve-brief.md stays in both)
+- Wired `briefCommandsDir`/`briefWorkflowsDir`/`briefAgentsDir` in `bin/clancy.js` resolving from `@chief-clancy/brief`
+- Added `@chief-clancy/brief: workspace:*` to `chief-clancy` package dependencies
+- Updated role-filter and integration install test fixtures
+- Added assertion for brief files installed from brief package sources
 
-- Package structure: `package.json`, `tsconfig.json` (with `~/b/` alias + `tsc-alias`), `vitest.config.ts`
-- Copied markdown files from terminal: `brief.md` (command + workflow), `devils-advocate.md` (agent)
-- Self-contained installer (`bin/brief.js`): copies 3 files to `.claude/`, global/local mode, workflow inlining, `VERSION.brief` marker, symlink rejection
-- Pure TypeScript installer module (`install.ts`) with dependency injection for testability
-- Config updates: eslint boundary rules, knip workspace, root vitest projects, publint/attw scripts
-- 31 tests (structural + installer TDD)
-
-**PR #185** — Standalone workflow adaptation:
-
-- Step 1 rewritten: detects `.clancy/.env` for terminal vs standalone mode (no hard stops)
-- Standalone board-ticket guard: graceful message when board credentials missing
-- Steps 10 and 10a skip entirely in standalone mode
-- Agent reference path updated to installed location (`.claude/clancy/agents/`)
-- All 13 `/clancy:approve-brief` references conditionalised with standalone context
-- 7 new content assertion tests
-
-Published as `@chief-clancy/brief@0.1.0` on npm.
-
-Test counts: 1608 core, 804 terminal, 38 brief.
+Test counts: 1608 core, 822 terminal, 38 brief.
 
 ---
 
-## Next: Terminal consumes brief (PR 4)
+### Open question: brief README accuracy
 
-Follow-up session scope:
+The README "How it works" section mentions board ticket mode, but standalone brief doesn't support board connections. The workflow has a standalone guard that blocks board/batch modes. Decision deferred — may revisit with optional board config in brief.
 
-- Add `@chief-clancy/brief: workspace:*` to terminal deps
-- Update terminal installer to source strategist files from brief package
-- Remove `src/roles/strategist/commands/brief.md` and `src/roles/strategist/workflows/brief.md` from terminal (approve-brief stays)
-- Update `roles.test.ts`, eslint boundary rules, knip config
+---
+
+## Next
+
+- Update brief README (remove board ticket from quickstart steps)
+- Consider optional board credential config for standalone brief
+- Remaining terminal-consumes-brief PRs if any
 
 ### Build order (remaining standalone packages)
 
