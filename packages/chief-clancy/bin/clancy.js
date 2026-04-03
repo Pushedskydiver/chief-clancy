@@ -44,11 +44,17 @@ const terminalEntry = fileURLToPath(
 );
 const terminalRoot = join(dirname(terminalEntry), '..');
 
+const briefEntry = fileURLToPath(import.meta.resolve('@chief-clancy/brief'));
+const briefRoot = join(dirname(briefEntry), '..');
+
 const sources = {
   rolesDir: join(terminalRoot, 'src', 'roles'),
   hooksDir: join(terminalRoot, 'dist', 'hooks'),
   bundleDir: join(terminalRoot, 'dist', 'bundle'),
   agentsDir: join(terminalRoot, 'src', 'agents'),
+  briefCommandsDir: join(briefRoot, 'src', 'commands'),
+  briefWorkflowsDir: join(briefRoot, 'src', 'workflows'),
+  briefAgentsDir: join(briefRoot, 'src', 'agents'),
 };
 
 // ---------------------------------------------------------------------------

@@ -97,8 +97,8 @@ function createSourceFixtures(baseDir: string) {
     '# Deploy workflow',
   );
   writeFileSync(
-    join(rolesDir, 'strategist', 'commands', 'brief.md'),
-    '# /clancy:brief\n@.claude/clancy/workflows/deploy.md',
+    join(rolesDir, 'strategist', 'commands', 'approve-brief.md'),
+    '# /clancy:approve-brief\nApprove brief.',
   );
 
   mkdirSync(hooksDir, { recursive: true });
@@ -114,7 +114,35 @@ function createSourceFixtures(baseDir: string) {
     '# Verification gate prompt',
   );
 
-  return { rolesDir, hooksDir, bundleDir, agentsDir };
+  // Brief package source directories
+  const briefBase = join(baseDir, 'brief');
+  const briefCommandsDir = join(briefBase, 'src', 'commands');
+  const briefWorkflowsDir = join(briefBase, 'src', 'workflows');
+  const briefAgentsDir = join(briefBase, 'src', 'agents');
+
+  mkdirSync(briefCommandsDir, { recursive: true });
+  mkdirSync(briefWorkflowsDir, { recursive: true });
+  mkdirSync(briefAgentsDir, { recursive: true });
+
+  writeFileSync(
+    join(briefCommandsDir, 'brief.md'),
+    '# /clancy:brief\n@.claude/clancy/workflows/deploy.md',
+  );
+  writeFileSync(join(briefWorkflowsDir, 'brief.md'), '# Brief workflow');
+  writeFileSync(
+    join(briefAgentsDir, 'devils-advocate.md'),
+    "# Devil's advocate agent",
+  );
+
+  return {
+    rolesDir,
+    hooksDir,
+    bundleDir,
+    agentsDir,
+    briefCommandsDir,
+    briefWorkflowsDir,
+    briefAgentsDir,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -154,8 +182,18 @@ describe('runInstall — integration', () => {
 
     it('creates commands and workflows in .claude/', () => {
       expect(existsSync(join(paths.commandsDest, 'autopilot.md'))).toBe(true);
-      expect(existsSync(join(paths.commandsDest, 'brief.md'))).toBe(true);
+      expect(existsSync(join(paths.commandsDest, 'approve-brief.md'))).toBe(
+        true,
+      );
       expect(existsSync(join(paths.workflowsDest, 'deploy.md'))).toBe(true);
+    });
+
+    it('installs brief files from brief package sources', () => {
+      expect(existsSync(join(paths.commandsDest, 'brief.md'))).toBe(true);
+      expect(existsSync(join(paths.workflowsDest, 'brief.md'))).toBe(true);
+      expect(existsSync(join(paths.agentsDest, 'devils-advocate.md'))).toBe(
+        true,
+      );
     });
 
     it('writes VERSION file', () => {
