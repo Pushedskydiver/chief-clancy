@@ -2,7 +2,7 @@
 
 ## Session 50 Summary
 
-### Terminal consumes brief — PR 2 (complete)
+### Terminal consumes brief + optional board support (complete)
 
 **PR #190** — Delete strategist duplicates + wire bin script:
 
@@ -10,23 +10,34 @@
 - Wired `briefCommandsDir`/`briefWorkflowsDir`/`briefAgentsDir` in `bin/clancy.js` resolving from `@chief-clancy/brief`
 - Added `@chief-clancy/brief: workspace:*` to `chief-clancy` package dependencies
 - Updated role-filter and integration install test fixtures
-- Added assertion for brief files installed from brief package sources
 
-Test counts: 1608 core, 822 terminal, 38 brief.
+**PR #191** — Refactor `bin/brief.js` to use file arrays (prep for board-setup)
 
----
+**PR #192** — Add `/clancy:board-setup` command + workflow:
 
-### Open question: brief README accuracy
+- New slash command and workflow for standalone board credential configuration
+- Supports all 6 boards with credential collection, verification, and `.clancy/.env` writing
+- Installer arrays updated in both `install.ts` and `bin/brief.js`
+- 10 new content assertion tests
 
-The README "How it works" section mentions board ticket mode, but standalone brief doesn't support board connections. The workflow has a standalone guard that blocks board/batch modes. Decision deferred — may revisit with optional board config in brief.
+**PR #193** — Three-state mode detection:
+
+- Standalone (no `.clancy/.env`) → board ticket mode blocked
+- Standalone+board (`.clancy/.env` without `clancy-implement.js`) → board ticket mode works
+- Terminal (both present) → full pipeline, unchanged
+- Steps 10/10a now run when board credentials available (not just terminal mode)
+- README updated with "Board ticket mode" section
+- Copilot instructions updated with brief package and architecture rules
+- Markdown added to lint-staged for auto-formatting on commit
+
+Test counts: 1608 core, 822 terminal, 51 brief.
 
 ---
 
 ## Next
 
-- Update brief README (remove board ticket from quickstart steps)
-- Consider optional board credential config for standalone brief
-- Remaining terminal-consumes-brief PRs if any
+- Changeset for `@chief-clancy/brief` patch bump (board-setup + three-state detection)
+- `@chief-clancy/plan` — same standalone pattern as brief
 
 ### Build order (remaining standalone packages)
 
