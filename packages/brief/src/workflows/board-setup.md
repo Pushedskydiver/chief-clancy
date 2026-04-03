@@ -176,7 +176,7 @@ Call `GET https://api.app.shortcut.com/api/v3/member-info` with `Shortcut-Token:
 On success (HTTP 200):
 
 ```
-✅ Shortcut connected — {member.profile.name}.
+✅ Shortcut connected.
 ```
 
 ### Notion
@@ -249,12 +249,12 @@ If `.clancy/.env` already exists (reconfigure path from Step 1, or exists with n
 
 - Preserve all existing lines (comments, blank lines, non-board vars)
 - Remove any existing board-specific env vars for ALL boards (not just the new one). Board vars to remove:
-  - Jira: `JIRA_BASE_URL`, `JIRA_PROJECT_KEY`, `JIRA_USER`, `JIRA_API_TOKEN`
+  - Jira: `JIRA_BASE_URL`, `JIRA_PROJECT_KEY`, `JIRA_USER`, `JIRA_API_TOKEN`, `CLANCY_JQL_STATUS`, `CLANCY_JQL_SPRINT`
   - GitHub: `GITHUB_REPO`, `GITHUB_TOKEN`
   - Linear: `LINEAR_API_KEY`, `LINEAR_TEAM_ID`
   - Shortcut: `SHORTCUT_API_TOKEN`, `SHORTCUT_WORKFLOW`
-  - Notion: `NOTION_TOKEN`, `NOTION_DATABASE_ID`, `CLANCY_NOTION_STATUS`, `CLANCY_NOTION_ASSIGNEE`, `CLANCY_NOTION_LABELS`
-  - Azure DevOps: `AZDO_ORG`, `AZDO_PROJECT`, `AZDO_PAT`, `CLANCY_AZDO_WIT`
+  - Notion: `NOTION_TOKEN`, `NOTION_DATABASE_ID`, `CLANCY_NOTION_STATUS`, `CLANCY_NOTION_ASSIGNEE`, `CLANCY_NOTION_LABELS`, `CLANCY_NOTION_PARENT`, `CLANCY_NOTION_TODO`
+  - Azure DevOps: `AZDO_ORG`, `AZDO_PROJECT`, `AZDO_PAT`, `CLANCY_AZDO_WIT`, `CLANCY_AZDO_STATUS`
 - Preserve all other lines (comments, blank lines, non-board vars like `CLANCY_BASE_BRANCH`)
 - Append the new board's credentials at the end
 - Update `CLANCY_BASE_BRANCH` if it exists, or append it
