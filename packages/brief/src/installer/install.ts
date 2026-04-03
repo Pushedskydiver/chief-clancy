@@ -57,10 +57,10 @@ export type RunBriefInstallOptions = {
 // ---------------------------------------------------------------------------
 
 /** Command files shipped with the brief package. */
-const COMMAND_FILES = ['brief.md'] as const;
+const COMMAND_FILES = ['board-setup.md', 'brief.md'] as const;
 
 /** Workflow files shipped with the brief package. */
-const WORKFLOW_FILES = ['brief.md'] as const;
+const WORKFLOW_FILES = ['board-setup.md', 'brief.md'] as const;
 
 /** Agent files shipped with the brief package. */
 const AGENT_FILES = ['devils-advocate.md'] as const;

@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 
 const COMMANDS_DIR = fileURLToPath(new URL('.', import.meta.url));
 
-const EXPECTED_COMMANDS = ['brief.md'];
+const EXPECTED_COMMANDS = ['board-setup.md', 'brief.md'];
 
 describe('commands directory structure', () => {
   it('contains exactly the expected command files', () => {

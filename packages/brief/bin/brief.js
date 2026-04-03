@@ -84,8 +84,8 @@ const ask = (label) => new Promise((resolve) => rl.question(label, resolve));
 // File lists (keep in sync with install.ts)
 // ---------------------------------------------------------------------------
 
-const COMMAND_FILES = ['brief.md'];
-const WORKFLOW_FILES = ['brief.md'];
+const COMMAND_FILES = ['board-setup.md', 'brief.md'];
+const WORKFLOW_FILES = ['board-setup.md', 'brief.md'];
 const AGENT_FILES = ['devils-advocate.md'];
 
 // ---------------------------------------------------------------------------
@@ -213,14 +213,20 @@ async function main() {
   console.log('');
   console.log(green('  ✓ Clancy Brief installed successfully.'));
   console.log('');
-  console.log('  Command available:');
+  console.log('  Commands available:');
   console.log(
-    `      ${cyan('/clancy:brief')}  ${dim('Generate a strategic brief for a feature')}`,
+    `      ${cyan('/clancy:brief')}          ${dim('Generate a strategic brief')}`,
+  );
+  console.log(
+    `      ${cyan('/clancy:board-setup')}    ${dim('Configure board credentials (optional)')}`,
   );
   console.log('');
   console.log('  Next steps:');
   console.log(`    1. Open a project in Claude Code`);
   console.log(`    2. Run: ${cyan('/clancy:brief "Your feature idea"')}`);
+  console.log('');
+  console.log(dim('  Want to brief from board tickets?'));
+  console.log(dim(`    Run: ${cyan('/clancy:board-setup')}`));
   console.log('');
   console.log(
     dim('  For the full pipeline (tickets, planning, implementation):'),
