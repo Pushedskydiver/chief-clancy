@@ -150,8 +150,12 @@ const buildOptions = (
   files: Readonly<Record<string, string>> = {},
 ): MockOptions => {
   const sourceFiles: Record<string, string> = {
+    '/pkg/src/commands/board-setup.md':
+      '# /clancy:board-setup\n\n@.claude/clancy/workflows/board-setup.md\n',
     '/pkg/src/commands/brief.md':
       '# /clancy:brief\n\n@.claude/clancy/workflows/brief.md\n',
+    '/pkg/src/workflows/board-setup.md':
+      '# Board Setup Workflow\n\nSetup content here.',
     '/pkg/src/workflows/brief.md':
       '# Clancy Brief Workflow\n\nWorkflow content here.',
     '/pkg/src/agents/devils-advocate.md':
@@ -180,7 +184,7 @@ describe('runBriefInstall', () => {
     expect(opts.fs.mkdir).toHaveBeenCalledWith(defaultPaths.agentsDest);
   });
 
-  it('copies the command file', () => {
+  it('copies all command files', () => {
     const opts = buildOptions();
     runBriefInstall(opts);
 
@@ -188,15 +192,23 @@ describe('runBriefInstall', () => {
       join(defaultSources.commandsDir, 'brief.md'),
       join(defaultPaths.commandsDest, 'brief.md'),
     );
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.commandsDir, 'board-setup.md'),
+      join(defaultPaths.commandsDest, 'board-setup.md'),
+    );
   });
 
-  it('copies the workflow file', () => {
+  it('copies all workflow files', () => {
     const opts = buildOptions();
     runBriefInstall(opts);
 
     expect(opts.fs.copyFile).toHaveBeenCalledWith(
       join(defaultSources.workflowsDir, 'brief.md'),
       join(defaultPaths.workflowsDest, 'brief.md'),
+    );
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.workflowsDir, 'board-setup.md'),
+      join(defaultPaths.workflowsDest, 'board-setup.md'),
     );
   });
 
@@ -257,6 +269,22 @@ describe('runBriefInstall', () => {
       expect(cmdWrite).toBeDefined();
       expect(cmdWrite?.[1]).toContain('Workflow content here.');
       expect(cmdWrite?.[1]).not.toContain('@.claude/clancy/workflows/brief.md');
+    });
+
+    it('inlines workflow content into board-setup command file', () => {
+      const opts = buildOptions({ mode: 'global' });
+      runBriefInstall(opts);
+
+      const writeCalls = opts.fs.writeFile.mock.calls;
+      const cmdWrite = writeCalls.find(
+        ([path]) => path === join(defaultPaths.commandsDest, 'board-setup.md'),
+      );
+
+      expect(cmdWrite).toBeDefined();
+      expect(cmdWrite?.[1]).toContain('Setup content here.');
+      expect(cmdWrite?.[1]).not.toContain(
+        '@.claude/clancy/workflows/board-setup.md',
+      );
     });
 
     it('does not inline workflow for local mode', () => {
