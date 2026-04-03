@@ -4,7 +4,7 @@ Generate a strategic brief for a feature idea. Researches the codebase, grills y
 
 Accepts optional arguments:
 
-- **Board ticket:** `/clancy:brief PROJ-123`, `/clancy:brief #42`, `/clancy:brief ENG-42` — brief from a board ticket
+- **Board ticket:** `/clancy:brief PROJ-123`, `/clancy:brief #42`, `/clancy:brief ENG-42` — brief from a board ticket (requires credentials — run `/clancy:board-setup` or install the full pipeline with `npx chief-clancy`)
 - **Inline text:** `/clancy:brief "Add dark mode"` — brief from a description
 - **From file:** `/clancy:brief --from docs/rfc.md` — brief from a local file
 - **Batch mode:** `/clancy:brief 3` — brief up to 3 tickets from the queue
