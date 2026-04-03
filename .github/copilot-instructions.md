@@ -4,7 +4,7 @@ Autonomous, board-driven development for Claude Code. Monorepo for `@chief-clanc
 
 ## Project overview
 
-Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash commands, hooks, and board integrations (Jira, GitHub Issues, Linear, Shortcut, Notion, Azure DevOps) into Claude Code projects. This monorepo splits the codebase into `@chief-clancy/core` (board intelligence, types, lifecycle, pipeline) and `@chief-clancy/terminal` (installer, hooks, CLI bridge). The `chief-clancy` wrapper delegates to terminal.
+Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash commands, hooks, and board integrations (Jira, GitHub Issues, Linear, Shortcut, Notion, Azure DevOps) into Claude Code projects. This monorepo splits the codebase into `@chief-clancy/core` (board intelligence, types, lifecycle, pipeline), `@chief-clancy/terminal` (installer, hooks, CLI bridge), and `@chief-clancy/brief` (standalone strategic brief generator). The `chief-clancy` wrapper delegates to terminal and sources brief content from the brief package.
 
 ## Tech stack
 
@@ -12,7 +12,7 @@ Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash comman
 - **Runtime:** Node 24+ (LTS)
 - **Package manager:** pnpm workspaces + Turborepo
 - **Build:** `tsc` per package (core builds first via `^build` dependency)
-- **Test:** Vitest (workspace projects, co-located unit tests + MSW integration tests)
+- **Test:** Vitest (workspace projects, co-located unit tests + integration tests)
 - **Lint:** ESLint flat config (`defineConfig`) + Prettier
 - **Validation:** `zod/mini` for all runtime validation of external data
 - **Versioning:** `@changesets/cli` (independent versioning)
@@ -20,9 +20,11 @@ Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash comman
 
 ## Architecture rules
 
-- **Core imports nothing from terminal or chat** — enforced by eslint-plugin-boundaries
-- **Terminal imports from core only** — no cross-imports with chat
-- **Dependency direction:** core ← terminal ← chief-clancy wrapper
+- **Core imports nothing from terminal, brief, or chat** — enforced by eslint-plugin-boundaries
+- **Brief is fully standalone** — no imports from core, terminal, or chat
+- **Terminal imports from core only** — no cross-imports with brief or chat
+- **Dependency direction:** core ← terminal ← chief-clancy wrapper. Brief is standalone (no core/terminal deps)
+- **Brief has three installation modes:** standalone (no board), standalone+board (credentials via `/clancy:board-setup`), terminal (full pipeline via `npx chief-clancy`). Detection uses `.clancy/.env` + `.clancy/clancy-implement.js` presence
 
 ## Code conventions
 
@@ -91,6 +93,16 @@ Code is organised by **capability directories** that map to future packages. See
 | `packages/core/src/shared/`        | core (forever) | Pure utilities (cache, env-parser, git-ops, git-token, http, etc.) |
 | `packages/core/src/dev/lifecycle/` | @c-c/dev       | Ticket lifecycle (branch, deliver, rework, PR creation, progress)  |
 | `packages/core/src/dev/pipeline/`  | @c-c/dev       | Phase orchestration (context, run-pipeline, 13 phases)             |
+
+### Brief (standalone brief generator)
+
+| Path                            | Purpose                                                 |
+| ------------------------------- | ------------------------------------------------------- |
+| `packages/brief/src/commands/`  | Slash commands (`brief.md`, `board-setup.md`)           |
+| `packages/brief/src/workflows/` | Workflows (`brief.md`, `board-setup.md`)                |
+| `packages/brief/src/agents/`    | Agent prompts (`devils-advocate.md`)                    |
+| `packages/brief/src/installer/` | Self-contained installer module (no core/terminal deps) |
+| `packages/brief/bin/brief.js`   | CLI entry point for `npx @chief-clancy/brief`           |
 
 ### Terminal (CLI + automation)
 

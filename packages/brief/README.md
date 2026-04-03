@@ -26,19 +26,18 @@ The `/clancy:brief` slash command researches your codebase, grills you (or itsel
 1. **Install:** `npx @chief-clancy/brief` — choose global or local
 2. **Run:** `/clancy:brief "Add dark mode support"` — inline text
 3. **Or from a file:** `/clancy:brief --from docs/rfc.md`
-4. **Or from a board ticket:** `/clancy:brief #42` (requires board credentials)
 
 Briefs are saved to `.clancy/briefs/` in your project.
 
 ## Input modes
 
-| Mode         | Example                                       | Board needed? |
-| ------------ | --------------------------------------------- | ------------- |
-| Inline text  | `/clancy:brief "Add dark mode"`               | No            |
-| From file    | `/clancy:brief --from docs/rfc.md`            | No            |
-| Board ticket | `/clancy:brief #42`, `/clancy:brief PROJ-123` | Yes           |
-| Batch        | `/clancy:brief 3`                             | Yes           |
-| Interactive  | `/clancy:brief`                               | No            |
+| Mode         | Example                                       | Board needed?               |
+| ------------ | --------------------------------------------- | --------------------------- |
+| Inline text  | `/clancy:brief "Add dark mode"`               | No                          |
+| From file    | `/clancy:brief --from docs/rfc.md`            | No                          |
+| Board ticket | `/clancy:brief #42`, `/clancy:brief PROJ-123` | Yes (`/clancy:board-setup`) |
+| Batch        | `/clancy:brief 3`                             | Yes (`/clancy:board-setup`) |
+| Interactive  | `/clancy:brief`                               | No                          |
 
 ## Flags
 
@@ -51,9 +50,19 @@ Briefs are saved to `.clancy/briefs/` in your project.
 | `--epic <KEY>`  | Set parent for ticket creation        |
 | `--list`        | Show inventory of existing briefs     |
 
-## Standalone vs full pipeline
+## Board ticket mode (optional)
 
-This package works on its own for inline text and file-based briefs. For board integration, ticket creation, and the full development pipeline, install the complete Clancy package:
+To brief from board tickets without installing the full pipeline:
+
+1. Run `/clancy:board-setup` in Claude Code
+2. Follow the prompts to configure your board credentials
+3. Run `/clancy:brief #42` (or your board's ticket format)
+
+Credentials are stored in `.clancy/.env` and are per-project (not global).
+
+## Full pipeline
+
+For ticket creation, planning, and the full development pipeline, install the complete Clancy package:
 
 ```bash
 npx chief-clancy

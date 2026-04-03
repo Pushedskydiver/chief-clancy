@@ -2,7 +2,7 @@
 
 ## Overview
 
-Research an idea, interrogate it thoroughly, and generate a structured strategic brief with vertical-slice ticket decomposition. Briefs are saved locally and optionally posted as comments on the source ticket. Does not create tickets — in **terminal mode**, use `/clancy:approve-brief` for that. In **standalone mode**, install the full pipeline (`npx chief-clancy`) to create tickets from briefs.
+Research an idea, interrogate it thoroughly, and generate a structured strategic brief with vertical-slice ticket decomposition. Briefs are saved locally and optionally posted as comments on the source ticket. Does not create tickets — in **terminal mode**, use `/clancy:approve-brief` for that. In **standalone mode** or **standalone+board mode**, install the full pipeline (`npx chief-clancy`) to create tickets from briefs.
 
 ---
 
@@ -12,12 +12,17 @@ Research an idea, interrogate it thoroughly, and generate a structured strategic
 
 Check for `.clancy/.env`:
 
-- **Present** → **terminal mode**. Full Clancy installation detected.
-- **Absent** → **standalone mode**. Running from `@chief-clancy/brief` only.
+- **Absent** → **standalone mode**. No board credentials. Board ticket and batch modes are blocked.
+- **Present** → continue to `.clancy/clancy-implement.js` check below.
 
-### 2. Terminal-mode preflight (skip in standalone mode)
+If `.clancy/.env` is present, check for `.clancy/clancy-implement.js`:
 
-If `.clancy/.env` is present:
+- **Present** → **terminal mode**. Full Clancy pipeline installed.
+- **Absent** → **standalone+board mode**. Board credentials available via `/clancy:board-setup`. Board ticket mode works. Steps 10/10a work. But `/clancy:approve-brief` is not available (requires full pipeline).
+
+### 2. Terminal-mode preflight (skip in standalone mode and standalone+board mode)
+
+If in **terminal mode** (`.clancy/.env` present AND `.clancy/clancy-implement.js` present):
 
 a. Source `.clancy/.env` and check board credentials are present.
 
@@ -90,8 +95,9 @@ If `--list` is present (with or without other arguments), jump to Step 11 (Brief
 If running in **standalone mode** (Step 1 detected no `.clancy/.env`) and the resolved input mode is **board ticket** or **batch mode**:
 
 ```
-Board credentials not found. To brief from a board ticket, install the
-full Clancy pipeline: npx chief-clancy
+Board credentials not found. To brief from a board ticket:
+  /clancy:board-setup    — configure board credentials (standalone)
+  npx chief-clancy       — install the full pipeline
 
 For now, use:
   /clancy:brief "Add dark mode"       — inline text
@@ -99,6 +105,8 @@ For now, use:
 ```
 
 Stop.
+
+In **standalone+board mode**, board ticket and batch modes proceed normally — credentials are available.
 
 ---
 
@@ -855,7 +863,7 @@ Write to `.clancy/briefs/{YYYY-MM-DD}-{slug}.md`.
 
 ## Step 10 — Post to board
 
-Only for board-sourced briefs in **terminal mode** (ticket key was provided AND `.clancy/.env` is present). In **standalone mode**, skip this step and Step 10a entirely — the local file in `.clancy/briefs/` is the source of truth.
+Only for board-sourced briefs when board credentials are available (terminal mode or standalone+board mode). In **standalone mode** (no `.clancy/.env`), skip this step and Step 10a entirely — the local file in `.clancy/briefs/` is the source of truth.
 
 Inline text and file briefs are also local only — skip this step regardless of mode.
 
@@ -971,7 +979,7 @@ Continue — do not stop. The local file is the source of truth.
 
 ## Step 10a — Apply pipeline label (board-sourced only)
 
-Only for board-sourced briefs in **terminal mode** (ticket key was provided AND `.clancy/.env` is present). In **standalone mode**, skip this step entirely (see Step 10 guard). Inline text and file briefs also skip this step.
+Only for board-sourced briefs when board credentials are available (terminal mode or standalone+board mode). In **standalone mode** (no `.clancy/.env`), skip this step entirely (see Step 10 guard). Inline text and file briefs also skip this step. Note: in standalone+board mode, this step creates a `clancy:brief` label on the board — this is expected behaviour when credentials are configured.
 
 **This step is mandatory for board-sourced briefs — always apply the label.** Use `CLANCY_LABEL_BRIEF` from `.clancy/.env` if set. If not set, use `clancy:brief` as the default. Ensure the label exists on the board (create it if missing), then add it to the ticket. Also read `CLANCY_LABEL_PLAN` (default: `clancy:plan`) and `CLANCY_LABEL_BUILD` (default: `clancy:build`) for cleanup during re-briefs.
 
@@ -1240,7 +1248,7 @@ Clancy — Briefs
 3 unapproved drafts. 1 stale (>7 days).
 
 To approve (terminal mode): /clancy:approve-brief <slug or index>
-To approve (standalone):    npx chief-clancy, then /clancy:approve-brief
+To approve (standalone/standalone+board): npx chief-clancy, then /clancy:approve-brief
 To review stale briefs: open the file and add ## Feedback, or delete it.
 ```
 
@@ -1275,7 +1283,7 @@ Next Steps
     Then re-run: /clancy:brief {KEY}
 
   Approve:       /clancy:approve-brief {KEY}  (terminal mode)
-  Full pipeline: npx chief-clancy             (if standalone)
+  Full pipeline: npx chief-clancy             (if not terminal mode)
   Start over:    /clancy:brief --fresh {KEY}
 ```
 
@@ -1295,7 +1303,7 @@ Next Steps
 
   Approve:       /clancy:approve-brief {slug}           (terminal mode)
   With parent:   /clancy:approve-brief {slug} --epic {KEY}
-  Full pipeline: npx chief-clancy                        (if standalone)
+  Full pipeline: npx chief-clancy                        (if not terminal mode)
   Start over:    /clancy:brief --fresh
 ```
 
@@ -1330,7 +1338,7 @@ Briefed {M} of {N} tickets. {K} skipped.
   ⏭️  [{KEY3}] {Title} — already briefed
   ⏭️  [{KEY4}] {Title} — not relevant
 
-Briefs saved to .clancy/briefs/. To create tickets: /clancy:approve-brief (terminal mode) or install the full pipeline first (npx chief-clancy).
+Briefs saved to .clancy/briefs/. To create tickets: /clancy:approve-brief (requires full pipeline — npx chief-clancy).
 ```
 
 ---

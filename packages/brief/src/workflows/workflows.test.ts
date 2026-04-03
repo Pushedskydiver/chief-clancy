@@ -116,13 +116,21 @@ describe('board-setup workflow', () => {
 // brief.md content assertions
 // ---------------------------------------------------------------------------
 
-describe('standalone mode adaptations', () => {
+describe('three-state mode detection', () => {
   const content = readFileSync(new URL('brief.md', import.meta.url), 'utf8');
 
-  it('Step 1 uses standalone/terminal mode detection', () => {
+  it('Step 1 detects three installation states', () => {
     expect(content).toContain('standalone mode');
+    expect(content).toContain('standalone+board mode');
     expect(content).toContain('terminal mode');
-    expect(content).toContain('Detect installation context');
+  });
+
+  it('Step 1 checks .clancy/.env for credentials', () => {
+    expect(content).toContain('.clancy/.env');
+  });
+
+  it('Step 1 checks clancy-implement.js for terminal detection', () => {
+    expect(content).toContain('clancy-implement.js');
   });
 
   it('Step 1 does not hard-stop on missing .clancy/.env', () => {
@@ -131,19 +139,26 @@ describe('standalone mode adaptations', () => {
     );
   });
 
-  it('includes standalone board-ticket guard', () => {
-    expect(content).toContain('Standalone board-ticket guard');
-    expect(content).toContain('Board credentials not found');
-    expect(content).toContain('npx chief-clancy');
-  });
-
-  it('Step 10 includes standalone skip guard', () => {
+  it('CLANCY_ROLES check only runs in terminal mode', () => {
+    expect(content).toContain('Terminal-mode preflight');
     expect(content).toContain(
-      'In **standalone mode**, skip this step and Step 10a entirely',
+      'skip in standalone mode and standalone+board mode',
     );
   });
 
-  it('Step 10a includes standalone skip back-reference', () => {
+  it('standalone guard mentions /clancy:board-setup', () => {
+    expect(content).toContain('Standalone board-ticket guard');
+    expect(content).toContain('Board credentials not found');
+    expect(content).toContain('/clancy:board-setup');
+  });
+
+  it('Step 10 runs when board credentials are available', () => {
+    expect(content).toContain(
+      'when board credentials are available (terminal mode or standalone+board mode)',
+    );
+  });
+
+  it('Step 10a runs when board credentials are available', () => {
     expect(content).toContain('see Step 10 guard');
   });
 
@@ -152,7 +167,7 @@ describe('standalone mode adaptations', () => {
     expect(content).not.toContain('src/agents/devils-advocate.md');
   });
 
-  it('approve-brief references include standalone context', () => {
+  it('approve-brief references include standalone guidance', () => {
     expect(content).not.toMatch(/that is `\/clancy:approve-brief`\./);
     expect(content).toContain('npx chief-clancy');
   });
