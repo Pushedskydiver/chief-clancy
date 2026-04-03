@@ -24,7 +24,7 @@ Stop. Do not proceed with standalone board setup.
 
 ### 2. Check for existing credentials
 
-Check if `.clancy/.env` exists and contains board credentials (any of: `JIRA_BASE_URL`, `GITHUB_TOKEN`, `LINEAR_API_KEY`, `SHORTCUT_API_TOKEN`, `NOTION_TOKEN`, `AZDO_ORG`).
+Check if `.clancy/.env` exists and contains board credentials (any of: `JIRA_BASE_URL`, `GITHUB_TOKEN`, `LINEAR_API_KEY`, `SHORTCUT_API_TOKEN`, `NOTION_TOKEN`, `AZDO_ORG`, `AZDO_PAT`, `AZDO_PROJECT`).
 
 If board credentials are found, show:
 
@@ -223,7 +223,8 @@ Never silently continue with unverified credentials — the user must explicitly
 Auto-detect the default branch:
 
 ```bash
-git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@'
+BASE_BRANCH_REF="$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null)"
+echo "${BASE_BRANCH_REF#refs/remotes/origin/}"
 ```
 
 If detection succeeds and the branch is `main` or `master`: use it silently. Store as `CLANCY_BASE_BRANCH`.
@@ -244,8 +245,9 @@ Create `.clancy/` directory if it does not exist.
 
 ### Write `.clancy/.env`
 
-If `.clancy/.env` already exists (reconfigure path from Step 1):
+If `.clancy/.env` already exists (reconfigure path from Step 1, or exists with no board credentials):
 
+- Preserve all existing lines (comments, blank lines, non-board vars)
 - Remove any existing board-specific env vars for ALL boards (not just the new one). Board vars to remove:
   - Jira: `JIRA_BASE_URL`, `JIRA_PROJECT_KEY`, `JIRA_USER`, `JIRA_API_TOKEN`
   - GitHub: `GITHUB_REPO`, `GITHUB_TOKEN`
