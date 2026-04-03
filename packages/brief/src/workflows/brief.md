@@ -13,6 +13,7 @@ Research an idea, interrogate it thoroughly, and generate a structured strategic
 Check for `.clancy/.env`:
 
 - **Absent** → **standalone mode**. No board credentials. Board ticket and batch modes are blocked.
+- **Present** → continue to `.clancy/clancy-implement.js` check below.
 
 If `.clancy/.env` is present, check for `.clancy/clancy-implement.js`:
 
