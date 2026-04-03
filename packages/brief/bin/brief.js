@@ -81,6 +81,14 @@ const rl = createInterface({ input: process.stdin, output: process.stdout });
 const ask = (label) => new Promise((resolve) => rl.question(label, resolve));
 
 // ---------------------------------------------------------------------------
+// File lists (keep in sync with install.ts)
+// ---------------------------------------------------------------------------
+
+const COMMAND_FILES = ['brief.md'];
+const WORKFLOW_FILES = ['brief.md'];
+const AGENT_FILES = ['devils-advocate.md'];
+
+// ---------------------------------------------------------------------------
 // Installer
 // ---------------------------------------------------------------------------
 
@@ -102,20 +110,23 @@ function copyChecked(src, dest) {
 }
 
 /** Inline workflow @-references into command files (global mode only). */
-function inlineWorkflow(commandsDest, workflowsDest) {
+function inlineWorkflows(commandsDest, workflowsDest) {
   const WORKFLOW_REF = /^@\.claude\/clancy\/workflows\/([^/\\]+\.md)\r?$/gm;
-  const cmdPath = join(commandsDest, 'brief.md');
-  const content = readFileSync(cmdPath, 'utf8');
-  const resolved = content.replace(WORKFLOW_REF, (match, fileName) => {
-    const wfPath = join(workflowsDest, fileName);
-    if (!existsSync(wfPath)) return match;
-    return readFileSync(wfPath, 'utf8');
-  });
 
-  if (resolved !== content) {
-    rejectSymlink(cmdPath);
-    writeFileSync(cmdPath, resolved);
-  }
+  COMMAND_FILES.forEach((file) => {
+    const cmdPath = join(commandsDest, file);
+    const content = readFileSync(cmdPath, 'utf8');
+    const resolved = content.replace(WORKFLOW_REF, (match, fileName) => {
+      const wfPath = join(workflowsDest, fileName);
+      if (!existsSync(wfPath)) return match;
+      return readFileSync(wfPath, 'utf8');
+    });
+
+    if (resolved !== content) {
+      rejectSymlink(cmdPath);
+      writeFileSync(cmdPath, resolved);
+    }
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -178,22 +189,19 @@ async function main() {
   mkdirSync(agentsDest, { recursive: true });
 
   // Copy files
-  copyChecked(
-    join(sources.commandsDir, 'brief.md'),
-    join(commandsDest, 'brief.md'),
+  COMMAND_FILES.forEach((f) =>
+    copyChecked(join(sources.commandsDir, f), join(commandsDest, f)),
   );
-  copyChecked(
-    join(sources.workflowsDir, 'brief.md'),
-    join(workflowsDest, 'brief.md'),
+  WORKFLOW_FILES.forEach((f) =>
+    copyChecked(join(sources.workflowsDir, f), join(workflowsDest, f)),
   );
-  copyChecked(
-    join(sources.agentsDir, 'devils-advocate.md'),
-    join(agentsDest, 'devils-advocate.md'),
+  AGENT_FILES.forEach((f) =>
+    copyChecked(join(sources.agentsDir, f), join(agentsDest, f)),
   );
 
   // Inline workflows for global mode
   if (mode === 'global') {
-    inlineWorkflow(commandsDest, workflowsDest);
+    inlineWorkflows(commandsDest, workflowsDest);
   }
 
   // Write version marker
