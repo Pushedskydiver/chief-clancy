@@ -37,3 +37,23 @@ describe('commands directory structure', () => {
     expect(issues).toEqual([]);
   });
 });
+
+// ---------------------------------------------------------------------------
+// plan.md content assertions
+// ---------------------------------------------------------------------------
+
+describe('plan command', () => {
+  const content = readFileSync(new URL('plan.md', import.meta.url), 'utf8');
+
+  it('documents --from flag', () => {
+    expect(content).toContain('--from');
+  });
+
+  it('shows --from example', () => {
+    expect(content).toContain('/clancy:plan --from');
+  });
+
+  it('notes --from cannot combine with ticket key', () => {
+    expect(content).toContain('Cannot be combined with a ticket key');
+  });
+});
