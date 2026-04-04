@@ -2,7 +2,7 @@
 
 ## Overview
 
-Fetch backlog tickets from the board, explore the codebase, and generate structured implementation plans. Plans are posted as comments on the ticket for human review. Does not implement anything — planning only. In **terminal mode**, use `/clancy:approve-plan` to promote plans. In **standalone mode** or **standalone+board mode**, install the full pipeline (`npx chief-clancy`) to promote plans.
+Fetch backlog tickets from the board, explore the codebase, and generate structured implementation plans. In board mode, plans are posted as comments on the ticket for human review. With `--from`, plans from local brief files are saved to `.clancy/plans/`, with an optional board comment when credentials are available. Does not implement anything — planning only. In **terminal mode**, use `/clancy:approve-plan` to promote plans. In **standalone mode** or **standalone+board mode**, install the full pipeline (`npx chief-clancy`) to promote plans.
 
 ---
 

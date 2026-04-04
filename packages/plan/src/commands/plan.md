@@ -21,4 +21,4 @@ Examples:
 
 @.claude/clancy/workflows/plan.md
 
-Follow the plan workflow above. For each ticket: run the feasibility scan, explore the codebase, generate the plan, and post it as a comment. Do not implement anything — planning only.
+Follow the plan workflow above. For each ticket or brief: run the feasibility scan, explore the codebase, and generate the plan. In board mode, post it as a comment. With `--from`, save it to `.clancy/plans/`. Do not implement anything — planning only.
