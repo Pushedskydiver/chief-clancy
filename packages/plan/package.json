@@ -1,0 +1,48 @@
+{
+  "name": "@chief-clancy/plan",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Implementation planner for Claude Code — decompose briefs into actionable plans",
+  "author": "Alex Clapperton",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pushedskydiver/chief-clancy.git",
+    "directory": "packages/plan"
+  },
+  "homepage": "https://github.com/Pushedskydiver/chief-clancy#readme",
+  "bugs": {
+    "url": "https://github.com/Pushedskydiver/chief-clancy/issues"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "ai",
+    "plan",
+    "planning",
+    "slash-commands",
+    "developer-tools"
+  ],
+  "type": "module",
+  "bin": {
+    "clancy-plan": "./bin/plan.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "bin",
+    "src/commands",
+    "src/workflows"
+  ],
+  "scripts": {
+    "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc --project tsconfig.build.json && tsc-alias --project tsconfig.build.json",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  }
+}
