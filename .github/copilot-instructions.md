@@ -20,7 +20,7 @@ Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash comman
 
 ## Architecture rules
 
-- **Core imports nothing from terminal, brief, or chat** — enforced by eslint-plugin-boundaries
+- **Core imports nothing from terminal, brief, plan, or chat** — enforced by eslint-plugin-boundaries
 - **Brief and plan are fully standalone** — no imports from core, terminal, or chat
 - **Terminal imports from core only** — no cross-imports with brief, plan, or chat
 - **Dependency direction:** core ← terminal ← chief-clancy wrapper. Brief and plan are standalone (no core/terminal deps)

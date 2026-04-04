@@ -2,7 +2,7 @@
 
 **Implementation planner for Claude Code.**
 
-[![npm](https://img.shields.io/npm/v/@chief-clancy/plan?style=for-the-badge&color=cb3837)](https://www.npmjs.com/package/@chief-clancy/plan) [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](../../LICENSE)
+[![npm](https://img.shields.io/npm/v/@chief-clancy/plan?style=for-the-badge&color=cb3837)](https://www.npmjs.com/package/@chief-clancy/plan) [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](https://github.com/Pushedskydiver/chief-clancy/blob/main/LICENSE)
 
 ```bash
 npx @chief-clancy/plan
