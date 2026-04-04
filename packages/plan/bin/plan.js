@@ -83,8 +83,8 @@ const ask = (label) => new Promise((resolve) => rl.question(label, resolve));
 // File lists (keep in sync with install.ts)
 // ---------------------------------------------------------------------------
 
-const COMMAND_FILES = ['plan.md'];
-const WORKFLOW_FILES = ['plan.md'];
+const COMMAND_FILES = ['board-setup.md', 'plan.md'];
+const WORKFLOW_FILES = ['board-setup.md', 'plan.md'];
 
 // ---------------------------------------------------------------------------
 // Installer
@@ -209,6 +209,9 @@ async function main() {
   console.log('  Commands available:');
   console.log(
     `      ${cyan('/clancy:plan')}           ${dim('Generate an implementation plan')}`,
+  );
+  console.log(
+    `      ${cyan('/clancy:board-setup')}    ${dim('Configure board credentials (optional)')}`,
   );
   console.log('');
   console.log('  Next steps:');
