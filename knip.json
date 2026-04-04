@@ -12,6 +12,9 @@
     "packages/brief": {
       "project": ["src/**/*.ts"]
     },
+    "packages/plan": {
+      "project": ["src/**/*.ts"]
+    },
     "packages/terminal": {
       "project": ["src/**/*.ts", "test/**/*.ts"],
       "entry": [

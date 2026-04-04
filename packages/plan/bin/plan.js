@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 /**
- * Brief installer — CLI entry point for `npx @chief-clancy/brief`.
+ * Plan installer — CLI entry point for `npx @chief-clancy/plan`.
  *
- * Self-contained installer that copies the brief slash command, workflow,
- * and devil's advocate agent prompt to the Claude Code commands directory.
+ * Self-contained installer that copies the plan slash command and workflow
+ * to the Claude Code commands directory.
  * No dependencies on @chief-clancy/core or @chief-clancy/terminal.
  */
 import {
@@ -38,12 +38,11 @@ const red = (s) => `\x1b[31m${s}\x1b[0m`;
 const require = createRequire(import.meta.url);
 const pkg = require('../package.json');
 
-const briefRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+const planRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 const sources = {
-  commandsDir: join(briefRoot, 'src', 'commands'),
-  workflowsDir: join(briefRoot, 'src', 'workflows'),
-  agentsDir: join(briefRoot, 'src', 'agents'),
+  commandsDir: join(planRoot, 'src', 'commands'),
+  workflowsDir: join(planRoot, 'src', 'workflows'),
 };
 
 // ---------------------------------------------------------------------------
@@ -84,9 +83,8 @@ const ask = (label) => new Promise((resolve) => rl.question(label, resolve));
 // File lists (keep in sync with install.ts)
 // ---------------------------------------------------------------------------
 
-const COMMAND_FILES = ['board-setup.md', 'brief.md'];
-const WORKFLOW_FILES = ['board-setup.md', 'brief.md'];
-const AGENT_FILES = ['devils-advocate.md'];
+const COMMAND_FILES = ['plan.md'];
+const WORKFLOW_FILES = ['plan.md'];
 
 // ---------------------------------------------------------------------------
 // Installer
@@ -150,7 +148,7 @@ async function chooseMode() {
 
   if (resolved) return resolved;
 
-  console.log(red('\n  Invalid choice. Run npx @chief-clancy/brief again.'));
+  console.log(red('\n  Invalid choice. Run npx @chief-clancy/plan again.'));
   rl.close();
   process.exit(1);
 }
@@ -161,9 +159,9 @@ async function chooseMode() {
 
 async function main() {
   console.log('');
-  console.log(blue('  Clancy Brief'));
+  console.log(blue('  Clancy Plan'));
   console.log(
-    `  ${bold(`v${pkg.version}`)}${dim('  Strategic brief generator for Claude Code.')}`,
+    `  ${bold(`v${pkg.version}`)}${dim('  Implementation planner for Claude Code.')}`,
   );
   console.log('');
 
@@ -179,14 +177,12 @@ async function main() {
 
   const commandsDest = join(baseDir, 'commands', 'clancy');
   const workflowsDest = join(baseDir, 'clancy', 'workflows');
-  const agentsDest = join(baseDir, 'clancy', 'agents');
 
   console.log(dim(`  Installing to: ${commandsDest}`));
 
   // Create directories
   mkdirSync(commandsDest, { recursive: true });
   mkdirSync(workflowsDest, { recursive: true });
-  mkdirSync(agentsDest, { recursive: true });
 
   // Copy files
   COMMAND_FILES.forEach((f) =>
@@ -195,9 +191,6 @@ async function main() {
   WORKFLOW_FILES.forEach((f) =>
     copyChecked(join(sources.workflowsDir, f), join(workflowsDest, f)),
   );
-  AGENT_FILES.forEach((f) =>
-    copyChecked(join(sources.agentsDir, f), join(agentsDest, f)),
-  );
 
   // Inline workflows for global mode
   if (mode === 'global') {
@@ -205,27 +198,24 @@ async function main() {
   }
 
   // Write version marker
-  const versionPath = join(commandsDest, 'VERSION.brief');
+  const versionPath = join(commandsDest, 'VERSION.plan');
   rejectSymlink(versionPath);
   writeFileSync(versionPath, pkg.version);
 
   // Success
   console.log('');
-  console.log(green('  ✓ Clancy Brief installed successfully.'));
+  console.log(green('  ✓ Clancy Plan installed successfully.'));
   console.log('');
   console.log('  Commands available:');
   console.log(
-    `      ${cyan('/clancy:brief')}          ${dim('Generate a strategic brief')}`,
-  );
-  console.log(
-    `      ${cyan('/clancy:board-setup')}    ${dim('Configure board credentials (optional)')}`,
+    `      ${cyan('/clancy:plan')}           ${dim('Generate an implementation plan')}`,
   );
   console.log('');
   console.log('  Next steps:');
   console.log(`    1. Open a project in Claude Code`);
-  console.log(`    2. Run: ${cyan('/clancy:brief "Your feature idea"')}`);
+  console.log(`    2. Run: ${cyan('/clancy:plan TICKET-123')}`);
   console.log('');
-  console.log(dim('  Want to brief from board tickets?'));
+  console.log(dim('  Want to plan board tickets?'));
   console.log(dim(`    Run: ${cyan('/clancy:board-setup')}`));
   console.log('');
   console.log(
