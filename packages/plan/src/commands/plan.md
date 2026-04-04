@@ -1,6 +1,6 @@
 # /clancy:plan
 
-Fetch backlog tickets from the board, explore the codebase, and generate structured implementation plans. Plans are posted as comments on the ticket for human review.
+Fetch backlog tickets from the board, explore the codebase, and generate structured implementation plans. Plans are posted as comments on the ticket for human review. With `--from`, plans from local brief files are saved to `.clancy/plans/` instead, with an optional board comment when credentials are available.
 
 Accepts optional arguments:
 
