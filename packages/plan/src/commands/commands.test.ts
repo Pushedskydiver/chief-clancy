@@ -56,4 +56,8 @@ describe('plan command', () => {
   it('notes --from cannot combine with ticket key', () => {
     expect(content).toContain('Cannot be combined with a ticket key');
   });
+
+  it('documents row selection with bare integer', () => {
+    expect(content).toContain('row number to target');
+  });
 });
