@@ -31,6 +31,7 @@
   ],
   "dependencies": {
     "@chief-clancy/brief": "workspace:*",
+    "@chief-clancy/plan": "workspace:*",
     "@chief-clancy/terminal": "workspace:*"
   }
 }

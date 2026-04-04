@@ -134,6 +134,20 @@ function createSourceFixtures(baseDir: string) {
     "# Devil's advocate agent",
   );
 
+  // Plan package source directories
+  const planBase = join(baseDir, 'plan');
+  const planCommandsDir = join(planBase, 'src', 'commands');
+  const planWorkflowsDir = join(planBase, 'src', 'workflows');
+
+  mkdirSync(planCommandsDir, { recursive: true });
+  mkdirSync(planWorkflowsDir, { recursive: true });
+
+  writeFileSync(
+    join(planCommandsDir, 'plan.md'),
+    '# /clancy:plan\n@.claude/clancy/workflows/plan.md',
+  );
+  writeFileSync(join(planWorkflowsDir, 'plan.md'), '# Plan workflow');
+
   return {
     rolesDir,
     hooksDir,
@@ -142,6 +156,8 @@ function createSourceFixtures(baseDir: string) {
     briefCommandsDir,
     briefWorkflowsDir,
     briefAgentsDir,
+    planCommandsDir,
+    planWorkflowsDir,
   };
 }
 
@@ -194,6 +210,11 @@ describe('runInstall — integration', () => {
       expect(existsSync(join(paths.agentsDest, 'devils-advocate.md'))).toBe(
         true,
       );
+    });
+
+    it('installs plan files from plan package sources', () => {
+      expect(existsSync(join(paths.commandsDest, 'plan.md'))).toBe(true);
+      expect(existsSync(join(paths.workflowsDest, 'plan.md'))).toBe(true);
     });
 
     it('writes VERSION file', () => {

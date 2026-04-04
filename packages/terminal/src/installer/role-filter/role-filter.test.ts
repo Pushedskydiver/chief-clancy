@@ -37,7 +37,7 @@ afterEach(() => {
 describe('copyRoleFiles', () => {
   it('installs all roles when enabledRoles is null (first install)', () => {
     createRole('implementer', 'commands', ['run.md']);
-    createRole('planner', 'commands', ['plan.md']);
+    createRole('planner', 'commands', ['approve-plan.md']);
 
     const dest = join(testDir, 'dest');
     copyRoleFiles({
@@ -48,13 +48,13 @@ describe('copyRoleFiles', () => {
     });
 
     expect(existsSync(join(dest, 'run.md'))).toBe(true);
-    expect(existsSync(join(dest, 'plan.md'))).toBe(true);
+    expect(existsSync(join(dest, 'approve-plan.md'))).toBe(true);
   });
 
   it('installs only core roles when enabledRoles is empty', () => {
     createRole('implementer', 'commands', ['run.md']);
     createRole('reviewer', 'commands', ['review.md']);
-    createRole('planner', 'commands', ['plan.md']);
+    createRole('planner', 'commands', ['approve-plan.md']);
 
     const dest = join(testDir, 'dest');
     copyRoleFiles({
@@ -66,12 +66,12 @@ describe('copyRoleFiles', () => {
 
     expect(existsSync(join(dest, 'run.md'))).toBe(true);
     expect(existsSync(join(dest, 'review.md'))).toBe(true);
-    expect(existsSync(join(dest, 'plan.md'))).toBe(false);
+    expect(existsSync(join(dest, 'approve-plan.md'))).toBe(false);
   });
 
   it('installs core + specified optional roles', () => {
     createRole('implementer', 'commands', ['run.md']);
-    createRole('planner', 'commands', ['plan.md']);
+    createRole('planner', 'commands', ['approve-plan.md']);
     createRole('strategist', 'commands', ['approve-brief.md']);
 
     const dest = join(testDir, 'dest');
@@ -83,16 +83,16 @@ describe('copyRoleFiles', () => {
     });
 
     expect(existsSync(join(dest, 'run.md'))).toBe(true);
-    expect(existsSync(join(dest, 'plan.md'))).toBe(true);
+    expect(existsSync(join(dest, 'approve-plan.md'))).toBe(true);
     expect(existsSync(join(dest, 'approve-brief.md'))).toBe(false);
   });
 
   it('removes previously-installed files for disabled optional roles', () => {
-    createRole('planner', 'commands', ['plan.md']);
+    createRole('planner', 'commands', ['approve-plan.md']);
 
     const dest = join(testDir, 'dest');
     mkdirSync(dest, { recursive: true });
-    writeFileSync(join(dest, 'plan.md'), '# old planner file');
+    writeFileSync(join(dest, 'approve-plan.md'), '# old planner file');
 
     copyRoleFiles({
       rolesDir: join(testDir, 'roles'),
@@ -101,7 +101,7 @@ describe('copyRoleFiles', () => {
       enabledRoles: new Set<string>(),
     });
 
-    expect(existsSync(join(dest, 'plan.md'))).toBe(false);
+    expect(existsSync(join(dest, 'approve-plan.md'))).toBe(false);
   });
 
   it('skips roles without the target subdir', () => {
@@ -139,7 +139,7 @@ describe('copyRoleFiles', () => {
   });
 
   it('removes subdirectories from dest for disabled roles (M6)', () => {
-    createRole('planner', 'commands', ['plan.md']);
+    createRole('planner', 'commands', ['approve-plan.md']);
     // Add a nested subdirectory inside the role's commands dir
     const nestedSrc = join(testDir, 'roles', 'planner', 'commands', 'nested');
     mkdirSync(nestedSrc, { recursive: true });
@@ -147,7 +147,7 @@ describe('copyRoleFiles', () => {
 
     const dest = join(testDir, 'dest');
     mkdirSync(join(dest, 'nested'), { recursive: true });
-    writeFileSync(join(dest, 'plan.md'), '# old planner file');
+    writeFileSync(join(dest, 'approve-plan.md'), '# old planner file');
     writeFileSync(join(dest, 'nested', 'deep.md'), '# old nested file');
 
     copyRoleFiles({
@@ -157,7 +157,7 @@ describe('copyRoleFiles', () => {
       enabledRoles: new Set<string>(),
     });
 
-    expect(existsSync(join(dest, 'plan.md'))).toBe(false);
+    expect(existsSync(join(dest, 'approve-plan.md'))).toBe(false);
     expect(existsSync(join(dest, 'nested'))).toBe(false);
   });
 

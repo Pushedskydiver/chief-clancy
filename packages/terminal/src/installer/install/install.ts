@@ -17,8 +17,12 @@ import {
   buildManifest,
   detectModifiedFiles,
 } from '~/t/installer/manifest/manifest.js';
+import { handlePlanContent } from '~/t/installer/plan-content/index.js';
 import { copyRoleFiles } from '~/t/installer/role-filter/role-filter.js';
-import { requirePath } from '~/t/installer/shared/fs-guards/index.js';
+import {
+  requirePath,
+  validateOptionalDirs,
+} from '~/t/installer/shared/fs-guards/index.js';
 import { printSuccess } from '~/t/installer/ui/ui.js';
 import { blue, dim, green } from '~/t/shared/ansi/index.js';
 
@@ -40,6 +44,8 @@ type InstallSources = {
   readonly briefCommandsDir?: string;
   readonly briefWorkflowsDir?: string;
   readonly briefAgentsDir?: string;
+  readonly planCommandsDir?: string;
+  readonly planWorkflowsDir?: string;
 };
 
 /** All resolved destination paths for an installation. */
@@ -202,24 +208,16 @@ export function validateSources(
   });
 
   const { briefCommandsDir, briefWorkflowsDir, briefAgentsDir } = sources;
-  const hasSome = Boolean(
-    briefCommandsDir ?? briefWorkflowsDir ?? briefAgentsDir,
+  validateOptionalDirs(
+    'Brief',
+    [briefCommandsDir, briefWorkflowsDir, briefAgentsDir],
+    exists,
   );
-  const hasAll = Boolean(
-    briefCommandsDir && briefWorkflowsDir && briefAgentsDir,
+  validateOptionalDirs(
+    'Plan',
+    [sources.planCommandsDir, sources.planWorkflowsDir],
+    exists,
   );
-
-  if (hasSome && !hasAll) {
-    throw new Error(
-      'Brief source dirs must be all-or-none — some are missing.',
-    );
-  }
-
-  if (briefCommandsDir && briefWorkflowsDir && briefAgentsDir) {
-    requirePath('Brief commands source', briefCommandsDir, exists);
-    requirePath('Brief workflows source', briefWorkflowsDir, exists);
-    requirePath('Brief agents source', briefAgentsDir, exists);
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -324,6 +322,7 @@ function installContent(options: {
   });
 
   handleBriefContent({ sources, dests: paths, enabledRoles, fs });
+  handlePlanContent({ sources, dests: paths, enabledRoles, fs });
 
   if (mode === 'global') {
     inlineWorkflows(paths.commandsDest, paths.workflowsDest);
