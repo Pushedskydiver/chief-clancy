@@ -14,6 +14,23 @@ export const requirePath = (
   if (!exists(path)) throw new Error(`${label} not found: ${path}`);
 };
 
+/** Validate all-or-none optional source dirs and require each path if present. */
+export const validateOptionalDirs = (
+  label: string,
+  dirs: readonly (string | undefined)[],
+  exists: (path: string) => boolean,
+): void => {
+  const defined = dirs.filter(Boolean) as string[];
+
+  if (defined.length > 0 && defined.length < dirs.length) {
+    throw new Error(
+      `${label} source dirs must be all-or-none — some are missing.`,
+    );
+  }
+
+  defined.forEach((dir) => requirePath(`${label} source`, dir, exists));
+};
+
 /** Throw if the given path is a symlink. Only swallows ENOENT. */
 export function rejectSymlink(path: string): void {
   try {

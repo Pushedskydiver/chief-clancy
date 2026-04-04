@@ -249,7 +249,25 @@ describe('validateSources', () => {
     const exists = (p: string) => !p.includes('/pkg/src/commands');
 
     expect(() => validateSources(full, exists)).toThrow(
-      /Brief commands source.*not found/,
+      /Brief source.*not found/,
     );
+  });
+
+  it('throws when only some plan source dirs are provided', () => {
+    const partial = { ...sources, planCommandsDir: '/pkg/plan/commands' };
+
+    expect(() => validateSources(partial, () => true)).toThrow(
+      'Plan source dirs must be all-or-none',
+    );
+  });
+
+  it('does not throw when all plan source dirs are provided', () => {
+    const full = {
+      ...sources,
+      planCommandsDir: '/pkg/plan/commands',
+      planWorkflowsDir: '/pkg/plan/workflows',
+    };
+
+    expect(() => validateSources(full, () => true)).not.toThrow();
   });
 });
