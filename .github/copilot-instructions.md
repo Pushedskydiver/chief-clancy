@@ -4,7 +4,7 @@ Autonomous, board-driven development for Claude Code. Monorepo for `@chief-clanc
 
 ## Project overview
 
-Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash commands, hooks, and board integrations (Jira, GitHub Issues, Linear, Shortcut, Notion, Azure DevOps) into Claude Code projects. This monorepo splits the codebase into `@chief-clancy/core` (board intelligence, types, lifecycle, pipeline), `@chief-clancy/terminal` (installer, hooks, CLI bridge), and `@chief-clancy/brief` (standalone strategic brief generator). The `chief-clancy` wrapper delegates to terminal and sources brief content from the brief package.
+Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash commands, hooks, and board integrations (Jira, GitHub Issues, Linear, Shortcut, Notion, Azure DevOps) into Claude Code projects. This monorepo splits the codebase into `@chief-clancy/core` (board intelligence, types, lifecycle, pipeline), `@chief-clancy/terminal` (installer, hooks, CLI bridge), `@chief-clancy/brief` (standalone strategic brief generator), and `@chief-clancy/plan` (standalone implementation planner). The `chief-clancy` wrapper delegates to terminal and sources brief + plan content from their respective packages.
 
 ## Tech stack
 
@@ -21,10 +21,10 @@ Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash comman
 ## Architecture rules
 
 - **Core imports nothing from terminal, brief, or chat** — enforced by eslint-plugin-boundaries
-- **Brief is fully standalone** — no imports from core, terminal, or chat
-- **Terminal imports from core only** — no cross-imports with brief or chat
-- **Dependency direction:** core ← terminal ← chief-clancy wrapper. Brief is standalone (no core/terminal deps)
-- **Brief has three installation modes:** standalone (no board), standalone+board (credentials via `/clancy:board-setup`), terminal (full pipeline via `npx chief-clancy`). Detection uses `.clancy/.env` + `.clancy/clancy-implement.js` presence
+- **Brief and plan are fully standalone** — no imports from core, terminal, or chat
+- **Terminal imports from core only** — no cross-imports with brief, plan, or chat
+- **Dependency direction:** core ← terminal ← chief-clancy wrapper. Brief and plan are standalone (no core/terminal deps)
+- **Brief and plan have three installation modes:** standalone (no board), standalone+board (credentials via `/clancy:board-setup`), terminal (full pipeline via `npx chief-clancy`). Detection uses `.clancy/.env` + `.clancy/clancy-implement.js` presence
 
 ## Code conventions
 
@@ -103,6 +103,15 @@ Code is organised by **capability directories** that map to future packages. See
 | `packages/brief/src/agents/`    | Agent prompts (`devils-advocate.md`)                    |
 | `packages/brief/src/installer/` | Self-contained installer module (no core/terminal deps) |
 | `packages/brief/bin/brief.js`   | CLI entry point for `npx @chief-clancy/brief`           |
+
+### Plan (standalone implementation planner)
+
+| Path                           | Purpose                                                 |
+| ------------------------------ | ------------------------------------------------------- |
+| `packages/plan/src/commands/`  | Slash commands (`plan.md`, `board-setup.md`)            |
+| `packages/plan/src/workflows/` | Workflows (`plan.md`, `board-setup.md`)                 |
+| `packages/plan/src/installer/` | Self-contained installer module (no core/terminal deps) |
+| `packages/plan/bin/plan.js`    | CLI entry point for `npx @chief-clancy/plan`            |
 
 ### Terminal (CLI + automation)
 

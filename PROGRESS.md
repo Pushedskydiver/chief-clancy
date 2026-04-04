@@ -1,51 +1,52 @@
 # Progress
 
-## Session 50 Summary
+## Session 51 Summary
 
-### Terminal consumes brief + optional board support (complete)
+### @chief-clancy/plan extraction — Phase A complete
 
-**PR #190** — Delete strategist duplicates + wire bin script:
+**PR #195** — Scaffold @chief-clancy/plan package:
 
-- Deleted `strategist/commands/brief.md` and `strategist/workflows/brief.md` (approve-brief.md stays in both)
-- Wired `briefCommandsDir`/`briefWorkflowsDir`/`briefAgentsDir` in `bin/clancy.js` resolving from `@chief-clancy/brief`
-- Added `@chief-clancy/brief: workspace:*` to `chief-clancy` package dependencies
-- Updated role-filter and integration install test fixtures
+- Package scaffold matching brief's pattern: package.json (private: true), tsconfig, vitest, barrel export, CLI installer, installer module with tests
+- Structural tests with empty expectations (content arrives in PR 2)
+- Root config updates: eslint boundaries, knip, vitest, publint, attw
 
-**PR #191** — Refactor `bin/brief.js` to use file arrays (prep for board-setup)
+**PR #196** — Copy plan content + standalone adaptation:
 
-**PR #192** — Add `/clancy:board-setup` command + workflow:
+- Plan command and workflow copied from terminal's planner role
+- Full Step 1 rewrite: three-state mode detection (standalone / standalone+board / terminal)
+- Standalone guard blocks board ticket and batch modes without credentials
+- Step 5 (post plan as comment) gated on board credentials available
+- /clancy:board-setup command + workflow adapted for plan package
+- 20 new content assertion tests
 
-- New slash command and workflow for standalone board credential configuration
-- Supports all 6 boards with credential collection, verification, and `.clancy/.env` writing
-- Installer arrays updated in both `install.ts` and `bin/brief.js`
-- 10 new content assertion tests
+**PR #197** — Terminal consumes plan — delete duplicates + wire sources:
 
-**PR #193** — Three-state mode detection:
+- Deleted plan.md from terminal's planner role (approve-plan.md stays)
+- New plan-content module mirroring brief-content (2 files, no agents)
+- Extracted validateOptionalDirs into shared fs-guards
+- Wired wrapper: @chief-clancy/plan dep + source dir resolution
+- Updated role-filter and integration test fixtures
 
-- Standalone (no `.clancy/.env`) → board ticket mode blocked
-- Standalone+board (`.clancy/.env` without `clancy-implement.js`) → board ticket mode works
-- Terminal (both present) → full pipeline, unchanged
-- Steps 10/10a now run when board credentials available (not just terminal mode)
-- README updated with "Board ticket mode" section
-- Copilot instructions updated with brief package and architecture rules
-- Markdown added to lint-staged for auto-formatting on commit
+**PR #198** — Publish prep:
 
-Test counts: 1608 core, 822 terminal, 51 brief.
+- Flipped private: false, changeset, README
+- Copilot instructions updated with plan package
+- @chief-clancy/plan ready for npm publish
+
+Test counts: 1608 core, 834 terminal, 51 brief, 44 plan.
 
 ---
 
-## Next: @chief-clancy/plan extraction
+## Next: Phase B — Local brief input mode (PRs 5-6)
 
 Plan doc: `.claude/plans/plan-package-extraction.md`
 
-**Phase A** (PRs 1-4): Scaffold, copy + standalone adapt, terminal consumes, publish. Ships `/clancy:board-setup` in plan package (self-contained). Terminal changeset covers both brief and plan extraction work.
-
-**Phase B** (PRs 5-6): `--from .clancy/briefs/slug.md` flag for fully local planning from brief files. Plans saved to `.clancy/plans/`. Unlocks `brief → plan → implement` without any board.
+Adds `--from .clancy/briefs/slug.md` flag to `/clancy:plan` for fully offline planning from brief files. Plans saved to `.clancy/plans/`. Unlocks `brief → plan → implement` without any board.
 
 ### Build order (remaining standalone packages)
 
 1. ~~`@chief-clancy/brief`~~ — **done**
-2. `@chief-clancy/plan` — same pattern as brief
+2. ~~`@chief-clancy/plan`~~ — **done (Phase A)**
 3. `@chief-clancy/design` — same pattern + Stitch integration
 4. `@chief-clancy/dev` — extract from core when chat arrives
 5. `@chief-clancy/cli` — interactive wizard
