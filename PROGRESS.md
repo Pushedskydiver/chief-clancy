@@ -34,9 +34,13 @@ Test counts: 1608 core, 822 terminal, 51 brief.
 
 ---
 
-## Next
+## Next: @chief-clancy/plan extraction
 
-- `@chief-clancy/plan` — same standalone pattern as brief
+Plan doc: `.claude/plans/plan-package-extraction.md`
+
+**Phase A** (PRs 1-4): Scaffold, copy + standalone adapt, terminal consumes, publish. Ships `/clancy:board-setup` in plan package (self-contained). Terminal changeset covers both brief and plan extraction work.
+
+**Phase B** (PRs 5-6): `--from .clancy/briefs/slug.md` flag for fully local planning from brief files. Plans saved to `.clancy/plans/`. Unlocks `brief → plan → implement` without any board.
 
 ### Build order (remaining standalone packages)
 
