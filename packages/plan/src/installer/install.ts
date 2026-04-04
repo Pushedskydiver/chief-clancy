@@ -55,10 +55,10 @@ export type RunPlanInstallOptions = {
 // ---------------------------------------------------------------------------
 
 /** Command files shipped with the plan package. */
-const COMMAND_FILES = ['plan.md'] as const;
+const COMMAND_FILES = ['board-setup.md', 'plan.md'] as const;
 
 /** Workflow files shipped with the plan package. */
-const WORKFLOW_FILES = ['plan.md'] as const;
+const WORKFLOW_FILES = ['board-setup.md', 'plan.md'] as const;
 
 /** Matches `@.claude/clancy/workflows/<filename>.md` on its own line. */
 const WORKFLOW_REF = /^@\.claude\/clancy\/workflows\/([^/\\]+\.md)\r?$/gm;
