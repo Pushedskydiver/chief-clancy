@@ -97,8 +97,8 @@ Store as `GITHUB_REPO`, `GITHUB_TOKEN`.
 After collecting credentials, show:
 
 ```
-Note: Clancy only picks up GitHub Issues that have the "clancy" label applied.
-Add this label to any issue you want Clancy to plan.
+Note: /clancy:plan only picks up GitHub Issues that have the "clancy:plan" label applied.
+Add this planning label to any issue you want Clancy to plan.
 ```
 
 ### Linear
@@ -248,12 +248,12 @@ If `.clancy/.env` already exists (reconfigure path from Step 1, or exists with n
 
 - Preserve all existing lines (comments, blank lines, non-board vars)
 - Remove any existing board-specific env vars for ALL boards (not just the new one). Board vars to remove:
-  - Jira: `JIRA_BASE_URL`, `JIRA_PROJECT_KEY`, `JIRA_USER`, `JIRA_API_TOKEN`, `CLANCY_JQL_STATUS`, `CLANCY_JQL_SPRINT`
-  - GitHub: `GITHUB_REPO`, `GITHUB_TOKEN`
-  - Linear: `LINEAR_API_KEY`, `LINEAR_TEAM_ID`
-  - Shortcut: `SHORTCUT_API_TOKEN`, `SHORTCUT_WORKFLOW`
-  - Notion: `NOTION_TOKEN`, `NOTION_DATABASE_ID`, `CLANCY_NOTION_STATUS`, `CLANCY_NOTION_ASSIGNEE`, `CLANCY_NOTION_LABELS`, `CLANCY_NOTION_PARENT`, `CLANCY_NOTION_TODO`
-  - Azure DevOps: `AZDO_ORG`, `AZDO_PROJECT`, `AZDO_PAT`, `CLANCY_AZDO_WIT`, `CLANCY_AZDO_STATUS`
+  - Jira: `JIRA_BASE_URL`, `JIRA_PROJECT_KEY`, `JIRA_USER`, `JIRA_API_TOKEN`, `CLANCY_JQL_STATUS`, `CLANCY_JQL_SPRINT`, `CLANCY_PLAN_STATUS`, `CLANCY_LABEL_PLAN`
+  - GitHub: `GITHUB_REPO`, `GITHUB_TOKEN`, `CLANCY_LABEL_PLAN`
+  - Linear: `LINEAR_API_KEY`, `LINEAR_TEAM_ID`, `CLANCY_PLAN_STATE_TYPE`, `CLANCY_LABEL_PLAN`
+  - Shortcut: `SHORTCUT_API_TOKEN`, `SHORTCUT_WORKFLOW`, `CLANCY_LABEL_PLAN`
+  - Notion: `NOTION_TOKEN`, `NOTION_DATABASE_ID`, `CLANCY_NOTION_STATUS`, `CLANCY_NOTION_ASSIGNEE`, `CLANCY_NOTION_LABELS`, `CLANCY_NOTION_PARENT`, `CLANCY_NOTION_TODO`, `CLANCY_PLAN_STATUS`, `CLANCY_LABEL_PLAN`
+  - Azure DevOps: `AZDO_ORG`, `AZDO_PROJECT`, `AZDO_PAT`, `CLANCY_AZDO_WIT`, `CLANCY_AZDO_STATUS`, `CLANCY_PLAN_STATUS`, `CLANCY_LABEL_PLAN`
 - Preserve all other lines (comments, blank lines, non-board vars like `CLANCY_BASE_BRANCH`)
 - Append the new board's credentials at the end
 - Update `CLANCY_BASE_BRANCH` if it exists, or append it

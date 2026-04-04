@@ -50,23 +50,23 @@ Continue anyway? [y/N]
 
 If the user declines, stop. If they confirm, continue without docs context.
 
-5. Branch freshness check — run `git fetch origin` and compare the current HEAD with `origin/$CLANCY_BASE_BRANCH` (defaults to `main`). If the local branch is behind:
+### 4. Branch freshness check — run `git fetch origin` and compare the current HEAD with `origin/$CLANCY_BASE_BRANCH` (defaults to `main`). If the local branch is behind:
 
-   **AFK mode** (`--afk` flag or `CLANCY_MODE=afk`): auto-pull without prompting. Run `git pull origin $CLANCY_BASE_BRANCH` and continue.
+**AFK mode** (`--afk` flag or `CLANCY_MODE=afk`): auto-pull without prompting. Run `git pull origin $CLANCY_BASE_BRANCH` and continue.
 
-   **Interactive mode:**
+**Interactive mode:**
 
-   ```
-   ⚠️  Your local branch is behind origin/{CLANCY_BASE_BRANCH} by {N} commit(s).
+```
+⚠️  Your local branch is behind origin/{CLANCY_BASE_BRANCH} by {N} commit(s).
 
-   [1] Pull latest
-   [2] Continue anyway
-   [3] Abort
-   ```
+[1] Pull latest
+[2] Continue anyway
+[3] Abort
+```
 
-   - [1] runs `git pull origin $CLANCY_BASE_BRANCH` and continues
-   - [2] continues without pulling
-   - [3] stops
+- [1] runs `git pull origin $CLANCY_BASE_BRANCH` and continues
+- [2] continues without pulling
+- [3] stops
 
 ---
 
@@ -79,8 +79,7 @@ Parse the arguments passed to the command:
 - **Specific ticket key:** plan a single ticket by key, with per-platform validation:
   - `#42` — valid for GitHub only. If board is Jira, Linear, or Shortcut: `The #N format is for GitHub Issues. Use a ticket key like PROJ-123.` Stop. If board is Azure DevOps: `The #N format is for GitHub Issues. Use a numeric work item ID (e.g. 42).` Stop. If board is Notion: `The #N format is for GitHub Issues. Use a Notion page UUID or notion-XXXXXXXX key.` Stop.
   - `PROJ-123` / `ENG-42` (letters-dash-number) — valid for Jira, Linear, and Shortcut. If board is GitHub: `Use #N format for GitHub Issues (e.g. #42).` Stop. If board is Azure DevOps: `Use a numeric work item ID for Azure DevOps (e.g. 42).` Stop. If board is Notion: `Use a Notion page UUID or notion-XXXXXXXX key.` Stop.
-  - Bare integer — valid for Azure DevOps (work item ID) and GitHub (issue number). On Azure DevOps with value > 10: treat as a work item ID (no ambiguity — AzDo always uses numeric IDs). On GitHub with value > 10: ambiguous — ask:
-  - Bare integer on GitHub (e.g. `/clancy:plan 42` where 42 > 10): ambiguous — ask:
+  - Bare integer — valid for Azure DevOps (work item ID) and GitHub (issue number). On Azure DevOps, treat as a work item ID (no ambiguity — AzDo always uses numeric IDs). On GitHub with value > 10, it is ambiguous — ask:
     ```
     Did you mean issue #42 or batch mode (42 tickets)?
     [1] Plan issue #42
