@@ -74,6 +74,11 @@ If the user declines, stop. If they confirm, continue without docs context.
 
 Parse the arguments passed to the command:
 
+- **`--from {path}`** — From local brief file mode. Read a Clancy brief file and plan from its content. Cannot be combined with a ticket reference (`Cannot use both a ticket reference and --from. Use one or the other.`). Cannot be combined with a batch number (`Cannot use batch mode with --from. Use --from with a brief file path.`). Validate the file:
+  - File does not exist: `File not found: {path}` Stop.
+  - File is empty: `File is empty: {path}` Stop.
+  - File > 50KB: Warn `Large file ({size}KB). Clancy will use the first ~50KB for context.` Truncate internally, continue.
+  - File is not a Clancy brief: must contain `## Problem Statement` or `## Ticket Decomposition`. If neither found: `File does not appear to be a Clancy brief. Use /clancy:brief to generate one, or /clancy:brief --from {path} to brief from a raw file.` Stop.
 - **No argument:** plan 1 ticket from the queue
 - **Numeric argument** (e.g. `/clancy:plan 3`): plan up to N tickets from the queue, cap at 10
 - **Specific ticket key:** plan a single ticket by key, with per-platform validation:
@@ -98,17 +103,61 @@ Planning {N} tickets — each requires codebase exploration. Continue? [Y/n]
 
 ### Standalone board-ticket guard
 
+**`--from` mode** bypasses the standalone board-ticket guard entirely — no board credentials are needed for local brief planning. The guard evaluates the resolved input mode (ticket/batch/no-arg), not flags like `--afk`.
+
 If running in **standalone mode** (Step 1 detected no `.clancy/.env`) and the resolved input mode is **board ticket**, **batch mode**, or **no argument** (which defaults to queue fetch):
 
 ```
 Board credentials not found. To plan from board tickets:
   /clancy:board-setup    — configure board credentials (standalone)
   npx chief-clancy       — install the full pipeline
+
+To plan from a local brief file:
+  /clancy:plan --from .clancy/briefs/{slug}.md
 ```
 
 Stop.
 
 In **standalone+board mode**, board ticket and batch modes proceed normally — credentials are available.
+
+---
+
+## Step 3a — Gather from local brief (--from mode only)
+
+If `--from {path}` was set in Step 2, run this step **instead of** Steps 3, 3b, and 3c (all board-mode ticket fetching, existing plan detection via comments, and feedback loop). Skip all of them entirely — Step 3a handles its own existing plan check below.
+
+### Read and parse the brief file
+
+Read the file at `{path}`. Extract the following sections:
+
+- **Source** field (`**Source:**` line) — the source value (e.g. `[#50] Redesign settings page`, `"Add dark mode"`, `docs/rfcs/auth-rework.md`). Used for the plan header and display identifier.
+- `## Problem Statement` — used as the ticket description equivalent for plan context. Optional — if missing, use the brief's overall content as context instead.
+- `## Goals` — used alongside Problem Statement for plan context. Optional.
+- `## Ticket Decomposition` — the decomposition table. Read the full table for plan context (row-level selection comes in a future PR). For PR 5a, treat the entire brief as a single planning unit.
+
+Pass all extracted content to Step 4 as the ticket context (replacing the board ticket data that Step 3 would normally provide).
+
+### --from mode Step 4 adaptations
+
+When running in `--from` mode, Steps 4a-4f have these adaptations:
+
+- **Display identifier:** Use the slug (derived from brief filename) wherever board mode uses `{KEY}`. Progress display shows `[{slug}] {brief source}` instead of `[{KEY}] {Title}`.
+- **Step 4a (feasibility scan):** Run the scan normally (the brief content replaces the ticket description). If infeasible, skip — but do NOT post a "Clancy skipped" comment to any board (no board ticket). Log `{slug} | SKIPPED` instead of `{KEY} | SKIPPED`.
+- **Step 4b (QA return detection):** Skip entirely in `--from` mode — there is no implementation history to check.
+- **Step 4c-4e:** Run normally — codebase context, Figma, and exploration work the same regardless of input source.
+- **Step 4f (generate plan):** Use the local plan header format (Source/Brief fields) instead of the board header format (Ticket field). See Step 5a for the header template.
+
+### Existing local plan check
+
+Before planning, check for an existing plan file at `.clancy/plans/{slug}.md` where the slug is derived from the brief filename:
+
+**Slug generation:** strip the `YYYY-MM-DD-` date prefix (pattern: 4 digits, dash, 2 digits, dash, 2 digits, dash) if present, then strip the `.md` extension. If no date prefix matches, use the full filename minus extension.
+
+| Condition                    | Behaviour                                                       |
+| ---------------------------- | --------------------------------------------------------------- |
+| No existing plan             | Proceed to Step 4                                               |
+| Existing plan + `--fresh`    | Delete and overwrite the existing plan file. Proceed to Step 4. |
+| Existing plan + no `--fresh` | Stop: `Already planned. Use --fresh to start over.`             |
 
 ---
 
@@ -733,9 +782,45 @@ _Generated by [Clancy](https://github.com/Pushedskydiver/chief-clancy). To reque
 
 ---
 
-## Step 5 — Post plan as comment
+## Step 5 — Save / post plan
 
-**Guard:** Only run Step 5 when board credentials are available (terminal mode or standalone+board mode). In standalone mode (no `.clancy/.env`), skip this step entirely — the plan is still generated and printed to stdout in Step 4.
+### 5a. Local plan output (--from mode)
+
+If planning from a local brief (`--from`), save the plan to a local file instead of posting to the board.
+
+**Output path:** `.clancy/plans/{slug}.md`
+
+Create `.clancy/plans/` directory if it does not exist.
+
+The slug is the same one computed in Step 3a (brief filename minus date prefix and extension).
+
+**Local plan header:** The plan uses the same `## Clancy Implementation Plan` template from Step 4f, but with local-specific header fields:
+
+```markdown
+## Clancy Implementation Plan
+
+**Source:** {brief source field value}
+**Brief:** {brief filename}
+**Planned:** {YYYY-MM-DD}
+```
+
+Replace the `**Ticket:** [{KEY}] {Title}` line from the board template with `**Source:**` and `**Brief:**` lines.
+
+**Local plan footer:** Replace the board-specific footer with:
+
+```
+_Generated by [Clancy](https://github.com/Pushedskydiver/chief-clancy). To start over: `/clancy:plan --fresh --from {path}`. To approve: install the full pipeline — npx chief-clancy._
+```
+
+**Re-planning:** If `--fresh` was used, the existing plan file is overwritten (same slug = same filename).
+
+**Board comment offer:** If board credentials ARE available (standalone+board mode), after saving the local file, offer to also post the plan as a comment on the source ticket (if the brief's Source field contains a ticket key). This is optional — the local file is the primary output.
+
+After saving, skip to Step 6 (log). Do not run Step 5b (board posting) for `--from` plans unless the user opts in above.
+
+### 5b. Post plan as comment (board mode)
+
+**Guard:** Only run Step 5b when board credentials are available (terminal mode or standalone+board mode). In standalone mode (no `.clancy/.env`), skip this step entirely — the plan is still generated and printed to stdout in Step 4.
 
 ### Jira — POST comment
 
@@ -851,6 +936,8 @@ curl -s \
 
 For each planned ticket, append to `.clancy/progress.txt` using the appropriate variant:
 
+### Board mode log entries
+
 | Outcome                         | Log entry                                              |
 | ------------------------------- | ------------------------------------------------------ |
 | Normal                          | `YYYY-MM-DD HH:MM \| {KEY} \| PLAN \| {S/M/L}`         |
@@ -858,11 +945,22 @@ For each planned ticket, append to `.clancy/progress.txt` using the appropriate 
 | Comment post failed             | `YYYY-MM-DD HH:MM \| {KEY} \| POST_FAILED \| {reason}` |
 | Skipped (infeasible)            | `YYYY-MM-DD HH:MM \| {KEY} \| SKIPPED \| {reason}`     |
 
+### --from mode log entries
+
+Use the slug as the identifier instead of a ticket key:
+
+| Outcome              | Log entry                                             |
+| -------------------- | ----------------------------------------------------- |
+| Normal               | `YYYY-MM-DD HH:MM \| {slug} \| LOCAL_PLAN \| {S/M/L}` |
+| Skipped (infeasible) | `YYYY-MM-DD HH:MM \| {slug} \| SKIPPED \| {reason}`   |
+
 ---
 
 ## Step 7 — Summary
 
 After all tickets are processed, display:
+
+### Board mode summary
 
 ```
 Planned {N} ticket(s):
@@ -879,6 +977,19 @@ Plans written to your board. After review:
 "Let me dust this for prints..."
 ```
 
+### --from mode summary
+
+```
+🚨 Clancy — Plan
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ✅ Saved to .clancy/plans/{slug}.md
+
+  To approve: install the full pipeline — npx chief-clancy
+
+"Let me dust this for prints..."
+```
+
 ---
 
 ## Notes
@@ -891,3 +1002,5 @@ Plans written to your board. After review:
 - All board API calls are best-effort — if a comment fails to post, print the plan to stdout as fallback
 - When exploring the codebase, use Glob and Read for small tickets, parallel Explore subagents for larger ones
 - The `## Clancy Implementation Plan` marker in comments is used by both `/clancy:plan` (to detect existing plans) and `/clancy:approve-plan` (to find the plan to promote)
+- `--from` mode is fully offline — no board credentials needed. Plans saved to `.clancy/plans/` as the source of truth
+- `--from` requires a Clancy brief (structured format with `## Problem Statement` or `## Ticket Decomposition`). For raw files, use `/clancy:brief --from {path}` first to generate a brief

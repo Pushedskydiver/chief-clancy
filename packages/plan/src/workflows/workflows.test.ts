@@ -120,6 +120,56 @@ describe('board-setup workflow', () => {
 // plan.md content assertions
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// --from flag: parsing and validation
+// ---------------------------------------------------------------------------
+
+describe('--from flag parsing', () => {
+  const content = readFileSync(new URL('plan.md', import.meta.url), 'utf8');
+
+  it('documents --from input mode in Step 2', () => {
+    expect(content).toContain('--from');
+    expect(content).toContain('local brief file');
+  });
+
+  it('cannot combine --from with ticket key', () => {
+    expect(content).toContain('Cannot use both a ticket reference and --from');
+  });
+
+  it('cannot combine --from with batch mode', () => {
+    expect(content).toContain('Cannot use batch mode with --from');
+  });
+
+  it('validates file exists', () => {
+    expect(content).toContain('File not found');
+  });
+
+  it('validates file is not empty', () => {
+    expect(content).toContain('File is empty');
+  });
+
+  it('warns on large files (>50KB)', () => {
+    expect(content).toContain('50KB');
+  });
+});
+
+describe('--from brief validation', () => {
+  const content = readFileSync(new URL('plan.md', import.meta.url), 'utf8');
+
+  it('validates file is a Clancy brief', () => {
+    expect(content).toContain('does not appear to be a Clancy brief');
+  });
+
+  it('checks for Problem Statement or Ticket Decomposition', () => {
+    expect(content).toContain('## Problem Statement');
+    expect(content).toContain('## Ticket Decomposition');
+  });
+
+  it('points to /clancy:brief --from for raw files', () => {
+    expect(content).toContain('/clancy:brief --from');
+  });
+});
+
 describe('three-state mode detection', () => {
   const content = readFileSync(new URL('plan.md', import.meta.url), 'utf8');
 
@@ -150,6 +200,29 @@ describe('three-state mode detection', () => {
     );
   });
 
+  it('--from mode gathers from local brief file', () => {
+    expect(content).toContain('Step 3a');
+    expect(content).toContain('Gather from local brief');
+  });
+
+  it('--from parses Source field from brief', () => {
+    expect(content).toContain('**Source:**');
+  });
+
+  it('--from extracts Problem Statement and Goals', () => {
+    expect(content).toContain('## Problem Statement');
+    expect(content).toContain('## Goals');
+  });
+
+  it('--from reads Ticket Decomposition for context', () => {
+    expect(content).toContain('## Ticket Decomposition');
+  });
+
+  it('--from mode bypasses standalone board-ticket guard', () => {
+    expect(content).toContain('--from');
+    expect(content).toContain('bypasses the standalone board-ticket guard');
+  });
+
   it('standalone guard mentions /clancy:board-setup', () => {
     expect(content).toContain('Standalone board-ticket guard');
     expect(content).toContain('Board credentials not found');
@@ -164,5 +237,104 @@ describe('three-state mode detection', () => {
 
   it('approve-plan references include standalone guidance', () => {
     expect(content).toContain('npx chief-clancy');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Local plan output (--from mode)
+// ---------------------------------------------------------------------------
+
+describe('local plan output', () => {
+  const content = readFileSync(new URL('plan.md', import.meta.url), 'utf8');
+
+  it('saves plans to .clancy/plans/ directory', () => {
+    expect(content).toContain('.clancy/plans/');
+  });
+
+  it('creates .clancy/plans/ directory if needed', () => {
+    expect(content).toContain('Create `.clancy/plans/` directory');
+  });
+
+  it('generates slug from brief filename', () => {
+    expect(content).toContain('YYYY-MM-DD-');
+    expect(content).toContain('date prefix');
+  });
+
+  it('checks for existing local plan by filename', () => {
+    expect(content).toContain('.clancy/plans/{slug}.md');
+  });
+
+  it('--fresh overwrites existing local plan', () => {
+    expect(content).toContain('--fresh');
+    expect(content).toContain('overwrite');
+  });
+
+  it('stops if plan exists without --fresh', () => {
+    expect(content).toContain('Already planned');
+  });
+
+  it('local plan header includes Source and Brief fields', () => {
+    expect(content).toContain('**Source:**');
+    expect(content).toContain('**Brief:**');
+  });
+
+  it('offers to post as comment when board credentials available', () => {
+    expect(content).toContain('board credentials ARE available');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// --from mode Step 4 adaptations
+// ---------------------------------------------------------------------------
+
+describe('--from Step 4 adaptations', () => {
+  const content = readFileSync(new URL('plan.md', import.meta.url), 'utf8');
+
+  it('documents Step 4 adaptations for --from mode', () => {
+    expect(content).toContain('--from mode Step 4 adaptations');
+  });
+
+  it('uses slug as display identifier instead of ticket key', () => {
+    expect(content).toContain('Use the slug');
+    expect(content).toContain('wherever board mode uses `{KEY}`');
+  });
+
+  it('skips board comment posting for infeasible tickets', () => {
+    expect(content).toContain(
+      'do NOT post a "Clancy skipped" comment to any board',
+    );
+  });
+
+  it('skips QA return detection in --from mode', () => {
+    expect(content).toContain('Skip entirely in `--from` mode');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// --from mode Step 6 log entries
+// ---------------------------------------------------------------------------
+
+describe('--from Step 6 log entries', () => {
+  const content = readFileSync(new URL('plan.md', import.meta.url), 'utf8');
+
+  it('defines --from mode log format with slug', () => {
+    expect(content).toContain('LOCAL_PLAN');
+    expect(content).toContain('{slug}');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Summary update for --from mode
+// ---------------------------------------------------------------------------
+
+describe('--from summary output', () => {
+  const content = readFileSync(new URL('plan.md', import.meta.url), 'utf8');
+
+  it('shows local file path instead of Comment posted', () => {
+    expect(content).toContain('Saved to .clancy/plans/');
+  });
+
+  it('mentions --from in standalone guard hint', () => {
+    expect(content).toContain('/clancy:plan --from');
   });
 });
