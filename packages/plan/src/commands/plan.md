@@ -13,7 +13,7 @@ Accepts optional arguments:
 
 Examples:
 
-- `/clancy:plan --from .clancy/briefs/add-dark-mode.md` — plan from a local brief
+- `/clancy:plan --from .clancy/briefs/add-dark-mode.md` — plan from a local brief (any Clancy-format markdown file path works)
 - `/clancy:plan` — plan 1 ticket from queue
 - `/clancy:plan 3` — plan 3 tickets from queue
 - `/clancy:plan PROJ-123` — plan a specific Jira/Linear ticket
