@@ -95,7 +95,7 @@ If declined: `Cancelled.` Stop.
 
 In these modes the argument may be either a plan-file stem or a board ticket key. **Try plan-file lookup first (does `.clancy/plans/{arg}.md` exist?)**, then fall back to ticket-key validation. The plan stem wins over ticket key on collision (e.g. if `PROJ-123.md` exists in `.clancy/plans/` AND `PROJ-123` is a valid ticket key, the plan stem wins). Document the collision rule explicitly so users are not surprised.
 
-**With argument that resolves to a plan file:** continue to Step 5a (local mode). The board push offer for plan-file-stem mode is deferred to a future PR — for now the local marker is the only side effect.
+**With argument that resolves to a plan file:** continue to Step 4 (Confirm), then Step 4a (Write local marker). The board push offer for plan-file-stem mode is deferred to a future PR — for now the local marker is the only side effect.
 
 **With argument that does not resolve to a plan file:** validate as a ticket key per the board configured in `.clancy/.env` (case-insensitive):
 

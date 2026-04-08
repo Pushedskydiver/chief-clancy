@@ -94,12 +94,14 @@ The plan package ships `/clancy:approve-plan` so the approval gate works without
 /clancy:approve-plan
 ```
 
-The command writes a `.clancy/plans/{stem}.approved` marker file containing the plan's SHA-256 hash and an ISO 8601 approval timestamp:
+The command writes a `.clancy/plans/{stem}.approved` marker file containing the full lowercase hex SHA-256 of the plan file and an ISO 8601 UTC approval timestamp:
 
 ```
-sha256=d2c9f3a1b4e6...
+sha256=d2c9f3a1b4e6c8f09123456789abcdef0123456789abcdef0123456789abcd
 approved_at=2026-04-08T22:30:00Z
 ```
+
+The full 64-character hex hash is what `.approved` actually stores — `/clancy:implement-from` (PR 8) reads the marker, hashes the current plan file the same way, and blocks implementation on any mismatch.
 
 The marker is the gate `/clancy:implement-from` (shipping in the next PR) checks before applying changes — if the plan file is edited after approval, the SHA mismatch blocks implementation until you re-approve. The brief file's `<!-- planned:1,2 -->` marker is also updated to `<!-- approved:1 planned:1,2 -->` so `/clancy:plan --list` knows which rows are approved.
 
@@ -108,7 +110,7 @@ The marker is the gate `/clancy:implement-from` (shipping in the next PR) checks
 The argument decides which path runs:
 
 - **Plan-file stem** (e.g. `add-dark-mode-2`): writes the local marker. The board push offer for local plan stems lands in a future PR
-- **Board ticket key** (e.g. `PROJ-123`): runs the full board comment-to-description transport flow — fetches the plan comment, appends it to the ticket description, edits the plan comment with an approval note, transitions the ticket if `CLANCY_LABEL_*` is configured
+- **Board ticket key** (e.g. `PROJ-123`): runs the full board comment-to-description transport flow — fetches the plan comment, appends it to the ticket description, edits the plan comment with an approval note, swaps the ticket labels (`CLANCY_LABEL_PLAN` → `CLANCY_LABEL_BUILD`, both with sensible defaults), and — only if `CLANCY_STATUS_PLANNED` is configured — transitions the ticket status. Label swaps are mandatory; status transitions are opt-in via the `CLANCY_STATUS_PLANNED` env var
 
 The plan-file lookup runs first, so plan stems win on collision (`PROJ-123.md` exists locally AND `PROJ-123` is a valid ticket key → the local plan wins).
 
