@@ -1,60 +1,71 @@
 # Progress
 
-## Session 52 Summary
+## Session 53 Summary
 
-### @chief-clancy/plan Phase B — PRs 5a + 5b + 6a complete
+### @chief-clancy/plan Phase B complete — PR 6b shipped + Phase C/D roadmap locked
 
-**PR #200** — Add `--from` flag for local brief planning (PR 5a):
+**PR #204** — Add `--list` inventory + README (PR 6b):
 
-- `--from <path>` argument with file/brief validation, standalone guard bypass
-- New Step 3a: gather from local brief (replaces Steps 3/3b/3c in `--from` mode)
-- Step 5a: local plan output to `.clancy/plans/{slug}.md`
-- Step 4/6/7 adaptations: slug identifiers, LOCAL_PLAN log entry
-- Single-item planning (treats brief as one unit, no row selection)
-- 32 new tests (44 → 76 plan)
+- `--list` flag in command + workflow short-circuits at top of Step 1 (no installation detection, no `git fetch`, no docs/branch checks, no standalone guard)
+- New Step 8 — Plan inventory: scans `.clancy/plans/`, parses Plan ID / Brief / Row / Source / Planned headers, displays sorted by date with deterministic tie-breakers
+- Reserved a `Status` column today (always `Planned`) so PR 7c can wire it to live `Approved` state without breaking the listing format
+- README rewritten with full local planning workflow walkthrough covering `--from`, row targeting, `--afk`, `--list`, and the `## Feedback` revision loop
+- 16 new tests (115 → 131 plan)
+- DA review caught C1/H1/H2/M1/M2/M3/L1/L2/L3/L4 — every finding addressed before push (slug vs Plan ID terminology, Step 1 short-circuit, explicit guard skip, sort tie-breakers, Status column placeholder, --list precedence wording, strengthened tests beyond tautological greps)
 
-**PR #201** — Add row selection + multi-row planning (PR 5b):
-
-- Decomposition table parsing (malformed row handling, missing table fallback)
-- `<!-- planned:1,2,3 -->` marker tracking in brief files
-- `--from path N` row targeting + validation (positive integer, must exist)
-- `--afk` multi-row loop (sequential planning of all unplanned rows)
-- `--fresh` + `--afk` clears marker and re-plans all rows
-- Plan filename: `{slug}-{row-number}.md` (row-aware)
-- Plan header: `**Row:** #{N} — {title}`
-- 24 new tests (76 → 100 plan)
-
-**PR #202** — Add local plan feedback loop (PR 6a):
-
-- `## Feedback` section detection in existing plan files (line-anchored, code-fence-aware)
-- Multiple `## Feedback` sections concatenated in order
-- `--fresh` takes precedence over feedback (discards it)
-- Feedback lifecycle: revised plan overwrites file, audit trail in `### Changes From Previous Plan`
-- Revision procedure: skip 4a/4b, reuse 4c-4e, regenerate 4f
-- Row selection extended: `--afk` set = (unplanned rows) ∪ (rows with feedback)
-- Default selection: first row with feedback if any, otherwise first unplanned row
-- `LOCAL_REVISED` log entry
-- 15 new tests (100 → 115 plan)
-
-Test counts: 1608 core, 834 terminal, 51 brief, **115 plan**.
+Test counts: 1608 core, 834 terminal, 51 brief, **131 plan**.
 
 ---
 
-## Next: PR 6b — `--list` inventory + README
+## Phase C+D roadmap locked (2026-04-08)
 
-Plan doc: `.claude/plans/plan-package-extraction.md` (Phase B section)
+Phase B shipped. Before starting Phase C, ran a planning session: 3 Plan agents in parallel (one per PR) → 1 DA agent over the combined plans → 1 research agent on the brief asymmetry question. Six findings reversed the original draft. The full locked roadmap lives in `.claude/plans/plan-package-extraction.md` (local-only working state — `.claude/` is gitignored). The headline tables and key decisions below are the canonical reference for the repo.
 
-- `--list` flag in command + workflow Step 2
-- Plan inventory display: scan `.clancy/plans/`, parse plan headers, sort by date
-- Show row, source, brief, planned date for each plan
-- Update README with local planning workflow examples
+### Phase C — Plan local approve + implement (PRs 7-10)
 
-After PR 6b: Phase C (PRs 7-8) — local approve + implement integration.
+| #      | Title                                                               | Size      | Labels                  |
+| ------ | ------------------------------------------------------------------- | --------- | ----------------------- |
+| **7a** | Plumbing: move approve-plan + delete terminal planner dir + helpers | M (~4h)   | feature, plan, terminal |
+| **7b** | Standalone approve-plan with SHA-256 marker                         | L (~6-8h) | feature, plan           |
+| **7c** | plan.md Step 8 live Approved status                                 | S (~30m)  | feature, plan           |
+| **8**  | `/clancy:implement-from` + `--list` Implemented state               | M (~5-6h) | feature, plan           |
+| **9**  | Standalone+board: optional board push from approve-plan             | M (~4-5h) | feature, plan           |
+| **10** | Phase C cleanup + docs sync                                         | S (~1-2h) | chore, plan, terminal   |
+
+### Phase D — Brief absorbs approve-brief (PRs 11-12)
+
+| #       | Title                                                                 | Size      | Labels                   |
+| ------- | --------------------------------------------------------------------- | --------- | ------------------------ |
+| **11a** | Plumbing: move approve-brief + delete terminal strategist dir         | M (~3-4h) | feature, brief, terminal |
+| **11b** | Standalone+board approve-brief with three-state detection             | M (~4-5h) | feature, brief           |
+| **12**  | Phase D cleanup + final asymmetry-removed update to package-evolution | S (~1h)   | chore, brief, terminal   |
+
+### Key locked decisions
+
+- **`.approved` marker contains SHA-256 + timestamp** (`sha256=...\napproved_at=...\n`), not empty-touch. PR 8's gate compares the current plan's hash to the marker. Eliminates the brittle "feedback heading at column 0" heuristic the early plan proposed
+- **`/clancy:implement-from` lives in the plan package**, ruled out absorbing terminal's `/clancy:implement` (would drag `runPipeline` + 13 pipeline phases into a "light dep" package), new `@chief-clancy/dev` package (premature per [package-evolution.md:114](docs/decisions/architecture/package-evolution.md#L114)), and `--from` flag on terminal's implement (kills standalone story)
+- **`--bypass-approval` flag required to skip the gate** even with `--afk`. Approval is the only thing between "plan generated" and "code changes applied"; warnings scroll past in non-interactive runs
+- **Brief asymmetry reversed:** brief should ALSO own its approve command. The original "approve-brief stays in terminal" decision was wrong — the 1540-line approve-brief workflow has zero terminal-only coupling, brief already ships board-setup, and forcing standalone+board brief users to install the full pipeline just to push tickets is the same UX cliff PR 7 fixes for plan. Phase D ships this after Phase C lands and stabilises
+- **Strict sequence:** PR 7a → 7b → 7c → 8 → 9 → 10 → 11a → 11b → 12. Each PR's tip must be green; intermediate commits inside a PR don't matter
+
+---
+
+## Next: PR 7a — Plumbing for Phase C
+
+Full PR 7a step-by-step lives in the local-only `.claude/plans/plan-package-extraction.md` Phase C section. Headline scope:
+
+- Move `approve-plan.md` (command + workflow) from `packages/terminal/src/roles/planner/` → `packages/plan/src/{commands,workflows}/` byte-identical
+- Convert `plan-content.ts` const strings to arrays, loop over them
+- Extend plan installer + bin file lists
+- Delete `packages/terminal/src/roles/planner/` entirely (planner becomes virtual role)
+- Update `roles.test.ts` and `role-filter.test.ts` fixtures
+- Add `packages/plan/test/helpers/fixtures.ts` (TS builders matching existing `packages/terminal/test/helpers/fixtures.ts` convention)
+- Changeset: plan minor + terminal patch
 
 ### Build order (remaining standalone packages)
 
-1. ~~`@chief-clancy/brief`~~ — **done**
-2. ~~`@chief-clancy/plan`~~ — Phase A done, Phase B in progress (PR 6b remaining)
+1. ~~`@chief-clancy/brief`~~ — **done** (Phase D in roadmap)
+2. ~~`@chief-clancy/plan`~~ — Phase A+B done, Phase C in progress
 3. `@chief-clancy/design` — same pattern + Stitch integration
 4. `@chief-clancy/dev` — extract from core when chat arrives
 5. `@chief-clancy/cli` — interactive wizard
