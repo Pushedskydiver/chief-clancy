@@ -261,7 +261,7 @@ describe('local plan output', () => {
   });
 
   it('checks for existing local plan by filename', () => {
-    expect(content).toContain('.clancy/plans/{slug}.md');
+    expect(content).toContain('.clancy/plans/{slug}-{row-number}.md');
   });
 
   it('--fresh overwrites existing local plan', () => {
@@ -336,5 +336,128 @@ describe('--from summary output', () => {
 
   it('mentions --from in standalone guard hint', () => {
     expect(content).toContain('/clancy:plan --from');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Row selection + multi-row planning (--from mode)
+// ---------------------------------------------------------------------------
+
+describe('decomposition table parsing', () => {
+  const content = readFileSync(new URL('plan.md', import.meta.url), 'utf8');
+
+  it('parses decomposition table rows', () => {
+    expect(content).toContain('row number (column 1)');
+    expect(content).toContain('title (column 2)');
+  });
+
+  it('validates rows have minimum required fields', () => {
+    expect(content).toContain('valid row must have');
+  });
+
+  it('skips malformed rows with warning', () => {
+    expect(content).toContain('Skipping malformed row');
+  });
+
+  it('falls back to single planning unit when table is missing', () => {
+    expect(content).toContain('Planning the brief as a single item');
+  });
+
+  it('falls back to single unit when all rows are malformed', () => {
+    expect(content).toContain('ALL rows are malformed');
+  });
+
+  it('rows are 1-indexed from data rows', () => {
+    expect(content).toContain('1-indexed');
+    expect(content).toContain('excluding header and separator');
+  });
+});
+
+describe('planned marker tracking', () => {
+  const content = readFileSync(new URL('plan.md', import.meta.url), 'utf8');
+
+  it('tracks planned rows via HTML comment marker', () => {
+    expect(content).toContain('<!-- planned:');
+  });
+
+  it('updates marker after planning a row', () => {
+    expect(content).toContain('<!-- planned:1,2,3 -->');
+    expect(content).toContain('<!-- planned:1,2,3,4 -->');
+  });
+
+  it('places marker before trailing --- or at EOF', () => {
+    expect(content).toContain('trailing `---`');
+  });
+
+  it('stops when all rows are planned', () => {
+    expect(content).toContain('All decomposition rows have been planned');
+  });
+
+  it('notes concurrency limitation', () => {
+    expect(content).toContain('not concurrency-safe');
+  });
+});
+
+describe('row targeting with --from path N', () => {
+  const content = readFileSync(new URL('plan.md', import.meta.url), 'utf8');
+
+  it('bare integer after --from selects a specific row', () => {
+    expect(content).toContain('selects row N');
+  });
+
+  it('defaults to first unplanned row without a number', () => {
+    expect(content).toContain('first unplanned row');
+  });
+
+  it('errors if targeted row is already planned without --fresh', () => {
+    expect(content).toContain('already planned');
+  });
+
+  it('validates row number is a positive integer', () => {
+    expect(content).toContain('Row number must be a positive integer');
+  });
+
+  it('validates row number exists in decomposition table', () => {
+    expect(content).toContain('Row {N} not found');
+    expect(content).toContain('decomposition rows');
+  });
+
+  it('bare integer with --from is always a row number, not batch', () => {
+    expect(content).toContain(
+      'bare integer is always interpreted as a row number',
+    );
+  });
+});
+
+describe('--afk multi-row and single-row default', () => {
+  const content = readFileSync(new URL('plan.md', import.meta.url), 'utf8');
+
+  it('--afk plans all unplanned rows in sequence', () => {
+    expect(content).toContain('all unplanned rows');
+    expect(content).toContain('sequentially');
+  });
+
+  it('without --afk plans exactly one row', () => {
+    expect(content).toContain('exactly one row');
+  });
+
+  it('--fresh with specific row overwrites plan file', () => {
+    expect(content).toContain('marker is not modified');
+  });
+
+  it('--fresh + --afk re-plans all rows from scratch', () => {
+    expect(content).toContain('clears the planned marker entirely');
+  });
+});
+
+describe('row-aware plan filename', () => {
+  const content = readFileSync(new URL('plan.md', import.meta.url), 'utf8');
+
+  it('plan filename includes row number', () => {
+    expect(content).toContain('{slug}-{row-number}.md');
+  });
+
+  it('plan header includes Row field', () => {
+    expect(content).toContain('**Row:**');
   });
 });

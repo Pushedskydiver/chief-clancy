@@ -4,7 +4,7 @@ Fetch backlog tickets from the board, explore the codebase, and generate structu
 
 Accepts optional arguments:
 
-- **From brief:** `/clancy:plan --from .clancy/briefs/slug.md` — plan from a local brief file. Cannot be combined with a ticket key or batch number.
+- **From brief:** `/clancy:plan --from .clancy/briefs/slug.md` — plan from a local brief file. Cannot be combined with a ticket key or batch number. Optionally pass a row number to target a specific decomposition row (e.g. `/clancy:plan --from brief.md 3`). Without a row number, plans the first unplanned row.
 - **Batch mode:** `/clancy:plan 3` — plan up to 3 tickets from the queue
 - **Specific ticket:** `/clancy:plan PROJ-123`, `/clancy:plan #42`, `/clancy:plan ENG-42` — plan a single ticket by key
 - **Fresh start:** `--fresh` — discard any existing plan and start over

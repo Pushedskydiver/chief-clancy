@@ -74,7 +74,7 @@ If the user declines, stop. If they confirm, continue without docs context.
 
 Parse the arguments passed to the command:
 
-- **`--from {path}`** — From local brief file mode. Read a Clancy brief file and plan from its content. Cannot be combined with a ticket reference (`Cannot use both a ticket reference and --from. Use one or the other.`). Cannot be combined with a batch number (`Cannot use batch mode with --from. Use --from with a brief file path.`). Validate the file:
+- **`--from {path} [N]`** — From local brief file mode. Read a Clancy brief file and plan from its content. A bare integer after the path selects row N from the decomposition table (e.g. `--from brief.md 3` selects row 3). Without a number, defaults to the first unplanned row. Cannot be combined with a ticket reference (`Cannot use both a ticket reference and --from. Use one or the other.`). Cannot be combined with a batch number (`Cannot use batch mode with --from. Use --from with a brief file path.`). Validate the file:
   - File does not exist: `File not found: {path}` Stop.
   - File is empty: `File is empty: {path}` Stop.
   - File > 50KB: Warn `Large file ({size}KB). Clancy will use the first ~50KB for context.` Truncate internally, continue.
@@ -133,15 +133,55 @@ Read the file at `{path}`. Extract the following sections:
 - **Source** field (`**Source:**` line) — the source value (e.g. `[#50] Redesign settings page`, `"Add dark mode"`, `docs/rfcs/auth-rework.md`). Used for the plan header and display identifier.
 - `## Problem Statement` — used as the ticket description equivalent for plan context. Optional — if missing, use the brief's overall content as context instead.
 - `## Goals` — used alongside Problem Statement for plan context. Optional.
-- `## Ticket Decomposition` — the decomposition table. Read the full table for plan context. For now, treat the entire brief as a single planning unit; row-level selection is planned for later.
+- `## Ticket Decomposition` — the decomposition table. Parse the table rows for row-level planning.
 
-Pass all extracted content to Step 4 as the ticket context (replacing the board ticket data that Step 3 would normally provide).
+### Parse decomposition table rows
+
+Parse the `## Ticket Decomposition` table to extract plannable rows. A valid row must have at minimum a row number (column 1) and a title (column 2). Rows are 1-indexed, corresponding to the order of data rows in the decomposition table (excluding header and separator rows).
+
+**Missing table:** If `## Ticket Decomposition` is missing or has no data rows, treat the entire brief as a single planning unit (row 1). Warn: `No decomposition table found in {path}. Planning the brief as a single item.`
+
+**Malformed rows:** Skip malformed rows with a warning: `Skipping malformed row {line}`. If ALL rows are malformed, treat as missing table (single planning unit).
+
+### Row selection
+
+Check for an existing `<!-- planned:1,2,3 -->` marker comment in the brief file. If no marker exists, no rows have been planned.
+
+**Row validation:** If `--from path N` was specified, validate N:
+
+- N must be a positive integer. If N <= 0 or not an integer: `Row number must be a positive integer.` Stop.
+- N must exist in the decomposition table. If N > total rows: `Row {N} not found. The brief has {max} decomposition rows.` Stop.
+
+When `--from` is present, a bare integer is always interpreted as a row number, never as a batch count.
+
+**Row targeting:**
+
+- If `--from path N` was specified in Step 2, plan row N specifically. If row N is already planned (in the marker) and `--fresh` is not set, stop: `Row {N} is already planned. Use --fresh to re-plan.`
+- Without a number, select the first unplanned row — the first row whose number is NOT in the planned set.
+- If all rows are planned: `All decomposition rows have been planned. Use --fresh to re-plan a specific row.` Stop.
+
+**`--fresh` with row selection:** When `--fresh` is used to re-plan a specific row, the row's existing plan file is overwritten. The planned marker is not modified — the row was already in the marker and stays there (no remove-and-re-add cycle needed).
+
+**`--fresh` + `--afk`:** Re-plans all rows from scratch. Deletes all existing plan files for this brief, clears the planned marker entirely, then plans all rows sequentially.
+
+**Multi-row mode:** `--from` with `--afk` plans all unplanned rows sequentially — loop through each unplanned row, running Steps 4-5a for each one. Without `--afk`, plan exactly one row (first unplanned, or the specified row) then stop.
+
+### Update planned marker
+
+After planning each row, update the `<!-- planned:N -->` marker in the brief file:
+
+- If no marker exists, append `<!-- planned:{row} -->` to the file. If the last `---` line in the file is a brief footer (trailing `---`), insert before it. Otherwise append at EOF.
+- If a marker exists, update it: `<!-- planned:1,2,3 -->` → `<!-- planned:1,2,3,4 -->`.
+
+**Concurrency note:** The planned marker is file-based and not concurrency-safe. Running multiple `--from` commands against the same brief simultaneously may produce duplicate plans.
+
+Pass the selected row's context (title, description, size, dependencies) along with the brief's Problem Statement, Goals, and Source to Step 4 as the ticket context.
 
 ### --from mode Step 4 adaptations
 
 When running in `--from` mode, Steps 4a-4f have these adaptations:
 
-- **Display identifier:** Use the slug (derived from brief filename) wherever board mode uses `{KEY}`. Progress display shows `[{slug}] {brief source}` instead of `[{KEY}] {Title}`.
+- **Display identifier:** Use the slug (derived from brief filename) wherever board mode uses `{KEY}`. Progress display shows `[{slug}#{row}] {row title}` instead of `[{KEY}] {Title}`.
 - **Step 4a (feasibility scan):** Run the scan normally (the brief content replaces the ticket description). If infeasible, skip — but do NOT post a "Clancy skipped" comment to any board (no board ticket). Use the canonical Step 6 log format, with `{slug}` in place of `{KEY}` for the identifier.
 - **Step 4b (QA return detection):** Skip entirely in `--from` mode — there is no implementation history to check.
 - **Step 4c-4e:** Run normally — codebase context, Figma, and exploration work the same regardless of input source.
@@ -149,7 +189,7 @@ When running in `--from` mode, Steps 4a-4f have these adaptations:
 
 ### Existing local plan check
 
-Before planning, check for an existing plan file at `.clancy/plans/{slug}.md` where the slug is derived from the brief filename:
+Before planning each row, check for an existing plan file at `.clancy/plans/{slug}-{row-number}.md` where the slug is derived from the brief filename:
 
 **Slug generation:** strip the `YYYY-MM-DD-` date prefix (pattern: 4 digits, dash, 2 digits, dash, 2 digits, dash) if present, then strip the `.md` extension. If no date prefix matches, use the full filename minus extension.
 
@@ -788,11 +828,11 @@ _Generated by [Clancy](https://github.com/Pushedskydiver/chief-clancy). To reque
 
 If planning from a local brief (`--from`), save the plan to a local file instead of posting to the board.
 
-**Output path:** `.clancy/plans/{slug}.md`
+**Output path:** `.clancy/plans/{slug}-{row-number}.md`
 
 Create `.clancy/plans/` directory if it does not exist.
 
-The slug is the same one computed in Step 3a (brief filename minus date prefix and extension).
+The slug is the same one computed in Step 3a (brief filename minus date prefix and extension). The row number is the 1-indexed decomposition row being planned.
 
 **Local plan header:** The plan uses the same `## Clancy Implementation Plan` template from Step 4f, but with local-specific header fields:
 
@@ -801,6 +841,7 @@ The slug is the same one computed in Step 3a (brief filename minus date prefix a
 
 **Source:** {brief source field value}
 **Brief:** {brief filename}
+**Row:** #{row number} — {row title}
 **Planned:** {YYYY-MM-DD}
 ```
 
@@ -812,7 +853,7 @@ Replace the `**Ticket:** [{KEY}] {Title}` line from the board template with `**S
 _Generated by [Clancy](https://github.com/Pushedskydiver/chief-clancy). To start over: `/clancy:plan --fresh --from {path}`. To approve: install the full pipeline — npx chief-clancy._
 ```
 
-**Re-planning:** If `--fresh` was used, the existing plan file is overwritten (same slug = same filename).
+**Re-planning:** If `--fresh` was used, the existing plan file is overwritten (same slug + row number = same filename).
 
 **Board comment offer:** If board credentials ARE available (terminal mode or standalone+board mode), after saving the local file, offer to also post the plan as a comment on the source ticket (if the brief's Source field contains a ticket key). This is optional — the local file is the primary output.
 
@@ -949,10 +990,10 @@ For each planned ticket, append to `.clancy/progress.txt` using the appropriate 
 
 Use the slug as the identifier instead of a ticket key:
 
-| Outcome              | Log entry                                             |
-| -------------------- | ----------------------------------------------------- |
-| Normal               | `YYYY-MM-DD HH:MM \| {slug} \| LOCAL_PLAN \| {S/M/L}` |
-| Skipped (infeasible) | `YYYY-MM-DD HH:MM \| {slug} \| SKIPPED \| {reason}`   |
+| Outcome              | Log entry                                                   |
+| -------------------- | ----------------------------------------------------------- |
+| Normal               | `YYYY-MM-DD HH:MM \| {slug}#{row} \| LOCAL_PLAN \| {S/M/L}` |
+| Skipped (infeasible) | `YYYY-MM-DD HH:MM \| {slug}#{row} \| SKIPPED \| {reason}`   |
 
 ---
 
@@ -979,11 +1020,28 @@ Plans written to your board. After review:
 
 ### --from mode summary
 
+Single row:
+
 ```
 🚨 Clancy — Plan
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  ✅ Saved to .clancy/plans/{slug}.md
+  ✅ Saved to .clancy/plans/{slug}-{row-number}.md
+
+  To approve: install the full pipeline — npx chief-clancy
+
+"Let me dust this for prints..."
+```
+
+Multi-row (`--afk`):
+
+```
+🚨 Clancy — Plan
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ✅ Row 1: {title} — Saved to .clancy/plans/{slug}-1.md
+  ✅ Row 2: {title} — Saved to .clancy/plans/{slug}-2.md
+  ⏭️  Row 3: {title} — already planned
 
   To approve: install the full pipeline — npx chief-clancy
 
