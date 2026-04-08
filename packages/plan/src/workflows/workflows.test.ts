@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 
 const WORKFLOWS_DIR = fileURLToPath(new URL('.', import.meta.url));
 
-const EXPECTED_WORKFLOWS = ['board-setup.md', 'plan.md'];
+const EXPECTED_WORKFLOWS = ['approve-plan.md', 'board-setup.md', 'plan.md'];
 
 describe('workflows directory structure', () => {
   it('contains exactly the expected workflow files', () => {

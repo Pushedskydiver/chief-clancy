@@ -34,10 +34,15 @@ afterEach(() => {
   rmSync(testDir, { recursive: true, force: true });
 });
 
+// Generic fixture names — these tests assert role-filter mechanics, not the
+// behaviour of any specific real role. After PR 7a moved approve-plan.md into
+// the @chief-clancy/plan package, the planner role no longer has on-disk files
+// in terminal, so the fixtures use neutral names to avoid implying otherwise.
+
 describe('copyRoleFiles', () => {
   it('installs all roles when enabledRoles is null (first install)', () => {
     createRole('implementer', 'commands', ['run.md']);
-    createRole('planner', 'commands', ['approve-plan.md']);
+    createRole('optional', 'commands', ['task.md']);
 
     const dest = join(testDir, 'dest');
     copyRoleFiles({
@@ -48,13 +53,13 @@ describe('copyRoleFiles', () => {
     });
 
     expect(existsSync(join(dest, 'run.md'))).toBe(true);
-    expect(existsSync(join(dest, 'approve-plan.md'))).toBe(true);
+    expect(existsSync(join(dest, 'task.md'))).toBe(true);
   });
 
   it('installs only core roles when enabledRoles is empty', () => {
     createRole('implementer', 'commands', ['run.md']);
     createRole('reviewer', 'commands', ['review.md']);
-    createRole('planner', 'commands', ['approve-plan.md']);
+    createRole('optional', 'commands', ['task.md']);
 
     const dest = join(testDir, 'dest');
     copyRoleFiles({
@@ -66,12 +71,12 @@ describe('copyRoleFiles', () => {
 
     expect(existsSync(join(dest, 'run.md'))).toBe(true);
     expect(existsSync(join(dest, 'review.md'))).toBe(true);
-    expect(existsSync(join(dest, 'approve-plan.md'))).toBe(false);
+    expect(existsSync(join(dest, 'task.md'))).toBe(false);
   });
 
   it('installs core + specified optional roles', () => {
     createRole('implementer', 'commands', ['run.md']);
-    createRole('planner', 'commands', ['approve-plan.md']);
+    createRole('optional', 'commands', ['task.md']);
     createRole('strategist', 'commands', ['approve-brief.md']);
 
     const dest = join(testDir, 'dest');
@@ -79,20 +84,20 @@ describe('copyRoleFiles', () => {
       rolesDir: join(testDir, 'roles'),
       subdir: 'commands',
       dest,
-      enabledRoles: new Set(['planner']),
+      enabledRoles: new Set(['optional']),
     });
 
     expect(existsSync(join(dest, 'run.md'))).toBe(true);
-    expect(existsSync(join(dest, 'approve-plan.md'))).toBe(true);
+    expect(existsSync(join(dest, 'task.md'))).toBe(true);
     expect(existsSync(join(dest, 'approve-brief.md'))).toBe(false);
   });
 
   it('removes previously-installed files for disabled optional roles', () => {
-    createRole('planner', 'commands', ['approve-plan.md']);
+    createRole('optional', 'commands', ['task.md']);
 
     const dest = join(testDir, 'dest');
     mkdirSync(dest, { recursive: true });
-    writeFileSync(join(dest, 'approve-plan.md'), '# old planner file');
+    writeFileSync(join(dest, 'task.md'), '# old optional file');
 
     copyRoleFiles({
       rolesDir: join(testDir, 'roles'),
@@ -101,7 +106,7 @@ describe('copyRoleFiles', () => {
       enabledRoles: new Set<string>(),
     });
 
-    expect(existsSync(join(dest, 'approve-plan.md'))).toBe(false);
+    expect(existsSync(join(dest, 'task.md'))).toBe(false);
   });
 
   it('skips roles without the target subdir', () => {
@@ -139,15 +144,15 @@ describe('copyRoleFiles', () => {
   });
 
   it('removes subdirectories from dest for disabled roles (M6)', () => {
-    createRole('planner', 'commands', ['approve-plan.md']);
+    createRole('optional', 'commands', ['task.md']);
     // Add a nested subdirectory inside the role's commands dir
-    const nestedSrc = join(testDir, 'roles', 'planner', 'commands', 'nested');
+    const nestedSrc = join(testDir, 'roles', 'optional', 'commands', 'nested');
     mkdirSync(nestedSrc, { recursive: true });
     writeFileSync(join(nestedSrc, 'deep.md'), '# nested');
 
     const dest = join(testDir, 'dest');
     mkdirSync(join(dest, 'nested'), { recursive: true });
-    writeFileSync(join(dest, 'approve-plan.md'), '# old planner file');
+    writeFileSync(join(dest, 'task.md'), '# old optional file');
     writeFileSync(join(dest, 'nested', 'deep.md'), '# old nested file');
 
     copyRoleFiles({
@@ -157,7 +162,7 @@ describe('copyRoleFiles', () => {
       enabledRoles: new Set<string>(),
     });
 
-    expect(existsSync(join(dest, 'approve-plan.md'))).toBe(false);
+    expect(existsSync(join(dest, 'task.md'))).toBe(false);
     expect(existsSync(join(dest, 'nested'))).toBe(false);
   });
 

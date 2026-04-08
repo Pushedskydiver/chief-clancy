@@ -58,6 +58,26 @@ describe('copyPlanContent', () => {
       join(defaultDirs.workflowsDest, 'plan.md'),
     );
   });
+
+  it('copies approve-plan command to commands destination', () => {
+    const fs = createMockFs();
+    copyPlanContent({ ...defaultDirs, fs });
+
+    expect(fs.copyFile).toHaveBeenCalledWith(
+      join(defaultDirs.planCommandsDir, 'approve-plan.md'),
+      join(defaultDirs.commandsDest, 'approve-plan.md'),
+    );
+  });
+
+  it('copies approve-plan workflow to workflows destination', () => {
+    const fs = createMockFs();
+    copyPlanContent({ ...defaultDirs, fs });
+
+    expect(fs.copyFile).toHaveBeenCalledWith(
+      join(defaultDirs.planWorkflowsDir, 'approve-plan.md'),
+      join(defaultDirs.workflowsDest, 'approve-plan.md'),
+    );
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -74,6 +94,18 @@ describe('cleanPlanContent', () => {
     );
     expect(fs.unlink).toHaveBeenCalledWith(
       join(defaultDirs.workflowsDest, 'plan.md'),
+    );
+  });
+
+  it('unlinks approve-plan files from destinations', () => {
+    const fs = createMockFs();
+    cleanPlanContent({ ...defaultDirs, fs });
+
+    expect(fs.unlink).toHaveBeenCalledWith(
+      join(defaultDirs.commandsDest, 'approve-plan.md'),
+    );
+    expect(fs.unlink).toHaveBeenCalledWith(
+      join(defaultDirs.workflowsDest, 'approve-plan.md'),
     );
   });
 
@@ -131,7 +163,7 @@ describe('handlePlanContent', () => {
       fs,
     });
 
-    expect(fs.copyFile).toHaveBeenCalledTimes(2);
+    expect(fs.copyFile).toHaveBeenCalledTimes(4);
     expect(fs.unlink).not.toHaveBeenCalled();
   });
 
@@ -145,7 +177,7 @@ describe('handlePlanContent', () => {
       fs,
     });
 
-    expect(fs.copyFile).toHaveBeenCalledTimes(2);
+    expect(fs.copyFile).toHaveBeenCalledTimes(4);
   });
 
   it('cleans when planner is disabled', () => {
@@ -159,6 +191,6 @@ describe('handlePlanContent', () => {
     });
 
     expect(fs.copyFile).not.toHaveBeenCalled();
-    expect(fs.unlink).toHaveBeenCalledTimes(2);
+    expect(fs.unlink).toHaveBeenCalledTimes(4);
   });
 });

@@ -54,10 +54,18 @@ export type RunPlanInstallOptions = {
 // Constants
 // ---------------------------------------------------------------------------
 
-/** Command files shipped with the plan package. */
+/**
+ * Command files shipped with the plan package.
+ *
+ * Note: `approve-plan.md` exists in `src/commands/` after PR 7a but is NOT
+ * shipped by the standalone installer yet — the workflow content is currently
+ * board-only (byte-identical to terminal's previous version). PR 7b makes it
+ * standalone-safe and adds it here. Terminal already ships approve-plan via
+ * `plan-content.ts`, so the file is reachable from `npx chief-clancy`.
+ */
 const COMMAND_FILES = ['board-setup.md', 'plan.md'] as const;
 
-/** Workflow files shipped with the plan package. */
+/** Workflow files shipped with the plan package. See COMMAND_FILES. */
 const WORKFLOW_FILES = ['board-setup.md', 'plan.md'] as const;
 
 /** Matches `@.claude/clancy/workflows/<filename>.md` on its own line. */
