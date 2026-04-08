@@ -595,13 +595,62 @@ describe('plan inventory step', () => {
     expect(content).toContain(
       '**Plan ID** — the plan filename minus the `.md` extension',
     );
-    expect(content).toContain('first column in the listing is the Plan ID');
+    expect(content).toContain('first column (after `#`) is the Plan ID');
   });
 
-  it('reserves a Status column for the future approve-plan PR', () => {
+  it('Status column reads sibling .approved marker for live state', () => {
     expect(content).toContain('**Status**');
-    expect(content).toContain('always `Planned`');
-    expect(content).toContain('`.approved` marker');
+    expect(content).toContain('sibling `.approved` marker');
+  });
+
+  it('Status is Planned when no marker exists', () => {
+    expect(content).toContain('marker absent → `Planned`');
+  });
+
+  it('Status is Approved when marker sha256 matches the current plan file', () => {
+    expect(content).toContain('sha256` matches the current plan file');
+    expect(content).toContain('→ `Approved`');
+  });
+
+  it('Status is Stale (re-approve) when marker sha256 drifts from the plan file', () => {
+    expect(content).toContain('Stale (re-approve)');
+    expect(content).toContain('sha256` differs');
+  });
+
+  it('inventory example shows at least one Approved row', () => {
+    // The plain word `Approved` must appear in the example output table.
+    // (`Planned` is everywhere; this is the proof that the example was updated.)
+    expect(content).toMatch(/\| Approved /);
+  });
+
+  it('inventory example shows at least one Stale row', () => {
+    expect(content).toMatch(/\| Stale /);
+  });
+
+  it('inventory example still shows at least one Planned row', () => {
+    expect(content).toMatch(/\| Planned /);
+  });
+
+  it('inventory documents the summary line format and zero-count omission', () => {
+    expect(content).toContain('Summary line');
+    expect(content).toContain(
+      '{N} local plan(s). {A} approved, {S} stale, {P} planned.',
+    );
+    expect(content).toContain('Omit zero-count states');
+  });
+
+  it('explains that Stale means the plan was edited after approval', () => {
+    expect(content).toContain('plan file was edited after approval');
+  });
+
+  it('reserves an Implemented state for PR 8 without claiming it exists today', () => {
+    expect(content).toContain('Implemented');
+    expect(content).toContain('PR 8');
+    expect(content).toContain('shows three states');
+  });
+
+  it('inventory footer hint points at /clancy:approve-plan', () => {
+    expect(content).toContain('/clancy:approve-plan');
   });
 
   it('sort is deterministic with explicit tie-breakers', () => {
