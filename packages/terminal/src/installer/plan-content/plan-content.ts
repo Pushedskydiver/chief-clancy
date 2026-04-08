@@ -41,8 +41,17 @@ type CleanPlanContentOptions = {
 // Constants
 // ---------------------------------------------------------------------------
 
-const PLAN_COMMAND = 'plan.md';
-const PLAN_WORKFLOW = 'plan.md';
+/**
+ * Plan command files terminal copies from the @chief-clancy/plan package.
+ *
+ * Kept separate from PLAN_WORKFLOW_FILES (rather than a single shared list) so
+ * future asymmetry — e.g. a command-only helper or an agent file — does not
+ * force a refactor. Mirrors brief-content.ts's separate-constant convention.
+ */
+const PLAN_COMMAND_FILES = ['approve-plan.md', 'plan.md'] as const;
+
+/** Plan workflow files terminal copies from the @chief-clancy/plan package. */
+const PLAN_WORKFLOW_FILES = ['approve-plan.md', 'plan.md'] as const;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -79,16 +88,12 @@ export const copyPlanContent = (options: CopyPlanContentOptions): void => {
   rejectSymlink(commandsDest);
   rejectSymlink(workflowsDest);
 
-  copyChecked(
-    join(planCommandsDir, PLAN_COMMAND),
-    join(commandsDest, PLAN_COMMAND),
-    fs,
-  );
-  copyChecked(
-    join(planWorkflowsDir, PLAN_WORKFLOW),
-    join(workflowsDest, PLAN_WORKFLOW),
-    fs,
-  );
+  PLAN_COMMAND_FILES.forEach((file) => {
+    copyChecked(join(planCommandsDir, file), join(commandsDest, file), fs);
+  });
+  PLAN_WORKFLOW_FILES.forEach((file) => {
+    copyChecked(join(planWorkflowsDir, file), join(workflowsDest, file), fs);
+  });
 };
 
 /**
@@ -103,8 +108,12 @@ export const cleanPlanContent = (options: CleanPlanContentOptions): void => {
   rejectSymlink(commandsDest);
   rejectSymlink(workflowsDest);
 
-  unlinkSafe(join(commandsDest, PLAN_COMMAND), fs);
-  unlinkSafe(join(workflowsDest, PLAN_WORKFLOW), fs);
+  PLAN_COMMAND_FILES.forEach((file) => {
+    unlinkSafe(join(commandsDest, file), fs);
+  });
+  PLAN_WORKFLOW_FILES.forEach((file) => {
+    unlinkSafe(join(workflowsDest, file), fs);
+  });
 };
 
 type PlanSources = {

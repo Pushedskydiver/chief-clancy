@@ -147,6 +147,14 @@ function createSourceFixtures(baseDir: string) {
     '# /clancy:plan\n@.claude/clancy/workflows/plan.md',
   );
   writeFileSync(join(planWorkflowsDir, 'plan.md'), '# Plan workflow');
+  writeFileSync(
+    join(planCommandsDir, 'approve-plan.md'),
+    '# /clancy:approve-plan\n@.claude/clancy/workflows/approve-plan.md',
+  );
+  writeFileSync(
+    join(planWorkflowsDir, 'approve-plan.md'),
+    '# Approve plan workflow',
+  );
 
   return {
     rolesDir,
@@ -215,6 +223,12 @@ describe('runInstall — integration', () => {
     it('installs plan files from plan package sources', () => {
       expect(existsSync(join(paths.commandsDest, 'plan.md'))).toBe(true);
       expect(existsSync(join(paths.workflowsDest, 'plan.md'))).toBe(true);
+      expect(existsSync(join(paths.commandsDest, 'approve-plan.md'))).toBe(
+        true,
+      );
+      expect(existsSync(join(paths.workflowsDest, 'approve-plan.md'))).toBe(
+        true,
+      );
     });
 
     it('writes VERSION file', () => {
