@@ -156,7 +156,7 @@ When `--from` is present, a bare integer is always interpreted as a row number, 
 
 **Row targeting:**
 
-- If `--from path N` was specified in Step 2, plan row N specifically. If row N is already planned (in the marker) and `--fresh` is not set, stop: `Row {N} is already planned. Use --fresh to re-plan.`
+- If `--from path N` was specified in Step 2, plan row N specifically. If row N is already planned (in the marker) and the plan file has no `## Feedback` and `--fresh` is not set, stop: `Row {N} is already planned. Add a ## Feedback section to revise, or use --fresh to start over.`
 - Without a number, select the first unplanned row — the first row whose number is NOT in the planned set.
 - If all rows are planned: `All decomposition rows have been planned. Use --fresh to re-plan a specific row.` Stop.
 
@@ -193,11 +193,31 @@ Before planning each row, check for an existing plan file at `.clancy/plans/{slu
 
 **Slug generation:** strip the `YYYY-MM-DD-` date prefix (pattern: 4 digits, dash, 2 digits, dash, 2 digits, dash) if present, then strip the `.md` extension. If no date prefix matches, use the full filename minus extension.
 
-| Condition                    | Behaviour                                                       |
-| ---------------------------- | --------------------------------------------------------------- |
-| No existing plan             | Proceed to Step 4                                               |
-| Existing plan + `--fresh`    | Delete and overwrite the existing plan file. Proceed to Step 4. |
-| Existing plan + no `--fresh` | Stop: `Already planned. Use --fresh to start over.`             |
+If an existing plan file is found, scan it for a `## Feedback` section. Match `## Feedback` as a heading at the start of a line (not inside code fences or backtick spans). The feedback section is appended by the user to request revisions.
+
+| Condition                                  | Behaviour                                                                                                                                          |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| No existing plan                           | Proceed to Step 4                                                                                                                                  |
+| Existing plan + `--fresh`                  | Delete and overwrite the existing plan file. `--fresh` takes precedence over feedback — any `## Feedback` section is discarded. Proceed to Step 4. |
+| Existing plan + `## Feedback` section      | Revise: read existing plan + feedback, generate revised plan with `### Changes From Previous Plan` section                                         |
+| Existing plan + no feedback + no `--fresh` | Stop: `Already planned. Add a ## Feedback section to revise, or use --fresh to start over.`                                                        |
+
+### Read feedback for revision
+
+When revising from feedback (auto-detected from `## Feedback` section in the local plan file), read the entire `## Feedback` section content — from the `## Feedback` heading until the next `##`-level heading or EOF. If multiple `## Feedback` sections exist (the user added more after a previous revision), concatenate all sections in order.
+
+Pass this feedback to the plan generation step (Step 4f) as additional context, alongside the brief's Problem Statement, Goals, and the row context. The `## Feedback` section is the user's revision request — typically natural language describing what to change, what was missing, or what went wrong.
+
+**Revision procedure:** When revising, the planner SHOULD:
+
+- Skip Step 4a (feasibility scan) — the previous plan already passed feasibility
+- Skip Step 4b (QA return detection) — N/A in `--from` mode
+- Re-run Step 4c-4e (codebase context, Figma, exploration) only if the feedback explicitly references new files, components, or areas not covered by the previous plan. Otherwise reuse the existing exploration.
+- Run Step 4f to regenerate the plan, addressing the feedback while preserving acceptance criteria and affected files that the feedback does not touch
+
+**Feedback lifecycle:** The revised plan file overwrites the existing plan file completely. The `## Feedback` section is NOT carried forward into the new file — it is consumed by the revision and the audit trail lives in the `### Changes From Previous Plan` section (which quotes or summarises the feedback that was addressed).
+
+**Row selection with feedback:** When selecting rows to plan in `--afk` multi-row mode, also include rows whose plan files contain a `## Feedback` section. The selection set is: (unplanned rows) ∪ (rows with feedback). For default row selection (no row N, no `--afk`), the first row needing attention is: first row with feedback if any, otherwise first unplanned row.
 
 ---
 
@@ -847,10 +867,12 @@ The slug is the same one computed in Step 3a (brief filename minus date prefix a
 
 Replace the `**Ticket:** [{KEY}] {Title}` line from the board template with `**Source:**` and `**Brief:**` lines.
 
+**Revision header (when revising from feedback):** If this is a revision (existing plan had `## Feedback`), insert `### Changes From Previous Plan` immediately after the local header block (after `**Planned:**`) and before `### Summary`. Same structure as the board template's revision section.
+
 **Local plan footer:** Replace the board-specific footer with:
 
 ```
-_Generated by [Clancy](https://github.com/Pushedskydiver/chief-clancy). To start over: `/clancy:plan --fresh --from {path}`. To approve: install the full pipeline — npx chief-clancy._
+_Generated by [Clancy](https://github.com/Pushedskydiver/chief-clancy). To request changes: add a ## Feedback section to this file, then re-run `/clancy:plan --from {path}` to revise. To start over: `/clancy:plan --fresh --from {path}`. To approve: install the full pipeline — npx chief-clancy._
 ```
 
 **Re-planning:** If `--fresh` was used, the existing plan file is overwritten (same slug + row number = same filename).
@@ -990,10 +1012,11 @@ For each planned ticket, append to `.clancy/progress.txt` using the appropriate 
 
 Use the slug as the identifier instead of a ticket key:
 
-| Outcome              | Log entry                                                   |
-| -------------------- | ----------------------------------------------------------- |
-| Normal               | `YYYY-MM-DD HH:MM \| {slug}#{row} \| LOCAL_PLAN \| {S/M/L}` |
-| Skipped (infeasible) | `YYYY-MM-DD HH:MM \| {slug}#{row} \| SKIPPED \| {reason}`   |
+| Outcome                         | Log entry                                                      |
+| ------------------------------- | -------------------------------------------------------------- |
+| Normal                          | `YYYY-MM-DD HH:MM \| {slug}#{row} \| LOCAL_PLAN \| {S/M/L}`    |
+| Revised (re-plan with feedback) | `YYYY-MM-DD HH:MM \| {slug}#{row} \| LOCAL_REVISED \| {S/M/L}` |
+| Skipped (infeasible)            | `YYYY-MM-DD HH:MM \| {slug}#{row} \| SKIPPED \| {reason}`      |
 
 ---
 

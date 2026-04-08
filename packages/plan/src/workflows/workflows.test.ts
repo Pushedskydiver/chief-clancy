@@ -461,3 +461,76 @@ describe('row-aware plan filename', () => {
     expect(content).toContain('**Row:**');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Local plan feedback loop (--from mode)
+// ---------------------------------------------------------------------------
+
+describe('local plan feedback loop', () => {
+  const content = readFileSync(new URL('plan.md', import.meta.url), 'utf8');
+
+  it('detects ## Feedback section in existing plan files', () => {
+    expect(content).toContain('## Feedback');
+    expect(content).toContain('local plan file');
+  });
+
+  it('revises plan when feedback found', () => {
+    expect(content).toContain('Revise:');
+    expect(content).toContain('read existing plan + feedback');
+  });
+
+  it('stops on existing plan without feedback or --fresh', () => {
+    expect(content).toContain('Add a ## Feedback section to revise');
+  });
+
+  it('prepends Changes From Previous Plan section', () => {
+    expect(content).toContain('### Changes From Previous Plan');
+  });
+
+  it('passes feedback to generation step as additional context', () => {
+    expect(content).toContain('Pass this feedback to the plan generation');
+  });
+
+  it('plan footer mentions ## Feedback for revision', () => {
+    expect(content).toContain('add a ## Feedback section');
+  });
+
+  it('--fresh takes precedence over feedback', () => {
+    expect(content).toContain('takes precedence over feedback');
+  });
+
+  it('handles multiple ## Feedback sections by concatenating', () => {
+    expect(content).toContain('multiple `## Feedback` sections');
+    expect(content).toContain('concatenate all sections');
+  });
+
+  it('matches ## Feedback as line-anchored heading not in code fences', () => {
+    expect(content).toContain('start of a line');
+    expect(content).toContain('not inside code fences');
+  });
+
+  it('feedback is not carried forward to revised plan', () => {
+    expect(content).toContain('NOT carried forward');
+  });
+
+  it('specifies revision procedure for Step 4 sub-steps', () => {
+    expect(content).toContain('Skip Step 4a');
+    expect(content).toContain('reuse the existing exploration');
+  });
+
+  it('--afk multi-row includes rows with feedback', () => {
+    expect(content).toContain('(unplanned rows) ∪ (rows with feedback)');
+  });
+
+  it('default row selection prefers rows with feedback first', () => {
+    expect(content).toContain('first row with feedback');
+  });
+
+  it('revised local plans use LOCAL_REVISED log entry', () => {
+    expect(content).toContain('LOCAL_REVISED');
+  });
+
+  it('Changes From Previous Plan is positioned for local template', () => {
+    expect(content).toContain('after the local header block');
+  });
+});
