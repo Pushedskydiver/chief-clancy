@@ -60,4 +60,13 @@ describe('plan command', () => {
   it('documents row selection with bare integer', () => {
     expect(content).toContain('row number to target');
   });
+
+  it('documents --list flag', () => {
+    expect(content).toContain('--list');
+    expect(content).toContain('inventory');
+  });
+
+  it('shows --list example', () => {
+    expect(content).toContain('/clancy:plan --list');
+  });
 });

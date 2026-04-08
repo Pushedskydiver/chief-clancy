@@ -8,6 +8,12 @@ Fetch backlog tickets from the board, explore the codebase, and generate structu
 
 ## Step 1 — Preflight checks
 
+### 0. Short-circuit on `--list`
+
+If the `--list` flag is present in the arguments, skip the rest of Step 1 entirely (no installation detection, no `git fetch`, no docs check, no branch freshness prompt) and jump straight to Step 8 (Plan inventory). The inventory is filesystem-only and never needs board credentials, network access, or a clean working tree.
+
+`--list` always wins over other flags: if `--list` is combined with `--from`, `--fresh`, a ticket key, or a batch number, the inventory is displayed and the other flags are ignored for this run.
+
 ### 1. Detect installation context
 
 Check for `.clancy/.env`:
@@ -91,7 +97,12 @@ Parse the arguments passed to the command:
     [2] Plan 10 tickets (max batch)
     ```
 - **`--fresh`:** discard any existing plan and start over from scratch. This is NOT re-plan with feedback — it ignores existing plans entirely.
+- **`--list`:** display the plan inventory (all files in `.clancy/plans/`) and stop. No plan is generated, no board API calls are made.
 - Arguments can appear in any order (e.g. `/clancy:plan --fresh PROJ-123` or `/clancy:plan PROJ-123 --fresh`)
+
+### --list flag handling
+
+If `--list` is present, jump to Step 8 (Plan inventory) and stop — the short-circuit at the top of Step 1 also handles this case for runs that never reached Step 2. The flag works in any installation mode (standalone, standalone+board, terminal) — `--list` is filesystem-only and never touches the board. When combined with `--from`, `--fresh`, a ticket key, or a batch number, `--list` wins and the other arguments are ignored.
 
 If N > 10: `Maximum batch size is 10. Planning 10 tickets.`
 
@@ -103,7 +114,9 @@ Planning {N} tickets — each requires codebase exploration. Continue? [Y/n]
 
 ### Standalone board-ticket guard
 
-**`--from` mode** bypasses the standalone board-ticket guard entirely — no board credentials are needed for local brief planning. The guard evaluates the resolved input mode (ticket/batch/no-arg), not flags like `--afk`.
+Skip this guard entirely if `--list` was passed — the inventory step is filesystem-only and runs in any installation mode (the Step 1 short-circuit normally handles this, but state it here too so the guard never blocks `--list`).
+
+**`--from` mode** bypasses the standalone board-ticket guard entirely — no board credentials are needed for local brief planning. `--list` bypasses the guard for the same reason: the inventory reads only `.clancy/plans/`. The guard evaluates the resolved input mode (ticket/batch/no-arg), not flags like `--afk`.
 
 If running in **standalone mode** (Step 1 detected no `.clancy/.env`) and the resolved input mode is **board ticket**, **batch mode**, or **no argument** (which defaults to queue fetch):
 
@@ -1018,6 +1031,10 @@ Use the slug as the identifier instead of a ticket key:
 | Revised (re-plan with feedback) | `YYYY-MM-DD HH:MM \| {slug}#{row} \| LOCAL_REVISED \| {S/M/L}` |
 | Skipped (infeasible)            | `YYYY-MM-DD HH:MM \| {slug}#{row} \| SKIPPED \| {reason}`      |
 
+### --list mode
+
+`--list` display is not logged to `.clancy/progress.txt` — the inventory is read-only and does not change project state.
+
 ---
 
 ## Step 7 — Summary
@@ -1073,6 +1090,52 @@ Multi-row (`--afk`):
 
 ---
 
+## Step 8 — Plan inventory (`--list`)
+
+If `--list` was passed (detected at the top of Step 1), display the local plan inventory and stop. This step is filesystem-only — no API calls, no board access, no `.clancy/.env` required.
+
+Scan `.clancy/plans/` for all `.md` files. For each file, parse the local plan header (the block at the top of the file written by Step 5a) and capture these fields:
+
+- **Plan ID** — the plan filename minus the `.md` extension (e.g. `add-dark-mode-2`). This is `{slug}-{row}` as written by Step 5a, where `{slug}` is the brief slug from Step 3a and `{row}` is the decomposition row number. Always present (it is the filename).
+- **Brief** — value of the `**Brief:**` line. The brief filename the plan was generated from. Display the literal `?` if the line is absent or empty after the colon.
+- **Row** — value of the `**Row:**` line (e.g. `#2 — Add toggle component`). Display `?` if absent or empty.
+- **Source** — value of the `**Source:**` line (the brief's Source field). Display `?` if absent or empty.
+- **Planned** — value of the `**Planned:**` line (the YYYY-MM-DD planned date). Display `?` if absent or unparseable as a date.
+- **Status** — for now this is always `Planned`. Reserved for `/clancy:approve-plan` (a future PR) which will write a sibling `.approved` marker file (e.g. `.clancy/plans/add-dark-mode-2.approved`). When that marker exists for a given plan, Status becomes `Approved`. The column is included in the listing today so the format will not change when approval markers ship.
+
+A field is considered missing if the line is absent or its value is empty after the colon. Plans missing all expected fields are still listed (with `?` placeholders) so the user can find and clean them up.
+
+**Sort:** by `**Planned**` date, newest first. Tie-break on same date by Plan ID, alphabetical ascending. Files with a missing or unparseable date sort last (after all dated plans), and tie-break among themselves by Plan ID alphabetical ascending. The sort must be deterministic across runs.
+
+Display:
+
+```
+Clancy — Plans
+================================================================
+
+  [1] add-dark-mode-2          2026-04-08  Planned  Row #2 — Add toggle component  Brief: 2026-04-01-add-dark-mode.md  Source: #50
+  [2] add-dark-mode-1          2026-04-07  Planned  Row #1 — Wire theme context    Brief: 2026-04-01-add-dark-mode.md  Source: #50
+  [3] customer-portal-3        2026-04-05  Planned  Row #3 — Billing page          Brief: 2026-03-28-customer-portal.md  Source: PROJ-200
+
+3 local plan(s).
+
+To revise: add a `## Feedback` section to the plan file, then re-run /clancy:plan --from <brief>.
+To start over: /clancy:plan --fresh --from <brief>.
+To approve: install the full pipeline — npx chief-clancy.
+```
+
+The first column in the listing is the Plan ID (filename without `.md`), not the brief slug.
+
+If `.clancy/plans/` does not exist or contains no `.md` files:
+
+```
+No plans found. Run /clancy:plan --from .clancy/briefs/<brief>.md to create one.
+```
+
+Stop after display. The `--list` step never logs to `.clancy/progress.txt` and never modifies any file — it is purely a read-only inventory view of the local plans directory.
+
+---
+
 ## Notes
 
 - This command does NOT implement anything — it generates plans only
@@ -1085,3 +1148,4 @@ Multi-row (`--afk`):
 - The `## Clancy Implementation Plan` marker in comments is used by both `/clancy:plan` (to detect existing plans) and `/clancy:approve-plan` (to find the plan to promote)
 - `--from` mode is fully offline — no board credentials needed. Plans saved to `.clancy/plans/` as the source of truth
 - `--from` requires a Clancy brief (structured format with `## Problem Statement` or `## Ticket Decomposition`). For raw files, use `/clancy:brief --from {path}` first to generate a brief
+- `--list` is filesystem-only and short-circuits at the top of Step 1 — no installation context, network, board, or git checks run before the inventory displays

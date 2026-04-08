@@ -536,3 +536,107 @@ describe('local plan feedback loop', () => {
     expect(content).toContain('after the local header block');
   });
 });
+
+// ---------------------------------------------------------------------------
+// --list flag: plan inventory
+// ---------------------------------------------------------------------------
+
+describe('--list flag handling', () => {
+  const content = readFileSync(new URL('plan.md', import.meta.url), 'utf8');
+
+  it('documents --list flag in Step 2 arg list', () => {
+    expect(content).toContain('**`--list`:** display the plan inventory');
+  });
+
+  it('--list short-circuits Step 1 preflight', () => {
+    expect(content).toContain('### 0. Short-circuit on `--list`');
+    expect(content).toContain(
+      'skip the rest of Step 1 entirely (no installation detection, no `git fetch`',
+    );
+    expect(content).toContain('jump straight to Step 8');
+  });
+
+  it('--list takes precedence over other flags and arguments', () => {
+    expect(content).toContain('`--list` always wins over other flags');
+    expect(content).toContain(
+      'the inventory is displayed and the other flags are ignored',
+    );
+  });
+
+  it('standalone board-ticket guard skips when --list is present', () => {
+    expect(content).toContain(
+      'Skip this guard entirely if `--list` was passed',
+    );
+  });
+});
+
+describe('plan inventory step', () => {
+  const content = readFileSync(new URL('plan.md', import.meta.url), 'utf8');
+
+  it('defines a Plan inventory step at Step 8', () => {
+    expect(content).toContain('## Step 8 — Plan inventory (`--list`)');
+  });
+
+  it('scans .clancy/plans/ for markdown files', () => {
+    expect(content).toContain('Scan `.clancy/plans/` for all `.md` files');
+  });
+
+  it('parses plan headers written by Step 5a', () => {
+    // Each header field gets its own line item describing how it is parsed
+    // (the `**Foo:**` strings exist elsewhere in the file too — these tests
+    // assert the Step 8 parsing intent, not just substring presence).
+    expect(content).toContain('value of the `**Brief:**` line');
+    expect(content).toContain('value of the `**Row:**` line');
+    expect(content).toContain('value of the `**Source:**` line');
+    expect(content).toContain('value of the `**Planned:**` line');
+  });
+
+  it('Plan ID is the filename minus .md, not the brief slug', () => {
+    expect(content).toContain(
+      '**Plan ID** — the plan filename minus the `.md` extension',
+    );
+    expect(content).toContain('first column in the listing is the Plan ID');
+  });
+
+  it('reserves a Status column for the future approve-plan PR', () => {
+    expect(content).toContain('**Status**');
+    expect(content).toContain('always `Planned`');
+    expect(content).toContain('`.approved` marker');
+  });
+
+  it('sort is deterministic with explicit tie-breakers', () => {
+    expect(content).toContain('newest first');
+    expect(content).toContain(
+      'Tie-break on same date by Plan ID, alphabetical ascending',
+    );
+    expect(content).toContain(
+      'Files with a missing or unparseable date sort last',
+    );
+    expect(content).toContain('deterministic across runs');
+  });
+
+  it('handles empty or missing .clancy/plans/ directory', () => {
+    expect(content).toContain(
+      'If `.clancy/plans/` does not exist or contains no `.md` files',
+    );
+    expect(content).toContain('No plans found');
+  });
+
+  it('describes how missing header fields are rendered', () => {
+    expect(content).toContain(
+      'Display the literal `?` if the line is absent or empty',
+    );
+  });
+
+  it('inventory step is filesystem-only (no API/board access)', () => {
+    expect(content).toContain(
+      'filesystem-only — no API calls, no board access, no `.clancy/.env` required',
+    );
+  });
+
+  it('--list never writes to progress.txt or any other file', () => {
+    expect(content).toContain(
+      'never logs to `.clancy/progress.txt` and never modifies any file',
+    );
+  });
+});

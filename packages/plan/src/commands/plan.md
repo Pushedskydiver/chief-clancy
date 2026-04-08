@@ -9,6 +9,7 @@ Accepts optional arguments:
 - **Specific ticket:** `/clancy:plan PROJ-123`, `/clancy:plan #42`, `/clancy:plan ENG-42` — plan a single ticket by key
 - **Fresh start:** `--fresh` — discard any existing plan and start over
 - **Skip confirmations:** `--afk` — auto-confirm all prompts (for automation)
+- **List plans:** `--list` — show inventory of existing local plans in `.clancy/plans/` and stop
 
 Examples:
 
@@ -18,6 +19,7 @@ Examples:
 - `/clancy:plan PROJ-123` — plan a specific Jira/Linear ticket
 - `/clancy:plan #42` — plan a specific GitHub issue
 - `/clancy:plan --fresh PROJ-123` — discard existing plan and start over
+- `/clancy:plan --list` — show inventory of all local plans
 
 @.claude/clancy/workflows/plan.md
 
