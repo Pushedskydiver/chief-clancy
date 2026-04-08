@@ -523,7 +523,9 @@ describe('local plan feedback loop', () => {
   });
 
   it('default row selection prefers rows with feedback first', () => {
-    expect(content).toContain('first row with feedback');
+    expect(content).toContain(
+      'first row with feedback if any, otherwise first unplanned row',
+    );
   });
 
   it('revised local plans use LOCAL_REVISED log entry', () => {
