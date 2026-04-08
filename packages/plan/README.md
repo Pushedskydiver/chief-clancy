@@ -103,7 +103,7 @@ approved_at=2026-04-08T22:30:00Z
 
 The full 64-character hex hash is what `.approved` actually stores — `/clancy:implement-from` (PR 8) reads the marker, hashes the current plan file the same way, and blocks implementation on any mismatch.
 
-The marker is the gate `/clancy:implement-from` (shipping in the next PR) checks before applying changes — if the plan file is edited after approval, the SHA mismatch blocks implementation until you re-approve. The brief file's `<!-- planned:1,2 -->` marker is also updated to `<!-- approved:1 planned:1,2 -->` so `/clancy:plan --list` knows which rows are approved.
+The marker is the gate `/clancy:implement-from` (shipping in the next PR) checks before applying changes — if the plan file is edited after approval, the SHA mismatch blocks implementation until you re-approve. Clancy also tries to update the brief file's `<!-- planned:1,2 -->` marker to `<!-- approved:1 planned:1,2 -->` so `/clancy:plan --list` knows which rows are approved, but that brief-marker update is best-effort and may warn-and-skip if the expected brief metadata or matching marker is missing.
 
 ### Standalone+board (board credentials but no full pipeline)
 

@@ -1163,14 +1163,19 @@ Clancy — Approve Plan (local)
 ✅ Approved {stem}
    Marker: .clancy/plans/{stem}.approved
    sha256: {first 12 hex chars}…
-   Brief:  .clancy/briefs/{brief}.md (row #{N} marked approved)
 
 Next: /clancy:implement-from .clancy/plans/{stem}.md
 
 "Book 'em, Lou."
 ```
 
-If Step 4b warned about a brief-marker problem (best-effort failure), show the warning under the success block but do not change the exit status — the plan IS approved.
+**Conditional Brief line:** if Step 4b actually resolved AND updated the brief marker (i.e. the `**Brief:**`/`**Row:**` headers were present, the marker regex matched, and the write succeeded), insert this line between `sha256:` and the blank line above `Next:`:
+
+```
+   Brief:  .clancy/briefs/{brief}.md (row #{N} marked approved)
+```
+
+Do NOT print the Brief line when Step 4b warned and skipped (missing headers, no matching marker, or write error). In that case, also print the warning that Step 4b emitted under the success block but do not change the exit status — the plan IS approved regardless of whether the brief marker was updated.
 
 Append to `.clancy/progress.txt`:
 
