@@ -19,7 +19,7 @@ Test counts: 1608 core, 834 terminal, 51 brief, **131 plan**.
 
 ## Phase C+D roadmap locked (2026-04-08)
 
-Phase B shipped. Before starting Phase C, ran a planning session: 3 Plan agents in parallel (one per PR) → 1 DA agent over the combined plans → 1 research agent on the brief asymmetry question. Six findings reversed the original draft. The locked roadmap lives in [`.claude/plans/plan-package-extraction.md`](.claude/plans/plan-package-extraction.md).
+Phase B shipped. Before starting Phase C, ran a planning session: 3 Plan agents in parallel (one per PR) → 1 DA agent over the combined plans → 1 research agent on the brief asymmetry question. Six findings reversed the original draft. The full locked roadmap lives in `.claude/plans/plan-package-extraction.md` (local-only working state — `.claude/` is gitignored). The headline tables and key decisions below are the canonical reference for the repo.
 
 ### Phase C — Plan local approve + implement (PRs 7-10)
 
@@ -52,7 +52,7 @@ Phase B shipped. Before starting Phase C, ran a planning session: 3 Plan agents 
 
 ## Next: PR 7a — Plumbing for Phase C
 
-Plan doc: [`.claude/plans/plan-package-extraction.md`](.claude/plans/plan-package-extraction.md) Phase C section.
+Full PR 7a step-by-step lives in the local-only `.claude/plans/plan-package-extraction.md` Phase C section. Headline scope:
 
 - Move `approve-plan.md` (command + workflow) from `packages/terminal/src/roles/planner/` → `packages/plan/src/{commands,workflows}/` byte-identical
 - Convert `plan-content.ts` const strings to arrays, loop over them
