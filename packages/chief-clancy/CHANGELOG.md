@@ -1,5 +1,12 @@
 # chief-clancy
 
+## 0.9.8
+
+### Patch Changes
+
+- Updated dependencies [[`b1c3c92`](https://github.com/Pushedskydiver/chief-clancy/commit/b1c3c92d34e0679b04920b3482fa3ee904458cd7)]:
+  - @chief-clancy/plan@0.2.0
+
 ## 0.9.7
 
 ### Patch Changes
