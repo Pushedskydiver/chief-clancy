@@ -2,57 +2,102 @@
 
 ## Overview
 
-Promote an approved Clancy plan from a ticket comment to the ticket description. The plan is appended below the existing description, never replacing it. After promotion, the ticket is transitioned to the implementation queue.
+Approve a Clancy implementation plan. Behaviour depends on the install context:
+
+- **Standalone mode** (no `.clancy/.env`): write a local `.clancy/plans/{stem}.approved` marker file with the plan's SHA-256 and approval timestamp. The marker is the gate `/clancy:implement-from` checks before applying changes
+- **Standalone+board mode** (`.clancy/.env` present, no full pipeline): with a board ticket key, run the existing comment-to-description transport flow; with a plan-file stem, write the local marker (board push lands in PR 9)
+- **Terminal mode** (full pipeline installed): existing behaviour — promote an approved plan from a ticket comment to the ticket description and transition the ticket to the implementation queue
 
 ---
 
 ## Step 1 — Preflight checks
 
-1. Check `.clancy/` exists and `.clancy/.env` is present. If not:
+### 1. Detect installation context
 
-   ```
-   .clancy/ not found. Run /clancy:init to set up Clancy first.
-   ```
+Check for `.clancy/.env`:
 
-   Stop.
+- **Absent** → **standalone mode**. No board credentials. Board ticket arguments are blocked; only plan-file stems are accepted
+- **Present** → continue to `.clancy/clancy-implement.js` check below
 
-2. Source `.clancy/.env` and check board credentials are present.
+If `.clancy/.env` is present, check for `.clancy/clancy-implement.js`:
+
+- **Present** → **terminal mode**. Full Clancy pipeline installed
+- **Absent** → **standalone+board mode**. Board credentials available via `/clancy:board-setup`. Board ticket arguments work via the existing transport flow. Plan-file stems write the local marker
+
+### 2. Terminal-mode preflight (skip in standalone mode and standalone+board mode)
+
+If in **terminal mode** (`.clancy/.env` present AND `.clancy/clancy-implement.js` present):
+
+a. Source `.clancy/.env` and check board credentials are present.
+
+b. Check `CLANCY_ROLES` includes `planner` (or env var is unset, which indicates a global install where all roles are available). If `CLANCY_ROLES` is set but does not include `planner`:
+
+```
+The Planner role is not enabled. Add "planner" to CLANCY_ROLES in .clancy/.env or run /clancy:settings.
+```
+
+Stop.
+
+### 3. Standalone-mode preflight (only in standalone mode)
+
+If in **standalone mode** (no `.clancy/.env`), check that `.clancy/plans/` exists. If not:
+
+```
+No local plans found. Run /clancy:plan --from .clancy/briefs/<brief>.md first.
+```
+
+Stop.
+
+### 4. Standalone+board preflight (only in standalone+board mode)
+
+If in **standalone+board mode**, source `.clancy/.env` for board credentials. Both plan-file stems and board ticket arguments are valid in this mode — Step 2 routes between them.
 
 ---
 
-## Step 2 — Parse argument / Resolve ticket
+## Step 2 — Resolve target
 
-### If no argument provided:
+The argument can be either a **plan-file stem** (e.g. `add-dark-mode-2`, matching a file at `.clancy/plans/{stem}.md`) or a **board ticket key** (e.g. `PROJ-123`, `#42`). Resolution depends on the installation mode detected in Step 1.
 
-1. Scan `.clancy/progress.txt` for entries matching `| PLAN |` or `| REVISED |` that have no subsequent `| APPROVE_PLAN |` for the same key.
-2. Sort by timestamp ascending (oldest first).
-3. If 0 found:
-   ```
-   No planned tickets awaiting approval. Run /clancy:plan first.
-   ```
-   Stop.
-4. If 1+ found, auto-select the oldest. Show:
-   ```
-   Auto-selected [{KEY}] {Title} (planned {date}). Promote this plan? [Y/n]
-   ```
-   To resolve the title, fetch the ticket from the board:
-   - **GitHub:** `GET /repos/$GITHUB_REPO/issues/$ISSUE_NUMBER` → use `.title`
-   - **Jira:** `GET $JIRA_BASE_URL/rest/api/3/issue/$KEY?fields=summary` → use `.fields.summary`
-   - **Linear:** `issues(filter: { identifier: { eq: "$KEY" } }) { nodes { title } }` → use `nodes[0].title`
-   - **Azure DevOps:** `GET https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$ID?fields=System.Title&api-version=7.1` → use `.fields["System.Title"]`
-   - **Shortcut:** `GET https://api.app.shortcut.com/api/v3/stories/$STORY_ID` → use `.name`
-   - **Notion:** `GET https://api.notion.com/v1/pages/$PAGE_ID` → extract title from the `title` type property in `properties`
-     If fetching fails, show the key without a title: `Auto-selected [{KEY}] (planned {date}). Promote? [Y/n]`
-5. If user declines:
-   ```
-   Cancelled.
-   ```
-   Stop.
-6. Note that the user has already confirmed — set a flag to skip the Step 4 confirmation.
+### Standalone mode
 
-### If argument provided:
+In standalone mode, the argument must be a plan-file stem. Board ticket keys are not valid here because there are no board credentials.
 
-Validate the key format per board (case-insensitive):
+**With argument:** look up `.clancy/plans/{arg}.md`. If the file does not exist:
+
+```
+Plan file not found: .clancy/plans/{arg}.md. Plan stems include the row number (e.g. `add-dark-mode-2`). Run /clancy:plan --list to see available plans.
+```
+
+Stop. Do not attempt to interpret the argument as a ticket key in standalone mode.
+
+**No argument:** auto-select the oldest unapproved local plan.
+
+1. Scan `.clancy/plans/` for `.md` files
+2. **Filter to plan files only**: a file qualifies as a plan if it contains the literal heading `## Clancy Implementation Plan` (the marker written by Step 4f / 5a of `plan.md`). Files without this heading are scratch / notes / drafts and are silently skipped — they are not approvable
+3. For each remaining file, check whether a sibling `.approved` marker exists at the same path with the `.approved` suffix. The unapproved set is qualifying files with no sibling marker
+4. Sort the unapproved set by the `**Planned:**` header date (ascending). Tie-break by Plan ID (alphabetical ascending). Files with a missing or unparseable `**Planned:**` date sort **last** (after all dated plans), then by Plan ID alphabetically among themselves. Mirrors `plan.md` Step 8 inventory's deterministic ordering
+
+If the unapproved set is empty:
+
+```
+No local plans awaiting approval. Run /clancy:plan --from .clancy/briefs/<brief>.md first, or all existing plans are already approved.
+```
+
+Stop. If non-empty, auto-select the first entry. Confirm with the user (skipped in `--afk` mode):
+
+```
+Auto-selected {stem} (planned {date}). Approve this plan? [Y/n]
+```
+
+If declined: `Cancelled.` Stop.
+
+### Standalone+board and terminal modes
+
+In these modes the argument may be either a plan-file stem or a board ticket key. **Try plan-file lookup first (does `.clancy/plans/{arg}.md` exist?)**, then fall back to ticket-key validation. The plan stem wins over ticket key on collision (e.g. if `PROJ-123.md` exists in `.clancy/plans/` AND `PROJ-123` is a valid ticket key, the plan stem wins). Document the collision rule explicitly so users are not surprised.
+
+**With argument that resolves to a plan file:** continue to Step 5a (local mode). The board push offer for plan-file-stem mode is deferred to a future PR — for now the local marker is the only side effect.
+
+**With argument that does not resolve to a plan file:** validate as a ticket key per the board configured in `.clancy/.env` (case-insensitive):
 
 - **GitHub:** `#\d+` or bare number
 - **Jira:** `[A-Za-z][A-Za-z0-9]+-\d+` (e.g. `PROJ-123` or `proj-123`)
@@ -69,7 +114,34 @@ Invalid ticket key: {input}. Expected format: {board-specific example}.
 
 Stop.
 
-Proceed with that key.
+If valid: proceed with that key. The board transport flow runs (Steps 3-7 below) — this is the existing behaviour, unchanged from before PR 7b.
+
+**No argument:**
+
+- **Standalone+board and terminal:** scan `.clancy/progress.txt` for entries matching `| PLAN |` or `| REVISED |` that have no subsequent `| APPROVE_PLAN |` for the same key. Sort by timestamp ascending (oldest first).
+- If 0 found:
+  ```
+  No planned tickets awaiting approval. Run /clancy:plan first.
+  ```
+  Stop.
+- If 1+ found, auto-select the oldest. Show:
+  ```
+  Auto-selected [{KEY}] {Title} (planned {date}). Promote this plan? [Y/n]
+  ```
+  To resolve the title, fetch the ticket from the board:
+  - **GitHub:** `GET /repos/$GITHUB_REPO/issues/$ISSUE_NUMBER` → use `.title`
+  - **Jira:** `GET $JIRA_BASE_URL/rest/api/3/issue/$KEY?fields=summary` → use `.fields.summary`
+  - **Linear:** `issues(filter: { identifier: { eq: "$KEY" } }) { nodes { title } }` → use `nodes[0].title`
+  - **Azure DevOps:** `GET https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$ID?fields=System.Title&api-version=7.1` → use `.fields["System.Title"]`
+  - **Shortcut:** `GET https://api.app.shortcut.com/api/v3/stories/$STORY_ID` → use `.name`
+  - **Notion:** `GET https://api.notion.com/v1/pages/$PAGE_ID` → extract title from the `title` type property in `properties`
+    If fetching fails, show the key without a title: `Auto-selected [{KEY}] (planned {date}). Promote? [Y/n]`
+- If user declines:
+  ```
+  Cancelled.
+  ```
+  Stop.
+- Note that the user has already confirmed — set a flag to skip the Step 4 confirmation.
 
 ---
 
@@ -269,6 +341,129 @@ If the user declines (interactive only), stop:
 ```
 Cancelled. No changes made.
 ```
+
+For **plan-file stem mode** (Step 2 resolved the argument to a local plan file), the summary shows the plan stem instead of `[{KEY}] {Title}`:
+
+```
+Clancy — Approve Plan (local)
+
+{stem}
+Size: {S/M/L} | {N} affected files
+Planned: {date from plan}
+
+Approve this plan? [Y/n]
+```
+
+After confirmation in plan-file stem mode, jump to Step 4a (local marker write). For board ticket key mode, continue to Step 5 below.
+
+---
+
+## Step 4a — Write local marker
+
+Run this step instead of Steps 5, 5b, 6 when the resolved argument was a plan-file stem (standalone mode, or standalone+board / terminal mode where Step 2 found a matching plan file). Write a `.clancy/plans/{stem}.approved` marker that gates `/clancy:implement-from`.
+
+### Compute the SHA-256
+
+**Order of operations** (do these in order, exactly):
+
+1. Read the plan file at `.clancy/plans/{stem}.md` from disk into memory as bytes.
+2. Compute the SHA-256 hash of those bytes — no normalisation (no line-ending fix, no trailing-whitespace strip, no BOM removal). Hex-encode lowercase.
+3. **Then** (only after the hash is computed) open the `.approved` marker for exclusive create as described below.
+
+The `.approved` file is **never** included in the hash — only `.clancy/plans/{stem}.md` is hashed, and only its on-disk byte content at the moment of step 1. PR 8's `/clancy:implement-from` re-reads the same plan file, hashes it the same way, and compares to the `sha256=` value stored in the marker. Any divergence (re-edit, line-ending change, trailing whitespace tweak) blocks implementation until re-approval.
+
+### Write the marker file with O_EXCL
+
+Open `.clancy/plans/{stem}.approved` for **exclusive create** (Node `fs.openSync(path, 'wx')`, equivalent to `open(2)` with `O_EXCL`). Write the marker body as plain text:
+
+```
+sha256={hex sha256 of the plan file at approval time}
+approved_at={ISO 8601 UTC timestamp, e.g. 2026-04-08T22:30:00Z}
+```
+
+Two `key=value` lines, each terminated with `\n`. No JSON, no extra whitespace, no comments. PR 8 parses this with a tolerant `^(sha256|approved_at)=(.+)$` regex per line.
+
+### Handle EEXIST (already-approved)
+
+If the exclusive create fails with `EEXIST`, the marker already exists — the plan was previously approved. Stop with:
+
+```
+Plan already approved: {stem}
+Marker: .clancy/plans/{stem}.approved
+
+To re-approve (e.g. after revising the plan):
+  Delete .clancy/plans/{stem}.approved manually, then re-run /clancy:approve-plan {stem}
+```
+
+A `--fresh` flag for `/clancy:approve-plan` is not implemented in this release. Manual deletion is the supported re-approval path.
+
+### Marker is the gate for /clancy:implement-from
+
+The `.approved` marker is the gate `/clancy:implement-from` checks before applying changes. PR 8 reads the marker, hashes the current plan file, and compares to the stored `sha256`. Match → proceed; mismatch → block with a "plan changed since approval" error. This is why the SHA must be computed over the plan file content (not just touched as an empty file).
+
+### After writing the marker
+
+After the marker is written successfully, update the source brief file's marker comment (Step 4b below), then jump to Step 7 (Confirm and log). Steps 5, 5b, and 6 (board transport) are skipped entirely in plan-file stem mode.
+
+---
+
+## Step 4b — Update brief marker (best-effort)
+
+After Step 4a writes the local plan marker, update the source brief file's planned-rows marker so `/clancy:plan --list` and the brief's display logic know which rows have been approved. This step is best-effort: any failure here logs a warning but does NOT roll back the `.clancy/plans/{stem}.approved` marker.
+
+### Resolve the source brief filename
+
+Read the plan file at `.clancy/plans/{stem}.md` and extract the `**Brief:**` header line (e.g. `**Brief:** 2026-04-01-add-dark-mode.md`). The value is the brief filename relative to `.clancy/briefs/`. If the line is absent or empty, warn and skip the rest of Step 4b:
+
+```
+⚠ Plan {stem} has no **Brief:** header — cannot update brief marker. Continuing without brief update.
+```
+
+### Resolve the row number
+
+Extract the row number from the plan file's `**Row:**` header line (e.g. `**Row:** #2 — Add toggle component`). The number after `#` and before the em-dash (U+2014, U+2013, or hyphen) is the row. If absent, warn and skip Step 4b.
+
+### Find and update the marker
+
+Open `.clancy/briefs/{brief-filename}` and find the marker comment matching this tolerant regex (line-anchored, allows missing-or-present `approved:` prefix, allows arbitrary whitespace):
+
+```
+^<!--\s*(?:approved:([\d,]*)\s+)?planned:([\d,]+)\s*-->\s*$
+```
+
+This matches all of:
+
+- `<!-- planned:1,2,3 -->` (no approved prefix yet — current state from PR 6b)
+- `<!-- approved:1 planned:1,2,3 -->` (PR 7b adds the approved prefix)
+- `<!-- approved: planned:1,2,3 -->` (empty approved list — should not happen but handle gracefully)
+- `<!--planned:1,2,3-->` (no surrounding spaces — hand-edited)
+
+If no marker line matches, warn and skip — do not synthesise a marker. The brief should already have one written by `/clancy:plan --from`.
+
+**Reversed-order markers** (`<!-- planned:1,2 approved:1 -->` — `planned:` first, `approved:` second) do NOT match this regex and fall through to the warn-and-skip branch. The canonical ordering is enforced on every write, so a brief that drifts into reversed order requires manual correction. If you see the warning "no marker found" but the brief clearly has a marker, check the order — `approved:` must come before `planned:`.
+
+**Code-fence false positives:** the regex is line-anchored but does NOT track fenced-code-block context. If a brief file embeds an example marker inside a triple-backtick block (e.g. documentation about how markers work), the regex may match the example. The first match wins, so authors should keep the real marker as the first marker line in the file. The `## Feedback` detector in `plan.md` Step 3a uses code-fence-aware parsing for the same reason — apply that pattern manually if a brief becomes complex enough to need it.
+
+If a marker matches, parse the existing `approved:` and `planned:` row lists. Add the current row number to the `approved:` list (deduped, sorted ascending). Reconstruct the marker with the canonical ordering: `approved:` first, `planned:` second, single space between fields and inside the comment. Example:
+
+- Before: `<!-- planned:1,2,3 -->`, current row = `2`
+- After: `<!-- approved:2 planned:1,2,3 -->`
+- Before: `<!-- approved:1 planned:1,2,3 -->`, current row = `2`
+- After: `<!-- approved:1,2 planned:1,2,3 -->`
+
+Write the updated brief file back. The read-modify-write is not concurrency-safe — running multiple `/clancy:approve-plan` commands against the same brief in parallel may produce duplicate or missing entries. Single-user local flow is assumed (mirrors the concurrency note in [`plan.md` Step 3a](./plan.md)).
+
+### Best-effort failure handling
+
+If any step in 4b fails (file not found, marker not found, write error, regex mismatch), log a warning but do NOT roll back the `.clancy/plans/{stem}.approved` marker. The local marker is the source of truth — the brief marker is metadata for display and `/clancy:plan --list`. Example warning:
+
+```
+⚠ Failed to update brief marker for {stem}: {reason}
+The plan is still approved. The .clancy/plans/{stem}.approved marker is in place.
+You can manually update .clancy/briefs/{brief}.md if needed.
+```
+
+After Step 4b completes (successfully or with a warning), jump to Step 7 (Confirm and log). Skip Steps 5, 5b, and 6 entirely.
 
 ---
 
@@ -870,7 +1065,9 @@ Could not transition ticket. Move it manually to your implementation queue.
 
 ## Step 7 — Confirm and log
 
-On success, display a board-specific message:
+**Mode gate (read first):** if Steps 4a/4b ran (the resolved argument was a plan-file stem), skip the entire "board-specific success message" and "board-mode progress.txt entry" blocks below and jump straight to the **Local mode (Step 4a / 4b path)** subsection further down. The board-success-message text only applies when Steps 5/5b/6 ran for a board ticket key. Do NOT render both — exactly one branch executes per approval.
+
+On success in **board ticket mode**, display a board-specific message:
 
 **GitHub:**
 
@@ -944,17 +1141,44 @@ Plan promoted to page content. Move the page to your implementation queue for /c
 "Book 'em, Lou." -- The ticket is ready for /clancy:implement.
 ```
 
-Append to `.clancy/progress.txt`:
+Append to `.clancy/progress.txt` for **board mode**:
 
 ```
 YYYY-MM-DD HH:MM | {KEY} | APPROVE_PLAN | —
 ```
 
-On failure:
+On board failure:
 
 ```
 Failed to update description for [{KEY}]. Check your board permissions.
 ```
+
+### Local mode (Step 4a / 4b path)
+
+For **plan-file stem mode** (Step 4a wrote a `.approved` marker), display:
+
+```
+Clancy — Approve Plan (local)
+
+✅ Approved {stem}
+   Marker: .clancy/plans/{stem}.approved
+   sha256: {first 12 hex chars}…
+   Brief:  .clancy/briefs/{brief}.md (row #{N} marked approved)
+
+Next: /clancy:implement-from .clancy/plans/{stem}.md
+
+"Book 'em, Lou."
+```
+
+If Step 4b warned about a brief-marker problem (best-effort failure), show the warning under the success block but do not change the exit status — the plan IS approved.
+
+Append to `.clancy/progress.txt`:
+
+```
+YYYY-MM-DD HH:MM | {stem} | LOCAL_APPROVE_PLAN | sha256={first 12 hex}
+```
+
+The `LOCAL_APPROVE_PLAN` token mirrors the `LOCAL_PLAN` / `LOCAL_REVISED` convention used by `/clancy:plan --from` (see [`plan.md` Step 6](./plan.md)). PR 8's `/clancy:implement-from` does NOT scan progress.txt for approval state — it reads the `.clancy/plans/{stem}.approved` marker directly. The log entry is for human audit only.
 
 ---
 

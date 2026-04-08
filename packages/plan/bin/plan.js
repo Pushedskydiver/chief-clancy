@@ -83,12 +83,8 @@ const ask = (label) => new Promise((resolve) => rl.question(label, resolve));
 // File lists (keep in sync with install.ts)
 // ---------------------------------------------------------------------------
 
-// Note: `approve-plan.md` lives in `packages/plan/src/{commands,workflows}/`
-// after PR 7a but is NOT shipped by the standalone installer yet — the
-// workflow content is currently board-only (byte-identical to terminal's
-// previous version). PR 7b makes it standalone-safe and adds it here.
-const COMMAND_FILES = ['board-setup.md', 'plan.md'];
-const WORKFLOW_FILES = ['board-setup.md', 'plan.md'];
+const COMMAND_FILES = ['approve-plan.md', 'board-setup.md', 'plan.md'];
+const WORKFLOW_FILES = ['approve-plan.md', 'board-setup.md', 'plan.md'];
 
 // ---------------------------------------------------------------------------
 // Installer
@@ -213,6 +209,9 @@ async function main() {
   console.log('  Commands available:');
   console.log(
     `      ${cyan('/clancy:plan')}           ${dim('Generate an implementation plan')}`,
+  );
+  console.log(
+    `      ${cyan('/clancy:approve-plan')}   ${dim('Approve a plan (run /clancy:plan first)')}`,
   );
   console.log(
     `      ${cyan('/clancy:board-setup')}    ${dim('Configure board credentials (optional)')}`,

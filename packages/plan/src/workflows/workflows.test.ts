@@ -640,3 +640,302 @@ describe('plan inventory step', () => {
     );
   });
 });
+
+// ---------------------------------------------------------------------------
+// approve-plan.md content assertions (PR 7b — standalone adaptation)
+// ---------------------------------------------------------------------------
+
+describe('approve-plan three-state preflight', () => {
+  const content = readFileSync(
+    new URL('approve-plan.md', import.meta.url),
+    'utf8',
+  );
+
+  it('Step 1 detects all three installation states', () => {
+    expect(content).toContain('standalone mode');
+    expect(content).toContain('standalone+board mode');
+    expect(content).toContain('terminal mode');
+  });
+
+  it('Step 1 checks .clancy/.env presence for state detection', () => {
+    expect(content).toContain('.clancy/.env');
+  });
+
+  it('Step 1 checks clancy-implement.js for terminal detection', () => {
+    expect(content).toContain('clancy-implement.js');
+  });
+
+  it('Step 1 does not hard-stop on missing .clancy/.env', () => {
+    expect(content).not.toContain(
+      '.clancy/ not found. Run /clancy:init to set up Clancy first.',
+    );
+  });
+
+  it('CLANCY_ROLES check only runs in terminal mode', () => {
+    expect(content).toContain('Terminal-mode preflight');
+    expect(content).toContain(
+      'skip in standalone mode and standalone+board mode',
+    );
+  });
+
+  it('standalone mode requires .clancy/plans/ to exist', () => {
+    expect(content).toContain('.clancy/plans/');
+  });
+});
+
+describe('approve-plan dual-mode resolver (Step 2)', () => {
+  const content = readFileSync(
+    new URL('approve-plan.md', import.meta.url),
+    'utf8',
+  );
+
+  it('Step 2 routes between plan-file stem and ticket key based on mode', () => {
+    expect(content).toContain('plan-file stem');
+    expect(content).toContain('ticket key');
+  });
+
+  it('standalone mode only accepts plan-file stems', () => {
+    expect(content).toContain(
+      'In standalone mode, the argument must be a plan-file stem',
+    );
+  });
+
+  it('standalone+board and terminal modes try plan-file lookup first', () => {
+    expect(content).toContain(
+      'Try plan-file lookup first (does `.clancy/plans/{arg}.md` exist?)',
+    );
+  });
+
+  it('plan stem wins over ticket key on collision', () => {
+    expect(content).toContain('plan stem wins over ticket key');
+  });
+
+  it('standalone no-arg auto-selects oldest unapproved plan', () => {
+    expect(content).toContain('auto-select the oldest unapproved local plan');
+    expect(content).toContain('no sibling marker');
+  });
+
+  it('standalone no-arg filters scan to actual plan files', () => {
+    expect(content).toContain('## Clancy Implementation Plan');
+    expect(content).toContain('Filter to plan files only');
+  });
+
+  it('standalone no-arg sorts files with missing/unparseable date last', () => {
+    expect(content).toContain('missing or unparseable `**Planned:**` date');
+    expect(content).toContain('sort **last**');
+  });
+
+  it('preserves existing terminal-mode no-arg progress.txt scan', () => {
+    expect(content).toContain('.clancy/progress.txt');
+    expect(content).toContain('| PLAN |');
+  });
+
+  it('errors clearly if standalone arg is not a plan-file stem', () => {
+    expect(content).toContain('Plan file not found:');
+  });
+
+  it('errors if standalone has no plans and no arg', () => {
+    expect(content).toContain('No local plans awaiting approval');
+  });
+});
+
+describe('approve-plan local marker (Step 4a)', () => {
+  const content = readFileSync(
+    new URL('approve-plan.md', import.meta.url),
+    'utf8',
+  );
+
+  it('defines Step 4a — Write local marker', () => {
+    expect(content).toContain('## Step 4a — Write local marker');
+  });
+
+  it('Step 4a runs only when the resolved arg was a plan-file stem', () => {
+    expect(content).toContain(
+      'Run this step instead of Steps 5, 5b, 6 when the resolved argument was a plan-file stem',
+    );
+  });
+
+  it('writes marker to .clancy/plans/{stem}.approved', () => {
+    expect(content).toContain('.clancy/plans/{stem}.approved');
+  });
+
+  it('uses race-safe exclusive create (O_EXCL / wx)', () => {
+    expect(content).toContain('exclusive create');
+    expect(content).toContain('O_EXCL');
+    expect(content).toContain('wx');
+  });
+
+  it('marker body contains sha256 and approved_at fields', () => {
+    expect(content).toContain('sha256=');
+    expect(content).toContain('approved_at=');
+  });
+
+  it('sha256 is computed over the plan file content at approval time', () => {
+    expect(content).toContain('SHA-256');
+    expect(content).toContain('Order of operations');
+    expect(content).toContain(
+      'Read the plan file at `.clancy/plans/{stem}.md` from disk',
+    );
+  });
+
+  it('SHA hash is never computed over the .approved marker itself', () => {
+    expect(content).toContain('`.approved` file is **never** included');
+  });
+
+  it('approved_at is ISO 8601 UTC', () => {
+    expect(content).toContain('ISO 8601');
+  });
+
+  it('handles EEXIST as already-approved', () => {
+    expect(content).toContain('EEXIST');
+    expect(content).toContain('already approved');
+  });
+
+  it('explains the marker is the gate for /clancy:implement-from', () => {
+    expect(content).toContain('/clancy:implement-from');
+    expect(content).toContain('gate');
+  });
+
+  it('after writing the marker, Step 4a jumps to Step 7 (log) and skips board flow', () => {
+    expect(content).toContain('jump to Step 7');
+  });
+});
+
+describe('approve-plan brief-marker update (Step 4b)', () => {
+  const content = readFileSync(
+    new URL('approve-plan.md', import.meta.url),
+    'utf8',
+  );
+
+  it('defines Step 4b — Update brief marker', () => {
+    expect(content).toContain('## Step 4b — Update brief marker');
+  });
+
+  it('resolves brief filename from the plan **Brief:** header', () => {
+    expect(content).toContain('**Brief:**');
+    expect(content).toContain('extract the `**Brief:**` header line');
+  });
+
+  it('resolves row number from the plan **Row:** header', () => {
+    expect(content).toContain('**Row:**');
+  });
+
+  it('uses a tolerant line-anchored regex with optional approved prefix', () => {
+    expect(content).toContain(
+      '^<!--\\s*(?:approved:([\\d,]*)\\s+)?planned:([\\d,]+)\\s*-->\\s*$',
+    );
+  });
+
+  it('canonical ordering puts approved before planned', () => {
+    expect(content).toContain('approved:` first, `planned:` second');
+  });
+
+  it('handles existing planned-only marker (PR 6b state)', () => {
+    expect(content).toContain('<!-- planned:1,2,3 -->');
+  });
+
+  it('handles existing approved+planned marker', () => {
+    expect(content).toContain('<!-- approved:1 planned:1,2,3 -->');
+  });
+
+  it('handles unspaced marker variant', () => {
+    expect(content).toContain('<!--planned:1,2,3-->');
+  });
+
+  it('best-effort: failure does not roll back the .approved marker', () => {
+    expect(content).toContain('does NOT roll back');
+    expect(content).toContain('local marker is the source of truth');
+  });
+
+  it('warns and skips when **Brief:** header is absent', () => {
+    expect(content).toContain('cannot update brief marker');
+  });
+
+  it('documents concurrency-not-safe nature of the read-modify-write', () => {
+    expect(content).toContain('not concurrency-safe');
+  });
+
+  it('documents reversed-order brief markers fall through to warn-and-skip', () => {
+    expect(content).toContain('Reversed-order markers');
+    expect(content).toContain('do NOT match this regex');
+  });
+
+  it('documents code-fence false-positive risk', () => {
+    expect(content).toContain('Code-fence false positives');
+    expect(content).toContain('first match wins');
+  });
+});
+
+describe('approve-plan local-mode log + summary (Step 7)', () => {
+  const content = readFileSync(
+    new URL('approve-plan.md', import.meta.url),
+    'utf8',
+  );
+
+  it('uses LOCAL_APPROVE_PLAN log token for plan-file stem mode', () => {
+    expect(content).toContain('LOCAL_APPROVE_PLAN');
+  });
+
+  it('local log entry includes the sha256 prefix for audit', () => {
+    expect(content).toContain('sha256={first 12 hex}');
+  });
+
+  it('local success summary points to /clancy:implement-from', () => {
+    expect(content).toContain(
+      'Next: /clancy:implement-from .clancy/plans/{stem}.md',
+    );
+  });
+
+  it('preserves board-mode APPROVE_PLAN log entry', () => {
+    expect(content).toContain('| {KEY} | APPROVE_PLAN | —');
+  });
+
+  it('Step 7 has an explicit mode gate so local and board branches do not double-render', () => {
+    expect(content).toContain('Mode gate (read first)');
+    expect(content).toContain(
+      'Do NOT render both — exactly one branch executes per approval',
+    );
+  });
+
+  it('plan-file-not-found error hints at the row-number convention', () => {
+    expect(content).toContain('Plan stems include the row number');
+    expect(content).toContain('Run /clancy:plan --list');
+  });
+
+  it('EEXIST advice points at manual deletion, not a non-existent --fresh flag', () => {
+    expect(content).toContain('Delete .clancy/plans/{stem}.approved manually');
+    expect(content).not.toContain('/clancy:approve-plan --fresh');
+  });
+});
+
+describe('approve-plan board mode preserved unchanged', () => {
+  const content = readFileSync(
+    new URL('approve-plan.md', import.meta.url),
+    'utf8',
+  );
+
+  it('keeps Jira ADF construction', () => {
+    expect(content).toContain('ADF');
+  });
+
+  it('keeps GitHub PATCH /issues for description update', () => {
+    expect(content).toContain('PATCH');
+    expect(content).toContain('/issues/');
+  });
+
+  it('keeps Linear issueUpdate mutation', () => {
+    expect(content).toContain('issueUpdate');
+  });
+
+  it('keeps Azure DevOps work item update', () => {
+    expect(content).toContain('Azure DevOps');
+  });
+
+  it('keeps Shortcut PUT /stories', () => {
+    expect(content).toContain('Shortcut');
+  });
+
+  it('keeps Notion description update', () => {
+    expect(content).toContain('Notion');
+  });
+});
