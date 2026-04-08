@@ -156,9 +156,9 @@ When `--from` is present, a bare integer is always interpreted as a row number, 
 
 **Row targeting:**
 
-- If `--from path N` was specified in Step 2, plan row N specifically. If row N is already planned (in the marker) and the plan file has no `## Feedback` and `--fresh` is not set, stop: `Row {N} is already planned. Add a ## Feedback section to revise, or use --fresh to start over.`
+- If `--from path N` was specified in Step 2, select row N specifically. If row N is already in the planned marker, do not stop here — defer the "already planned" decision to the later "Existing local plan check," after the plan slug/path is known and the workflow can inspect the existing plan file for `## Feedback` and apply `--fresh` rules.
 - Without a number, select the first unplanned row — the first row whose number is NOT in the planned set.
-- If all rows are planned: `All decomposition rows have been planned. Use --fresh to re-plan a specific row.` Stop.
+- If no number was specified and all rows are planned: `All decomposition rows have been planned. Use --fresh to re-plan a specific row.` Stop.
 
 **`--fresh` with row selection:** When `--fresh` is used to re-plan a specific row, the row's existing plan file is overwritten. The planned marker is not modified — the row was already in the marker and stays there (no remove-and-re-add cycle needed).
 
@@ -204,7 +204,7 @@ If an existing plan file is found, scan it for a `## Feedback` section. Match `#
 
 ### Read feedback for revision
 
-When revising from feedback (auto-detected from `## Feedback` section in the local plan file), read the entire `## Feedback` section content — from the `## Feedback` heading until the next `##`-level heading or EOF. If multiple `## Feedback` sections exist (the user added more after a previous revision), concatenate all sections in order.
+When revising from feedback (auto-detected from a real `## Feedback` heading in the local plan file), read the entire `## Feedback` section content — from that heading until the next real `##` heading at the start of a line, outside fenced code blocks and inline backtick spans, or EOF. If multiple `## Feedback` sections exist (the user added more after a previous revision), concatenate all sections in order.
 
 Pass this feedback to the plan generation step (Step 4f) as additional context, alongside the brief's Problem Statement, Goals, and the row context. The `## Feedback` section is the user's revision request — typically natural language describing what to change, what was missing, or what went wrong.
 
