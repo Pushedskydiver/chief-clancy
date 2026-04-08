@@ -134,10 +134,14 @@ const buildOptions = (
   files: Readonly<Record<string, string>> = {},
 ): MockOptions => {
   const sourceFiles: Record<string, string> = {
+    '/pkg/src/commands/approve-plan.md':
+      '# /clancy:approve-plan\n\n@.claude/clancy/workflows/approve-plan.md\n',
     '/pkg/src/commands/board-setup.md':
       '# /clancy:board-setup\n\n@.claude/clancy/workflows/board-setup.md\n',
     '/pkg/src/commands/plan.md':
       '# /clancy:plan\n\n@.claude/clancy/workflows/plan.md\n',
+    '/pkg/src/workflows/approve-plan.md':
+      '# Clancy Approve Plan Workflow\n\nApprove plan content here.',
     '/pkg/src/workflows/board-setup.md':
       '# Board Setup Workflow\n\nSetup content here.',
     '/pkg/src/workflows/plan.md':
@@ -177,6 +181,10 @@ describe('runPlanInstall', () => {
       join(defaultSources.commandsDir, 'board-setup.md'),
       join(defaultPaths.commandsDest, 'board-setup.md'),
     );
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.commandsDir, 'approve-plan.md'),
+      join(defaultPaths.commandsDest, 'approve-plan.md'),
+    );
   });
 
   it('copies all workflow files', () => {
@@ -190,6 +198,10 @@ describe('runPlanInstall', () => {
     expect(opts.fs.copyFile).toHaveBeenCalledWith(
       join(defaultSources.workflowsDir, 'board-setup.md'),
       join(defaultPaths.workflowsDest, 'board-setup.md'),
+    );
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.workflowsDir, 'approve-plan.md'),
+      join(defaultPaths.workflowsDest, 'approve-plan.md'),
     );
   });
 
@@ -254,6 +266,22 @@ describe('runPlanInstall', () => {
       expect(cmdWrite?.[1]).toContain('Setup content here.');
       expect(cmdWrite?.[1]).not.toContain(
         '@.claude/clancy/workflows/board-setup.md',
+      );
+    });
+
+    it('inlines workflow content into approve-plan command file', () => {
+      const opts = buildOptions({ mode: 'global' });
+      runPlanInstall(opts);
+
+      const writeCalls = opts.fs.writeFile.mock.calls;
+      const cmdWrite = writeCalls.find(
+        ([path]) => path === join(defaultPaths.commandsDest, 'approve-plan.md'),
+      );
+
+      expect(cmdWrite).toBeDefined();
+      expect(cmdWrite?.[1]).toContain('Approve plan content here.');
+      expect(cmdWrite?.[1]).not.toContain(
+        '@.claude/clancy/workflows/approve-plan.md',
       );
     });
 

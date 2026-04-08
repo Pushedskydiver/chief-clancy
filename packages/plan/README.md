@@ -80,7 +80,43 @@ The `--from` flag lets you go from idea to implementation plan without ever touc
 
 Plans are tracked in the brief file itself via a `<!-- planned:1,2,3 -->` marker, so re-running advances to the next unplanned row automatically.
 
-To approve and implement plans you'll need the full pipeline (`npx chief-clancy`).
+## Approving plans
+
+The plan package ships `/clancy:approve-plan` so the approval gate works without the full pipeline. The behaviour depends on the install mode.
+
+### Standalone (no board)
+
+```bash
+# Approve a specific local plan
+/clancy:approve-plan add-dark-mode-2
+
+# Or auto-select the oldest unapproved local plan
+/clancy:approve-plan
+```
+
+The command writes a `.clancy/plans/{stem}.approved` marker file containing the full lowercase hex SHA-256 of the plan file and an ISO 8601 UTC approval timestamp:
+
+```
+sha256=d2c9f3a1b4e6c8f09123456789abcdef0123456789abcdef0123456789abcd
+approved_at=2026-04-08T22:30:00Z
+```
+
+The full 64-character hex hash is what `.approved` actually stores — `/clancy:implement-from` (PR 8) reads the marker, hashes the current plan file the same way, and blocks implementation on any mismatch.
+
+The marker is the gate `/clancy:implement-from` (shipping in the next PR) checks before applying changes — if the plan file is edited after approval, the SHA mismatch blocks implementation until you re-approve. Clancy also tries to update the brief file's `<!-- planned:1,2 -->` marker to `<!-- approved:1 planned:1,2 -->` so `/clancy:plan --list` knows which rows are approved, but that brief-marker update is best-effort and may warn-and-skip if the expected brief metadata or matching marker is missing.
+
+### Standalone+board (board credentials but no full pipeline)
+
+The argument decides which path runs:
+
+- **Plan-file stem** (e.g. `add-dark-mode-2`): writes the local marker. The board push offer for local plan stems lands in a future PR
+- **Board ticket key** (e.g. `PROJ-123`): runs the full board comment-to-description transport flow — fetches the plan comment, appends it to the ticket description, edits the plan comment with an approval note, swaps the ticket labels (`CLANCY_LABEL_PLAN` → `CLANCY_LABEL_BUILD`, both with sensible defaults), and — only if `CLANCY_STATUS_PLANNED` is configured — transitions the ticket status. Label swaps are mandatory; status transitions are opt-in via the `CLANCY_STATUS_PLANNED` env var
+
+The plan-file lookup runs first, so plan stems win on collision (`PROJ-123.md` exists locally AND `PROJ-123` is a valid ticket key → the local plan wins).
+
+### Terminal mode (full pipeline)
+
+Existing behaviour, unchanged. Board ticket transport, queue transitions, and the implementation handoff all work as they did before.
 
 ## Board ticket mode
 
