@@ -649,6 +649,17 @@ describe('plan inventory step', () => {
     expect(content).toContain('shows three states');
   });
 
+  it('folds malformed .approved markers into Stale (re-approve)', () => {
+    expect(content).toContain('marker exists but is malformed');
+    expect(content).toContain('non-hex or wrong-length');
+    expect(content).toContain('cannot be parsed deterministically');
+  });
+
+  it('uses {plan-id} placeholder consistently in the footer (no <plan-id>)', () => {
+    expect(content).not.toContain('<plan-id>');
+    expect(content).toContain('/clancy:approve-plan {plan-id}');
+  });
+
   it('inventory footer hint points at /clancy:approve-plan', () => {
     expect(content).toContain('/clancy:approve-plan');
   });

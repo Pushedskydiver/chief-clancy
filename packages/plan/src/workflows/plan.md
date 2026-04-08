@@ -1102,17 +1102,18 @@ Scan `.clancy/plans/` for all `.md` files. For each file, parse the local plan h
 - **Planned** — value of the `**Planned:**` line (the YYYY-MM-DD planned date). Display `?` if absent or unparseable as a date.
 - **Status** — derived live from the sibling `.approved` marker written by `/clancy:approve-plan` (PR 7b). The reader is filesystem-only — no `.clancy/.env` or board access required. For each plan file, follow this procedure (every numbered step either branches to a verdict or feeds the next step):
   1. Check whether `.clancy/plans/{plan-id}.approved` exists. If marker absent → `Planned` (verdict)
-  2. Marker exists. Parse its `sha256=` line (the marker body is two `key=value` lines: `sha256={hex}` and `approved_at={ISO 8601}`) AND hash the current plan file's bytes the same way `/clancy:approve-plan` Step 4a does (lowercase hex SHA-256, no normalisation, no line-ending fix)
-  3. If the marker's `sha256` matches the current plan file's hash → `Approved` (verdict)
-  4. If the marker exists but its `sha256` differs from the current hash → `Stale (re-approve)` (verdict) — the plan file was edited after approval. `/clancy:implement-from` (PR 8) will refuse to run against a stale plan until it is re-approved
+  2. Marker exists. Read and validate its `sha256=` line (the marker body is two `key=value` lines: `sha256={hex}` and `approved_at={ISO 8601}`) AND hash the current plan file's bytes the same way `/clancy:approve-plan` Step 4a does (lowercase hex SHA-256, no normalisation, no line-ending fix)
+  3. If the marker exists but is malformed, missing its `sha256=` line, has a non-hex or wrong-length `sha256` value, or otherwise cannot be parsed deterministically → `Stale (re-approve)` (verdict). Print a hint after the table: `Marker .clancy/plans/{plan-id}.approved is malformed. Delete it and re-run /clancy:approve-plan {plan-id} to recreate.` Folding this into `Stale` (rather than inventing a new state) keeps the inventory deterministic — the user's remediation is the same as for a hash drift: delete the marker and re-approve
+  4. If the marker's valid `sha256` matches the current plan file's hash → `Approved` (verdict)
+  5. If the marker exists and its valid `sha256` differs from the current hash → `Stale (re-approve)` (verdict) — the plan file was edited after approval. `/clancy:implement-from` (PR 8) will refuse to run against a stale plan until it is re-approved
 
-  A future `Implemented` state — derived from `LOCAL_IMPLEMENT` entries in `.clancy/progress.txt` — will be added by PR 8. Today the inventory shows three states (`Planned`, `Approved`, `Stale (re-approve)`); the table format is stable so PR 8's addition will be a one-line extension.
+  A future `Implemented` state — derived from `LOCAL_IMPLEMENT` entries in `.clancy/progress.txt` — will be added by PR 8. Today the inventory shows three states (`Planned`, `Approved`, `Stale (re-approve)`), with malformed `.approved` markers folded into `Stale (re-approve)`; the table format is stable so PR 8's addition will be a one-line extension.
 
 A field is considered missing if the line is absent or its value is empty after the colon. Plans missing all expected fields are still listed (with `?` placeholders) so the user can find and clean them up.
 
 **Sort:** by `**Planned**` date, newest first. Tie-break on same date by Plan ID, alphabetical ascending. Files with a missing or unparseable date sort last (after all dated plans), and tie-break among themselves by Plan ID alphabetical ascending. The sort must be deterministic across runs.
 
-**Summary line:** after the table, print one line in the format `{N} local plan(s). {A} approved, {S} stale, {P} planned.` where the counts match the rows above. Omit zero-count states for brevity (e.g. `3 local plan(s). 2 approved, 1 planned.` if no plans are stale). A `Stale (re-approve)` row means the plan file was edited after approval — re-running `/clancy:approve-plan <plan-id>` (after deleting the existing marker) will refresh the SHA.
+**Summary line:** after the table, print one line in the format `{N} local plan(s). {A} approved, {S} stale, {P} planned.` where the counts match the rows above. Omit zero-count states for brevity (e.g. `3 local plan(s). 2 approved, 1 planned.` if no plans are stale). A `Stale (re-approve)` row means the plan file was edited after approval — re-running `/clancy:approve-plan {plan-id}` (after deleting the existing marker) will refresh the SHA.
 
 Display the inventory as a pipe-delimited table so each Status value is unambiguous to scan and parse:
 
@@ -1128,10 +1129,10 @@ Clancy — Plans
 
 3 local plan(s). 1 approved, 1 stale, 1 planned.
 
-To approve a plan:           /clancy:approve-plan <plan-id>
-To re-approve a stale plan:  delete .clancy/plans/<plan-id>.approved, then /clancy:approve-plan <plan-id>
-To revise:                   add a `## Feedback` section to the plan file, then re-run /clancy:plan --from <brief>
-To start over:               /clancy:plan --fresh --from <brief>
+To approve a plan:           /clancy:approve-plan {plan-id}
+To re-approve a stale plan:  delete .clancy/plans/{plan-id}.approved, then /clancy:approve-plan {plan-id}
+To revise:                   add a `## Feedback` section to the plan file, then re-run /clancy:plan --from {brief}
+To start over:               /clancy:plan --fresh --from {brief}
 ```
 
 The first column (after `#`) is the Plan ID (filename without `.md`), not the brief slug. Pipe-table format is intentional — Status values like `Stale (re-approve)` contain spaces, and a column-aligned space-delimited layout would make them ambiguous to read.
@@ -1139,7 +1140,7 @@ The first column (after `#`) is the Plan ID (filename without `.md`), not the br
 If `.clancy/plans/` does not exist or contains no `.md` files:
 
 ```
-No plans found. Run /clancy:plan --from .clancy/briefs/<brief>.md to create one.
+No plans found. Run /clancy:plan --from .clancy/briefs/{brief}.md to create one.
 ```
 
 Stop after display. The `--list` step never logs to `.clancy/progress.txt` and never modifies any file — it is purely a read-only inventory view of the local plans directory.
