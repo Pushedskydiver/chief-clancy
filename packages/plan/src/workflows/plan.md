@@ -2,7 +2,7 @@
 
 ## Overview
 
-Fetch backlog tickets from the board, explore the codebase, and generate structured implementation plans. In board mode, plans are posted as comments on the ticket for human review. With `--from`, plans from local brief files are saved to `.clancy/plans/`, with an optional board comment when credentials are available. Does not implement anything — planning only. Use `/clancy:approve-plan` to approve plans in any install mode — it ships with this package and writes a local `.approved` marker for plan-file stems or runs the board transport flow for ticket keys.
+Fetch backlog tickets from the board, explore the codebase, and generate structured implementation plans. In board mode, plans are posted as comments on the ticket for human review. With `--from`, plans from local brief files are saved to `.clancy/plans/`, with an optional board comment when credentials are available. Does not implement anything — planning only. Use `/clancy:approve-plan` to approve plans in any install mode — it ships with this package, writes a local `.approved` marker for plan-file stems, and runs the board transport flow for ticket keys only when board credentials are available.
 
 ---
 
