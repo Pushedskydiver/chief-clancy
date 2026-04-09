@@ -74,7 +74,7 @@ The brief package ships `/clancy:approve-brief` so the approval gate works witho
 
 `/clancy:approve-brief <slug>` walks the brief's decomposition table, creates one child ticket per row on the board (in topological/dependency order), links dependencies, and posts a tracking summary as a comment on the parent ticket. Each child ticket gets a pipeline label so downstream queue commands (`/clancy:plan`, `/clancy:implement`) know which queue picks it up.
 
-In standalone+board mode, every child ticket is labelled with `CLANCY_LABEL_PLAN` (default `clancy:plan`), even though `CLANCY_ROLES` is unset. This is the **single-source-of-truth pipeline label rule**: standalone+board users have installed both `@chief-clancy/brief` and `@chief-clancy/plan` as standalone packages and clearly intend to use plan, so the workflow defaults to the planning queue rather than the build queue.
+In standalone+board mode, child tickets default to `CLANCY_LABEL_PLAN` (default `clancy:plan`), even though `CLANCY_ROLES` is unset — passing `--skip-plan` overrides this and forces `CLANCY_LABEL_BUILD` (default `clancy:build`) instead. This is the **single-source-of-truth pipeline label rule**: standalone+board users have installed both `@chief-clancy/brief` and `@chief-clancy/plan` as standalone packages and clearly intend to use plan, so the workflow defaults to the planning queue rather than the build queue.
 
 Partial failures stop immediately. The brief file's approve marker tracks which rows already shipped to the board, so re-running `/clancy:approve-brief` resumes from where the previous run stopped — it never duplicates a ticket.
 
