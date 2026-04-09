@@ -1,5 +1,46 @@
 # Progress
 
+## Session 55 Summary
+
+### Phase C PR 8 attempted, deferred — `/clancy:implement-from` postponed to `@chief-clancy/dev`
+
+This session opened PR #213 (the full PR 8 `/clancy:implement-from` implementation), then closed it without merging after a cohesion concern surfaced post-DA-review. PR #214 shipped the deferral cleanup. Phase C is now ~67% done (4 of 6 PRs merged; PR 8 deferred, not counted).
+
+**PR #213 (CLOSED, not merged)** — `✨ feat(plan)`: PR 7d-equivalent `/clancy:implement-from`:
+
+- Full implementation of the marker-gated `/clancy:implement-from <stem>` command in `@chief-clancy/plan`: read `.approved` marker, verify SHA-256 still matches the plan file, refuse on Stale, drive the implementation loop
+- DA review passed; architectural review surfaced the concern: shipping a code-implementing command inside `@chief-clancy/plan` violates package cohesion. The plan package's job is planning lifecycle (write plan → approve plan). Actually executing the plan is a separate concern that wants its own home
+- Closed the PR rather than merging. The full branch (`feature/phase-c-pr-8-implement-from`) and PR #213 are preserved as the reference implementation for whoever ships `@chief-clancy/dev` later
+- Lesson recorded as `feedback_layering_vs_cohesion.md`: the original Phase C lock asked only the layering question (does `plan` already own approve-plan? yes → fine to also own implement-from). It missed the cohesion question (is implementing code part of planning lifecycle? no). Future package-scope decisions need both lenses
+
+**PR #214 (MERGED)** — `🔥 chore(plan)`: defer `/clancy:implement-from` until `@chief-clancy/dev` lands:
+
+- Removed the `/clancy:implement-from` command + workflow from `@chief-clancy/plan` (plan tests back to the 197 baseline from PR 7c)
+- Step 8 inventory: dropped the fourth `Implemented` state. Inventory now shows three states only — `Planned`, `Approved`, `Stale (re-approve)` — until the consumer ships
+- Neutralised every forward-reference to `/clancy:implement-from` and "PR 8" on `main`: now points at "a future plan-implementing tool" / "deferred to `@chief-clancy/dev`". Touched README files, command/workflow prose, and the locked roadmap
+- The `.clancy/plans/{stem}.approved` marker format from PR 7b ships **unchanged** (`sha256={hex}\napproved_at={ISO 8601}\n`). The eventual consumer plugs in without re-approving existing plans
+- Approval stays in `plan` (planning lifecycle, not implementation). Phase D's brief→approve-brief move still ships as planned
+- Follow-up commit (`e08eb1e`) addressed Copilot review on the deferral cleanup
+
+**Test counts at end of session:** 1608 core, 836 terminal, 51 brief, **197 plan** (back to PR 7c baseline)
+
+**Key versions shipped:** `@chief-clancy/plan@0.4.1`, `@chief-clancy/terminal@0.1.6`, `chief-clancy@0.9.11`
+
+### Process notes from this session
+
+- **Architectural review must run before DA, as a separate pass.** DA review on PR #213 passed clean — DA catches implementation defects but won't catch package-scope concerns. The cohesion problem only surfaced when an architectural pass asked "does this command belong in this package's identity?" Going forward: architectural review (Plan agent) → DA review → self-review → PR
+- **The Plan agent kept 529'ing during the architectural pass.** Fall back to the general-purpose agent with the same prompt if it happens again
+- **Closing a merged-ready PR is the right move when a fundamental concern surfaces late.** The cost of unwinding PR 8 from `main` later would have been much higher than closing #213 and shipping the deferral cleanup
+- **DA is non-negotiable even on cleanup PRs.** Re-affirmed during PR #214
+
+### Memories added/updated this session
+
+- `project_implement_from_deferred.md` — do NOT re-ship `/clancy:implement-from` in plan/terminal; deferred to `@chief-clancy/dev`
+- `feedback_layering_vs_cohesion.md` — package-scope decisions need both layering AND cohesion lenses
+- `project_status.md` — Phase C ~67% done; PR 8 deferred; next is PR 9
+
+---
+
 ## Session 54 Summary
 
 ### Phase C kickoff — PRs 6b, 7a, 7b, 7c shipped (4 PRs + roadmap docs commit + handoff docs)
