@@ -1320,9 +1320,14 @@ describe('approve-plan Step 4c key validation (PR 9 Slice 4)', () => {
     expect(fourCBody).toMatch(
       /Shortcut[\s\S]{0,200}\(\?:\[A-Za-z\]\{1,5\}-\)\?\\d/,
     );
-    // Notion: notion-xxxxxxxx | 32-hex | 36-char UUID alternation
-    expect(fourCBody).toMatch(/Notion[\s\S]{0,200}notion-/);
-    expect(fourCBody).toMatch(/Notion[\s\S]{0,200}\[a-f0-9\]/);
+    // Notion: ^(?:notion-[a-f0-9]{8}|[a-f0-9]{32}|[a-f0-9-]{36})$
+    // Match the full alternation structure literally so a partially deleted
+    // or malformed Notion regex (e.g. dropped one of the three branches,
+    // dropped the non-capturing group, lost the anchors) fails the test
+    // instead of passing on incidental notion- / [a-f0-9] tokens elsewhere.
+    expect(fourCBody).toMatch(
+      /Notion[\s\S]{0,400}\^\(\?:notion-\[a-f0-9\]\{8\}\|\[a-f0-9\]\{32\}\|\[a-f0-9-\]\{36\}\)\$/,
+    );
   });
 
   it('Step 4c selects the regex from the configured board (single-board env)', () => {
