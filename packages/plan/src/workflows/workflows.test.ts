@@ -618,17 +618,19 @@ describe('plan inventory step', () => {
   });
 
   it('inventory example shows at least one Approved row', () => {
-    // The plain word `Approved` must appear in the example output table.
-    // (`Planned` is everywhere; this is the proof that the example was updated.)
-    expect(content).toMatch(/\| Approved /);
+    // Match a pipe-delimited table cell on both sides (literal `|`s with
+    // tolerant whitespace) so the test proves the example output is in the
+    // pipe-delimited table format, not just that the word `Approved` happens
+    // to appear in nearby prose.
+    expect(content).toMatch(/\|\s*Approved\s*\|/);
   });
 
   it('inventory example shows at least one Stale row', () => {
-    expect(content).toMatch(/\| Stale /);
+    expect(content).toMatch(/\|\s*Stale \(re-approve\)\s*\|/);
   });
 
   it('inventory example still shows at least one Planned row', () => {
-    expect(content).toMatch(/\| Planned /);
+    expect(content).toMatch(/\|\s*Planned\s*\|/);
   });
 
   it('inventory documents the summary line format and zero-count omission', () => {
