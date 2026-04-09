@@ -8,7 +8,7 @@
 
 - `--list` flag in command + workflow short-circuits at top of Step 1 (no installation detection, no `git fetch`, no docs/branch checks, no standalone guard)
 - New Step 8 — Plan inventory: scans `.clancy/plans/`, parses Plan ID / Brief / Row / Source / Planned headers, displays sorted by date with deterministic tie-breakers
-- Reserved a `Status` column today (always `Planned`) so PR 7c can wire it to live `Approved` state without breaking the listing format
+- Reserved a `Status` column at PR 6b time (hardcoded to `Planned`) so PR 7c could later wire it to live `Approved` / `Stale` state without breaking the listing format. **PR 7c shipped that wiring** — the column now reads the sibling `.approved` marker
 - README rewritten with full local planning workflow walkthrough covering `--from`, row targeting, `--afk`, `--list`, and the `## Feedback` revision loop
 - 16 new tests (115 → 131 plan)
 - DA review caught C1/H1/H2/M1/M2/M3/L1/L2/L3/L4 — every finding addressed before push (slug vs Plan ID terminology, Step 1 short-circuit, explicit guard skip, sort tie-breakers, Status column placeholder, --list precedence wording, strengthened tests beyond tautological greps)
