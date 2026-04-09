@@ -17,7 +17,9 @@ Examples:
 Optional flags:
 
 - **Skip confirmation:** `--afk` — auto-confirm without prompting (for automation)
+- **Push approved plan to a board ticket:** `--push` — when approving a local plan stem in standalone+board mode, skip the interactive `[y/N]` prompt and push the approved plan to the source ticket as a comment immediately. Combined with `--afk`, this is the unattended-automation path. Without `--push`, an interactive approval still gets a `[y/N]` prompt (default No — never surprise-write to a board); an `--afk` approval without `--push` stays local-only and logs `LOCAL_ONLY` to `.clancy/progress.txt`. `--push` is also the **retry path** for a previously failed push: re-running `/clancy:approve-plan {stem} --push --ticket {KEY}` after a board push failure falls through Step 4a's `EEXIST` check (the marker stays in place) and re-attempts the Step 4c push.
+- **Override the auto-detected ticket key:** `--ticket {KEY}` — bypass the `**Source:**` auto-detect from the plan file and push to the explicit `{KEY}` instead. The override `{KEY}` is validated against the configured board's regex before any push attempt — a malformed key is a hard error. Useful when the brief Source field is missing, ambiguous, or points at the wrong ticket. `--ticket` is **ignored** under `--afk` without `--push` (no push happens, so there is nothing to override).
 
 @.claude/clancy/workflows/approve-plan.md
 
-Follow the approve-plan workflow above. Detect the install context, resolve the argument (plan-file stem or ticket key), and either write the local marker (Step 4a/4b) or run the existing board transport flow (Steps 5/5b/6). Do not implement anything — approval only.
+Follow the approve-plan workflow above. Detect the install context, resolve the argument (plan-file stem or ticket key), and either write the local marker (Step 4a/4b) followed by an optional board push (Step 4c) or run the existing board transport flow (Steps 5/5b/6). Do not implement anything — approval only.

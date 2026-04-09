@@ -1485,6 +1485,14 @@ Next:
 
 Do NOT print the Brief line when Step 4b warned and skipped (missing headers, no matching marker, or write error). In that case, also print the warning that Step 4b emitted under the success block but do not change the exit status — the plan IS approved regardless of whether the brief marker was updated.
 
+**Conditional Notion flat-text note:** when Step 4c successfully pushed to a Notion page (and **only** when the push target is Notion — not for the other five platforms), insert this informational line under the `Next:` block, after the existing bullets:
+
+```
+   Note: Notion comments render as flat text — the plan structure won't be styled.
+```
+
+This is a one-time heads-up so Notion users aren't surprised that headings, bullets, tables, and code formatting were stripped on the comment side. The plan content itself is intact in the Notion comment; only the markdown styling was flattened by Notion's `rich_text` model. The note does not render for Jira, GitHub, Linear, Azure DevOps, or Shortcut pushes — those platforms preserve the original markdown formatting (or the slice 6 platform-specific format conversion).
+
 Append to `.clancy/progress.txt`:
 
 ```

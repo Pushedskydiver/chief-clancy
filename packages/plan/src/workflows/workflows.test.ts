@@ -1533,3 +1533,67 @@ describe('approve-plan Step 4a EEXIST retry path (PR 9 Slice 8)', () => {
     );
   });
 });
+
+// PR 9 — Slice 9: Notion flat-text note + commands/approve-plan.md flag docs.
+// Notion comments render as flat text — surface in the local-mode success
+// block so Notion users aren't surprised. Command file gets the new flag
+// surface (--push, --ticket).
+describe('approve-plan Step 7 Notion flat-text note (PR 9 Slice 9)', () => {
+  const content = readFileSync(
+    new URL('approve-plan.md', import.meta.url),
+    'utf8',
+  );
+  const stepSevenStart = content.indexOf('## Step 7');
+  const stepSevenBody = content.slice(stepSevenStart);
+
+  it('Step 7 local-mode block surfaces a Notion flat-text note', () => {
+    expect(stepSevenBody).toMatch(
+      /Notion[^.]*flat[- ]text|flat[- ]text[^.]*Notion/i,
+    );
+  });
+
+  it('Notion note is conditional on the push target (only when Notion)', () => {
+    expect(stepSevenBody).toMatch(
+      /only[^.]*Notion|when[^.]*Notion|Notion[^.]*only/i,
+    );
+  });
+
+  it('Notion note explicitly says structure will not be styled', () => {
+    expect(stepSevenBody).toMatch(
+      /won.?t be styled|no[^.]*styling|plain text/i,
+    );
+  });
+});
+
+describe('approve-plan command file flag surface (PR 9 Slice 9)', () => {
+  const content = readFileSync(
+    new URL('../commands/approve-plan.md', import.meta.url),
+    'utf8',
+  );
+
+  it('command file documents --push flag', () => {
+    expect(content).toContain('`--push`');
+  });
+
+  it('command file documents --ticket flag', () => {
+    expect(content).toContain('`--ticket');
+  });
+
+  it('command file --push doc references board push target', () => {
+    const pushIdx = content.indexOf('`--push`');
+    expect(pushIdx).toBeGreaterThan(-1);
+    const pushParagraph = content.slice(pushIdx, pushIdx + 400);
+    expect(pushParagraph).toMatch(/push|board/i);
+  });
+
+  it('command file --ticket doc references KEY override of Source', () => {
+    const ticketIdx = content.indexOf('`--ticket');
+    expect(ticketIdx).toBeGreaterThan(-1);
+    const ticketParagraph = content.slice(ticketIdx, ticketIdx + 400);
+    expect(ticketParagraph).toMatch(/override|Source|KEY/i);
+  });
+
+  it('command file preserves --afk from PR 7b', () => {
+    expect(content).toContain('`--afk`');
+  });
+});
