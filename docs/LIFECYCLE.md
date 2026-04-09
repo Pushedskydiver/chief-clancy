@@ -6,6 +6,8 @@ The complete journey of a feature from idea to merged code. Human steps are mark
 
 ## Strategy Phase
 
+Owned by the **Strategist** virtual role (see [docs/roles/STRATEGIST.md](roles/STRATEGIST.md)). Slash commands ship in [`@chief-clancy/brief`](../packages/brief/) and can be installed standalone via `npx @chief-clancy/brief`.
+
 ```
 👤 Create a vague ticket on your board
    (e.g. "Add customer portal" on Jira/GitHub/Linear)
@@ -50,7 +52,7 @@ The complete journey of a feature from idea to merged code. Human steps are mark
 
 ## Planning Phase (optional)
 
-Skip if tickets are clear enough from the brief.
+Owned by the **Planner** virtual role (see [docs/roles/PLANNER.md](roles/PLANNER.md)). Slash commands ship in [`@chief-clancy/plan`](../packages/plan/) and can be installed standalone via `npx @chief-clancy/plan`. Skip if tickets are clear enough from the brief.
 
 ```
 👤 Run /clancy:plan (picks next ticket with clancy:plan label)

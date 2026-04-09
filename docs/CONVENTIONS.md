@@ -2,7 +2,9 @@
 
 Standards enforced across the `@chief-clancy` monorepo. All rules are configured in the root ESLint and Prettier configs.
 
-**Last reviewed:** 2026-03-23
+See also: [DEVELOPMENT.md "Task sizing"](DEVELOPMENT.md#task-sizing) for the process side of complexity limits, [TESTING.md](TESTING.md) for testing disciplines, [GLOSSARY.md](GLOSSARY.md) for term definitions including [tracer bullet TDD](GLOSSARY.md).
+
+**Last reviewed:** 2026-04-09
 
 ---
 
@@ -107,7 +109,7 @@ These patterns apply to all board adapters (`board/{provider}/`):
 - **Property-based tests** (fast-check) for parsers, serialisers, URL builders, string transformers.
 - **Integration tests** for cross-module workflows (MSW-backed, in `packages/terminal/test/integration/`).
 - **Coverage threshold: 80%** per package (statements, branches, functions, lines).
-- **Tracer bullet TDD for new logic.** Vertical slices, not horizontal. One test → implement to pass → next test → repeat → refactor. Never write all tests first then all implementation — tests written in bulk test imagined behaviour, not actual behaviour.
+- **Tracer bullet TDD for new logic.** Vertical slices, not horizontal. One test → implement to pass → next test → repeat → refactor. Never write all tests first then all implementation — tests written in bulk test imagined behaviour, not actual behaviour. See [GLOSSARY.md](GLOSSARY.md) for the definition and [TESTING.md "Writing good tests"](TESTING.md#writing-good-tests) for the supporting disciplines (test state not interactions, mock at boundaries, DAMP > DRY).
 - **Tests exempt from functional rules** — `immutable-data` off, `max-lines-per-function` off, `no-duplicate-string` off in test files.
 
 ---

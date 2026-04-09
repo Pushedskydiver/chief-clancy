@@ -168,8 +168,9 @@ No npm publishing. GitHub release tags only.
 
 ### Tag conventions
 
-- Package-scoped: `core@0.1.0`, `terminal@0.1.0`
-- `chief-clancy` wrapper published last
+- Package-scoped: `@chief-clancy/core@0.1.0`, `@chief-clancy/terminal@0.1.7`, `@chief-clancy/brief@0.3.0`, `@chief-clancy/plan@0.5.0`
+- `chief-clancy` wrapper (currently `chief-clancy@0.9.15`) published last
+- Current published versions tracked in [DEVELOPMENT.md "Versioning"](DEVELOPMENT.md#versioning)
 
 ## Tagging
 

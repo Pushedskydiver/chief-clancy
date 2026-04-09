@@ -6,7 +6,7 @@ Three Claude Code workflow tools — different philosophies, different sweet spo
 | --------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------- |
 | **Purpose**           | Autonomous ticket implementation                                          | Structured project phases                            | In-session efficiency                                      |
 | **Board integration** | Jira, GitHub Issues, Linear, Shortcut, Notion, Azure DevOps               | None                                                 | None                                                       |
-| **Roles**             | Strategist, Planner, Implementer, Reviewer, Setup                         | Single workflow (discuss → plan → build → verify)    | Plan-Apply-Unify loop                                      |
+| **Roles**             | Strategist¹, Planner¹, Implementer, Reviewer, Setup                       | Single workflow (discuss → plan → build → verify)    | Plan-Apply-Unify loop                                      |
 | **Runtime support**   | Claude Code                                                               | Claude Code, OpenCode, Gemini CLI, Codex             | Claude Code                                                |
 | **Automation level**  | Fully autonomous (AFK loop with verification gates)                       | Semi-autonomous (approve roadmap, then walk away)    | Human-driven                                               |
 | **Quality gates**     | Verification gate (lint/test/typecheck), self-healing retry, branch guard | Verification after each phase                        | BDD acceptance criteria                                    |
@@ -15,6 +15,8 @@ Three Claude Code workflow tools — different philosophies, different sweet spo
 | **Crash recovery**    | Lock file + resume detection + PR retry                                   | None built-in                                        | State files for session resumption                         |
 | **Pipeline labels**   | 3-stage lifecycle (brief → plan → build)                                  | None                                                 | None                                                       |
 | **Setup**             | `npx chief-clancy`                                                        | `npx get-shit-done-cc@latest`                        | `npx paul-framework`                                       |
+
+¹ **Strategist** and **Planner** are virtual roles. Their slash commands ship in the standalone packages [`@chief-clancy/brief`](../packages/brief/) and [`@chief-clancy/plan`](../packages/plan/) and can be installed independently of the full pipeline. See [docs/roles/STRATEGIST.md](roles/STRATEGIST.md) and [docs/roles/PLANNER.md](roles/PLANNER.md).
 
 ---
 

@@ -117,6 +117,8 @@ chief-clancy               — CLI wrapper (npx chief-clancy)
 └── .github/workflows/               — CI, E2E, CodeQL, publish
 ```
 
+The two virtual roles (`planner`, `strategist`) have no on-disk directory in `terminal/src/roles/` — they're config-key concepts in `installer/ui.ts` `COMMAND_GROUPS` and the `*-content.ts` install gates, with their slash commands living in the standalone packages. See [docs/roles/PLANNER.md](roles/PLANNER.md) and [docs/roles/STRATEGIST.md](roles/STRATEGIST.md) for the virtual-role pattern and the three install modes each command supports.
+
 ## How the Installer Works
 
 `packages/chief-clancy/bin/clancy.js` is the entry point for `npx chief-clancy`. It resolves the `@chief-clancy/terminal` package on disk and delegates to `runInstall`:
