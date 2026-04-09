@@ -1,5 +1,12 @@
 # chief-clancy
 
+## 0.9.15
+
+### Patch Changes
+
+- Updated dependencies [[`9f27a77`](https://github.com/Pushedskydiver/chief-clancy/commit/9f27a7773e353bfc28482b83249cff36e9771088)]:
+  - @chief-clancy/brief@0.3.0
+
 ## 0.9.14
 
 ### Patch Changes
