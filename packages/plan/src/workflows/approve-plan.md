@@ -5,7 +5,7 @@
 Approve a Clancy implementation plan. Behaviour depends on the install context:
 
 - **Standalone mode** (no `.clancy/.env`): write a local `.clancy/plans/{stem}.approved` marker file with the plan's SHA-256 and approval timestamp. The marker is the gate any plan-implementing tool checks before applying changes (a dedicated `/clancy:implement-from` slash command is deferred until `@chief-clancy/dev` is extracted; users in the meantime ask Claude Code to apply the plan via natural-language instruction or install the full pipeline)
-- **Standalone+board mode** (`.clancy/.env` present, no full pipeline): with a board ticket key, run the existing comment-to-description transport flow; with a plan-file stem, write the local marker (board push lands in PR 9)
+- **Standalone+board mode** (`.clancy/.env` present, no full pipeline): with a board ticket key, run the existing comment-to-description transport flow; with a plan-file stem, write the local marker and optionally push it to the source board ticket as a comment
 - **Terminal mode** (full pipeline installed): existing behaviour — promote an approved plan from a ticket comment to the ticket description and transition the ticket to the implementation queue
 
 ---
@@ -95,7 +95,7 @@ If declined: `Cancelled.` Stop.
 
 In these modes the argument may be either a plan-file stem or a board ticket key. **Try plan-file lookup first (does `.clancy/plans/{arg}.md` exist?)**, then fall back to ticket-key validation. The plan stem wins over ticket key on collision (e.g. if `PROJ-123.md` exists in `.clancy/plans/` AND `PROJ-123` is a valid ticket key, the plan stem wins). Document the collision rule explicitly so users are not surprised.
 
-**With argument that resolves to a plan file:** continue to Step 4 (Confirm), then Step 4a (Write local marker). The board push offer for plan-file-stem mode is deferred to a future PR — for now the local marker is the only side effect.
+**With argument that resolves to a plan file:** continue to Step 4 (Confirm), then Step 4a (Write local marker), Step 4b (Update brief marker), and Step 4c (Optional board push). Step 4c is best-effort and gated on board credentials being present in `.clancy/.env`; in standalone+board mode it offers to push the approved plan to the source ticket as a comment (interactive `[y/N]` prompt, default No — never surprise-write to a board), and in standalone-only mode it skips silently because there are no credentials. See Step 4c below for the full decision matrix and the `--push` / `--ticket KEY` flags.
 
 **With argument that does not resolve to a plan file:** validate as a ticket key per the board configured in `.clancy/.env` (case-insensitive):
 
@@ -114,7 +114,7 @@ Invalid ticket key: {input}. Expected format: {board-specific example}.
 
 Stop.
 
-If valid: proceed with that key. The board transport flow runs (Steps 3-7 below) — this is the existing behaviour, unchanged from before PR 7b.
+If valid: proceed with that key. The board transport flow runs (Steps 3-7 below).
 
 **No argument:**
 
@@ -385,7 +385,19 @@ Two `key=value` lines, each terminated with `\n`. No JSON, no extra whitespace, 
 
 ### Handle EEXIST (already-approved)
 
-If the exclusive create fails with `EEXIST`, the marker already exists — the plan was previously approved. Stop with:
+If the exclusive create fails with `EEXIST`, the marker already exists — the plan was previously approved. **The next step depends on whether `--push` was passed.** Check the flag first; the stop branch only applies when `--push` is absent.
+
+**If `--push` IS set (retry path):** the user is re-running approve-plan to retry a previously failed board push. Step 4a **does not stop**. Instead:
+
+1. The marker is **not re-written** — the existing `.clancy/plans/{stem}.approved` file stays in place, byte-for-byte unchanged. The original `sha256=` and `approved_at=` values from the first approval are preserved.
+2. **Skip Step 4b entirely.** The brief marker was already updated on the original approval; there is no work for 4b to do on a retry.
+3. **Fall through directly to Step 4c.** The retry path enters Step 4c with the same gate evaluation as a fresh approval (board credentials must be present, Source must be readable from the plan file or `--ticket` override must be supplied).
+
+This is the **only** mechanism to re-attempt a failed push. There is no `--push-only` flag and no marker-deletion workflow. The contract is: a Step 4c push failure leaves the marker in place (see Step 4c push-failure section), and a `--push` re-run honours that marker by skipping Step 4a's write and Step 4b's brief update, going straight to 4c. The on-disk approval timestamp inside `.clancy/plans/{stem}.approved` is preserved across retries (Step 4a does not re-write it).
+
+Local-mode audit logging in Step 7, however, runs **per invocation** — every retry appends a fresh `LOCAL_APPROVE_PLAN` row to `.clancy/progress.txt` followed by that attempt's Step 4c outcome row (e.g. `BOARD_PUSH_FAILED` then `LOCAL_APPROVE_PLAN_PUSH` after a successful retry). The audit trail therefore reflects every retry attempt, while the `.approved` marker on disk reflects only the original approval. A downstream audit grep that wants "the approval moment" reads the marker file's `approved_at`; a grep that wants "all approve-plan invocations for this stem" reads `progress.txt`. The two surfaces answer different questions and that asymmetry is intentional.
+
+**If `--push` is NOT set:** stop with:
 
 ```
 Plan already approved: {stem}
@@ -408,7 +420,7 @@ A dedicated `/clancy:implement-from` slash command is **deferred** until `@chief
 
 ### After writing the marker
 
-After the marker is written successfully, update the source brief file's marker comment (Step 4b below), then jump to Step 7 (Confirm and log). Steps 5, 5b, and 6 (board transport) are skipped entirely in plan-file stem mode.
+After the marker is written successfully, update the source brief file's marker comment (Step 4b below), then continue to Step 4c (Optional board push). Step 4c is best-effort and gated on board credentials being present — when the gate fails it skips silently and the flow continues to Step 7. Steps 5, 5b, and 6 (board ticket-key transport) are skipped entirely in plan-file stem mode regardless of whether Step 4c runs.
 
 ---
 
@@ -438,8 +450,8 @@ Open `.clancy/briefs/{brief-filename}` and find the marker comment matching this
 
 This matches all of:
 
-- `<!-- planned:1,2,3 -->` (no approved prefix yet — current state from PR 6b)
-- `<!-- approved:1 planned:1,2,3 -->` (PR 7b adds the approved prefix)
+- `<!-- planned:1,2,3 -->` (no approved prefix — earlier marker shape)
+- `<!-- approved:1 planned:1,2,3 -->` (with the approved prefix)
 - `<!-- approved: planned:1,2,3 -->` (empty approved list — should not happen but handle gracefully)
 - `<!--planned:1,2,3-->` (no surrounding spaces — hand-edited)
 
@@ -468,7 +480,315 @@ The plan is still approved. The .clancy/plans/{stem}.approved marker is in place
 You can manually update .clancy/briefs/{brief}.md if needed.
 ```
 
-After Step 4b completes (successfully or with a warning), jump to Step 7 (Confirm and log). Skip Steps 5, 5b, and 6 entirely.
+After Step 4b completes (successfully or with a warning), continue to Step 4c (Optional board push). Step 4c is best-effort and gated on board credentials being present — when the gate fails it skips silently and the flow continues to Step 7. Steps 5, 5b, and 6 (the board ticket-key transport flow) remain unreachable in plan-file stem mode regardless of whether Step 4c runs.
+
+---
+
+## Step 4c — Optional board push (best-effort)
+
+In standalone+board mode (board credentials present alongside a local plan-file stem approval), offer to push the approved plan to the source board ticket as a comment. This closes the "I have credentials and I want both modes" UX cliff: the user gets the local marker AND the board comment in one approval.
+
+### Run conditions (both must be true)
+
+Step 4c runs only when **both** of these gates pass:
+
+1. **A local approval marker exists for this stem** — either Step 4a just wrote it (fresh approval), or Step 4a hit `EEXIST` with `--push` set and fell through to Step 4c with the marker already in place (retry path — see Step 4a's `--push` retry branch above). If Step 4a stopped on `EEXIST` without `--push`, or if the resolved argument was a board ticket key (which routes through Steps 5/5b/6 instead), Step 4c does not run.
+2. **Board credentials are available.** Detect by reading `.clancy/.env` and confirming the configured board's credential variables are present (the same detection used by Step 1's three-state preflight). If `.clancy/.env` is absent or no board is configured, Step 4c is skipped.
+
+If either gate fails, **skip Step 4c silently** and continue to Step 7 (Confirm and log). "Silently" means no warning, no log token, no stdout note — the absence of board credentials is the standalone-mode default, not an error condition. Subsequent slices add explicit log tokens for the conditions that DO warrant user-visible output (no pushable Source field, push failure, `--afk` without `--push`, etc.).
+
+### Best-effort semantics
+
+Step 4c is **best-effort** and never rolls back the local marker. The `.clancy/plans/{stem}.approved` marker written in Step 4a is the source of truth for "this plan was approved" — a board push failure does not unwind it. Local state is authoritative; the board comment is a convenience surface. Subsequent slices wire the failure-logging and retry-command details.
+
+### Read the Source field from the plan file
+
+Once both run-condition gates pass, read the `**Source:**` header line directly from the local plan file at `.clancy/plans/{stem}.md` (the same file Step 4a hashed and Step 4b read for the `**Brief:**` header). The plan file's header block — written by [`plan.md`](./plan.md) Step 5a — contains the brief's Source field value verbatim. Step 4c uses this header as the **single source of truth** for which board ticket (if any) the plan should be pushed to.
+
+**Do NOT open the brief file** to look up Source in Step 4c. Step 4b already chases the brief filename out of the plan header to update its `planned:`/`approved:` row marker, but that second filesystem hop is unnecessary for Step 4c — the Source value Step 4b would find inside the brief is the same value already copied into the plan header. Reading from the plan file alone keeps Step 4c self-contained.
+
+The line format is `**Source:** {value}` on a line by itself. Match it with a tolerant regex anchored to start-of-line, allowing arbitrary trailing whitespace:
+
+```
+^\*\*Source:\*\*\s+(.+?)\s*$
+```
+
+Capture group 1 is the raw Source value — the next sub-step parses it into one of the three brief Source formats (bracketed key, inline-quoted, file path).
+
+### Handle a missing **Source:** header gracefully
+
+If the plan file has no `**Source:**` header line (e.g. a hand-edited plan, or a plan generated before the Source header was added to the local plan template), Step 4c skips silently and continues to Step 7 — same semantics as the run-condition gates. No warning, no log token, no stdout note. The marker is still authoritative; the absence of a Source header just means there's no ticket to push to.
+
+### Parse the Source value (three brief formats)
+
+Brief writes the Source field in **one of three formats** (per [`packages/brief/src/workflows/brief.md` lines ~806-810](../../../brief/src/workflows/brief.md)). Step 4c classifies the captured Source value into one of these three buckets:
+
+1. **Bracketed key — pushable.** The Source value matches `^\[(#?\d+|[A-Za-z][A-Za-z0-9]*-\d+|notion-[a-f0-9]{8}|[a-f0-9]{32}|[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\]\s+.+$`. Five accepted shapes inside the brackets: bare or `#`-prefixed integer (GitHub, Azure DevOps, Shortcut), `ABC-123` style alphanumeric prefix + dash + digits (Jira, Linear, Shortcut, with lowercase allowed), `notion-xxxxxxxx` short key, 32-character bare-hex Notion ID, or 36-character UUID with dashes. Examples: `[#50] Redesign settings page`, `[PROJ-200] Add customer portal`, `[ENG-42] Add real-time notifications`, `[notion-ab12cd34] Quarterly planning hub`, `[9f1c2d3e4a5b6789c0d1e2f3a4b5c6d7] Quarterly planning hub`, `[9f1c2d3e-4a5b-6789-c0d1-e2f3a4b5c6d7] Quarterly planning hub`. Extract the key from inside the brackets. **This is the only format that can be pushed to a board.** Continue to the key validation sub-step below — the validation step re-checks the extracted key against the configured board's regex (e.g. a 32-hex Notion ID extracted here will be re-validated against the Notion regex, not the Jira one).
+2. **Inline-quoted text — no ticket.** The Source value matches `^"[^"]+"$` (e.g. `"Add dark mode support"`). The user gave brief a free-text idea instead of a board ticket reference. There is no ticket to push to.
+3. **File path — no ticket.** The Source value matches anything else that is not a bracketed key (e.g. `docs/rfcs/auth-rework.md`). The user pointed brief at a local document. There is no ticket to push to.
+
+The bracketed-key format is the **only** pushable Source format. Both inline-quoted and file-path formats route to the skip-no-ticket branch below.
+
+### Skip-no-ticket branch (inline-quoted or file-path Source)
+
+When the parsed Source falls into the inline-quoted or file-path bucket, Step 4c **records the skip outcome** (without writing to `.clancy/progress.txt` yet) and continues to Step 7. The row Step 7 will write on its behalf:
+
+```
+YYYY-MM-DD HH:MM | {stem} | BOARD_PUSH_SKIPPED_NO_TICKET | {source_format}
+```
+
+Where `{source_format}` is the literal string `inline-quoted` or `file-path` (lowercase, hyphenated). All Step 4c outcome rows are written by Step 7 immediately after `LOCAL_APPROVE_PLAN`, so the order of rows in `.clancy/progress.txt` is always `LOCAL_APPROVE_PLAN` first, then the Step 4c outcome — two rows total per approval, one for the marker write and one for the Step 4c outcome. See "Step 4c outcome row" inside Step 7's local-mode log block for the full enumeration.
+
+In the local-mode success block (rendered by Step 7), surface the skip as a non-warning info line under the marker write success:
+
+```
+   Note: source is {source_format} — no pushable ticket. Local marker only.
+```
+
+This is informational, not an error. The plan IS approved; the absence of a board push is the expected outcome for non-bracketed Source values. After logging and surfacing the note, continue to Step 7 normally.
+
+### Validate the extracted key against the configured board
+
+When the parsed Source is the bracketed-key form (or when `--ticket {KEY}` was passed as an override — see the decision matrix below), the extracted `{KEY}` value must be validated against the **configured board's** key pattern **before any push attempt is made**. Validation happens here, not after the curl request — a malformed key should never reach the network.
+
+Detect the configured board by reading `.clancy/.env` (the same detection used by [Step 1's three-state preflight](#step-1--preflight-checks) and by Step 4c's credential gate above). This is a **single-board environment** — `.clancy/.env` configures exactly one board, and there is no cross-board disambiguation. Whichever board is configured, that board's regex is the only one Step 4c validates against.
+
+Match the extracted `{KEY}` against the per-platform regex for the configured board:
+
+| Platform     | Regex                        | Example keys                 |
+| ------------ | ---------------------------- | ---------------------------- |
+| Jira         | `^[A-Za-z][A-Za-z0-9]+-\d+$` | `PROJ-200`, `proj-200`       |
+| GitHub       | `^#?\d+$`                    | `#50`, `50`, `#1234`, `1234` |
+| Linear       | `^[A-Za-z]{1,10}-\d+$`       | `ENG-42`, `eng-42`, `CORE-7` |
+| Azure DevOps | `^\d+$`                      | `12345`                      |
+| Shortcut     | `^(?:[A-Za-z]{1,5}-)?\d+$`   | `8675`, `SC-8675`, `sc-123`  |
+
+**Notion** (kept out of the table because the regex contains a pipe that GFM table cells force-escape, breaking the regex when read literally): `^(?:notion-[a-f0-9]{8}|[a-f0-9]{32}|[a-f0-9-]{36})$`. This is a non-capturing alternation — the pipe is a real regex alternation, not a literal pipe — and it matches three accepted Notion key forms: a `notion-xxxxxxxx` short key (e.g. `notion-ab12cd34`), a 32-character bare-hex Notion ID (e.g. `abc123def456...`), or a 36-character UUID with dashes (e.g. `abc12345-def6-...`). Implementations must use this alternation form, **not** an escaped-pipe form like `^notion-[a-f0-9]{8}$\|^[a-f0-9]{32}$\|^[a-f0-9-]{36}$`, because in regex `\|` matches a literal pipe character, not alternation.
+
+The six regexes are hard-coded inline above — there is no shared lookup table, and Step 4c does not consult any other workflow file for them. They mirror the broader Step 2 ticket-key formats (lowercase allowed, optional `#` on GitHub, optional `SC-` prefix on Shortcut, `notion-xxxxxxxx` short keys) so a key that Step 2 accepts is the same key Step 4c accepts. If a future board is added, this table is updated in the same PR.
+
+### Hard-error on key/board mismatch
+
+If the extracted `{KEY}` does not match the configured `{board}`'s regex, Step 4c **hard-errors before attempting any push**. There is no second-chance: Step 4c never attempts a different platform's regex, never retries against an alternate board, and never silently skips the push. The mismatch is a user-actionable error — either the Source field in the brief was malformed, or the `--ticket` override targeted the wrong board.
+
+Display the error:
+
+```
+✗ Step 4c: extracted key `{KEY}` does not match the configured `{board}` key format.
+  Expected pattern: {regex from the table above}
+  Source value:     {raw Source line from the plan file}
+
+The local marker is unchanged — your plan is still approved.
+To retry with a corrected key:
+  /clancy:approve-plan {stem} --push --ticket {CORRECT_KEY}
+```
+
+The local `.clancy/plans/{stem}.approved` marker **stays in place and is preserved**. Mismatch is a Step 4c failure, not a Step 4a failure — the marker write succeeded and the plan IS approved. The marker is authoritative; Step 4c never rolls back. After printing the error, **record the failure outcome** (without writing to `.clancy/progress.txt` yet) and continue to Step 7. The row Step 7 will write on its behalf:
+
+```
+YYYY-MM-DD HH:MM | {stem} | BOARD_PUSH_FAILED | key-mismatch:{KEY}
+```
+
+The local-mode success block still renders for the marker write in Step 7, with the mismatch error printed above it.
+
+### Flags governing Step 4c
+
+Step 4c introduces two new flags on `/clancy:approve-plan` (in addition to the existing `--afk`):
+
+- **`--push`** — skip the interactive prompt and push immediately. Combined with `--afk`, this is the unattended-automation path.
+- **`--ticket {KEY}`** — override the Source auto-detect from the plan file. The override `{KEY}` wins over auto-detect and is what gets validated against the configured board's regex (see "Validate the extracted key against the configured board" above). Use this when the brief Source field is missing, ambiguous, or points at the wrong ticket.
+
+The default interactive prompt is `[y/N]` with **default No** — Step 4c never surprise-writes to a board. A user who hits Enter without typing accepts the default (no push) and the plan is approved as a local-only operation.
+
+The prompt text:
+
+```
+Push approved plan to {KEY} as a comment? [y/N]
+```
+
+`{KEY}` is the resolved ticket key — either auto-detected from the plan file's `**Source:**` line or supplied by `--ticket`.
+
+### Decision matrix
+
+Step 4c's behaviour depends on three orthogonal axes: `--push`, `--afk`, and `--ticket`. The six meaningful cells:
+
+| Cell                              | `--push` | `--afk` | `--ticket KEY` | Behaviour                                                                                       |
+| --------------------------------- | -------- | ------- | -------------- | ----------------------------------------------------------------------------------------------- |
+| **Interactive, no `--push`**      | no       | no      | no             | Auto-detect Source. Prompt `Push approved plan to {KEY} as a comment? [y/N]`. Default No.       |
+| **Interactive + `--ticket` only** | no       | no      | yes            | Validate `KEY`. Prompt with the override `KEY`. Override wins over auto-detect. Default No.     |
+| **Interactive + `--push`**        | yes      | no      | either         | Skip prompt, push immediately. `--ticket` (if present) overrides auto-detect; otherwise auto.   |
+| **`--afk` without `--push`**      | no       | yes     | either         | Skip the push entirely. Log `LOCAL_ONLY` (see token below). `--ticket` is ignored in this cell. |
+| **`--afk --push`**                | yes      | yes     | no             | Push without prompting. Auto-detect Source.                                                     |
+| **`--afk --push --ticket KEY`**   | yes      | yes     | yes            | Push without prompting using the override `KEY`.                                                |
+
+The `--afk` without `--push` cell **records a `LOCAL_ONLY` outcome** (without writing to `.clancy/progress.txt` yet) so the user can see in their audit trail that an unattended run deliberately stayed local-only. The row Step 7 will write on its behalf:
+
+```
+YYYY-MM-DD HH:MM | {stem} | LOCAL_ONLY | afk-without-push
+```
+
+`--ticket` is **ignored** in the `--afk` without `--push` cell — there is no push attempted, so any override key has nothing to override. This is documented behaviour, not a silent quirk: the `--afk` mode's contract is "no surprises", and pushing because `--ticket` was set would surprise the user.
+
+### Two prompts in non-`--afk` flow is intentional
+
+In non-`--afk` mode, the user sees **two prompts** during a single approve invocation: [Step 4 — Confirm](#step-4--confirm) prompts to confirm the approval (a local commitment), and Step 4c prompts to confirm the board push (a visible-to-others publication). These are semantically distinct decisions and are intentionally kept as two separate prompts. Merging them into a single "approve and push?" prompt would conflate two different commitments and make it impossible to approve locally without also publishing.
+
+<!-- DUPLICATED REGION: the bytes between the curl-blocks:approve-plan-push:start/end anchors below are byte-identical to the canonical source in plan.md Step 5b. A drift-prevention test (workflows.test.ts) byte-compares the two regions and fails on mismatch. Edit one — update the other in the same commit. -->
+<!-- curl-blocks:approve-plan-push:start -->
+
+### Jira — POST comment
+
+```bash
+curl -s \
+  -u "$JIRA_USER:$JIRA_API_TOKEN" \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  "$JIRA_BASE_URL/rest/api/3/issue/$TICKET_KEY/comment" \
+  -d '<ADF JSON body>'
+```
+
+Construct ADF (Atlassian Document Format) JSON for the comment body. Key mappings:
+
+- `## Heading` → `heading` node (level 2)
+- `### Heading` → `heading` node (level 3)
+- `- bullet` → `bulletList > listItem > paragraph`
+- `- [ ] checkbox` → `taskList > taskItem` (state: "TODO")
+- `| table |` → `table > tableRow > tableCell`
+- `**bold**` → marks: `[{ "type": "strong" }]`
+- `` `code` `` → marks: `[{ "type": "code" }]`
+
+If ADF construction is too complex for a particular element, fall back to wrapping that section in a code block (`codeBlock` node).
+
+### GitHub — POST comment
+
+```bash
+curl -s \
+  -H "Authorization: Bearer $GITHUB_TOKEN" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  -X POST \
+  "https://api.github.com/repos/$GITHUB_REPO/issues/$ISSUE_NUMBER/comments" \
+  -d '{"body": "<markdown plan>"}'
+```
+
+GitHub accepts Markdown directly — post the plan as-is.
+
+### Linear — commentCreate mutation
+
+```bash
+curl -s \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -H "Authorization: $LINEAR_API_KEY" \
+  "https://api.linear.app/graphql" \
+  -d '{"query": "mutation { commentCreate(input: { issueId: \"$ISSUE_ID\", body: \"<markdown plan>\" }) { success } }"}'
+```
+
+Linear accepts Markdown directly.
+
+### Azure DevOps — POST comment
+
+```bash
+curl -s \
+  -u ":$AZDO_PAT" \
+  -X POST \
+  -H "Content-Type: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID/comments?api-version=7.1-preview.4" \
+  -d '{"text": "<html plan>"}'
+```
+
+Azure DevOps work item comments use **HTML**, not markdown. Convert the plan markdown to HTML:
+
+- `## Heading` → `<h2>Heading</h2>`
+- `### Heading` → `<h3>Heading</h3>`
+- `- bullet` → `<ul><li>bullet</li></ul>`
+- `- [ ] checkbox` → `<ul><li>☐ checkbox</li></ul>`
+- `| table |` → `<table><tr><td>...</td></tr></table>`
+- `**bold**` → `<strong>bold</strong>`
+- `` `code` `` → `<code>code</code>`
+- Newlines → `<br>` or `<p>` tags
+
+If HTML construction is too complex for a particular element, wrap that section in `<pre>` tags as fallback.
+
+### Shortcut — POST comment
+
+```bash
+curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -X POST \
+  "https://api.app.shortcut.com/api/v3/stories/$STORY_ID/comments" \
+  -d '{"text": "<markdown plan>"}'
+```
+
+Shortcut accepts Markdown directly in comment text.
+
+### Notion — POST comment
+
+```bash
+curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  -X POST \
+  "https://api.notion.com/v1/comments" \
+  -d '{"parent": {"page_id": "$PAGE_ID"}, "rich_text": [{"type": "text", "text": {"content": "<plan text>"}}]}'
+```
+
+**Notion limitation:** Comments use `rich_text` blocks, not markdown. For the plan content, use a single `text` block with the full plan as plain text. Notion will render it without markdown formatting. For better readability, consider splitting the plan into multiple `rich_text` blocks (one per section) with `annotations` for bold headings.
+
+**Notion limitation:** The `rich_text` array has a **2000-character limit per text block**. If the plan exceeds 2000 characters, split it across multiple `rich_text` blocks within the same comment (each block up to 2000 chars). The total comment can contain many blocks.
+
+<!-- curl-blocks:approve-plan-push:end -->
+
+### Push success — record the second audit row
+
+When the curl returns a 2xx response, the comment is live on the source ticket. **Record a push-success outcome** with the resolved `{KEY}` (without writing to `.clancy/progress.txt` yet). Step 7 writes the second row immediately after `LOCAL_APPROVE_PLAN`:
+
+```
+YYYY-MM-DD HH:MM | {stem} | LOCAL_APPROVE_PLAN_PUSH | {KEY}
+```
+
+Two rows total per successful approve+push: one for the marker write (`LOCAL_APPROVE_PLAN`) and one for the board push (`LOCAL_APPROVE_PLAN_PUSH`). The two-row layout is unambiguous and survives partial-failure replay better than extending the single row with a `pushed:{KEY}` field — a downstream audit grep that wants "approvals that were also pushed to a board" can simply look for the second token.
+
+The success row uses the same `{stem} | TOKEN | {detail}` column convention as every other progress.txt row in the file ([`plan.md` Step 6](./plan.md) for the canonical convention).
+
+The existing local-mode success block in Step 7 already renders for the marker write — Step 4c's success path adds nothing extra to it on non-Notion platforms; the Notion-only flat-text note from Step 7 below renders only when the push target was Notion.
+
+### Handling push failure (HTTP non-2xx, network, timeout, dns, auth)
+
+The curl request can fail in several ways: an HTTP non-2xx response (4xx auth/permission, 5xx server), a network-layer failure (DNS, TCP timeout, connection refused), or a credential rejection. **All push failures are best-effort** — the local `.clancy/plans/{stem}.approved` marker stays in place and is preserved. The marker is authoritative; Step 4c never rolls back. A push failure is a Step 4c failure, not a Step 4a failure: the plan IS approved, the board comment just didn't land.
+
+Classify the failure into one of two buckets when logging:
+
+- **HTTP status code** — when the curl returned a non-2xx response code (e.g. `403`, `404`, `429`, `500`, `502`). Use the literal numeric status code.
+- **Error class** — when the curl failed before getting an HTTP response back (transport-layer failure). Use one of the lowercase tokens: `network` (generic transport failure or connection refused), `timeout` (the request exceeded the timeout), `dns` (hostname resolution failed), or `auth` (the platform returned an explicit credential-rejection signal that isn't a clean HTTP status).
+
+Display the error to the user with both the failure detail and the retry command:
+
+```
+✗ Step 4c: failed to push approved plan to {KEY} on {board}.
+  Reason: {http_status_or_error_class}
+
+The local marker is unchanged — your plan is still approved.
+To retry the push:
+  /clancy:approve-plan {stem} --push --ticket {KEY}
+```
+
+The retry command pattern is **exact** — `/clancy:approve-plan {stem} --push --ticket {KEY}` — so the user can copy-paste it without modification. The `--push` flag triggers the retry path (see Step 4a's `EEXIST + --push` fall-through above), and `--ticket {KEY}` re-supplies the resolved key in case the user is in a fresh shell where Source auto-detect would have to re-read the plan file.
+
+**Record the failure outcome** (without writing to `.clancy/progress.txt` yet) with the classified reason. The row Step 7 will write on its behalf:
+
+```
+YYYY-MM-DD HH:MM | {stem} | BOARD_PUSH_FAILED | {http_status_or_error_class}
+```
+
+This is the same `BOARD_PUSH_FAILED` token used by the key-mismatch path above, with a different reason field. The two cases share the token because both represent "Step 4c tried to push and couldn't" — downstream tooling (Step 8 inventory, audit greps) treats them as a single failure category.
+
+**Reason-field disambiguation contract.** The `BOARD_PUSH_FAILED` reason field is one of three disjoint shapes: a literal HTTP status code (`403`, `404`, `429`, `500`, ...), a lowercase error class from the closed set `network`/`timeout`/`dns`/`auth`, or the prefixed form `key-mismatch:{KEY}`. The `key-mismatch:` prefix is reserved — any future BOARD_PUSH_FAILED reason that introduces structured detail must use a similarly prefixed form (e.g. `rate-limit:60s`) so that downstream parsers can disambiguate by looking at the first token before any colon. HTTP status codes start with a digit and the error-class vocabulary is closed, so neither collides with a `letter:` prefix.
+
+After printing the error and recording the outcome, continue to Step 7 (Confirm and log) — the local-mode success block still renders for the marker write, with the push-failure error printed above it. Push failure is **never** an exit-non-zero condition: the marker write succeeded, the audit trail captures the push failure (Step 7 writes the row), and the user has an actionable retry command.
+
+After Step 4c completes (push attempted, push skipped, or gate failed), continue to Step 7 (Confirm and log).
 
 ---
 
@@ -1184,6 +1504,14 @@ Next:
 
 Do NOT print the Brief line when Step 4b warned and skipped (missing headers, no matching marker, or write error). In that case, also print the warning that Step 4b emitted under the success block but do not change the exit status — the plan IS approved regardless of whether the brief marker was updated.
 
+**Conditional Notion flat-text note:** when Step 4c successfully pushed to a Notion page (and **only** when the push target is Notion — not for the other five platforms), insert this informational line under the `Next:` block, after the existing bullets:
+
+```
+   Note: Notion comments render as flat text — the plan structure won't be styled.
+```
+
+This is a one-time heads-up so Notion users aren't surprised that headings, bullets, tables, and code formatting were stripped on the comment side. The plan content itself is intact in the Notion comment; only the markdown styling was flattened by Notion's `rich_text` model. The note does not render for Jira, GitHub, Linear, Azure DevOps, or Shortcut pushes — those platforms preserve the original markdown formatting (or the platform-specific format conversion documented in Step 4c's curl blocks).
+
 Append to `.clancy/progress.txt`:
 
 ```
@@ -1191,6 +1519,23 @@ YYYY-MM-DD HH:MM | {stem} | LOCAL_APPROVE_PLAN | sha256={first 12 hex}
 ```
 
 The `LOCAL_APPROVE_PLAN` token mirrors the `LOCAL_PLAN` / `LOCAL_REVISED` convention used by `/clancy:plan --from` (see [`plan.md` Step 6](./plan.md)). The token is for human audit only — any future plan-implementing tool reads the `.clancy/plans/{stem}.approved` marker directly rather than scanning `progress.txt` for approval state.
+
+#### Step 4c outcome row (write immediately after LOCAL_APPROVE_PLAN)
+
+Step 4c does **not** write to `.clancy/progress.txt` itself — it records an outcome and Step 7 writes the row immediately after the `LOCAL_APPROVE_PLAN` row above. This guarantees that `LOCAL_APPROVE_PLAN` always lands first in the file (the marker write is the primary audit event) and the Step 4c outcome (push success, skip, or failure) lands second on the very next line.
+
+The Step 4c outcome is one of these five possibilities — write the matching row if Step 4c ran AND produced an outcome, otherwise write nothing extra:
+
+| Step 4c outcome                                                                            | Row to write after `LOCAL_APPROVE_PLAN`                                           |
+| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| Push success (curl returned 2xx)                                                           | `YYYY-MM-DD HH:MM \| {stem} \| LOCAL_APPROVE_PLAN_PUSH \| {KEY}`                  |
+| Skip — Source was inline-quoted or file-path (no pushable ticket)                          | `YYYY-MM-DD HH:MM \| {stem} \| BOARD_PUSH_SKIPPED_NO_TICKET \| {source_format}`   |
+| Skip — `--afk` was set without `--push` (deliberately stayed local-only)                   | `YYYY-MM-DD HH:MM \| {stem} \| LOCAL_ONLY \| afk-without-push`                    |
+| Failure — `{KEY}` did not match the configured board's regex (Step 4c hard-error)          | `YYYY-MM-DD HH:MM \| {stem} \| BOARD_PUSH_FAILED \| key-mismatch:{KEY}`           |
+| Failure — curl returned non-2xx, or transport-layer failure                                | `YYYY-MM-DD HH:MM \| {stem} \| BOARD_PUSH_FAILED \| {http_status_or_error_class}` |
+| Step 4c gate failed (no board credentials in `.clancy/.env`) OR Step 4c did not run at all | _(no second row — only the `LOCAL_APPROVE_PLAN` row above)_                       |
+
+The two-row layout is the contract every downstream audit grep and Step 8 inventory reader assumes: `LOCAL_APPROVE_PLAN` first, optional Step 4c outcome second, never out of order. If Step 4c was not invoked (e.g. board ticket key flow routes through Steps 5/5b/6 instead) or its credential gate failed silently, the file just has the single `LOCAL_APPROVE_PLAN` row.
 
 ---
 
