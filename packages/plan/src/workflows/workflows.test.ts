@@ -1125,3 +1125,110 @@ describe('approve-plan Step 4c run conditions (PR 9 Slice 1)', () => {
     expect(fourBBody).not.toMatch(/Skip Steps 5, 5b, and 6 entirely/);
   });
 });
+
+// PR 9 — Slice 2: Source field is read directly from the local plan file's
+// **Source:** header (NOT chased through the brief file the way Step 4b does).
+// The plan header is the single source of truth for Step 4c.
+describe('approve-plan Step 4c source-field read (PR 9 Slice 2)', () => {
+  const content = readFileSync(
+    new URL('approve-plan.md', import.meta.url),
+    'utf8',
+  );
+  const fourCStart = content.indexOf('## Step 4c — Optional board push');
+  const fourCEnd = content.indexOf('## Step 5 — Update ticket description');
+  const fourCBody = content.slice(fourCStart, fourCEnd);
+
+  it('Step 4c reads the **Source:** header from the plan file', () => {
+    expect(fourCBody).toContain('**Source:**');
+    expect(fourCBody).toContain('.clancy/plans/{stem}.md');
+  });
+
+  it('Step 4c does NOT open the brief file to find Source', () => {
+    // The brief-file path pattern (.clancy/briefs/) appears in Step 4b but
+    // must not appear in Step 4c — slice 2 reads Source from the plan file
+    // directly to avoid a second filesystem hop.
+    expect(fourCBody).not.toContain('.clancy/briefs/');
+  });
+
+  it('Step 4c documents the read order (after marker, before Source parse)', () => {
+    // The read happens inside Step 4c body, after the run-condition gates
+    // and before the (slice 3) format detection. Test the prose calls out
+    // "read" and "**Source:**" together so the order is unambiguous.
+    expect(fourCBody).toMatch(/read[^.]*\*\*Source:\*\*/i);
+  });
+
+  it('Step 4c handles a missing **Source:** header gracefully', () => {
+    // If the plan file has no **Source:** line, Step 4c must skip silently
+    // (same semantics as the run-condition gates). No crash, no warning.
+    expect(fourCBody).toMatch(
+      /missing[^.]*\*\*Source:\*\*|no \*\*Source:\*\*/i,
+    );
+    expect(fourCBody).toMatch(/skip/i);
+  });
+});
+
+// PR 9 — Slice 3: three-format Source parser. Brief writes Source in one of
+// three formats (per brief.md ~806-810): [KEY] Title (bracketed, pushable),
+// "text" (inline quoted, no ticket), or path/to/file.md (file path, no
+// ticket). Bracketed → continue to slice 4 validation. Other two →
+// BOARD_PUSH_SKIPPED_NO_TICKET log token + stdout note + continue to Step 7.
+describe('approve-plan Step 4c source-format parser (PR 9 Slice 3)', () => {
+  const content = readFileSync(
+    new URL('approve-plan.md', import.meta.url),
+    'utf8',
+  );
+  const fourCStart = content.indexOf('## Step 4c — Optional board push');
+  const fourCEnd = content.indexOf('## Step 5 — Update ticket description');
+  const fourCBody = content.slice(fourCStart, fourCEnd);
+
+  it('Step 4c documents the three brief Source formats', () => {
+    // Bracketed key — the only pushable format.
+    expect(fourCBody).toMatch(/\[#?\d+\]|\[[A-Z]+-\d+\]|\[\{KEY\}\]/);
+    // Inline-quoted text format.
+    expect(fourCBody).toMatch(/inline[- ]quoted|"[^"]+"/i);
+    // File-path format.
+    expect(fourCBody).toMatch(/file[- ]path|\.md/);
+  });
+
+  it('Step 4c only pushes for the bracketed-key format', () => {
+    // Prose must explicitly say bracketed is the only pushable format.
+    expect(fourCBody).toMatch(
+      /bracket[^.]*only[^.]*push|only[^.]*bracket[^.]*push/i,
+    );
+  });
+
+  it('Step 4c logs BOARD_PUSH_SKIPPED_NO_TICKET for non-bracketed Source', () => {
+    expect(fourCBody).toContain('BOARD_PUSH_SKIPPED_NO_TICKET');
+  });
+
+  it('Step 4c skip-token logs to .clancy/progress.txt', () => {
+    // The skip token is a progress.txt row, not just stdout — same audit
+    // surface as LOCAL_APPROVE_PLAN.
+    expect(fourCBody).toMatch(
+      /BOARD_PUSH_SKIPPED_NO_TICKET[\s\S]*progress\.txt|progress\.txt[\s\S]*BOARD_PUSH_SKIPPED_NO_TICKET/,
+    );
+  });
+
+  it('Step 4c skip-token row includes the stem and source format', () => {
+    // Token format from the locked spec:
+    //   BOARD_PUSH_SKIPPED_NO_TICKET | {stem} | {source_format}
+    expect(fourCBody).toMatch(
+      /BOARD_PUSH_SKIPPED_NO_TICKET\s*\\?\|\s*\{stem\}\s*\\?\|\s*\{source_format\}/,
+    );
+  });
+
+  it('Step 4c surfaces the skip in the local-mode success block', () => {
+    // Stdout note so the user knows why no push happened. Not a warning —
+    // an info line under the marker write success.
+    expect(fourCBody).toMatch(/stdout|success block|local[- ]mode/i);
+    expect(fourCBody).toMatch(/no pushable[^.]*ticket|no ticket[^.]*push/i);
+  });
+
+  it('Step 4c continues to Step 7 after a skip-no-ticket', () => {
+    // After logging the skip token, flow continues normally — not an error.
+    const skipRegion = fourCBody.slice(
+      fourCBody.indexOf('BOARD_PUSH_SKIPPED_NO_TICKET'),
+    );
+    expect(skipRegion).toMatch(/Step 7|continue|proceed/i);
+  });
+});

@@ -489,6 +489,52 @@ If either gate fails, **skip Step 4c silently** and continue to Step 7 (Confirm 
 
 Step 4c is **best-effort** and never rolls back the local marker. The `.clancy/plans/{stem}.approved` marker written in Step 4a is the source of truth for "this plan was approved" — a board push failure does not unwind it. Local state is authoritative; the board comment is a convenience surface. Subsequent slices wire the failure-logging and retry-command details.
 
+### Read the Source field from the plan file
+
+Once both run-condition gates pass, **read the `**Source:**`header line directly from the local plan file at`.clancy/plans/{stem}.md`** (the same file Step 4a hashed and Step 4b read for the `**Brief:**` header). The plan file's header block — written by [`plan.md`](./plan.md) Step 5a — contains the brief's Source field value verbatim. Step 4c uses this header as the **single source of truth** for which board ticket (if any) the plan should be pushed to.
+
+**Do NOT open the brief file** to look up Source in Step 4c. Step 4b already chases the brief filename out of the plan header to update its `planned:`/`approved:` row marker, but that second filesystem hop is unnecessary for Step 4c — the Source value Step 4b would find inside the brief is the same value already copied into the plan header. Reading from the plan file alone keeps Step 4c self-contained.
+
+The line format is `**Source:** {value}` on a line by itself. Match it with a tolerant regex anchored to start-of-line, allowing arbitrary trailing whitespace:
+
+```
+^\*\*Source:\*\*\s+(.+?)\s*$
+```
+
+Capture group 1 is the raw Source value — slice 3 parses it into one of the three brief Source formats (bracketed key, inline-quoted, file path).
+
+### Handle a missing **Source:** header gracefully
+
+If the plan file has **no `**Source:**` header line** (e.g. a hand-edited plan, or a plan generated before the Source header was added to the local plan template), Step 4c skips silently and continues to Step 7 — same semantics as the run-condition gates. No warning, no log token, no stdout note. The marker is still authoritative; the absence of a Source header just means there's no ticket to push to.
+
+### Parse the Source value (three brief formats)
+
+Brief writes the Source field in **one of three formats** (per [`packages/brief/src/workflows/brief.md` lines ~806-810](../../brief/src/workflows/brief.md)). Step 4c classifies the captured Source value into one of these three buckets:
+
+1. **Bracketed key — pushable.** The Source value matches `^\[(#?\d+|[A-Z][A-Z0-9]*-\d+)\]\s+.+$` (e.g. `[#50] Redesign settings page`, `[PROJ-200] Add customer portal`, `[ENG-42] Add real-time notifications`). Extract the key from inside the brackets. **This is the only format that can be pushed to a board.** Continue to slice 4 (key validation against the configured board's regex).
+2. **Inline-quoted text — no ticket.** The Source value matches `^"[^"]+"$` (e.g. `"Add dark mode support"`). The user gave brief a free-text idea instead of a board ticket reference. There is no ticket to push to.
+3. **File path — no ticket.** The Source value matches anything else that is not a bracketed key (e.g. `docs/rfcs/auth-rework.md`). The user pointed brief at a local document. There is no ticket to push to.
+
+The bracketed-key format is the **only** pushable Source format. Both inline-quoted and file-path formats route to the skip-no-ticket branch below.
+
+### Skip-no-ticket branch (inline-quoted or file-path Source)
+
+When the parsed Source falls into the inline-quoted or file-path bucket, Step 4c records the skip and continues to Step 7. Append a row to `.clancy/progress.txt`:
+
+```
+YYYY-MM-DD HH:MM | BOARD_PUSH_SKIPPED_NO_TICKET | {stem} | {source_format}
+```
+
+Where `{source_format}` is the literal string `inline-quoted` or `file-path` (lowercase, hyphenated). The row is written **after** the existing `LOCAL_APPROVE_PLAN | {stem} | sha256={...}` row from Step 7's local-mode log block — two rows total per approval, one for the marker write and one for the skip token.
+
+In the local-mode success block (rendered by Step 7), surface the skip as a non-warning info line under the marker write success:
+
+```
+   Note: source is {source_format} — no pushable ticket. Local marker only.
+```
+
+This is informational, not an error. The plan IS approved; the absence of a board push is the expected outcome for non-bracketed Source values. After logging and surfacing the note, continue to Step 7 normally.
+
 <!-- curl-blocks:approve-plan-push:start -->
 <!-- This region is reserved for the duplicated platform curl blocks. The canonical source lives between the matching anchors in plan.md Step 5b. Slice 6 populates this region; until then it is intentionally empty so the slice 0 drift-prevention test (workflows.test.ts) can assert anchor presence without enforcing byte-equality. Slice 6 promotes the test to a byte-equality check. Edit one anchored region — update the other in the same commit. -->
 <!-- curl-blocks:approve-plan-push:end -->
