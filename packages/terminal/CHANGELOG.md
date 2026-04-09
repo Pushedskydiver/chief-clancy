@@ -1,5 +1,24 @@
 # @chief-clancy/terminal
 
+## 0.1.7
+
+### Patch Changes
+
+- [#220](https://github.com/Pushedskydiver/chief-clancy/pull/220) [`f850376`](https://github.com/Pushedskydiver/chief-clancy/commit/f85037685e1710dbdde86158ecef174cb8df19fc) Thanks [@Pushedskydiver](https://github.com/Pushedskydiver)! - ✨ feat(brief): absorb approve-brief from terminal strategist
+
+  Move `/clancy:approve-brief` command + workflow into `@chief-clancy/brief`,
+  making approve-brief installable via `npx @chief-clancy/brief --local` /
+  `--global` alongside `/clancy:brief` and `/clancy:board-setup`. The terminal
+  strategist directory is deleted entirely; strategist joins planner as a
+  virtual role (config-gate concept in `installer/ui.ts` + `brief-content.ts`,
+  no on-disk role files).
+
+  `@chief-clancy/terminal` is a patch because there's no public API change —
+  the workflow files moved are still installed by terminal via `brief-content.ts`,
+  just sourced from the brief package instead of a local strategist directory.
+  The `brief-content.ts` installer was refactored from scalar constants to
+  arrays to accommodate the second command/workflow file.
+
 ## 0.1.6
 
 ### Patch Changes
