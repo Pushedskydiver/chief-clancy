@@ -131,3 +131,39 @@ These patterns apply to all board adapters (`board/{provider}/`):
 If a lint rule creates unreadable workarounds in practice, flag it. Rules can be tuned based on real experience. Don't suppress warnings silently — discuss and adjust the config.
 
 **`eslint-disable` is a last resort.** Before suppressing a rule, look for a simpler alternative. For example, `for...of` loops can usually be replaced with `.forEach()` and a named function. Only disable when no simple alternative exists and the workaround would be worse than the suppression.
+
+---
+
+## Output style
+
+Selective brevity for chat output, commit messages, and PR comments — adapted from Julius Brussee's [caveman](https://github.com/JuliusBrussee/caveman) patterns and the Brevity Constraints research (Hakim, [arxiv:2604.00025](https://arxiv.org/abs/2604.00025)). The Brevity Constraints paper finds large models can improve accuracy by ~26pp on overthinking-prone tasks (math, scientific reasoning) under brevity constraints, but elaboration-heavy tasks (reading comprehension) get worse. Apply selectively, not universally.
+
+### Where to be terse
+
+- Chat status updates and progress reports
+- Commit messages (already enforced by [GIT.md](GIT.md) gitmoji conventions)
+- PR comment replies and review feedback summaries
+- Plain-prose explanations of what was done
+
+### Where to elaborate (do NOT compress)
+
+- Runtime workflow files (`packages/*/src/{commands,workflows,agents}/*.md`) — reasoning artifacts the agent follows step-by-step
+- Decision docs (`docs/decisions/`) — preserve rationale
+- Test descriptions and `Caught in:` historical citations — load-bearing for future debugging
+- Error messages, security warnings, irreversible action confirmations
+- Multi-step sequences where fragment order risks misreading
+- Anything inside fenced code blocks
+
+### Rules for terse output
+
+- Drop filler, hedging, pleasantries (`just`, `really`, `basically`, `I'd be happy to`, `of course`)
+- Prefer short synonyms (`big` not `extensive`, `fix` not `implement a solution for`)
+- Keep code blocks, file paths, version numbers, identifiers EXACT — never paraphrase
+- Quote error messages verbatim
+- Never use `I/we/now/currently` filler in commit messages
+- Never restate filenames the scope label already covers
+- Never include AI attribution in commit messages or PR bodies
+
+### Rationale
+
+Per the AGENTS.md paper ([arxiv:2602.11988](https://arxiv.org/abs/2602.11988)), context bloat increases inference cost ~20% and degrades task success ~3% via reasoning-token overhead. Per the Brevity Constraints paper, brevity helps SELECTIVELY — universal compression hurts elaboration tasks. Following both: be terse in conversational output, elaborate in reasoning artifacts.

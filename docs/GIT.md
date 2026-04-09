@@ -91,6 +91,10 @@ The gitmoji comes first, then the conventional commit type. Scope is optional.
 📦 chore: scaffold monorepo with pnpm workspaces
 ```
 
+### No `--amend`
+
+Always create a new commit instead of amending an existing one, even for small follow-up fixes. Each change is its own commit. Never use `git commit --amend`. Pre-commit hook failures: fix the issue, re-stage, create a NEW commit.
+
 ## Labels
 
 ### PR labels (required — one per PR)
