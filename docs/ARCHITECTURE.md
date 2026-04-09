@@ -96,10 +96,10 @@ chief-clancy               — CLI wrapper (npx chief-clancy)
 │   │       │   └── shared/                   — hook utilities (hasErrorCode, isPlainObject)
 │   │       ├── roles/               — commands + workflows by role
 │   │       │   ├── setup/           — init, settings, doctor, help
-│   │       │   ├── planner/         — plan, approve-plan
-│   │       │   ├── strategist/      — brief, approve-brief
-│   │       │   ├── implementer/     — once, run, dry-run
+│   │       │   ├── strategist/      — brief, approve-brief (Phase D moves these into @chief-clancy/brief)
+│   │       │   ├── implementer/     — implement, autopilot, dry-run
 │   │       │   └── reviewer/        — review, status, logs
+│   │       │   (planner is now a virtual role — plan, approve-plan, board-setup all live in @chief-clancy/plan)
 │   │       ├── agents/              — specialist agent prompts (.md)
 │   │       ├── templates/           — CLAUDE.md template, .env.example per board
 │   │       └── shared/              — ANSI colour helpers

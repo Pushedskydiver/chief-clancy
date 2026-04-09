@@ -111,7 +111,7 @@ Clancy also tries to update the brief file's `<!-- planned:1,2 -->` marker to `<
 
 The argument decides which path runs:
 
-- **Plan-file stem** (e.g. `add-dark-mode-2`): writes the local marker. The board push offer for local plan stems lands in a future PR
+- **Plan-file stem** (e.g. `add-dark-mode-2`): writes the local marker, then optionally pushes the approved plan to the source board ticket as a comment. The push is interactive by default — `/clancy:approve-plan add-dark-mode-2` prompts `Push approved plan to {KEY} as a comment? [y/N]` (default No, never surprise-write to a board). Use `--push` to skip the prompt and push immediately, `--ticket KEY` to override the auto-detected key from the plan file's `**Source:**` header, and `--afk` to combine with `--push` for unattended automation. If the push fails (HTTP error, network issue, key/board mismatch), the local marker stays in place and an exact retry command is printed
 - **Board ticket key** (e.g. `PROJ-123`): runs the full board comment-to-description transport flow — fetches the plan comment, appends it to the ticket description, edits the plan comment with an approval note, swaps the ticket labels (`CLANCY_LABEL_PLAN` → `CLANCY_LABEL_BUILD`, both with sensible defaults), and — only if `CLANCY_STATUS_PLANNED` is configured — transitions the ticket status. Label swaps are mandatory; status transitions are opt-in via the `CLANCY_STATUS_PLANNED` env var
 
 The plan-file lookup runs first, so plan stems win on collision (`PROJ-123.md` exists locally AND `PROJ-123` is a valid ticket key → the local plan wins).
