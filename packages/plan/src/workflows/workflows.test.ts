@@ -1007,10 +1007,12 @@ describe('approve-plan board mode preserved unchanged', () => {
   });
 });
 
-// PR 9 — Slice 0: drift-prevention anchors for the duplicated push curl blocks.
-// Both files must declare the start/end anchors so slice 6 can promote this
-// suite to a byte-equality check between the wrapped regions.
-describe('approve-plan board push drift anchors (PR 9 Slice 0)', () => {
+// PR 9 — Slice 0/6: drift-prevention for the duplicated push curl blocks.
+// Slice 0 declared the start/end anchors in both files. Slice 6 promotes
+// this suite to a byte-equality check between the wrapped regions: the
+// canonical curl blocks live in plan.md Step 5b; approve-plan.md Step 4c
+// holds an identical duplicate.
+describe('approve-plan board push drift anchors (PR 9 Slice 0/6)', () => {
   const planContent = readFileSync(new URL('plan.md', import.meta.url), 'utf8');
   const approveContent = readFileSync(
     new URL('approve-plan.md', import.meta.url),
@@ -1019,6 +1021,15 @@ describe('approve-plan board push drift anchors (PR 9 Slice 0)', () => {
 
   const startAnchor = '<!-- curl-blocks:approve-plan-push:start -->';
   const endAnchor = '<!-- curl-blocks:approve-plan-push:end -->';
+
+  const extractRegion = (source: string): string => {
+    const startIdx = source.indexOf(startAnchor);
+    const endIdx = source.indexOf(endAnchor);
+    if (startIdx === -1 || endIdx === -1 || startIdx > endIdx) {
+      throw new Error('curl-blocks anchors missing or out of order');
+    }
+    return source.slice(startIdx + startAnchor.length, endIdx);
+  };
 
   it('plan.md declares the start anchor exactly once', () => {
     const matches = planContent.split(startAnchor).length - 1;
@@ -1050,6 +1061,19 @@ describe('approve-plan board push drift anchors (PR 9 Slice 0)', () => {
     expect(approveContent.indexOf(startAnchor)).toBeLessThan(
       approveContent.indexOf(endAnchor),
     );
+  });
+
+  it('the duplicated curl-blocks region is byte-equal between the two files', () => {
+    const planRegion = extractRegion(planContent);
+    const approveRegion = extractRegion(approveContent);
+    expect(approveRegion).toBe(planRegion);
+  });
+
+  it('the duplicated region is non-empty (slice 6 populated it)', () => {
+    const planRegion = extractRegion(planContent);
+    expect(planRegion.length).toBeGreaterThan(100);
+    // Sanity: region must contain at least one of the six platform headings.
+    expect(planRegion).toMatch(/### Jira/);
   });
 });
 

@@ -898,8 +898,8 @@ After saving, skip to Step 6 (log). Do not run Step 5b (board posting) for `--fr
 
 **Guard:** Only run Step 5b when board credentials are available (terminal mode or standalone+board mode). In standalone mode (no `.clancy/.env`), skip this step entirely — the plan is still generated and printed to stdout in Step 4.
 
+<!-- DUPLICATED REGION: the bytes between the curl-blocks:approve-plan-push:start/end anchors are the canonical source for the six platform comment-POST blocks. /clancy:approve-plan duplicates the same bytes into its Step 4c push sub-step. A drift-prevention test (workflows.test.ts) byte-compares the two regions and fails on mismatch. Edit one — update the other in the same commit. -->
 <!-- curl-blocks:approve-plan-push:start -->
-<!-- The region between these anchors is the canonical source for the six platform comment-POST blocks. /clancy:approve-plan duplicates the same bytes into its Step 4c push sub-step. A drift-prevention test (workflows.test.ts) byte-compares the two regions and fails on mismatch. Edit one — update the other in the same commit. -->
 
 ### Jira — POST comment
 

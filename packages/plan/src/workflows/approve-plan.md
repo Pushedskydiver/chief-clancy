@@ -620,8 +620,111 @@ YYYY-MM-DD HH:MM | LOCAL_ONLY | {stem} | afk-without-push
 
 In non-`--afk` mode, the user sees **two prompts** during a single approve invocation: [Step 4 — Confirm](#step-4--confirm) prompts to confirm the approval (a local commitment), and Step 4c prompts to confirm the board push (a visible-to-others publication). These are semantically distinct decisions and are intentionally kept as two separate prompts. Merging them into a single "approve and push?" prompt would conflate two different commitments and make it impossible to approve locally without also publishing.
 
+<!-- DUPLICATED REGION: the bytes between the curl-blocks:approve-plan-push:start/end anchors below are byte-identical to the canonical source in plan.md Step 5b. A drift-prevention test (workflows.test.ts) byte-compares the two regions and fails on mismatch. Edit one — update the other in the same commit. -->
 <!-- curl-blocks:approve-plan-push:start -->
-<!-- This region is reserved for the duplicated platform curl blocks. The canonical source lives between the matching anchors in plan.md Step 5b. Slice 6 populates this region; until then it is intentionally empty so the slice 0 drift-prevention test (workflows.test.ts) can assert anchor presence without enforcing byte-equality. Slice 6 promotes the test to a byte-equality check. Edit one anchored region — update the other in the same commit. -->
+
+### Jira — POST comment
+
+```bash
+curl -s \
+  -u "$JIRA_USER:$JIRA_API_TOKEN" \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json" \
+  "$JIRA_BASE_URL/rest/api/3/issue/$TICKET_KEY/comment" \
+  -d '<ADF JSON body>'
+```
+
+Construct ADF (Atlassian Document Format) JSON for the comment body. Key mappings:
+
+- `## Heading` → `heading` node (level 2)
+- `### Heading` → `heading` node (level 3)
+- `- bullet` → `bulletList > listItem > paragraph`
+- `- [ ] checkbox` → `taskList > taskItem` (state: "TODO")
+- `| table |` → `table > tableRow > tableCell`
+- `**bold**` → marks: `[{ "type": "strong" }]`
+- `` `code` `` → marks: `[{ "type": "code" }]`
+
+If ADF construction is too complex for a particular element, fall back to wrapping that section in a code block (`codeBlock` node).
+
+### GitHub — POST comment
+
+```bash
+curl -s \
+  -H "Authorization: Bearer $GITHUB_TOKEN" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  -X POST \
+  "https://api.github.com/repos/$GITHUB_REPO/issues/$ISSUE_NUMBER/comments" \
+  -d '{"body": "<markdown plan>"}'
+```
+
+GitHub accepts Markdown directly — post the plan as-is.
+
+### Linear — commentCreate mutation
+
+```bash
+curl -s \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -H "Authorization: $LINEAR_API_KEY" \
+  "https://api.linear.app/graphql" \
+  -d '{"query": "mutation { commentCreate(input: { issueId: \"$ISSUE_ID\", body: \"<markdown plan>\" }) { success } }"}'
+```
+
+Linear accepts Markdown directly.
+
+### Azure DevOps — POST comment
+
+```bash
+curl -s \
+  -u ":$AZDO_PAT" \
+  -X POST \
+  -H "Content-Type: application/json" \
+  "https://dev.azure.com/$AZDO_ORG/$AZDO_PROJECT/_apis/wit/workitems/$WORK_ITEM_ID/comments?api-version=7.1-preview.4" \
+  -d '{"text": "<html plan>"}'
+```
+
+Azure DevOps work item comments use **HTML**, not markdown. Convert the plan markdown to HTML:
+
+- `## Heading` → `<h2>Heading</h2>`
+- `### Heading` → `<h3>Heading</h3>`
+- `- bullet` → `<ul><li>bullet</li></ul>`
+- `- [ ] checkbox` → `<ul><li>☐ checkbox</li></ul>`
+- `| table |` → `<table><tr><td>...</td></tr></table>`
+- `**bold**` → `<strong>bold</strong>`
+- `` `code` `` → `<code>code</code>`
+- Newlines → `<br>` or `<p>` tags
+
+If HTML construction is too complex for a particular element, wrap that section in `<pre>` tags as fallback.
+
+### Shortcut — POST comment
+
+```bash
+curl -s \
+  -H "Shortcut-Token: $SHORTCUT_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  -X POST \
+  "https://api.app.shortcut.com/api/v3/stories/$STORY_ID/comments" \
+  -d '{"text": "<markdown plan>"}'
+```
+
+Shortcut accepts Markdown directly in comment text.
+
+### Notion — POST comment
+
+```bash
+curl -s \
+  -H "Authorization: Bearer $NOTION_TOKEN" \
+  -H "Notion-Version: 2022-06-28" \
+  -X POST \
+  "https://api.notion.com/v1/comments" \
+  -d '{"parent": {"page_id": "$PAGE_ID"}, "rich_text": [{"type": "text", "text": {"content": "<plan text>"}}]}'
+```
+
+**Notion limitation:** Comments use `rich_text` blocks, not markdown. For the plan content, use a single `text` block with the full plan as plain text. Notion will render it without markdown formatting. For better readability, consider splitting the plan into multiple `rich_text` blocks (one per section) with `annotations` for bold headings.
+
+**Notion limitation:** The `rich_text` array has a **2000-character limit per text block**. If the plan exceeds 2000 characters, split it across multiple `rich_text` blocks within the same comment (each block up to 2000 chars). The total comment can contain many blocks.
+
 <!-- curl-blocks:approve-plan-push:end -->
 
 After Step 4c completes (push attempted, push skipped, or gate failed), continue to Step 7 (Confirm and log).
