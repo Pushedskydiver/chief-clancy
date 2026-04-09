@@ -1,19 +1,71 @@
 # Progress
 
-## Session 53 Summary
+## Session 54 Summary
 
-### @chief-clancy/plan Phase B complete — PR 6b shipped + Phase C/D roadmap locked
+### Phase C kickoff — PRs 6b, 7a, 7b, 7c shipped (4 PRs + roadmap docs commit + handoff docs)
 
-**PR #204** — Add `--list` inventory + README (PR 6b):
+This session shipped PR 6b (the last of Phase B) plus all three sub-PRs of Phase C PR 7. Phase C is now ~50% complete (4 of 6 PRs done). Plan tests went from 115 → **197**.
+
+**PR #204** — `--list` inventory + README (PR 6b):
 
 - `--list` flag in command + workflow short-circuits at top of Step 1 (no installation detection, no `git fetch`, no docs/branch checks, no standalone guard)
 - New Step 8 — Plan inventory: scans `.clancy/plans/`, parses Plan ID / Brief / Row / Source / Planned headers, displays sorted by date with deterministic tie-breakers
-- Reserved a `Status` column at PR 6b time (hardcoded to `Planned`) so PR 7c could later wire it to live `Approved` / `Stale` state without breaking the listing format. **PR 7c shipped that wiring** — the column now reads the sibling `.approved` marker
-- README rewritten with full local planning workflow walkthrough covering `--from`, row targeting, `--afk`, `--list`, and the `## Feedback` revision loop
+- Reserved a `Status` column hardcoded to `Planned` so PR 7c could later wire it to live state without breaking the listing format
+- README rewritten with full local planning workflow walkthrough
 - 16 new tests (115 → 131 plan)
-- DA review caught C1/H1/H2/M1/M2/M3/L1/L2/L3/L4 — every finding addressed before push (slug vs Plan ID terminology, Step 1 short-circuit, explicit guard skip, sort tie-breakers, Status column placeholder, --list precedence wording, strengthened tests beyond tautological greps)
+- DA review caught 1 critical, 2 high, 3 medium, 4 low — all addressed before push
 
-Test counts: 1608 core, 834 terminal, 51 brief, **131 plan**.
+**PR #206** — `📝 docs(progress)`: lock Phase C+D roadmap (chore):
+
+- Updated PROGRESS.md with the locked Phase C+D breakdown after a planning session: 3 Plan agents in parallel + 1 DA agent + 1 research agent on the brief asymmetry question
+- Six findings reversed the original draft (most importantly: brief should also absorb its `approve-brief` in Phase D, and the `.approved` marker must store SHA-256 + timestamp instead of being empty-touch)
+- Locked sequence: PR 7a → 7b → 7c → 8 → 9 → 10 → 11a → 11b → 12
+
+**PR #207** — `✨ feat(plan)`: PR 7a plumbing — move approve-plan into @chief-clancy/plan:
+
+- Byte-identical move of approve-plan command + workflow from `packages/terminal/src/roles/planner/` → `packages/plan/src/{commands,workflows}/`. Git records both as 100% renames
+- Terminal's `plan-content.ts` extended to copy both `plan.md` AND `approve-plan.md`. Constants split into `PLAN_COMMAND_FILES` / `PLAN_WORKFLOW_FILES` (mirrors brief-content's separate-constant convention)
+- `packages/terminal/src/roles/planner/` deleted entirely. `planner` becomes a "virtual role" — concept stays in `installer/ui.ts`, `CLANCY_ROLES` env parsing, and `plan-content.ts`'s gate, but no terminal-owned files
+- `roles.test.ts` gained a `VIRTUAL_ROLES` constant + positive "no on-disk directory" assertion that scales for Phase D when strategist follows
+- Standalone installer (`bin/plan.js` + `install.ts`) deliberately did NOT ship approve-plan yet — DA review caught that adding it would surface a board-only command as a runtime failure for `npx @chief-clancy/plan` users
+- 836 terminal tests (was 834), 131 plan tests (unchanged)
+- DA review caught 2 high (standalone installer scope leak) + 1 medium (PLAN_FILES over-coupling) — all addressed before push
+
+**PR #209** — `✨ feat(plan)`: PR 7b standalone-aware approve-plan with SHA-256 marker:
+
+- Step 1 rewritten with three-state preflight (standalone / standalone+board / terminal) mirroring plan.md
+- Step 2 dual-mode resolver: standalone needs a plan-file stem; standalone+board / terminal try plan-file lookup first then ticket-key validation; plan stems win on collision; plan-file scan filters to actual plan files (must contain `## Clancy Implementation Plan` heading)
+- New Step 4a writes `.clancy/plans/{stem}.approved` with race-safe `O_EXCL`. Body is two `key=value` lines: `sha256={hex}\napproved_at={ISO 8601}\n`. Explicit numbered "read plan → compute SHA → open marker for exclusive create" order of operations. EEXIST handled with manual remediation advice (no ghost `--fresh` flag)
+- New Step 4b updates source brief marker `<!-- planned:1,2 -->` → `<!-- approved:1 planned:1,2 -->` with tolerant regex. Best-effort: failure does NOT roll back the local marker
+- Step 7 gained a mode gate at the top so local-mode and board-success-message branches never double-render. New `LOCAL_APPROVE_PLAN | sha256={first 12 hex}` log token
+- Standalone installer (`bin/plan.js` + `install.ts`) now ships approve-plan (the bit deferred from PR 7a)
+- README Approving plans section with three install-mode examples
+- Existing 970-line board transport flow (Steps 5/5b/6) byte-preserved
+- 185 plan tests (was 132 → +53)
+- DA review caught 2 critical, 3 high, 5 medium — all addressed before push
+- Copilot review caught 6 follow-ups across 2 rounds (stale Step 5a refs, Step 6 transition predicate, sha example truncation, brief-marker update is best-effort, Step 7 success block must be conditional, README same-issue) — all fixed and replied to
+
+**PR #211** — `✨ feat(plan)`: PR 7c Step 8 inventory live Approved/Stale status:
+
+- Step 8 Status column reads sibling `.approved` marker live, parses `sha256=` line, hashes the current plan file, reports `Planned` / `Approved` / `Stale (re-approve)`
+- Inventory format switched from space-delimited columns to a pipe-delimited markdown table so multi-word states are unambiguous
+- Example shows all three states + a summary line spec'd in the procedure (zero-count states omitted)
+- **Footer cleanup** — fixed FOUR other stale "install the full pipeline" footers in `plan.md` (Steps 6/7) that were already wrong since PR 7b shipped approve-plan in the plan package
+- Implemented state explicitly reserved for PR 8 in the prose
+- Malformed `.approved` markers (missing/invalid `sha256=` line) fold into `Stale (re-approve)` with a delete-and-recreate hint
+- 197 plan tests (was 191 → +6)
+- DA review caught 2 high, 3 medium, 2 low — all addressed before push
+- Copilot review caught 4 follow-ups across 3 rounds (Overview line scoping, malformed marker rule, `<plan-id>` vs `{plan-id}` placeholder consistency, regex test "bug" that wasn't actually a bug but the upgrade was worth taking) — all fixed and replied to
+
+**Test counts at end of session:** 1608 core, 836 terminal, 51 brief, **197 plan**.
+
+**Key versions shipped:** `@chief-clancy/plan@0.4.0`, `@chief-clancy/terminal@0.1.6`, `chief-clancy@0.9.10`
+
+### Process notes from this session
+
+- DA review caught real things every PR: PR 7a's standalone installer scope leak (would have shipped a broken command), PR 7b's stale Step 5a refs + Step 6 transition predicate + brief-marker best-effort wording, PR 7c's stale "install the full pipeline" footers across the rest of plan.md. Skipping DA on a "small" PR would have shipped 8+ defects across the session
+- Pre-PR planning session (3 Plan agents in parallel + 1 DA + 1 research) reversed two early decisions that would have shipped: empty `.approved` marker (PR 8 gate would have been brittle without metadata) and "approve-brief stays in terminal forever" (research showed brief already ships board-setup, making the UX cliff identical to plan's)
+- Copilot reviewer caught 10 distinct follow-ups across PR 7b/7c rounds. About half were factual misstatements I'd made about Step 6's behaviour or stale references; one (the regex "bug") was a misreading of JS syntax that I corrected in the reply but accepted the underlying upgrade anyway
 
 ---
 
@@ -50,17 +102,23 @@ Phase B shipped. Before starting Phase C, ran a planning session: 3 Plan agents 
 
 ---
 
-## Next: PR 7a — Plumbing for Phase C
+## Next: PR 8 — `/clancy:implement-from` in plan package
 
-Full PR 7a step-by-step lives in the local-only `.claude/plans/plan-package-extraction.md` Phase C section. Headline scope:
+Full PR 8 step-by-step lives in the local-only `.claude/plans/plan-package-extraction.md` Phase C section. Headline scope (~5-6h):
 
-- Move `approve-plan.md` (command + workflow) from `packages/terminal/src/roles/planner/` → `packages/plan/src/{commands,workflows}/` byte-identical
-- Convert `plan-content.ts` const strings to arrays, loop over them
-- Extend plan installer + bin file lists
-- Delete `packages/terminal/src/roles/planner/` entirely (planner becomes virtual role)
-- Update `roles.test.ts` and `role-filter.test.ts` fixtures
-- Add `packages/plan/test/helpers/fixtures.ts` (TS builders matching existing `packages/terminal/test/helpers/fixtures.ts` convention)
-- Changeset: plan minor + terminal patch
+- New `packages/plan/src/commands/implement-from.md` and `packages/plan/src/workflows/implement-from.md`
+- Add to `COMMAND_FILES` / `WORKFLOW_FILES` arrays in plan installer + bin + terminal `plan-content.ts`. Update structural tests
+- `/clancy:implement-from .clancy/plans/{stem}.md` reads the local plan file
+- **Approval gate (the load-bearing bit):** read sibling `.approved` marker. If missing → block with "Plan not approved. Run `/clancy:approve-plan {stem}` first." If present, hash the current plan file, compare to marker's `sha256`. Match → proceed. Mismatch → block with "Plan changed since approval." Reuses the SHA-256 + marker format PR 7b shipped
+- **`--bypass-approval` flag** required to skip the gate even with `--afk` (per locked decision: approval is the only thing between "plan generated" and "code changes applied"; warnings scroll past in non-interactive runs)
+- Plan section parsing (prompt-only, no TS — Claude reads the markdown): `### Affected Files` table, `### Test Strategy` checklist, `### Acceptance Criteria` checklist, `### Implementation Approach` paragraph
+- New log tokens: `LOCAL_IMPLEMENT | {stem} | {N} files`, `LOCAL_BLOCKED | {stem} | not approved` or `... | sha mismatch`, `LOCAL_BYPASS | {stem} | {N} files`
+- **Wire `Implemented` state into [`plan.md` Step 8](packages/plan/src/workflows/plan.md#L1093):** scan `.clancy/progress.txt` for `LOCAL_IMPLEMENT` entries matching the plan id. Status column gains a fourth state
+- Changeset: plan minor
+
+The PR 7c work explicitly reserved the `Implemented` state in Step 8's prose so PR 8's diff stays narrow.
+
+After PR 8: PR 9 (standalone+board optional board push from approve-plan), then PR 10 (Phase C cleanup + docs sync), then Phase D (PRs 11a/11b/12 — brief absorbs approve-brief).
 
 ### Build order (remaining standalone packages)
 
