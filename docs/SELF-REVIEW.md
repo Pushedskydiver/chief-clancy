@@ -2,20 +2,45 @@
 
 Line-level accuracy check performed after DA review but before creating a PR. Read every changed file (`git diff main...HEAD`) and check for detail-level issues that DA and CodeRabbit miss.
 
-This checklist complements DA-REVIEW.md — DA owns architectural checks (imports, guards, patterns). Self-review owns line-level accuracy (stale values, wrong strings, test isolation, copy-paste errors).
+This checklist complements [DA-REVIEW.md](DA-REVIEW.md) with explicit ownership split:
+
+- **DA-REVIEW** owns the **architectural and comment/doc layer**: imports, guards, patterns, stale prose in JSDoc and comments.
+- **SELF-REVIEW** owns the **code-level layer**: stale fixture values, mock URLs, wrong string literals, test isolation, copy-paste errors.
+
+The Red Flags list lives in [DA-REVIEW.md](DA-REVIEW.md#red-flags--stop-and-reassess) — read it before walking this checklist. Don't duplicate Red Flags here; cross-reference instead. When the headline meta-rationalization in [RATIONALIZATIONS.md](RATIONALIZATIONS.md#headline--the-meta-rationalization) catches you mid-review, that's the signal that you're about to skip a check while telling yourself you ran it.
 
 This is a **living document** — when CodeRabbit catches something the self-review should have spotted, add the specific check here immediately. The checklist grows from real mistakes, not hypotheticals.
+
+See also: [DEVELOPMENT.md](DEVELOPMENT.md) for the full review gate flow, [TESTING.md](TESTING.md) for test-specific disciplines.
+
+**Last reviewed:** 2026-04-09
+
+---
+
+## NOTICED BUT NOT TOUCHING
+
+When you spot something worth improving outside your task scope, **list it — don't fix it**:
+
+```
+NOTICED BUT NOT TOUCHING:
+- src/utils/format.ts has an unused import (unrelated to this task)
+- The auth middleware could use better error messages (separate task)
+→ Want me to create tasks for these?
+```
+
+Drive-by refactors mixed with feature work are harder to review, harder to revert, and hide bugs in noise. Stay in scope. The temptation to "quickly clean this up while I'm here" is exactly the rationalization in [RATIONALIZATIONS.md](RATIONALIZATIONS.md#build) — surface it as a NOTICED block and move on.
 
 ---
 
 ## Code accuracy
 
-- Do comments/JSDoc match what the code actually does? (stale comments are the #1 review catch)
-- After renaming a type field, did all JSDoc and comments referencing the old name get updated? (CodeRabbit caught `"optional"` in JSDoc after the field was renamed to `roleKey`)
-- Do comments hardcode counts, versions, or phase numbers that will go stale? Use generic language instead
+> Comment-level and JSDoc accuracy is owned by [DA-REVIEW.md](DA-REVIEW.md#jsdoc--documentation). Self-review focuses on accuracy in **actual code values**: fixture data, mock URLs, hardcoded literals, parameter usage.
+
 - Are all function parameters used? Remove unused params or use `_prefixed` naming if keeping for API stability
 - Do mock/test URLs match the actual production endpoints? (read the production code to verify)
 - Do fixture shapes match what the production code expects? (check Zod schemas and actual API calls)
+- Do hardcoded string literals in test fixtures match the values the production code emits? (e.g. `LOCAL_APPROVE_PLAN_PUSH` audit token spelt the same way in fixture and production)
+- Do hardcoded numeric expectations (`toHaveBeenCalledTimes(N)`, array length assertions) reflect the actual code path, not the OLD code path before your change?
 
 ## Type safety (line-level)
 
@@ -31,6 +56,19 @@ This is a **living document** — when CodeRabbit catches something the self-rev
 - Do any imported modules cache global state that could leak between tests? (reset caches in `afterEach`)
 - Are `describe`/`it` blocks accidentally duplicated from copy-paste?
 - Do test names accurately describe what is being tested? (CodeRabbit caught a test name that didn't match the narrowed assertion)
+
+## Test permissiveness audit
+
+For every new regex assertion or slice-based string check, walk through the simplest wrong input the assertion would silently pass. The discipline is owned by [DA-REVIEW.md](DA-REVIEW.md#test-permissiveness-audit) — this is the self-review companion.
+
+- For new regexes: write down a wrong-input example. Would the regex still match? If yes, tighten it.
+- `\\?d` matches both `\d` and bare `d` (the literal escape is wrong — use `\\d`). Same trap for `\\?w`, `\\?s`, etc.
+- `[^\n]*` middles in regex assertions silently allow swapped labels. Anchor the literal you actually care about.
+- `content.indexOf(marker) + slice()` returns negative indexes when the marker is missing, and `slice` interprets negatives as end-relative — guard with `>= 0` and `end > start` before slicing. Extract a `sliceBetween()` helper to make the trap structurally impossible. _Caught in: PR #222 (3 identical findings, fixed via `sliceBetween()` extraction)._
+- Substring `toContain('foo')` when an exact match (`toBe('foo')`) is what you actually want
+- `not.toContain` slices that don't bound the slice region — verify both slice markers exist before asserting absence
+
+If the assertion would pass against the wrong input, tighten it before committing.
 
 ## Carried-over content
 
@@ -85,3 +123,12 @@ This is a **living document** — when CodeRabbit catches something the self-rev
 
 - Did changing a config file affect other configs that extend it? (e.g. `tsconfig.build.json` extends `tsconfig.json`)
 - Did changing a shared ESLint rule affect test file overrides?
+
+---
+
+## See also
+
+- [DA-REVIEW.md](DA-REVIEW.md) — architectural and comment/doc layer review (DA owns), Red Flags, Required disciplines, Severity Labels
+- [DEVELOPMENT.md](DEVELOPMENT.md) — full review gate flow and Phase Validation Protocol
+- [TESTING.md](TESTING.md) — Prove-It Pattern, mock-at-boundaries, state-vs-interaction, test anti-patterns
+- [RATIONALIZATIONS.md](RATIONALIZATIONS.md) — anti-rationalization index, especially the [Test](RATIONALIZATIONS.md#test) and [Review](RATIONALIZATIONS.md#review) sections
