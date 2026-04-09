@@ -393,7 +393,9 @@ If the exclusive create fails with `EEXIST`, the marker already exists — the p
 2. **Skip Step 4b entirely.** The brief marker was already updated on the original approval; there is no work for 4b to do on a retry.
 3. **Fall through directly to Step 4c.** The retry path enters Step 4c with the same gate evaluation as a fresh approval (board credentials must be present, Source must be readable from the plan file or `--ticket` override must be supplied).
 
-This is the **only** mechanism to re-attempt a failed push. There is no `--push-only` flag and no marker-deletion workflow. The contract is: a Step 4c push failure leaves the marker in place (see Step 4c push-failure section), and a `--push` re-run honours that marker by skipping Step 4a's write and Step 4b's brief update, going straight to 4c. The retry preserves the original approval timestamp — auditing tools see one approval row in `.clancy/progress.txt`, even if 4c was attempted multiple times.
+This is the **only** mechanism to re-attempt a failed push. There is no `--push-only` flag and no marker-deletion workflow. The contract is: a Step 4c push failure leaves the marker in place (see Step 4c push-failure section), and a `--push` re-run honours that marker by skipping Step 4a's write and Step 4b's brief update, going straight to 4c. The on-disk approval timestamp inside `.clancy/plans/{stem}.approved` is preserved across retries (Step 4a does not re-write it).
+
+Local-mode audit logging in Step 7, however, runs **per invocation** — every retry appends a fresh `LOCAL_APPROVE_PLAN` row to `.clancy/progress.txt` followed by that attempt's Step 4c outcome row (e.g. `BOARD_PUSH_FAILED` then `LOCAL_APPROVE_PLAN_PUSH` after a successful retry). The audit trail therefore reflects every retry attempt, while the `.approved` marker on disk reflects only the original approval. A downstream audit grep that wants "the approval moment" reads the marker file's `approved_at`; a grep that wants "all approve-plan invocations for this stem" reads `progress.txt`. The two surfaces answer different questions and that asymmetry is intentional.
 
 **If `--push` is NOT set:** stop with:
 
