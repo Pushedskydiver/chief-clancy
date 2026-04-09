@@ -193,8 +193,175 @@ pnpm test && pnpm lint && pnpm typecheck && pnpm format:check && pnpm knip && pn
 
 ---
 
+## Writing good tests
+
+The disciplines below are the difference between tests that catch bugs and tests that pass while production breaks. Adapted from Matt Pocock's [`tdd`](https://github.com/mattpocock/skills/tree/main/tdd) skill (which is the source of our tracer-bullet TDD pattern) and Addy Osmani's [`test-driven-development`](https://github.com/addyosmani/agent-skills/tree/main/skills/test-driven-development) skill.
+
+### Test state, not interactions
+
+Assert on the **outcome** of an operation, not on which methods were called internally. Tests that verify method-call sequences break when you refactor, even if the behaviour is unchanged.
+
+```ts
+// Good: tests what the function does (state-based)
+it('returns tasks sorted by creation date, newest first', async () => {
+  const tasks = await listTasks({ sortBy: 'createdAt', sortOrder: 'desc' });
+  expect(tasks[0].createdAt.getTime()).toBeGreaterThan(
+    tasks[1].createdAt.getTime(),
+  );
+});
+
+// Bad: tests how the function works internally (interaction-based)
+it('calls db.query with ORDER BY created_at DESC', async () => {
+  await listTasks({ sortBy: 'createdAt', sortOrder: 'desc' });
+  expect(db.query).toHaveBeenCalledWith(
+    expect.stringContaining('ORDER BY created_at DESC'),
+  );
+});
+```
+
+**Carve-out — when interaction assertions ARE the right tool:** if the interaction itself is the behaviour being tested, an interaction assertion is correct. Examples:
+
+- **File copy counts** — `brief-content.test.ts` asserts `toHaveBeenCalledTimes(5)` because "copies exactly 5 files" is the behaviour
+- **Fetch URL assertions** — board adapter tests assert `fetch` was called with the right URL because "hits the right endpoint" is the contract
+- **Idempotency** — asserting that an operation runs once not twice is an interaction assertion
+- **Side-effect ordering** — asserting that A happened before B when both are observable side effects
+- **Retry counts** — asserting that a flaky call was retried N times
+
+Rule of thumb: prefer state assertions when state is observable. Use interaction assertions when the interaction IS the contract being tested. The 30+ existing test files in this codebase that use `toHaveBeenCalled*` mostly fall into the carve-out — don't reflexively rewrite them.
+
+### Mock at system boundaries only
+
+From Pocock's [`tdd/mocking.md`](https://github.com/mattpocock/skills/blob/main/tdd/mocking.md): mock at **system boundaries** only.
+
+- **Mock:** external APIs (HTTP), file system (sometimes), time, randomness, databases (sometimes — prefer test DB)
+- **Don't mock:** your own classes, internal collaborators, anything you control
+
+This codebase uses **dependency injection of I/O functions** (pass `fetch`, pass `exec`, pass filesystem ops as function parameters) as the canonical way to make code testable. The DI pattern is the boundary — the test substitutes a fake implementation rather than mocking an internal collaborator. See [CONVENTIONS.md "Code Style"](CONVENTIONS.md#code-style) for the DI rule.
+
+### SDK-style interfaces over generic fetchers
+
+When designing the boundary, prefer specific functions for each external operation over one generic function with conditional logic:
+
+```ts
+// GOOD: each function is independently mockable, type-safe per endpoint
+const api = {
+  getUser: (id: string) => fetch(`/users/${id}`),
+  getOrders: (userId: string) => fetch(`/users/${userId}/orders`),
+  createOrder: (data: OrderInput) =>
+    fetch('/orders', { method: 'POST', body: data }),
+};
+
+// BAD: mocking requires conditional logic inside the mock
+const api = {
+  fetch: (endpoint: string, options: RequestInit) => fetch(endpoint, options),
+};
+```
+
+The SDK approach means each mock returns one specific shape, no conditional logic in test setup, and easier to see which endpoints a test exercises. This is how all the board adapters in `packages/core/src/board/` are structured — `getIssue`, `createIssue`, `addLabel`, etc, each its own function.
+
+### DAMP > DRY in tests
+
+In production code, DRY (Don't Repeat Yourself) is usually right. In tests, **DAMP (Descriptive And Meaningful Phrases)** is better. A test should read like a specification — each test should tell a complete story without requiring the reader to trace through shared helpers.
+
+```ts
+// DAMP: each test is self-contained and readable
+it('rejects tasks with empty titles', () => {
+  const input = { title: '', assignee: 'user-1' };
+  expect(() => createTask(input)).toThrow('Title is required');
+});
+
+it('trims whitespace from titles', () => {
+  const input = { title: '  Buy groceries  ', assignee: 'user-1' };
+  const task = createTask(input);
+  expect(task.title).toBe('Buy groceries');
+});
+```
+
+Duplication in tests is acceptable when it makes each test independently understandable. Shared `beforeEach` setup is fine for genuinely common state; shared input shapes that obscure what each test verifies are not.
+
+### Tests describe behaviour through public interfaces
+
+From Pocock's `tdd/SKILL.md`: tests should verify behaviour through **public interfaces**, not implementation details. A good test reads like a specification — `"user can checkout with valid cart"` tells you exactly what capability exists. These tests survive refactors because they don't care about internal structure.
+
+The warning sign: your test breaks when you refactor, but behaviour hasn't changed. If you renamed an internal function and tests fail, those tests were testing implementation, not behaviour.
+
+### The Durability rule
+
+From Pocock's [`triage-issue`](https://github.com/mattpocock/skills/tree/main/triage-issue) skill: **only suggest tests and fixes that would survive radical codebase changes.** Tests should assert on observable outcomes (API responses, file system state, returned values, audit log entries), not internal state. Fixes should describe behaviours and contracts, not internal structure. A good test reads like a spec; a bad one reads like a diff.
+
+### The Beyonce Rule
+
+> If you liked it, you should have put a test on it.
+
+Infrastructure changes, refactoring, and migrations are not responsible for catching your bugs — your tests are. If a change breaks your code and you didn't have a test for it, that's on you.
+
+---
+
+## Bug fixes — the Prove-It Pattern
+
+When a bug is reported, **do not start by trying to fix it**. Start by writing a test that reproduces it. The test must FAIL with the current code. Then fix. The test passes — proving the fix works AND guarding against regression.
+
+```
+Bug report arrives
+       │
+       ▼
+Write a test that demonstrates the bug
+       │
+       ▼
+Test FAILS (confirming the bug exists)
+       │
+       ▼
+Implement the fix
+       │
+       ▼
+Test PASSES (proving the fix works)
+       │
+       ▼
+Run full test suite (no regressions)
+```
+
+**This composes with tracer-bullet TDD, not against it.** When the behaviour under change is a bug, the first tracer bullet IS the reproduction test. The vertical-slice rule still applies: write ONE failing reproduction test, fix it, then move to the next slice if the bug has multiple facets. Don't write all the failure modes as tests at once — that's horizontal slicing.
+
+Both Addy Osmani's `test-driven-development` skill and Matt Pocock's `triage-issue` skill independently converge on this pattern. Adopting it strongly.
+
+---
+
+## Test anti-patterns
+
+| Anti-pattern                          | Problem                                                         | Fix                                                                                                                                |
+| ------------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Testing implementation details        | Tests break when refactoring even if behaviour is unchanged     | Test inputs and outputs, not internal structure. See "Test state, not interactions" above (with the carve-out).                    |
+| Mocking internal collaborators        | Tests pass while production breaks; brittle to refactor         | Mock at system boundaries only. Use DI for internal collaborators.                                                                 |
+| Flaky tests (timing, order-dependent) | Erode trust in the test suite                                   | Deterministic assertions, isolate test state, no shared state between tests                                                        |
+| Snapshot abuse                        | Large snapshots nobody reviews; break on any change             | Use snapshots sparingly; review every snapshot diff                                                                                |
+| No test isolation                     | Tests pass individually but fail together                       | Each test sets up and tears down its own state in `beforeEach`/`afterEach`                                                         |
+| Tests that pass on first run          | May not be testing what you think they're testing               | Verify the test would FAIL if you broke the behaviour. The Prove-It Pattern enforces this for bug fixes.                           |
+| Permissive regex assertions           | `\\?d` matches bare `d`, `[^\n]*` middles allow swapped content | Walk through the simplest wrong input. See [SELF-REVIEW.md "Test permissiveness audit"](SELF-REVIEW.md#test-permissiveness-audit). |
+| Bug fixes without reproduction tests  | The fix has nothing guarding against the regression             | Apply the Prove-It Pattern — failing test BEFORE fix                                                                               |
+| Skipping tests to make the suite pass | The bug is still there; you've just hidden it                   | Fix the test or fix the code. Never `.skip` to ship.                                                                               |
+
+---
+
+## Baseline test counts
+
+For drift detection. Bump these when intentional growth lands.
+
+| Package                  | Count | Notes                                                                   |
+| ------------------------ | ----- | ----------------------------------------------------------------------- |
+| `@chief-clancy/core`     | 1608  | Stable since Phase B                                                    |
+| `@chief-clancy/terminal` | 838   | After Phase D (PR #220) — was 836, +2 from brief-content array refactor |
+| `@chief-clancy/brief`    | 73    | After Phase D (PR #222) — was 51, +22 across PR 11a + 11b               |
+| `@chief-clancy/plan`     | 264   | Stable since Phase C PR #216                                            |
+
+Drift outside these baselines without an intentional change is a Red Flag — see [DA-REVIEW.md](DA-REVIEW.md#red-flags--stop-and-reassess).
+
+---
+
 ## See also
 
-- [CONVENTIONS.md](CONVENTIONS.md) — code conventions, naming patterns, TypeScript rules
+- [CONVENTIONS.md](CONVENTIONS.md) — code conventions, naming patterns, TypeScript rules, DI pattern
 - [ARCHITECTURE.md](ARCHITECTURE.md) — system architecture and module map
-- [DA-REVIEW.md](DA-REVIEW.md) — review checklist (includes test coverage requirements)
+- [DA-REVIEW.md](DA-REVIEW.md) — review checklist (includes test coverage requirements + Required disciplines + Severity Labels)
+- [SELF-REVIEW.md](SELF-REVIEW.md) — line-level review including Test permissiveness audit
+- [DEVELOPMENT.md](DEVELOPMENT.md) — full review gate flow, Quality Gates, when tests are required
+- [RATIONALIZATIONS.md](RATIONALIZATIONS.md) — anti-rationalization index, especially the [Test section](RATIONALIZATIONS.md#test)
