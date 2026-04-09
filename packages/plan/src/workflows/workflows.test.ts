@@ -1302,18 +1302,23 @@ describe('approve-plan Step 4c key validation (PR 9 Slice 4)', () => {
   const fourCBody = content.slice(fourCStart, fourCEnd);
 
   it('Step 4c declares all six per-platform key regexes inline', () => {
-    // Jira: PROJ-123 form (alpha prefix + dash + digits)
-    expect(fourCBody).toMatch(/Jira[\s\S]{0,200}\[A-Z\]/);
-    // GitHub: #50 form (hash + digits)
-    expect(fourCBody).toMatch(/GitHub[\s\S]{0,200}#\\?d/);
-    // Linear: ENG-42 form (alpha prefix + dash + digits)
-    expect(fourCBody).toMatch(/Linear[\s\S]{0,200}\[A-Z\]/);
-    // Azure DevOps: bare integer
-    expect(fourCBody).toMatch(/Azure DevOps[\s\S]{0,200}\\?d/);
-    // Shortcut: bare integer
-    expect(fourCBody).toMatch(/Shortcut[\s\S]{0,200}\\?d/);
-    // Notion: 32-36 hex chars (UUID)
-    expect(fourCBody).toMatch(/Notion[\s\S]{0,200}(0-9a-f|hex|UUID)/i);
+    // Each assertion requires a literal `\d` (escaped backslash + d) so a
+    // doc that accidentally drops the backslash from the regex table fails
+    // the test instead of silently passing on a bare `d`. The Jira and
+    // Linear assertions match on the [A-Z] character class (their first
+    // distinguishing feature) and tighten with \\d for the digits.
+    // Jira: ^[A-Z][A-Z0-9]+-\d+$
+    expect(fourCBody).toMatch(/Jira[\s\S]{0,200}\[A-Z\]\[A-Z0-9\]\+-\\d/);
+    // GitHub: ^#\d+$
+    expect(fourCBody).toMatch(/GitHub[\s\S]{0,200}#\\d/);
+    // Linear: ^[A-Z]+-\d+$
+    expect(fourCBody).toMatch(/Linear[\s\S]{0,200}\[A-Z\]\+-\\d/);
+    // Azure DevOps: ^\d+$
+    expect(fourCBody).toMatch(/Azure DevOps[\s\S]{0,200}\\d/);
+    // Shortcut: ^\d+$
+    expect(fourCBody).toMatch(/Shortcut[\s\S]{0,200}\\d/);
+    // Notion: 32-hex or 36-char UUID alternation
+    expect(fourCBody).toMatch(/Notion[\s\S]{0,200}\[0-9a-f\]/);
   });
 
   it('Step 4c selects the regex from the configured board (single-board env)', () => {

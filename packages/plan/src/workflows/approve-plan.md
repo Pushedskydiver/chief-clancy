@@ -529,13 +529,13 @@ The bracketed-key format is the **only** pushable Source format. Both inline-quo
 
 ### Skip-no-ticket branch (inline-quoted or file-path Source)
 
-When the parsed Source falls into the inline-quoted or file-path bucket, Step 4c records the skip and continues to Step 7. Append a row to `.clancy/progress.txt`:
+When the parsed Source falls into the inline-quoted or file-path bucket, Step 4c **records the skip outcome** (without writing to `.clancy/progress.txt` yet) and continues to Step 7. The row Step 7 will write on its behalf:
 
 ```
 YYYY-MM-DD HH:MM | {stem} | BOARD_PUSH_SKIPPED_NO_TICKET | {source_format}
 ```
 
-Where `{source_format}` is the literal string `inline-quoted` or `file-path` (lowercase, hyphenated). The row is written **after** the existing `LOCAL_APPROVE_PLAN | {stem} | sha256={...}` row from Step 7's local-mode log block — two rows total per approval, one for the marker write and one for the skip token.
+Where `{source_format}` is the literal string `inline-quoted` or `file-path` (lowercase, hyphenated). All Step 4c outcome rows are written by Step 7 immediately after `LOCAL_APPROVE_PLAN`, so the order of rows in `.clancy/progress.txt` is always `LOCAL_APPROVE_PLAN` first, then the Step 4c outcome — two rows total per approval, one for the marker write and one for the Step 4c outcome. See "Step 4c outcome row" inside Step 7's local-mode log block for the full enumeration.
 
 In the local-mode success block (rendered by Step 7), surface the skip as a non-warning info line under the marker write success:
 
@@ -553,14 +553,15 @@ Detect the configured board by reading `.clancy/.env` (the same detection used b
 
 Match the extracted `{KEY}` against the per-platform regex for the configured board:
 
-| Platform     | Regex                             | Example keys               |
-| ------------ | --------------------------------- | -------------------------- |
-| Jira         | `^[A-Z][A-Z0-9]+-\d+$`            | `PROJ-200`, `ENG-42`       |
-| GitHub       | `^#\d+$`                          | `#50`, `#1234`             |
-| Linear       | `^[A-Z]+-\d+$`                    | `ENG-42`, `CORE-7`         |
-| Azure DevOps | `^\d+$`                           | `12345`                    |
-| Shortcut     | `^\d+$`                           | `8675`                     |
-| Notion       | `^[0-9a-f]{32}$\|^[0-9a-f-]{36}$` | `abc123...` (32 or 36 hex) |
+| Platform     | Regex                  | Example keys         |
+| ------------ | ---------------------- | -------------------- |
+| Jira         | `^[A-Z][A-Z0-9]+-\d+$` | `PROJ-200`, `ENG-42` |
+| GitHub       | `^#\d+$`               | `#50`, `#1234`       |
+| Linear       | `^[A-Z]+-\d+$`         | `ENG-42`, `CORE-7`   |
+| Azure DevOps | `^\d+$`                | `12345`              |
+| Shortcut     | `^\d+$`                | `8675`               |
+
+**Notion** (kept out of the table because the regex contains a pipe that GFM table cells force-escape, breaking the regex when read literally): `^(?:[0-9a-f]{32}|[0-9a-f-]{36})$`. This is a non-capturing alternation — the pipe is a real regex alternation, not a literal pipe — and it matches either a 32-character bare-hex Notion ID (e.g. `abc123def456...`) or a 36-character UUID with dashes (e.g. `abc12345-def6-...`). Implementations must use this alternation form, **not** an escaped-pipe form like `^[0-9a-f]{32}$\|^[0-9a-f-]{36}$`, because in regex `\|` matches a literal pipe character, not alternation.
 
 The six regexes are hard-coded inline above — there is no shared lookup table, and Step 4c does not consult any other workflow file for them. If a future board is added, this table is updated in the same PR.
 
@@ -580,13 +581,13 @@ To retry with a corrected key:
   /clancy:approve-plan {stem} --push --ticket {CORRECT_KEY}
 ```
 
-The local `.clancy/plans/{stem}.approved` marker **stays in place and is preserved**. Mismatch is a Step 4c failure, not a Step 4a failure — the marker write succeeded and the plan IS approved. The marker is authoritative; Step 4c never rolls back. After printing the error, append a row to `.clancy/progress.txt`:
+The local `.clancy/plans/{stem}.approved` marker **stays in place and is preserved**. Mismatch is a Step 4c failure, not a Step 4a failure — the marker write succeeded and the plan IS approved. The marker is authoritative; Step 4c never rolls back. After printing the error, **record the failure outcome** (without writing to `.clancy/progress.txt` yet) and continue to Step 7. The row Step 7 will write on its behalf:
 
 ```
 YYYY-MM-DD HH:MM | {stem} | BOARD_PUSH_FAILED | key-mismatch:{KEY}
 ```
 
-Then continue to Step 7 (Confirm and log) — the local-mode success block still renders for the marker write, with the mismatch error printed above it.
+The local-mode success block still renders for the marker write in Step 7, with the mismatch error printed above it.
 
 ### Flags governing Step 4c
 
@@ -618,7 +619,7 @@ Step 4c's behaviour depends on three orthogonal axes: `--push`, `--afk`, and `--
 | **`--afk --push`**                | yes      | yes     | no             | Push without prompting. Auto-detect Source.                                                     |
 | **`--afk --push --ticket KEY`**   | yes      | yes     | yes            | Push without prompting using the override `KEY`.                                                |
 
-The `--afk` without `--push` cell logs a token to `.clancy/progress.txt` so the user can see in their audit trail that an unattended run deliberately stayed local-only:
+The `--afk` without `--push` cell **records a `LOCAL_ONLY` outcome** (without writing to `.clancy/progress.txt` yet) so the user can see in their audit trail that an unattended run deliberately stayed local-only. The row Step 7 will write on its behalf:
 
 ```
 YYYY-MM-DD HH:MM | {stem} | LOCAL_ONLY | afk-without-push
@@ -737,9 +738,9 @@ curl -s \
 
 <!-- curl-blocks:approve-plan-push:end -->
 
-### Push success — log the second audit row
+### Push success — record the second audit row
 
-When the curl returns a 2xx response, the comment is live on the source ticket. Append a **second** row to `.clancy/progress.txt` immediately after the existing `LOCAL_APPROVE_PLAN | sha256={...}` row from Step 7's local-mode log block:
+When the curl returns a 2xx response, the comment is live on the source ticket. **Record a push-success outcome** with the resolved `{KEY}` (without writing to `.clancy/progress.txt` yet). Step 7 writes the second row immediately after `LOCAL_APPROVE_PLAN`:
 
 ```
 YYYY-MM-DD HH:MM | {stem} | LOCAL_APPROVE_PLAN_PUSH | {KEY}
@@ -749,7 +750,7 @@ Two rows total per successful approve+push: one for the marker write (`LOCAL_APP
 
 The success row uses the same `{stem} | TOKEN | {detail}` column convention as every other progress.txt row in the file ([`plan.md` Step 6](./plan.md) for the canonical convention).
 
-After logging, surface the success in Step 7's local-mode block (the existing block already renders for the marker write — Step 4c's success path adds nothing extra to it on non-Notion platforms; the Notion-only flat-text note from Step 7 below renders only when the push target was Notion).
+The existing local-mode success block in Step 7 already renders for the marker write — Step 4c's success path adds nothing extra to it on non-Notion platforms; the Notion-only flat-text note from Step 7 below renders only when the push target was Notion.
 
 ### Handling push failure (HTTP non-2xx, network, timeout, dns, auth)
 
@@ -773,7 +774,7 @@ To retry the push:
 
 The retry command pattern is **exact** — `/clancy:approve-plan {stem} --push --ticket {KEY}` — so the user can copy-paste it without modification. The `--push` flag triggers the retry path (see Step 4a's `EEXIST + --push` fall-through above), and `--ticket {KEY}` re-supplies the resolved key in case the user is in a fresh shell where Source auto-detect would have to re-read the plan file.
 
-Append a row to `.clancy/progress.txt`:
+**Record the failure outcome** (without writing to `.clancy/progress.txt` yet) with the classified reason. The row Step 7 will write on its behalf:
 
 ```
 YYYY-MM-DD HH:MM | {stem} | BOARD_PUSH_FAILED | {http_status_or_error_class}
@@ -783,7 +784,7 @@ This is the same `BOARD_PUSH_FAILED` token used by the key-mismatch path above, 
 
 **Reason-field disambiguation contract.** The `BOARD_PUSH_FAILED` reason field is one of three disjoint shapes: a literal HTTP status code (`403`, `404`, `429`, `500`, ...), a lowercase error class from the closed set `network`/`timeout`/`dns`/`auth`, or the prefixed form `key-mismatch:{KEY}`. The `key-mismatch:` prefix is reserved — any future BOARD_PUSH_FAILED reason that introduces structured detail must use a similarly prefixed form (e.g. `rate-limit:60s`) so that downstream parsers can disambiguate by looking at the first token before any colon. HTTP status codes start with a digit and the error-class vocabulary is closed, so neither collides with a `letter:` prefix.
 
-After printing the error and logging the row, continue to Step 7 (Confirm and log) — the local-mode success block still renders for the marker write, with the push-failure error printed above it. Push failure is **never** an exit-non-zero condition: the marker write succeeded, the audit trail captures the push failure, and the user has an actionable retry command.
+After printing the error and recording the outcome, continue to Step 7 (Confirm and log) — the local-mode success block still renders for the marker write, with the push-failure error printed above it. Push failure is **never** an exit-non-zero condition: the marker write succeeded, the audit trail captures the push failure (Step 7 writes the row), and the user has an actionable retry command.
 
 After Step 4c completes (push attempted, push skipped, or gate failed), continue to Step 7 (Confirm and log).
 
@@ -1516,6 +1517,23 @@ YYYY-MM-DD HH:MM | {stem} | LOCAL_APPROVE_PLAN | sha256={first 12 hex}
 ```
 
 The `LOCAL_APPROVE_PLAN` token mirrors the `LOCAL_PLAN` / `LOCAL_REVISED` convention used by `/clancy:plan --from` (see [`plan.md` Step 6](./plan.md)). The token is for human audit only — any future plan-implementing tool reads the `.clancy/plans/{stem}.approved` marker directly rather than scanning `progress.txt` for approval state.
+
+#### Step 4c outcome row (write immediately after LOCAL_APPROVE_PLAN)
+
+Step 4c does **not** write to `.clancy/progress.txt` itself — it records an outcome and Step 7 writes the row immediately after the `LOCAL_APPROVE_PLAN` row above. This guarantees that `LOCAL_APPROVE_PLAN` always lands first in the file (the marker write is the primary audit event) and the Step 4c outcome (push success, skip, or failure) lands second on the very next line.
+
+The Step 4c outcome is one of these five possibilities — write the matching row if Step 4c ran AND produced an outcome, otherwise write nothing extra:
+
+| Step 4c outcome                                                                            | Row to write after `LOCAL_APPROVE_PLAN`                                           |
+| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| Push success (curl returned 2xx)                                                           | `YYYY-MM-DD HH:MM \| {stem} \| LOCAL_APPROVE_PLAN_PUSH \| {KEY}`                  |
+| Skip — Source was inline-quoted or file-path (no pushable ticket)                          | `YYYY-MM-DD HH:MM \| {stem} \| BOARD_PUSH_SKIPPED_NO_TICKET \| {source_format}`   |
+| Skip — `--afk` was set without `--push` (deliberately stayed local-only)                   | `YYYY-MM-DD HH:MM \| {stem} \| LOCAL_ONLY \| afk-without-push`                    |
+| Failure — `{KEY}` did not match the configured board's regex (Step 4c hard-error)          | `YYYY-MM-DD HH:MM \| {stem} \| BOARD_PUSH_FAILED \| key-mismatch:{KEY}`           |
+| Failure — curl returned non-2xx, or transport-layer failure                                | `YYYY-MM-DD HH:MM \| {stem} \| BOARD_PUSH_FAILED \| {http_status_or_error_class}` |
+| Step 4c gate failed (no board credentials in `.clancy/.env`) OR Step 4c did not run at all | _(no second row — only the `LOCAL_APPROVE_PLAN` row above)_                       |
+
+The two-row layout is the contract every downstream audit grep and Step 8 inventory reader assumes: `LOCAL_APPROVE_PLAN` first, optional Step 4c outcome second, never out of order. If Step 4c was not invoked (e.g. board ticket key flow routes through Steps 5/5b/6 instead) or its credential gate failed silently, the file just has the single `LOCAL_APPROVE_PLAN` row.
 
 ---
 
