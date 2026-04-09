@@ -1,6 +1,6 @@
 {
   "name": "chief-clancy",
-  "version": "0.9.12",
+  "version": "0.9.13",
   "description": "Autonomous, board-driven development for Claude Code",
   "author": "Alex Clapperton",
   "license": "MIT",
