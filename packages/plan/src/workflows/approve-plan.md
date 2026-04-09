@@ -95,7 +95,7 @@ If declined: `Cancelled.` Stop.
 
 In these modes the argument may be either a plan-file stem or a board ticket key. **Try plan-file lookup first (does `.clancy/plans/{arg}.md` exist?)**, then fall back to ticket-key validation. The plan stem wins over ticket key on collision (e.g. if `PROJ-123.md` exists in `.clancy/plans/` AND `PROJ-123` is a valid ticket key, the plan stem wins). Document the collision rule explicitly so users are not surprised.
 
-**With argument that resolves to a plan file:** continue to Step 4 (Confirm), then Step 4a (Write local marker). The board push offer for plan-file-stem mode is deferred to a future PR — for now the local marker is the only side effect.
+**With argument that resolves to a plan file:** continue to Step 4 (Confirm), then Step 4a (Write local marker), Step 4b (Update brief marker), and Step 4c (Optional board push). Step 4c is best-effort and gated on board credentials being present in `.clancy/.env`; in standalone+board mode it offers to push the approved plan to the source ticket as a comment (interactive `[y/N]` prompt, default No — never surprise-write to a board), and in standalone-only mode it skips silently because there are no credentials. See Step 4c below for the full decision matrix and the `--push` / `--ticket KEY` flags.
 
 **With argument that does not resolve to a plan file:** validate as a ticket key per the board configured in `.clancy/.env` (case-insensitive):
 
@@ -523,7 +523,7 @@ If the plan file has no `**Source:**` header line (e.g. a hand-edited plan, or a
 
 Brief writes the Source field in **one of three formats** (per [`packages/brief/src/workflows/brief.md` lines ~806-810](../../../brief/src/workflows/brief.md)). Step 4c classifies the captured Source value into one of these three buckets:
 
-1. **Bracketed key — pushable.** The Source value matches `^\[(#?\d+|[A-Z][A-Z0-9]*-\d+)\]\s+.+$` (e.g. `[#50] Redesign settings page`, `[PROJ-200] Add customer portal`, `[ENG-42] Add real-time notifications`). Extract the key from inside the brackets. **This is the only format that can be pushed to a board.** Continue to the key validation sub-step below.
+1. **Bracketed key — pushable.** The Source value matches `^\[(#?\d+|[A-Za-z][A-Za-z0-9]*-\d+|notion-[a-f0-9]{8}|[a-f0-9]{32}|[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})\]\s+.+$`. Five accepted shapes inside the brackets: bare or `#`-prefixed integer (GitHub, Azure DevOps, Shortcut), `ABC-123` style alphanumeric prefix + dash + digits (Jira, Linear, Shortcut, with lowercase allowed), `notion-xxxxxxxx` short key, 32-character bare-hex Notion ID, or 36-character UUID with dashes. Examples: `[#50] Redesign settings page`, `[PROJ-200] Add customer portal`, `[ENG-42] Add real-time notifications`, `[notion-ab12cd34] Quarterly planning hub`, `[9f1c2d3e4a5b6789c0d1e2f3a4b5c6d7] Quarterly planning hub`, `[9f1c2d3e-4a5b-6789-c0d1-e2f3a4b5c6d7] Quarterly planning hub`. Extract the key from inside the brackets. **This is the only format that can be pushed to a board.** Continue to the key validation sub-step below — the validation step re-checks the extracted key against the configured board's regex (e.g. a 32-hex Notion ID extracted here will be re-validated against the Notion regex, not the Jira one).
 2. **Inline-quoted text — no ticket.** The Source value matches `^"[^"]+"$` (e.g. `"Add dark mode support"`). The user gave brief a free-text idea instead of a board ticket reference. There is no ticket to push to.
 3. **File path — no ticket.** The Source value matches anything else that is not a bracketed key (e.g. `docs/rfcs/auth-rework.md`). The user pointed brief at a local document. There is no ticket to push to.
 
@@ -555,17 +555,17 @@ Detect the configured board by reading `.clancy/.env` (the same detection used b
 
 Match the extracted `{KEY}` against the per-platform regex for the configured board:
 
-| Platform     | Regex                  | Example keys         |
-| ------------ | ---------------------- | -------------------- |
-| Jira         | `^[A-Z][A-Z0-9]+-\d+$` | `PROJ-200`, `ENG-42` |
-| GitHub       | `^#\d+$`               | `#50`, `#1234`       |
-| Linear       | `^[A-Z]+-\d+$`         | `ENG-42`, `CORE-7`   |
-| Azure DevOps | `^\d+$`                | `12345`              |
-| Shortcut     | `^\d+$`                | `8675`               |
+| Platform     | Regex                        | Example keys                 |
+| ------------ | ---------------------------- | ---------------------------- |
+| Jira         | `^[A-Za-z][A-Za-z0-9]+-\d+$` | `PROJ-200`, `proj-200`       |
+| GitHub       | `^#?\d+$`                    | `#50`, `50`, `#1234`, `1234` |
+| Linear       | `^[A-Za-z]{1,10}-\d+$`       | `ENG-42`, `eng-42`, `CORE-7` |
+| Azure DevOps | `^\d+$`                      | `12345`                      |
+| Shortcut     | `^(?:[A-Za-z]{1,5}-)?\d+$`   | `8675`, `SC-8675`, `sc-123`  |
 
-**Notion** (kept out of the table because the regex contains a pipe that GFM table cells force-escape, breaking the regex when read literally): `^(?:[0-9a-f]{32}|[0-9a-f-]{36})$`. This is a non-capturing alternation — the pipe is a real regex alternation, not a literal pipe — and it matches either a 32-character bare-hex Notion ID (e.g. `abc123def456...`) or a 36-character UUID with dashes (e.g. `abc12345-def6-...`). Implementations must use this alternation form, **not** an escaped-pipe form like `^[0-9a-f]{32}$\|^[0-9a-f-]{36}$`, because in regex `\|` matches a literal pipe character, not alternation.
+**Notion** (kept out of the table because the regex contains a pipe that GFM table cells force-escape, breaking the regex when read literally): `^(?:notion-[a-f0-9]{8}|[a-f0-9]{32}|[a-f0-9-]{36})$`. This is a non-capturing alternation — the pipe is a real regex alternation, not a literal pipe — and it matches three accepted Notion key forms: a `notion-xxxxxxxx` short key (e.g. `notion-ab12cd34`), a 32-character bare-hex Notion ID (e.g. `abc123def456...`), or a 36-character UUID with dashes (e.g. `abc12345-def6-...`). Implementations must use this alternation form, **not** an escaped-pipe form like `^notion-[a-f0-9]{8}$\|^[a-f0-9]{32}$\|^[a-f0-9-]{36}$`, because in regex `\|` matches a literal pipe character, not alternation.
 
-The six regexes are hard-coded inline above — there is no shared lookup table, and Step 4c does not consult any other workflow file for them. If a future board is added, this table is updated in the same PR.
+The six regexes are hard-coded inline above — there is no shared lookup table, and Step 4c does not consult any other workflow file for them. They mirror the broader Step 2 ticket-key formats (lowercase allowed, optional `#` on GitHub, optional `SC-` prefix on Shortcut, `notion-xxxxxxxx` short keys) so a key that Step 2 accepts is the same key Step 4c accepts. If a future board is added, this table is updated in the same PR.
 
 ### Hard-error on key/board mismatch
 

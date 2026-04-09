@@ -1305,20 +1305,24 @@ describe('approve-plan Step 4c key validation (PR 9 Slice 4)', () => {
     // Each assertion requires a literal `\d` (escaped backslash + d) so a
     // doc that accidentally drops the backslash from the regex table fails
     // the test instead of silently passing on a bare `d`. The Jira and
-    // Linear assertions match on the [A-Z] character class (their first
-    // distinguishing feature) and tighten with \\d for the digits.
-    // Jira: ^[A-Z][A-Z0-9]+-\d+$
-    expect(fourCBody).toMatch(/Jira[\s\S]{0,200}\[A-Z\]\[A-Z0-9\]\+-\\d/);
-    // GitHub: ^#\d+$
-    expect(fourCBody).toMatch(/GitHub[\s\S]{0,200}#\\d/);
-    // Linear: ^[A-Z]+-\d+$
-    expect(fourCBody).toMatch(/Linear[\s\S]{0,200}\[A-Z\]\+-\\d/);
+    // Linear assertions match on the [A-Za-z] character class (their first
+    // distinguishing feature — lowercase allowed for parity with Step 2)
+    // and tighten with \\d for the digits.
+    // Jira: ^[A-Za-z][A-Za-z0-9]+-\d+$
+    expect(fourCBody).toMatch(/Jira[\s\S]{0,200}\[A-Za-z\]\[A-Za-z0-9\]\+-\\d/);
+    // GitHub: ^#?\d+$ — optional # so bare numbers are accepted (Step 2 parity)
+    expect(fourCBody).toMatch(/GitHub[\s\S]{0,200}#\?\\d/);
+    // Linear: ^[A-Za-z]{1,10}-\d+$
+    expect(fourCBody).toMatch(/Linear[\s\S]{0,200}\[A-Za-z\]\{1,10\}-\\d/);
     // Azure DevOps: ^\d+$
     expect(fourCBody).toMatch(/Azure DevOps[\s\S]{0,200}\\d/);
-    // Shortcut: ^\d+$
-    expect(fourCBody).toMatch(/Shortcut[\s\S]{0,200}\\d/);
-    // Notion: 32-hex or 36-char UUID alternation
-    expect(fourCBody).toMatch(/Notion[\s\S]{0,200}\[0-9a-f\]/);
+    // Shortcut: ^(?:[A-Za-z]{1,5}-)?\d+$ — optional alpha prefix
+    expect(fourCBody).toMatch(
+      /Shortcut[\s\S]{0,200}\(\?:\[A-Za-z\]\{1,5\}-\)\?\\d/,
+    );
+    // Notion: notion-xxxxxxxx | 32-hex | 36-char UUID alternation
+    expect(fourCBody).toMatch(/Notion[\s\S]{0,200}notion-/);
+    expect(fourCBody).toMatch(/Notion[\s\S]{0,200}\[a-f0-9\]/);
   });
 
   it('Step 4c selects the regex from the configured board (single-board env)', () => {
