@@ -1232,3 +1232,75 @@ describe('approve-plan Step 4c source-format parser (PR 9 Slice 3)', () => {
     expect(skipRegion).toMatch(/Step 7|continue|proceed/i);
   });
 });
+
+// PR 9 — Slice 4: per-platform key validation. Once Source has been parsed
+// into a bracketed-key form, the extracted key must match the configured
+// board's regex BEFORE any push attempt. Six platforms, six inline regexes,
+// hard-error on mismatch — no second-chance fallback. Single-board env, no
+// cross-board disambiguation.
+describe('approve-plan Step 4c key validation (PR 9 Slice 4)', () => {
+  const content = readFileSync(
+    new URL('approve-plan.md', import.meta.url),
+    'utf8',
+  );
+  const fourCStart = content.indexOf('## Step 4c — Optional board push');
+  const fourCEnd = content.indexOf('## Step 5 — Update ticket description');
+  const fourCBody = content.slice(fourCStart, fourCEnd);
+
+  it('Step 4c declares all six per-platform key regexes inline', () => {
+    // Jira: PROJ-123 form (alpha prefix + dash + digits)
+    expect(fourCBody).toMatch(/Jira[\s\S]{0,200}\[A-Z\]/);
+    // GitHub: #50 form (hash + digits)
+    expect(fourCBody).toMatch(/GitHub[\s\S]{0,200}#\\?d/);
+    // Linear: ENG-42 form (alpha prefix + dash + digits)
+    expect(fourCBody).toMatch(/Linear[\s\S]{0,200}\[A-Z\]/);
+    // Azure DevOps: bare integer
+    expect(fourCBody).toMatch(/Azure DevOps[\s\S]{0,200}\\?d/);
+    // Shortcut: bare integer
+    expect(fourCBody).toMatch(/Shortcut[\s\S]{0,200}\\?d/);
+    // Notion: 32-36 hex chars (UUID)
+    expect(fourCBody).toMatch(/Notion[\s\S]{0,200}(0-9a-f|hex|UUID)/i);
+  });
+
+  it('Step 4c selects the regex from the configured board (single-board env)', () => {
+    // Detection mirrors Step 1's three-state preflight — same .env reads.
+    expect(fourCBody).toMatch(/configured board|board.*configured/i);
+    expect(fourCBody).toMatch(/single[- ]board/i);
+  });
+
+  it('Step 4c validates the extracted key BEFORE any push attempt', () => {
+    // Validation must happen before the curl region — not after.
+    const validateIdx = fourCBody.search(/validat/i);
+    const anchorIdx = fourCBody.indexOf(
+      '<!-- curl-blocks:approve-plan-push:start -->',
+    );
+    expect(validateIdx).toBeGreaterThan(-1);
+    expect(anchorIdx).toBeGreaterThan(-1);
+    expect(validateIdx).toBeLessThan(anchorIdx);
+  });
+
+  it('Step 4c hard-errors on key/board mismatch (no fallback)', () => {
+    // Mismatch is a hard error — not a silent skip, not a warning. The
+    // user explicitly asked to push something the board can't accept.
+    expect(fourCBody).toMatch(/hard[- ]error|hard error/i);
+    // No second-chance — the test must reject prose suggesting a fallback
+    // platform attempt or a "try the other regex" path.
+    expect(fourCBody).not.toMatch(/try the other|fall ?back to[^.]*platform/i);
+  });
+
+  it('Step 4c key-mismatch error names the key and the configured board', () => {
+    // Error message must be actionable: which key, which board.
+    expect(fourCBody).toMatch(
+      /\{KEY\}[\s\S]{0,400}\{board\}|\{board\}[\s\S]{0,400}\{KEY\}/,
+    );
+  });
+
+  it('Step 4c key-mismatch DOES NOT roll back the local marker', () => {
+    // Same best-effort rule as push failure — the marker is authoritative.
+    // A bad --ticket override should never undo a successful Step 4a.
+    const mismatchRegion = fourCBody.slice(fourCBody.search(/hard[- ]error/i));
+    expect(mismatchRegion).toMatch(
+      /marker[^.]*(stays|preserved|kept|authoritative)|never[^.]*rolls?[- ]?back/i,
+    );
+  });
+});

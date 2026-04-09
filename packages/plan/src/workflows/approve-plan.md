@@ -535,6 +535,49 @@ In the local-mode success block (rendered by Step 7), surface the skip as a non-
 
 This is informational, not an error. The plan IS approved; the absence of a board push is the expected outcome for non-bracketed Source values. After logging and surfacing the note, continue to Step 7 normally.
 
+### Validate the extracted key against the configured board
+
+When the parsed Source is the bracketed-key form (or when `--ticket {KEY}` was passed as an override — see the slice 5 decision matrix), the extracted `{KEY}` value must be validated against the **configured board's** key pattern **before any push attempt is made**. Validation happens here, not after the curl request — a malformed key should never reach the network.
+
+Detect the configured board by reading `.clancy/.env` (the same detection used by [Step 1's three-state preflight](#step-1--preflight-checks) and by Step 4c's credential gate above). This is a **single-board environment** — `.clancy/.env` configures exactly one board, and there is no cross-board disambiguation. Whichever board is configured, that board's regex is the only one Step 4c validates against.
+
+Match the extracted `{KEY}` against the per-platform regex for the configured board:
+
+| Platform     | Regex                             | Example keys               |
+| ------------ | --------------------------------- | -------------------------- |
+| Jira         | `^[A-Z][A-Z0-9]+-\d+$`            | `PROJ-200`, `ENG-42`       |
+| GitHub       | `^#\d+$`                          | `#50`, `#1234`             |
+| Linear       | `^[A-Z]+-\d+$`                    | `ENG-42`, `CORE-7`         |
+| Azure DevOps | `^\d+$`                           | `12345`                    |
+| Shortcut     | `^\d+$`                           | `8675`                     |
+| Notion       | `^[0-9a-f]{32}$\|^[0-9a-f-]{36}$` | `abc123...` (32 or 36 hex) |
+
+The six regexes are hard-coded inline above — there is no shared lookup table, and Step 4c does not consult any other workflow file for them. If a future board is added, this table is updated in the same PR.
+
+### Hard-error on key/board mismatch
+
+If the extracted `{KEY}` does not match the configured `{board}`'s regex, Step 4c **hard-errors before attempting any push**. There is no second-chance: Step 4c never attempts a different platform's regex, never retries against an alternate board, and never silently skips the push. The mismatch is a user-actionable error — either the Source field in the brief was malformed, or the `--ticket` override targeted the wrong board.
+
+Display the error:
+
+```
+✗ Step 4c: extracted key `{KEY}` does not match the configured `{board}` key format.
+  Expected pattern: {regex from the table above}
+  Source value:     {raw Source line from the plan file}
+
+The local marker is unchanged — your plan is still approved.
+To retry with a corrected key:
+  /clancy:approve-plan {stem} --push --ticket {CORRECT_KEY}
+```
+
+The local `.clancy/plans/{stem}.approved` marker **stays in place and is preserved**. Mismatch is a Step 4c failure, not a Step 4a failure — the marker write succeeded and the plan IS approved. The marker is authoritative; Step 4c never rolls back. After printing the error, append a row to `.clancy/progress.txt`:
+
+```
+YYYY-MM-DD HH:MM | BOARD_PUSH_FAILED | {stem} | key-mismatch:{KEY}
+```
+
+Then continue to Step 7 (Confirm and log) — the local-mode success block still renders for the marker write, with the mismatch error printed above it.
+
 <!-- curl-blocks:approve-plan-push:start -->
 <!-- This region is reserved for the duplicated platform curl blocks. The canonical source lives between the matching anchors in plan.md Step 5b. Slice 6 populates this region; until then it is intentionally empty so the slice 0 drift-prevention test (workflows.test.ts) can assert anchor presence without enforcing byte-equality. Slice 6 promotes the test to a byte-equality check. Edit one anchored region — update the other in the same commit. -->
 <!-- curl-blocks:approve-plan-push:end -->
