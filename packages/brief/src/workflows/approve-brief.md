@@ -328,7 +328,7 @@ Every child ticket gets exactly one pipeline label. The label determines which q
 3. Install mode is **terminal** AND `CLANCY_ROLES` includes `planner` (or `CLANCY_ROLES` is unset, indicating a global install where all roles are available) → use `CLANCY_LABEL_PLAN` from `.clancy/.env` if set, otherwise `clancy:plan`.
 4. Install mode is **terminal** AND `CLANCY_ROLES` is set but does NOT include `planner` → use `CLANCY_LABEL_BUILD` from `.clancy/.env` if set, otherwise `clancy:build`. The terminal user has explicitly opted out of the planning queue by not enabling the planner role.
 
-This rule replaces the per-platform fallthrough that used to live in each of the six platform subsections below. Each subsection now applies the rule rather than re-enumerating it. Ensure the chosen label exists on the board (create it if missing), then add it to each child ticket.
+This rule replaces the per-platform fallthrough that used to live in each of the six platform subsections below. Each subsection now applies the rule rather than re-enumerating it. Apply the chosen label to each child ticket, creating it first only on platforms that require explicit label creation (the per-platform subsections below document which platforms auto-create vs require pre-creation).
 
 ### GitHub
 
