@@ -2,7 +2,7 @@
 
 Approve a Clancy implementation plan. Behaviour depends on the install context and the argument:
 
-- **Local plan file:** `/clancy:approve-plan add-dark-mode-2` — write a `.clancy/plans/{stem}.approved` marker (with the plan's SHA-256 + approval timestamp) and update the source brief's row marker. The marker is the gate `/clancy:implement-from` checks before applying changes
+- **Local plan file:** `/clancy:approve-plan add-dark-mode-2` — write a `.clancy/plans/{stem}.approved` marker (with the plan's SHA-256 + approval timestamp) and update the source brief's row marker. The marker is the gate any plan-implementing tool checks before applying changes (a dedicated `/clancy:implement-from` slash command is deferred until `@chief-clancy/dev` is extracted)
 - **Board ticket:** `/clancy:approve-plan PROJ-123` — promote an approved plan from a ticket comment to the ticket description, edit the plan comment with an approval note, swap the ticket labels (`CLANCY_LABEL_PLAN` → `CLANCY_LABEL_BUILD`, both with sensible defaults), and — only if `CLANCY_STATUS_PLANNED` is configured — transition the ticket status. Requires board credentials. Runs in both standalone+board and terminal modes (the full pipeline is not required for the board transport flow itself; it is only required for downstream `/clancy:implement` to consume the result)
 - **No argument:** auto-select the oldest unapproved plan. In standalone mode this scans `.clancy/plans/`; in standalone+board / terminal mode it scans `.clancy/progress.txt` for board tickets
 

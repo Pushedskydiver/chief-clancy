@@ -4,7 +4,7 @@
 
 Approve a Clancy implementation plan. Behaviour depends on the install context:
 
-- **Standalone mode** (no `.clancy/.env`): write a local `.clancy/plans/{stem}.approved` marker file with the plan's SHA-256 and approval timestamp. The marker is the gate `/clancy:implement-from` checks before applying changes
+- **Standalone mode** (no `.clancy/.env`): write a local `.clancy/plans/{stem}.approved` marker file with the plan's SHA-256 and approval timestamp. The marker is the gate any plan-implementing tool checks before applying changes (a dedicated `/clancy:implement-from` slash command is deferred until `@chief-clancy/dev` is extracted; users in the meantime ask Claude Code to apply the plan via natural-language instruction or install the full pipeline)
 - **Standalone+board mode** (`.clancy/.env` present, no full pipeline): with a board ticket key, run the existing comment-to-description transport flow; with a plan-file stem, write the local marker (board push lands in PR 9)
 - **Terminal mode** (full pipeline installed): existing behaviour — promote an approved plan from a ticket comment to the ticket description and transition the ticket to the implementation queue
 
@@ -360,7 +360,7 @@ After confirmation in plan-file stem mode, jump to Step 4a (local marker write).
 
 ## Step 4a — Write local marker
 
-Run this step instead of Steps 5, 5b, 6 when the resolved argument was a plan-file stem (standalone mode, or standalone+board / terminal mode where Step 2 found a matching plan file). Write a `.clancy/plans/{stem}.approved` marker that gates `/clancy:implement-from`.
+Run this step instead of Steps 5, 5b, 6 when the resolved argument was a plan-file stem (standalone mode, or standalone+board / terminal mode where Step 2 found a matching plan file). Write a `.clancy/plans/{stem}.approved` marker that gates plan implementation (see "Marker is the gate for future implementation tooling" below for the deferral context).
 
 ### Compute the SHA-256
 
@@ -370,7 +370,7 @@ Run this step instead of Steps 5, 5b, 6 when the resolved argument was a plan-fi
 2. Compute the SHA-256 hash of those bytes — no normalisation (no line-ending fix, no trailing-whitespace strip, no BOM removal). Hex-encode lowercase.
 3. **Then** (only after the hash is computed) open the `.approved` marker for exclusive create as described below.
 
-The `.approved` file is **never** included in the hash — only `.clancy/plans/{stem}.md` is hashed, and only its on-disk byte content at the moment of step 1. PR 8's `/clancy:implement-from` re-reads the same plan file, hashes it the same way, and compares to the `sha256=` value stored in the marker. Any divergence (re-edit, line-ending change, trailing whitespace tweak) blocks implementation until re-approval.
+The `.approved` file is **never** included in the hash — only `.clancy/plans/{stem}.md` is hashed, and only its on-disk byte content at the moment of step 1. The marker is designed so a future implementer (deferred to `@chief-clancy/dev`) can re-read the same plan file, hash it the same way, and compare to the `sha256=` value stored in the marker. Until that consumer ships, the gate is enforced manually: a user (or Claude Code via natural-language instruction) reads the marker, hashes the plan file, and refuses to apply the plan on mismatch. Any divergence (re-edit, line-ending change, trailing whitespace tweak) is detectable.
 
 ### Write the marker file with O_EXCL
 
@@ -381,7 +381,7 @@ sha256={hex sha256 of the plan file at approval time}
 approved_at={ISO 8601 UTC timestamp, e.g. 2026-04-08T22:30:00Z}
 ```
 
-Two `key=value` lines, each terminated with `\n`. No JSON, no extra whitespace, no comments. PR 8 parses this with a tolerant `^(sha256|approved_at)=(.+)$` regex per line.
+Two `key=value` lines, each terminated with `\n`. No JSON, no extra whitespace, no comments. A future implementer (deferred to `@chief-clancy/dev`) will parse this with a tolerant `^(sha256|approved_at)=(.+)$` regex per line. Until that consumer ships, the format is also human-readable for ad-hoc verification.
 
 ### Handle EEXIST (already-approved)
 
@@ -397,9 +397,14 @@ To re-approve (e.g. after revising the plan):
 
 A `--fresh` flag for `/clancy:approve-plan` is not implemented in this release. Manual deletion is the supported re-approval path.
 
-### Marker is the gate for /clancy:implement-from
+### Marker is the gate for future implementation tooling
 
-The `.approved` marker is the gate `/clancy:implement-from` checks before applying changes. PR 8 reads the marker, hashes the current plan file, and compares to the stored `sha256`. Match → proceed; mismatch → block with a "plan changed since approval" error. This is why the SHA must be computed over the plan file content (not just touched as an empty file).
+The `.approved` marker is designed as the gate that any plan-implementing tool checks before applying changes. The conceptual flow: read the marker, hash the current plan file, compare to the stored `sha256`. Match → proceed; mismatch → block with a "plan changed since approval" error. This is why the SHA must be computed over the plan file content (not just touched as an empty file).
+
+A dedicated `/clancy:implement-from` slash command was scoped as PR 8 of this Phase but is **deferred** until `@chief-clancy/dev` is extracted (the slash command is convenience, not capability — Claude Code can already do the SHA gate + structured plan parse via natural-language instruction). In the meantime, users apply approved plans by:
+
+1. Asking Claude Code to read the plan file directly: `Implement .clancy/plans/{stem}.md, verifying the .approved marker's sha256 first`
+2. Installing the full Clancy pipeline (`npx chief-clancy`) for the board-driven flow
 
 ### After writing the marker
 
@@ -1164,7 +1169,9 @@ Clancy — Approve Plan (local)
    Marker: .clancy/plans/{stem}.approved
    sha256: {first 12 hex chars}…
 
-Next: /clancy:implement-from .clancy/plans/{stem}.md
+Next:
+  • Ask Claude Code: "Implement .clancy/plans/{stem}.md (verify the .approved marker's sha256 first)"
+  • Or run `npx chief-clancy` for the full board-driven pipeline
 
 "Book 'em, Lou."
 ```
@@ -1183,7 +1190,7 @@ Append to `.clancy/progress.txt`:
 YYYY-MM-DD HH:MM | {stem} | LOCAL_APPROVE_PLAN | sha256={first 12 hex}
 ```
 
-The `LOCAL_APPROVE_PLAN` token mirrors the `LOCAL_PLAN` / `LOCAL_REVISED` convention used by `/clancy:plan --from` (see [`plan.md` Step 6](./plan.md)). PR 8's `/clancy:implement-from` does NOT scan progress.txt for approval state — it reads the `.clancy/plans/{stem}.approved` marker directly. The log entry is for human audit only.
+The `LOCAL_APPROVE_PLAN` token mirrors the `LOCAL_PLAN` / `LOCAL_REVISED` convention used by `/clancy:plan --from` (see [`plan.md` Step 6](./plan.md)). The token is for human audit only — any future plan-implementing tool reads the `.clancy/plans/{stem}.approved` marker directly rather than scanning `progress.txt` for approval state.
 
 ---
 

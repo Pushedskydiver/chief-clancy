@@ -645,9 +645,9 @@ describe('plan inventory step', () => {
     expect(content).toContain('plan file was edited after approval');
   });
 
-  it('reserves an Implemented state for PR 8 without claiming it exists today', () => {
+  it('reserves an Implemented state for the deferred plan-implementing tool', () => {
     expect(content).toContain('Implemented');
-    expect(content).toContain('PR 8');
+    expect(content).toMatch(/deferred|future plan-implementing tool/i);
     expect(content).toContain('shows three states');
   });
 
@@ -853,9 +853,10 @@ describe('approve-plan local marker (Step 4a)', () => {
     expect(content).toContain('already approved');
   });
 
-  it('explains the marker is the gate for /clancy:implement-from', () => {
-    expect(content).toContain('/clancy:implement-from');
+  it('explains the marker is the gate for future implementation tooling', () => {
     expect(content).toContain('gate');
+    expect(content).toContain('future implementation tooling');
+    expect(content).toMatch(/deferred|future plan-implementing tool/i);
   });
 
   it('after writing the marker, Step 4a jumps to Step 7 (log) and skips board flow', () => {
@@ -942,10 +943,10 @@ describe('approve-plan local-mode log + summary (Step 7)', () => {
     expect(content).toContain('sha256={first 12 hex}');
   });
 
-  it('local success summary points to /clancy:implement-from', () => {
-    expect(content).toContain(
-      'Next: /clancy:implement-from .clancy/plans/{stem}.md',
-    );
+  it('local success summary points users at the deferred next-step paths', () => {
+    expect(content).toContain('Ask Claude Code:');
+    expect(content).toContain('Implement .clancy/plans/{stem}.md');
+    expect(content).toContain('npx chief-clancy');
   });
 
   it('preserves board-mode APPROVE_PLAN log entry', () => {
