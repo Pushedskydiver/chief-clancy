@@ -1,5 +1,63 @@
 # Progress
 
+## Session 57 Summary
+
+### Phase C PR 9 shipped — optional board push from `/clancy:approve-plan`. Phase C effectively complete (5 of 5 PRs merged, PR 8 deferred)
+
+This session shipped **PR #216** (Phase C PR 9) — `/clancy:approve-plan` now optionally pushes the approved plan to the source board ticket as a comment when the user is in standalone+board mode. Closes the "I have credentials and I want both modes" UX cliff. After PR 10 (this docs sync), Phase C is fully done and Phase D (brief absorbs approve-brief) can begin.
+
+**PR #216 (MERGED as 3cbfcc7)** — `✨ feat(plan)`: Phase C PR 9 — optional board push from `/clancy:approve-plan`:
+
+- New **Step 4c — Optional board push (best-effort)** in `packages/plan/src/workflows/approve-plan.md`. When approving a local plan-file stem, gates on (a) Step 4a having written a marker AND (b) board credentials present in `.clancy/.env`. Either gate failing → silent skip + continue to Step 7
+- New flags: `--push` (skip prompt + push immediately, also the retry path) and `--ticket KEY` (override Source auto-detect from `**Source:**` header in the plan file). Default interactive prompt is `[y/N]` with default No — never surprise-write to a board
+- Six per-platform key validation regexes inline in Step 4c, aligned to match Step 2's broader formats exactly: Jira `^[A-Za-z][A-Za-z0-9]+-\d+$`, GitHub `^#?\d+$`, Linear `^[A-Za-z]{1,10}-\d+$`, Azure DevOps `^\d+$`, Shortcut `^(?:[A-Za-z]{1,5}-)?\d+$`, Notion `^(?:notion-[a-f0-9]{8}|[a-f0-9]{32}|[a-f0-9-]{36})$`. The Notion regex lives outside the table because GFM force-escapes pipes inside table cells (real bug Copilot caught — see `feedback_workflow_md_gotchas.md`)
+- Six platform comment-POST curl blocks duplicated from `plan.md` Step 5b under HTML comment drift anchors. A workflow test byte-compares the two regions and fails on mismatch — editing one without updating the other can never silently diverge
+- EEXIST + `--push` retry path through Step 4a: re-running `/clancy:approve-plan {stem} --push` after a failed push falls through Step 4a's already-approved check, skips Step 4b (brief marker already updated), and re-attempts Step 4c. The original `sha256=` and `approved_at=` values are preserved
+- All Step 4c progress.txt writes are deferred to Step 7 so the audit row order is always `LOCAL_APPROVE_PLAN` first, then the Step 4c outcome row (one of: `LOCAL_APPROVE_PLAN_PUSH`, `BOARD_PUSH_SKIPPED_NO_TICKET`, `LOCAL_ONLY`, or `BOARD_PUSH_FAILED`). Two-row audit per approval, never out of order
+- 67 new tests (197 → **264 plan**). Test counts elsewhere unchanged: 1608 core, 836 terminal, 51 brief
+
+**Process notes from this session — extensive review history:**
+
+- **Architectural review** — Plan agent and general-purpose agent both 529'd from Anthropic capacity. Self-ran the architectural pass with full context loaded as the documented last-resort fallback (see `feedback_review_process.md`). COHESION + LAYERING + SCOPE all clean
+- **DA review** (general-purpose agent on third attempt after two 529s): caught 6 findings (H1 missing `LOCAL_APPROVE_PLAN_PUSH` token, H2 stale Step 4a routing prose, M1 column-order inconsistency, M2 EEXIST branch ordering, L1 disambiguation contract, L2 narrow stale-prose check). All addressed in `fed52bd`
+- **Copilot reviews — 5 rounds, 13 findings, every one a real bug:**
+  - Round 1 (5 findings, fixed in `6792b6f`): run-condition gate self-contradiction, 2x nested-backticks-in-bold breaking Prettier rendering, wrong relative path to brief.md (one segment short), changeset column order
+  - Round 2 (4 findings, fixed in `ca8ee16`): two ordering bugs where Step 4c claimed to write rows "after" Step 7 but executes BEFORE Step 7, Notion `\|` regex bug (escaped pipe matches literal pipe in JS regex, not alternation), test regex `\\?d` permissiveness (matches both `\d` and bare `d`)
+  - Round 3 (1 finding, fixed in `4317ad4`): Step 4a retry section claimed "one approval row even if 4c was attempted multiple times" but Step 7's local-mode block writes per-invocation
+  - Round 4 (3 findings, fixed in `6227b89`): stale "deferred to a future PR" prose at Step 2 (Step 4c was implemented in this same PR), Step 4c regexes stricter than Step 2's accepted formats (5 platform mismatches), bracketed-key parser missing Notion shapes
+  - Round 5 (1 finding, fixed in `b54ec45`): Notion test assertions too permissive — same class as the round 2 `\\?d` finding
+- **Cleanup:** 17 PR/slice references stripped from runtime workflow prose in `6baec2a` after Alex flagged that workflow files are Clancy's working knowledge, not a changelog. Captured as `feedback_no_pr_history_in_prompts.md`
+
+**Review-process improvements triggered by the PR 9 review history:**
+
+After 5 rounds of Copilot findings, Alex asked whether any of the bugs should have been caught earlier. Analysis: **6-7 of 13 findings** were preventable by zero-cost discipline improvements. Captured the improvements in `feedback_review_process.md`:
+
+1. **Post-restructure consistency sweep** — when a slice rewrites a load-bearing model (column order, write ordering, gate semantics), grep the whole file for the load-bearing concept and re-read every hit. The R2/R3 rounds were almost entirely downstream of the M1 column-order restructure I touched 5 of 6 places for. One sweep would have caught all of them
+2. **Schema-pair check** — when two sections describe the same accept/reject set (parser/validator, Step N preflight/Step M validation, matrix/flag prose), read them side-by-side with 3-5 example inputs. R4#2 and R4#3 were both schema-pair mismatches between sections written in different slices that were never read together
+3. **Broadened stale-reference sweep** — `feedback_no_pr_history_in_prompts.md` updated with a second regex for forward-references (`deferred to a future|TODO|FIXME|coming soon|will be added`). The original sweep only looked for `PR \d+|slice \d|Phase [A-D]` and missed R4#1
+4. **DA prompt required sections** — four explicit checks the DA agent runs every PR: cross-section consistency, schema-pair audit, test permissiveness audit, stale forward-reference sweep. Documented as non-negotiable
+
+PR 10 is the first PR to apply these disciplines on real work.
+
+**Test counts at end of session:** 1608 core, 836 terminal, 51 brief, **264 plan** (197 baseline + 67 from PR 9)
+
+**Memories added/updated this session:**
+
+- `feedback_workflow_md_gotchas.md` — four traps that bit PR 9 (GFM table-pipe escaping, `\\?d` test permissiveness, nested-backtick bold, multi-step audit-log ordering)
+- `feedback_no_pr_history_in_prompts.md` — runtime prompts must not contain PR/slice/phase OR stale forward-references
+- `feedback_review_process.md` — added post-restructure sweep, schema-pair check, DA prompt required sections
+- `project_status.md` — Phase C ~83% → done after PR 10; PR 9 merged
+
+---
+
+## Session 56 Summary
+
+### Clean handoff boundary — only PROGRESS.md update for Session 55
+
+This session was a clean handoff boundary. Only updated PROGRESS.md with the Session 55 summary (PR #213 closed without merging on cohesion concern, PR #214 deferral cleanup merged, `/clancy:implement-from` deferred to `@chief-clancy/dev`). No code changes — the next session would start PR 9.
+
+---
+
 ## Session 55 Summary
 
 ### Phase C PR 8 attempted, deferred — `/clancy:implement-from` postponed to `@chief-clancy/dev`

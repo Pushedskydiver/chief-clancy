@@ -106,12 +106,12 @@ Code is organised by **capability directories** that map to future packages. See
 
 ### Plan (standalone implementation planner)
 
-| Path                           | Purpose                                                 |
-| ------------------------------ | ------------------------------------------------------- |
-| `packages/plan/src/commands/`  | Slash commands (`plan.md`, `board-setup.md`)            |
-| `packages/plan/src/workflows/` | Workflows (`plan.md`, `board-setup.md`)                 |
-| `packages/plan/src/installer/` | Self-contained installer module (no core/terminal deps) |
-| `packages/plan/bin/plan.js`    | CLI entry point for `npx @chief-clancy/plan`            |
+| Path                           | Purpose                                                         |
+| ------------------------------ | --------------------------------------------------------------- |
+| `packages/plan/src/commands/`  | Slash commands (`plan.md`, `approve-plan.md`, `board-setup.md`) |
+| `packages/plan/src/workflows/` | Workflows (`plan.md`, `approve-plan.md`, `board-setup.md`)      |
+| `packages/plan/src/installer/` | Self-contained installer module (no core/terminal deps)         |
+| `packages/plan/bin/plan.js`    | CLI entry point for `npx @chief-clancy/plan`                    |
 
 ### Terminal (CLI + automation)
 
