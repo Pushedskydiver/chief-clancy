@@ -898,6 +898,9 @@ After saving, skip to Step 6 (log). Do not run Step 5b (board posting) for `--fr
 
 **Guard:** Only run Step 5b when board credentials are available (terminal mode or standalone+board mode). In standalone mode (no `.clancy/.env`), skip this step entirely — the plan is still generated and printed to stdout in Step 4.
 
+<!-- curl-blocks:approve-plan-push:start -->
+<!-- The region between these anchors is the canonical source for the six platform comment-POST blocks. /clancy:approve-plan duplicates the same bytes into its Step 4c push sub-step. A drift-prevention test (workflows.test.ts) byte-compares the two regions and fails on mismatch. Edit one — update the other in the same commit. -->
+
 ### Jira — POST comment
 
 ```bash
@@ -999,6 +1002,8 @@ curl -s \
 **Notion limitation:** Comments use `rich_text` blocks, not markdown. For the plan content, use a single `text` block with the full plan as plain text. Notion will render it without markdown formatting. For better readability, consider splitting the plan into multiple `rich_text` blocks (one per section) with `annotations` for bold headings.
 
 **Notion limitation:** The `rich_text` array has a **2000-character limit per text block**. If the plan exceeds 2000 characters, split it across multiple `rich_text` blocks within the same comment (each block up to 2000 chars). The total comment can contain many blocks.
+
+<!-- curl-blocks:approve-plan-push:end -->
 
 **On failure:** Print the plan to stdout and warn — do not lose the plan. The user can manually paste it.
 

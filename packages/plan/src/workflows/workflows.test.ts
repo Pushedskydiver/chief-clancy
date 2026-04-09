@@ -1006,3 +1006,122 @@ describe('approve-plan board mode preserved unchanged', () => {
     expect(content).toContain('Notion');
   });
 });
+
+// PR 9 — Slice 0: drift-prevention anchors for the duplicated push curl blocks.
+// Both files must declare the start/end anchors so slice 6 can promote this
+// suite to a byte-equality check between the wrapped regions.
+describe('approve-plan board push drift anchors (PR 9 Slice 0)', () => {
+  const planContent = readFileSync(new URL('plan.md', import.meta.url), 'utf8');
+  const approveContent = readFileSync(
+    new URL('approve-plan.md', import.meta.url),
+    'utf8',
+  );
+
+  const startAnchor = '<!-- curl-blocks:approve-plan-push:start -->';
+  const endAnchor = '<!-- curl-blocks:approve-plan-push:end -->';
+
+  it('plan.md declares the start anchor exactly once', () => {
+    const matches = planContent.split(startAnchor).length - 1;
+    expect(matches).toBe(1);
+  });
+
+  it('plan.md declares the end anchor exactly once', () => {
+    const matches = planContent.split(endAnchor).length - 1;
+    expect(matches).toBe(1);
+  });
+
+  it('plan.md start anchor precedes end anchor', () => {
+    expect(planContent.indexOf(startAnchor)).toBeLessThan(
+      planContent.indexOf(endAnchor),
+    );
+  });
+
+  it('approve-plan.md declares the start anchor exactly once', () => {
+    const matches = approveContent.split(startAnchor).length - 1;
+    expect(matches).toBe(1);
+  });
+
+  it('approve-plan.md declares the end anchor exactly once', () => {
+    const matches = approveContent.split(endAnchor).length - 1;
+    expect(matches).toBe(1);
+  });
+
+  it('approve-plan.md start anchor precedes end anchor', () => {
+    expect(approveContent.indexOf(startAnchor)).toBeLessThan(
+      approveContent.indexOf(endAnchor),
+    );
+  });
+});
+
+// PR 9 — Slice 1: Step 4c heading + run conditions. Step 4c is the optional
+// board push, gated on (a) Step 4a having written a marker AND (b) board
+// credentials being present in .clancy/.env. Either gate failing → skip
+// silently and continue to Step 7. Step 4b's tail must now route through 4c
+// instead of jumping straight to Step 7.
+describe('approve-plan Step 4c run conditions (PR 9 Slice 1)', () => {
+  const content = readFileSync(
+    new URL('approve-plan.md', import.meta.url),
+    'utf8',
+  );
+
+  it('defines Step 4c — Optional board push', () => {
+    expect(content).toContain('## Step 4c — Optional board push (best-effort)');
+  });
+
+  it('Step 4c is positioned after Step 4b and before Step 5', () => {
+    const stepFourB = content.indexOf('## Step 4b — Update brief marker');
+    const stepFourC = content.indexOf('## Step 4c — Optional board push');
+    const stepFive = content.indexOf('## Step 5 — Update ticket description');
+    expect(stepFourB).toBeGreaterThan(-1);
+    expect(stepFourC).toBeGreaterThan(stepFourB);
+    expect(stepFive).toBeGreaterThan(stepFourC);
+  });
+
+  it('Step 4c gates on Step 4a having written the marker', () => {
+    const fourCStart = content.indexOf('## Step 4c — Optional board push');
+    const fourCEnd = content.indexOf('## Step 5 — Update ticket description');
+    const fourCBody = content.slice(fourCStart, fourCEnd);
+    // Run-condition prose must reference the marker write from 4a.
+    expect(fourCBody).toMatch(/Step 4a/);
+    expect(fourCBody).toMatch(/marker/i);
+  });
+
+  it('Step 4c gates on board credentials being available', () => {
+    const fourCStart = content.indexOf('## Step 4c — Optional board push');
+    const fourCEnd = content.indexOf('## Step 5 — Update ticket description');
+    const fourCBody = content.slice(fourCStart, fourCEnd);
+    expect(fourCBody).toContain('.clancy/.env');
+    expect(fourCBody).toMatch(/board credentials/i);
+  });
+
+  it('Step 4c skips silently when either gate fails and continues to Step 7', () => {
+    const fourCStart = content.indexOf('## Step 4c — Optional board push');
+    const fourCEnd = content.indexOf('## Step 5 — Update ticket description');
+    const fourCBody = content.slice(fourCStart, fourCEnd);
+    // "skip silently" + onward routing to Step 7.
+    expect(fourCBody).toMatch(/skip[^.]*silent/i);
+    expect(fourCBody).toMatch(/Step 7/);
+  });
+
+  it('Step 4c is best-effort and never rolls back the local marker', () => {
+    const fourCStart = content.indexOf('## Step 4c — Optional board push');
+    const fourCEnd = content.indexOf('## Step 5 — Update ticket description');
+    const fourCBody = content.slice(fourCStart, fourCEnd);
+    expect(fourCBody).toMatch(/best-effort/i);
+    // Marker is authoritative; push failure must not roll back.
+    expect(fourCBody).toMatch(
+      /never[^.]*rolls?[- ]?back|do(?:es)? not rolls?[- ]?back/i,
+    );
+  });
+
+  it('Step 4b tail now routes through Step 4c instead of jumping to Step 7', () => {
+    const fourBStart = content.indexOf('## Step 4b — Update brief marker');
+    const fourCStart = content.indexOf('## Step 4c — Optional board push');
+    const fourBBody = content.slice(fourBStart, fourCStart);
+    // 4b should hand off to 4c, not directly to Step 7.
+    expect(fourBBody).toMatch(/Step 4c/);
+    // The old "skip Steps 5, 5b, and 6 entirely" line must be gone — push
+    // can still run via Step 4c when board credentials are present.
+    expect(fourBBody).not.toMatch(/Skip Steps 5, 5b, and 6 entirely/);
+  });
+});

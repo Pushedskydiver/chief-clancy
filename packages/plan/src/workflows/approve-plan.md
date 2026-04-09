@@ -468,7 +468,32 @@ The plan is still approved. The .clancy/plans/{stem}.approved marker is in place
 You can manually update .clancy/briefs/{brief}.md if needed.
 ```
 
-After Step 4b completes (successfully or with a warning), jump to Step 7 (Confirm and log). Skip Steps 5, 5b, and 6 entirely.
+After Step 4b completes (successfully or with a warning), continue to Step 4c (Optional board push). Step 4c is best-effort and gated on board credentials being present — when the gate fails it skips silently and the flow continues to Step 7. Steps 5, 5b, and 6 (the board ticket-key transport flow) remain unreachable in plan-file stem mode regardless of whether Step 4c runs.
+
+---
+
+## Step 4c — Optional board push (best-effort)
+
+In standalone+board mode (board credentials present alongside a local plan-file stem approval), offer to push the approved plan to the source board ticket as a comment. This closes the "I have credentials and I want both modes" UX cliff: the user gets the local marker AND the board comment in one approval.
+
+### Run conditions (both must be true)
+
+Step 4c runs only when **both** of these gates pass:
+
+1. **Step 4a wrote a marker successfully.** If Step 4a stopped on `EEXIST` (already-approved) without `--push`, or if the resolved argument was a board ticket key (which routes through Steps 5/5b/6 instead), Step 4c does not run. The retry path — `EEXIST` with `--push` set — falls through to Step 4c instead of stopping (see PR 9 retry semantics in subsequent slices).
+2. **Board credentials are available.** Detect by reading `.clancy/.env` and confirming the configured board's credential variables are present (the same detection used by Step 1's three-state preflight). If `.clancy/.env` is absent or no board is configured, Step 4c is skipped.
+
+If either gate fails, **skip Step 4c silently** and continue to Step 7 (Confirm and log). "Silently" means no warning, no log token, no stdout note — the absence of board credentials is the standalone-mode default, not an error condition. Subsequent slices add explicit log tokens for the conditions that DO warrant user-visible output (no pushable Source field, push failure, `--afk` without `--push`, etc.).
+
+### Best-effort semantics
+
+Step 4c is **best-effort** and never rolls back the local marker. The `.clancy/plans/{stem}.approved` marker written in Step 4a is the source of truth for "this plan was approved" — a board push failure does not unwind it. Local state is authoritative; the board comment is a convenience surface. Subsequent slices wire the failure-logging and retry-command details.
+
+<!-- curl-blocks:approve-plan-push:start -->
+<!-- This region is reserved for the duplicated platform curl blocks. The canonical source lives between the matching anchors in plan.md Step 5b. Slice 6 populates this region; until then it is intentionally empty so the slice 0 drift-prevention test (workflows.test.ts) can assert anchor presence without enforcing byte-equality. Slice 6 promotes the test to a byte-equality check. Edit one anchored region — update the other in the same commit. -->
+<!-- curl-blocks:approve-plan-push:end -->
+
+After Step 4c completes (push attempted, push skipped, or gate failed), continue to Step 7 (Confirm and log).
 
 ---
 
