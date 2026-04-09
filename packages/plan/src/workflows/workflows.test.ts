@@ -647,7 +647,9 @@ describe('plan inventory step', () => {
 
   it('reserves an Implemented state for the deferred plan-implementing tool', () => {
     expect(content).toContain('Implemented');
-    expect(content).toMatch(/deferred|future plan-implementing tool/i);
+    expect(content).toMatch(
+      /deferred[\s\S]{0,120}(?:plan-implementing tool|future implementation tooling)|(?:plan-implementing tool|future implementation tooling)[\s\S]{0,120}deferred/i,
+    );
     expect(content).toContain('shows three states');
   });
 
@@ -856,7 +858,9 @@ describe('approve-plan local marker (Step 4a)', () => {
   it('explains the marker is the gate for future implementation tooling', () => {
     expect(content).toContain('gate');
     expect(content).toContain('future implementation tooling');
-    expect(content).toMatch(/deferred|future plan-implementing tool/i);
+    expect(content).toMatch(
+      /deferred[\s\S]{0,120}(?:plan-implementing tool|future implementation tooling)|(?:plan-implementing tool|future implementation tooling)[\s\S]{0,120}deferred/i,
+    );
   });
 
   it('after writing the marker, Step 4a jumps to Step 7 (log) and skips board flow', () => {

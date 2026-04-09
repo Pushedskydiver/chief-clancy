@@ -401,7 +401,7 @@ A `--fresh` flag for `/clancy:approve-plan` is not implemented in this release. 
 
 The `.approved` marker is designed as the gate that any plan-implementing tool checks before applying changes. The conceptual flow: read the marker, hash the current plan file, compare to the stored `sha256`. Match → proceed; mismatch → block with a "plan changed since approval" error. This is why the SHA must be computed over the plan file content (not just touched as an empty file).
 
-A dedicated `/clancy:implement-from` slash command was scoped as PR 8 of this Phase but is **deferred** until `@chief-clancy/dev` is extracted (the slash command is convenience, not capability — Claude Code can already do the SHA gate + structured plan parse via natural-language instruction). In the meantime, users apply approved plans by:
+A dedicated `/clancy:implement-from` slash command is **deferred** until `@chief-clancy/dev` is extracted (the slash command is convenience, not capability — Claude Code can already do the SHA gate + structured plan parse via natural-language instruction). In the meantime, users apply approved plans by:
 
 1. Asking Claude Code to read the plan file directly: `Implement .clancy/plans/{stem}.md, verifying the .approved marker's sha256 first`
 2. Installing the full Clancy pipeline (`npx chief-clancy`) for the board-driven flow
