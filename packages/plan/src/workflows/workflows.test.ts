@@ -1476,3 +1476,60 @@ describe('approve-plan Step 4c push failure semantics (PR 9 Slice 7)', () => {
     );
   });
 });
+
+// PR 9 — Slice 8: retry path. EEXIST + --push falls through to Step 4c
+// instead of stopping. Without --push, EEXIST stops as today (PR 7b).
+// This is the only mechanism to re-attempt a failed push — no new flag,
+// no marker deletion.
+describe('approve-plan Step 4a EEXIST retry path (PR 9 Slice 8)', () => {
+  const content = readFileSync(
+    new URL('approve-plan.md', import.meta.url),
+    'utf8',
+  );
+
+  // Step 4a's EEXIST handling section is the load-bearing region for slice 8.
+  const eexistStart = content.indexOf('### Handle EEXIST');
+  const eexistEnd = content.indexOf('### Marker is the gate');
+  const eexistBody = content.slice(eexistStart, eexistEnd);
+
+  it('Step 4a EEXIST handling references the --push retry path', () => {
+    expect(eexistBody).toContain('--push');
+  });
+
+  it('EEXIST + --push falls through to Step 4c (does not stop)', () => {
+    expect(eexistBody).toMatch(
+      /EEXIST[\s\S]*--push[\s\S]*(falls?[- ]through|continue)[\s\S]*Step 4c/i,
+    );
+  });
+
+  it('EEXIST without --push still stops with the PR 7b message', () => {
+    // PR 7b's existing behaviour preserved — bare EEXIST without --push
+    // still hits the "Plan already approved" stop branch.
+    expect(eexistBody).toMatch(/without[^.]*--push|no `--push`/i);
+    expect(eexistBody).toContain('Plan already approved');
+  });
+
+  it('EEXIST + --push does NOT re-write the marker', () => {
+    // The marker is preserved as-is. The retry only re-runs Step 4c.
+    expect(eexistBody).toMatch(
+      /(?:does not|never|do not|is not|not) re[- ]?written|marker[^a-z]*(stays|preserved|unchanged)/i,
+    );
+  });
+
+  it('EEXIST + --push retry skips Step 4b (brief marker already updated)', () => {
+    // Step 4b ran on the original approval; the brief marker is already
+    // updated. The retry path goes EEXIST → Step 4c directly, not via 4b.
+    expect(eexistBody).toMatch(/skip[^.]*Step 4b|Step 4b[^.]*skip/i);
+  });
+
+  it('Step 4c documents the retry entry path from EEXIST', () => {
+    // Symmetry test: Step 4c should mention the retry entry path from
+    // 4a's EEXIST branch so a reader of 4c knows where re-runs come from.
+    const fourCStart = content.indexOf('## Step 4c — Optional board push');
+    const fourCEnd = content.indexOf('## Step 5 — Update ticket description');
+    const fourCBody = content.slice(fourCStart, fourCEnd);
+    expect(fourCBody).toMatch(
+      /EEXIST[^.]*--push|--push[^.]*EEXIST|retry[^.]*Step 4a/i,
+    );
+  });
+});

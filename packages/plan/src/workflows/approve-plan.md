@@ -385,7 +385,9 @@ Two `key=value` lines, each terminated with `\n`. No JSON, no extra whitespace, 
 
 ### Handle EEXIST (already-approved)
 
-If the exclusive create fails with `EEXIST`, the marker already exists — the plan was previously approved. Stop with:
+If the exclusive create fails with `EEXIST`, the marker already exists — the plan was previously approved. The next step depends on whether `--push` was passed.
+
+**EEXIST without `--push` (the PR 7b stop branch — preserved):** stop with:
 
 ```
 Plan already approved: {stem}
@@ -396,6 +398,14 @@ To re-approve (e.g. after revising the plan):
 ```
 
 A `--fresh` flag for `/clancy:approve-plan` is not implemented in this release. Manual deletion is the supported re-approval path.
+
+**EEXIST + `--push` (PR 9 retry path):** the user is re-running approve-plan to retry a previously failed board push. Step 4a **does not stop** in this case. Instead:
+
+1. The marker is **not re-written** — the existing `.clancy/plans/{stem}.approved` file stays in place, byte-for-byte unchanged. The original `sha256=` and `approved_at=` values from the first approval are preserved.
+2. **Skip Step 4b entirely.** The brief marker was already updated on the original approval; there is no work for 4b to do on a retry.
+3. **Fall through directly to Step 4c.** The retry path enters Step 4c with the same gate evaluation as a fresh approval (board credentials must be present, Source must be readable from the plan file or `--ticket` override must be supplied).
+
+This is the **only** mechanism to re-attempt a failed push. There is no `--push-only` flag and no marker-deletion workflow. The contract is: a Step 4c push failure leaves the marker in place (slice 7), and a `--push` re-run honours that marker by skipping Step 4a's write and Step 4b's brief update, going straight to 4c. The retry preserves the original approval timestamp — auditing tools see one approval row in `.clancy/progress.txt`, even if 4c was attempted multiple times.
 
 ### Marker is the gate for future implementation tooling
 
