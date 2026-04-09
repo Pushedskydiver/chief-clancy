@@ -162,7 +162,7 @@ Selective brevity for chat output, commit messages, and PR comments — adapted 
 - Quote error messages verbatim
 - Never use `I/we/now/currently` filler in commit messages
 - Never restate filenames the scope label already covers
-- Never include AI attribution in commit messages or PR bodies
+- Never include AI attribution noise in commit messages or PR bodies (`Generated with Claude Code` footers, `🤖` emojis, "made with AI" tags) — but the `Co-Authored-By:` git trailer is the canonical way to credit AI assistance and SHOULD remain on commits per existing convention
 
 ### Rationale
 

@@ -54,14 +54,14 @@ Merge policy: for **cleanup PRs** (C-prefixed audit fixes), watch CI and merge o
 
 ## Architecture
 
-Dependency direction: core ← terminal ← chief-clancy. Brief is standalone (no core/terminal deps). No reverse imports. Enforced by eslint-plugin-boundaries.
+Dependency direction: core ← terminal ← chief-clancy. Brief AND plan are both standalone (no core/terminal deps). No reverse imports. Enforced by eslint-plugin-boundaries.
 
 ## Non-obvious constraints
 
 - `zod/mini` for all runtime validation — not `zod`
 - Hooks must be CommonJS — best-effort, must never crash
 - Runtime scripts are esbuild bundles — self-contained, zero npm dependency
-- Path aliases: `~/c/` → `core/src/*`, `~/t/` → `terminal/src/*`, `~/b/` → `brief/src/*`. Rewritten by `tsc-alias` at build time
+- Path aliases: `~/c/` → `core/src/*`, `~/t/` → `terminal/src/*`, `~/b/` → `brief/src/*`, `~/p/` → `plan/src/*`. Rewritten by `tsc-alias` at build time
 - Types/opts objects start non-exported — only export when consumed outside the file
 - Board modules: reuse header builders, schema-validate all responses, cache via `Cached<T>` class
 - See `docs/CONVENTIONS.md` for export hygiene and board implementation patterns

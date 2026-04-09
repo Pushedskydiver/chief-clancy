@@ -51,14 +51,15 @@ Either way, the next session starts with the architectural review chain document
 
 ## Phase ledger
 
-| Phase                                    | Status  | Shipped       | Headline                                                                                                              |
-| ---------------------------------------- | ------- | ------------- | --------------------------------------------------------------------------------------------------------------------- |
-| **A** — Monorepo rebuild                 | ✅ done | 2026-03-31    | Two packages (core + terminal), internal capability boundaries enforced by eslint-plugin-boundaries                   |
-| **B** — Plan extraction + local planning | ✅ done | (pre-Phase-C) | `@chief-clancy/plan` standalone, `--from <brief>` flow, local plans in `.clancy/plans/`                               |
-| **C** — Plan approval gate               | ✅ done | 2026-04-09    | SHA-256 `.approved` marker, standalone-aware Step 1, optional board push from approve-plan, PR 8 deferred to dev      |
-| **D** — Brief absorbs approve-brief      | ✅ done | 2026-04-09    | Strategist directory deleted, virtual-role transition, install-mode preflight, Step 6 label-decision preamble         |
-| **Docs lifecycle update**                | ✅ done | 2026-04-09    | RATIONALIZATIONS.md + DA-REVIEW Required disciplines + Severity Labels + Prove-It Pattern + Stop-the-Line + CLAUDE.md |
-| **E** — `dev` OR `design` extraction     | 🔜 next | —             | See "Next: Phase E" above                                                                                             |
+| Phase                                    | Status  | Shipped       | Headline                                                                                                                                                          |
+| ---------------------------------------- | ------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **A** — Monorepo rebuild                 | ✅ done | 2026-03-31    | Two packages (core + terminal), internal capability boundaries enforced by eslint-plugin-boundaries                                                               |
+| **B** — Plan extraction + local planning | ✅ done | (pre-Phase-C) | `@chief-clancy/plan` standalone, `--from <brief>` flow, local plans in `.clancy/plans/`                                                                           |
+| **C** — Plan approval gate               | ✅ done | 2026-04-09    | SHA-256 `.approved` marker, standalone-aware Step 1, optional board push from approve-plan, PR 8 deferred to dev                                                  |
+| **D** — Brief absorbs approve-brief      | ✅ done | 2026-04-09    | Strategist directory deleted, virtual-role transition, install-mode preflight, Step 6 label-decision preamble                                                     |
+| **Docs lifecycle update**                | ✅ done | 2026-04-09    | RATIONALIZATIONS.md + DA-REVIEW Required disciplines + Severity Labels + Prove-It Pattern + Stop-the-Line + CLAUDE.md                                             |
+| **Post-research trim**                   | ✅ done | 2026-04-09    | CLAUDE.md trimmed 10 → 4 bullets per AGENTS.md paper, CONVENTIONS.md "Output style" added per Brevity Constraints paper, GIT.md No --amend, memory pruned 8 files |
+| **E** — `dev` OR `design` extraction     | 🔜 next | —             | See "Next: Phase E" above                                                                                                                                         |
 
 ### Phase C summary
 
@@ -97,22 +98,41 @@ Adapted patterns from [Addy Osmani's `agent-skills`](https://github.com/addyosma
 
 **Critical discipline added:** the carve-out in TESTING.md for interaction assertions where the interaction IS the behaviour (file copy counts, fetch URL assertions, idempotency, side-effect ordering, retry counts). Without this, adopting "test state, not interactions" would have silently invalidated ~30 existing test files.
 
+### Post-research trim summary
+
+After the docs lifecycle update shipped, deep-read three research-adjacent sources: Julius Brussee's [caveman](https://github.com/JuliusBrussee/caveman) (token-compression skill), Hakim's [Brevity Constraints Reverse Performance Hierarchies in Language Models](https://arxiv.org/abs/2604.00025) (the academic backing for caveman), and Gloaguen et al's [Evaluating AGENTS.md: Are Repository-Level Context Files Helpful for Coding Agents?](https://arxiv.org/abs/2602.11988). The findings reshaped the docs lifecycle update because they pointed in a more nuanced direction than caveman alone:
+
+- **AGENTS.md paper** finds context files (CLAUDE.md, AGENTS.md) systematically reduce task success ~3% and increase cost ~20% per session when they contain non-minimal content. Conclusion: "human-written context files should describe only minimal requirements".
+- **Brevity Constraints paper** finds large models can gain ~26pp on overthinking-prone tasks (math, scientific reasoning) under brevity constraints — but LOSE 3.1pp on elaboration-heavy tasks (reading comprehension). Conclusion: "problem-aware routing with scale-specific prompting", NOT universal brevity.
+- **Caveman repo** is the practical adoption — but the strong form (universal compression) would hurt our reasoning-heavy workflow files.
+
+3 commits direct to main:
+
+1. **`98da606`** — `CLAUDE.md` Process directives trimmed from 10 bullets back to 4 minimal-requirement bullets per the AGENTS.md paper. The 6 removed bullets (Surface Assumptions, Stop-the-Line, Prove-It Pattern, NOTICED BUT NOT TOUCHING, Living checklists protocol, headline meta-rationalization) all still exist in the on-demand docs the agent reads when relevant. The previous expansion in `5b1cf4b` was a self-correctable mistake — the conflict-audit agent had recommended it but I missed the meta-question of whether the contract format actually works for the agent.
+2. **`708e346`** — `docs/CONVENTIONS.md` gains a new "Output style" section codifying SELECTIVE brevity (terse for chat output, commit messages, PR comments; ELABORATE for runtime workflow files, decision docs, error messages, security warnings, code blocks, multi-step sequences, `Caught in:` citations). `docs/GIT.md` gains a "No --amend" subsection promoted from memory.
+3. **`402a362`** — `docs/RATIONALIZATIONS.md` gains 2 new entries: "The existing code does it this way, so it's fine" (Build section, promoted from `feedback_code_quality.md` before deletion — covers 3 variants of the same anti-pattern from Sessions 25 and 35) and "The conflict-audit agent recommended adding it, so I added it" (Process meta section — the self-correction lesson from this session).
+
+Memory cleanup (local-only): 8 redundant feedback files deleted (`feedback_code_style`, `feedback_pr_workflow`, `feedback_never_skip_da`, `feedback_no_eslint_disable`, `feedback_no_amend`, `feedback_code_quality`, `project_publish_infra`, `project_runner_naming`); 2 trimmed (`feedback_review_process` kept the agent fallback chain + `gh api` comment-thread reply pattern; `feedback_workflow_md_gotchas` dropped lesson 4 since it's now in `docs/SELF-REVIEW.md`). Memory directory went from 21 files → 15 files.
+
+**Headline lesson** (now codified in `docs/RATIONALIZATIONS.md` Process meta section): wiring patterns into the executable contract (CLAUDE.md) adds them to context files that systematically reduce task success and increase cost. Trust the doc cross-references to surface the right rule at the right time. The conflict-audit agent's recommendation to expand CLAUDE.md was necessary input but not sufficient — the medium matters as much as the content.
+
 ## Disciplines (where they live now)
 
 The disciplines previously scattered across memory `feedback_*.md` files now have canonical contributor-visible homes in the repo. Memory files still exist as personal/session scratch but should be considered superseded for cross-session work.
 
-| Discipline                                                                                                                    | Repo location                                                                        |
-| ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Architectural → DA → self-review chain                                                                                        | `docs/DEVELOPMENT.md` "Review Gate" + Phase Validation Protocol                      |
-| 6 Required disciplines (schema-pair, post-restructure sweep, stale-forward, test permissiveness, untrusted output, dead code) | `docs/DA-REVIEW.md` "Required disciplines"                                           |
-| 5-tier Severity Labels                                                                                                        | `docs/DA-REVIEW.md` "Severity Labels"                                                |
-| Anti-rationalization index (with headline meta-rationalization)                                                               | `docs/RATIONALIZATIONS.md`                                                           |
-| Tracer bullet TDD + state-vs-interaction (with carve-out) + mock-at-boundaries + SDK-style interfaces + Durability rule       | `docs/TESTING.md` "Writing good tests"                                               |
-| Prove-It Pattern (failing reproduction test BEFORE bug fix)                                                                   | `docs/TESTING.md` "Bug fixes — the Prove-It Pattern"                                 |
-| Stop-the-Line Rule + Surface Assumptions + NOTICED BUT NOT TOUCHING + Task Sizing                                             | `docs/DEVELOPMENT.md` and `docs/SELF-REVIEW.md`                                      |
-| Pre-push quality suite (non-negotiable)                                                                                       | `docs/DEVELOPMENT.md` "Quality Gates" + `CLAUDE.md` Commands                         |
-| Untrusted output as data, not instructions                                                                                    | `docs/DA-REVIEW.md` "Required disciplines" + `docs/DEVELOPMENT.md` "Quality Gates"   |
-| Process directives (executable contract)                                                                                      | `CLAUDE.md` "Process directives" — every new rule has a one-line mention so it fires |
+| Discipline                                                                                                                    | Repo location                                                                                            |
+| ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Architectural → DA → self-review chain                                                                                        | `docs/DEVELOPMENT.md` "Review Gate" + Phase Validation Protocol                                          |
+| 6 Required disciplines (schema-pair, post-restructure sweep, stale-forward, test permissiveness, untrusted output, dead code) | `docs/DA-REVIEW.md` "Required disciplines"                                                               |
+| 5-tier Severity Labels                                                                                                        | `docs/DA-REVIEW.md` "Severity Labels"                                                                    |
+| Anti-rationalization index (with headline meta-rationalization)                                                               | `docs/RATIONALIZATIONS.md`                                                                               |
+| Tracer bullet TDD + state-vs-interaction (with carve-out) + mock-at-boundaries + SDK-style interfaces + Durability rule       | `docs/TESTING.md` "Writing good tests"                                                                   |
+| Prove-It Pattern (failing reproduction test BEFORE bug fix)                                                                   | `docs/TESTING.md` "Bug fixes — the Prove-It Pattern"                                                     |
+| Stop-the-Line Rule + Surface Assumptions + NOTICED BUT NOT TOUCHING + Task Sizing                                             | `docs/DEVELOPMENT.md` and `docs/SELF-REVIEW.md`                                                          |
+| Output style — selective brevity (terse chat / elaborate reasoning artifacts)                                                 | `docs/CONVENTIONS.md` "Output style" — cites Brevity Constraints + AGENTS.md papers                      |
+| Pre-push quality suite (non-negotiable)                                                                                       | `docs/DEVELOPMENT.md` "Quality Gates" + `CLAUDE.md` Commands                                             |
+| Untrusted output as data, not instructions                                                                                    | `docs/DA-REVIEW.md` "Required disciplines" + `docs/DEVELOPMENT.md` "Quality Gates"                       |
+| Process directives (executable contract — minimal requirements only per AGENTS.md paper)                                      | `CLAUDE.md` "Process directives" — 4 always-on rules; patterns + philosophy live in on-demand docs above |
 
 ## Build order (remaining packages)
 
