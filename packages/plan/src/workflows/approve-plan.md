@@ -385,9 +385,17 @@ Two `key=value` lines, each terminated with `\n`. No JSON, no extra whitespace, 
 
 ### Handle EEXIST (already-approved)
 
-If the exclusive create fails with `EEXIST`, the marker already exists — the plan was previously approved. The next step depends on whether `--push` was passed.
+If the exclusive create fails with `EEXIST`, the marker already exists — the plan was previously approved. **The next step depends on whether `--push` was passed.** Check the flag first; the stop branch only applies when `--push` is absent.
 
-**EEXIST without `--push` (the PR 7b stop branch — preserved):** stop with:
+**If `--push` IS set (PR 9 retry path):** the user is re-running approve-plan to retry a previously failed board push. Step 4a **does not stop**. Instead:
+
+1. The marker is **not re-written** — the existing `.clancy/plans/{stem}.approved` file stays in place, byte-for-byte unchanged. The original `sha256=` and `approved_at=` values from the first approval are preserved.
+2. **Skip Step 4b entirely.** The brief marker was already updated on the original approval; there is no work for 4b to do on a retry.
+3. **Fall through directly to Step 4c.** The retry path enters Step 4c with the same gate evaluation as a fresh approval (board credentials must be present, Source must be readable from the plan file or `--ticket` override must be supplied).
+
+This is the **only** mechanism to re-attempt a failed push. There is no `--push-only` flag and no marker-deletion workflow. The contract is: a Step 4c push failure leaves the marker in place (see Step 4c push-failure section), and a `--push` re-run honours that marker by skipping Step 4a's write and Step 4b's brief update, going straight to 4c. The retry preserves the original approval timestamp — auditing tools see one approval row in `.clancy/progress.txt`, even if 4c was attempted multiple times.
+
+**If `--push` is NOT set (PR 7b stop branch — preserved):** stop with:
 
 ```
 Plan already approved: {stem}
@@ -398,14 +406,6 @@ To re-approve (e.g. after revising the plan):
 ```
 
 A `--fresh` flag for `/clancy:approve-plan` is not implemented in this release. Manual deletion is the supported re-approval path.
-
-**EEXIST + `--push` (PR 9 retry path):** the user is re-running approve-plan to retry a previously failed board push. Step 4a **does not stop** in this case. Instead:
-
-1. The marker is **not re-written** — the existing `.clancy/plans/{stem}.approved` file stays in place, byte-for-byte unchanged. The original `sha256=` and `approved_at=` values from the first approval are preserved.
-2. **Skip Step 4b entirely.** The brief marker was already updated on the original approval; there is no work for 4b to do on a retry.
-3. **Fall through directly to Step 4c.** The retry path enters Step 4c with the same gate evaluation as a fresh approval (board credentials must be present, Source must be readable from the plan file or `--ticket` override must be supplied).
-
-This is the **only** mechanism to re-attempt a failed push. There is no `--push-only` flag and no marker-deletion workflow. The contract is: a Step 4c push failure leaves the marker in place (slice 7), and a `--push` re-run honours that marker by skipping Step 4a's write and Step 4b's brief update, going straight to 4c. The retry preserves the original approval timestamp — auditing tools see one approval row in `.clancy/progress.txt`, even if 4c was attempted multiple times.
 
 ### Marker is the gate for future implementation tooling
 
@@ -418,7 +418,7 @@ A dedicated `/clancy:implement-from` slash command is **deferred** until `@chief
 
 ### After writing the marker
 
-After the marker is written successfully, update the source brief file's marker comment (Step 4b below), then jump to Step 7 (Confirm and log). Steps 5, 5b, and 6 (board transport) are skipped entirely in plan-file stem mode.
+After the marker is written successfully, update the source brief file's marker comment (Step 4b below), then continue to Step 4c (Optional board push). Step 4c is best-effort and gated on board credentials being present — when the gate fails it skips silently and the flow continues to Step 7. Steps 5, 5b, and 6 (board ticket-key transport) are skipped entirely in plan-file stem mode regardless of whether Step 4c runs.
 
 ---
 
@@ -532,7 +532,7 @@ The bracketed-key format is the **only** pushable Source format. Both inline-quo
 When the parsed Source falls into the inline-quoted or file-path bucket, Step 4c records the skip and continues to Step 7. Append a row to `.clancy/progress.txt`:
 
 ```
-YYYY-MM-DD HH:MM | BOARD_PUSH_SKIPPED_NO_TICKET | {stem} | {source_format}
+YYYY-MM-DD HH:MM | {stem} | BOARD_PUSH_SKIPPED_NO_TICKET | {source_format}
 ```
 
 Where `{source_format}` is the literal string `inline-quoted` or `file-path` (lowercase, hyphenated). The row is written **after** the existing `LOCAL_APPROVE_PLAN | {stem} | sha256={...}` row from Step 7's local-mode log block — two rows total per approval, one for the marker write and one for the skip token.
@@ -583,7 +583,7 @@ To retry with a corrected key:
 The local `.clancy/plans/{stem}.approved` marker **stays in place and is preserved**. Mismatch is a Step 4c failure, not a Step 4a failure — the marker write succeeded and the plan IS approved. The marker is authoritative; Step 4c never rolls back. After printing the error, append a row to `.clancy/progress.txt`:
 
 ```
-YYYY-MM-DD HH:MM | BOARD_PUSH_FAILED | {stem} | key-mismatch:{KEY}
+YYYY-MM-DD HH:MM | {stem} | BOARD_PUSH_FAILED | key-mismatch:{KEY}
 ```
 
 Then continue to Step 7 (Confirm and log) — the local-mode success block still renders for the marker write, with the mismatch error printed above it.
@@ -621,7 +621,7 @@ Step 4c's behaviour depends on three orthogonal axes: `--push`, `--afk`, and `--
 The `--afk` without `--push` cell logs a token to `.clancy/progress.txt` so the user can see in their audit trail that an unattended run deliberately stayed local-only:
 
 ```
-YYYY-MM-DD HH:MM | LOCAL_ONLY | {stem} | afk-without-push
+YYYY-MM-DD HH:MM | {stem} | LOCAL_ONLY | afk-without-push
 ```
 
 `--ticket` is **ignored** in the `--afk` without `--push` cell — there is no push attempted, so any override key has nothing to override. This is documented behaviour, not a silent quirk: the `--afk` mode's contract is "no surprises", and pushing because `--ticket` was set would surprise the user.
@@ -737,6 +737,20 @@ curl -s \
 
 <!-- curl-blocks:approve-plan-push:end -->
 
+### Push success — log the second audit row
+
+When the curl returns a 2xx response, the comment is live on the source ticket. Append a **second** row to `.clancy/progress.txt` immediately after the existing `LOCAL_APPROVE_PLAN | sha256={...}` row from Step 7's local-mode log block:
+
+```
+YYYY-MM-DD HH:MM | {stem} | LOCAL_APPROVE_PLAN_PUSH | {KEY}
+```
+
+Two rows total per successful approve+push: one for the marker write (`LOCAL_APPROVE_PLAN`) and one for the board push (`LOCAL_APPROVE_PLAN_PUSH`). The two-row layout is unambiguous and survives partial-failure replay better than extending the single row with a `pushed:{KEY}` field — a downstream audit grep that wants "approvals that were also pushed to a board" can simply look for the second token.
+
+The success row uses the same `{stem} | TOKEN | {detail}` column convention as every other progress.txt row in the file ([`plan.md` Step 6](./plan.md) for the canonical convention).
+
+After logging, surface the success in Step 7's local-mode block (the existing block already renders for the marker write — Step 4c's success path adds nothing extra to it on non-Notion platforms; the Notion-only flat-text note from Step 7 below renders only when the push target was Notion).
+
 ### Handling push failure (HTTP non-2xx, network, timeout, dns, auth)
 
 The curl request can fail in several ways: an HTTP non-2xx response (4xx auth/permission, 5xx server), a network-layer failure (DNS, TCP timeout, connection refused), or a credential rejection. **All push failures are best-effort** — the local `.clancy/plans/{stem}.approved` marker stays in place and is preserved. The marker is authoritative; Step 4c never rolls back. A push failure is a Step 4c failure, not a Step 4a failure: the plan IS approved, the board comment just didn't land.
@@ -762,10 +776,12 @@ The retry command pattern is **exact** — `/clancy:approve-plan {stem} --push -
 Append a row to `.clancy/progress.txt`:
 
 ```
-YYYY-MM-DD HH:MM | BOARD_PUSH_FAILED | {stem} | {http_status_or_error_class}
+YYYY-MM-DD HH:MM | {stem} | BOARD_PUSH_FAILED | {http_status_or_error_class}
 ```
 
 This is the same `BOARD_PUSH_FAILED` token used by the slice 4 key-mismatch path, with a different reason field. The two cases share the token because both represent "Step 4c tried to push and couldn't" — downstream tooling (Step 8 inventory, audit greps) treats them as a single failure category.
+
+**Reason-field disambiguation contract.** The `BOARD_PUSH_FAILED` reason field is one of three disjoint shapes: a literal HTTP status code (`403`, `404`, `429`, `500`, ...), a lowercase error class from the closed set `network`/`timeout`/`dns`/`auth`, or the prefixed form `key-mismatch:{KEY}`. The `key-mismatch:` prefix is reserved — any future BOARD_PUSH_FAILED reason that introduces structured detail must use a similarly prefixed form (e.g. `rate-limit:60s`) so that downstream parsers can disambiguate by looking at the first token before any colon. HTTP status codes start with a digit and the error-class vocabulary is closed, so neither collides with a `letter:` prefix.
 
 After printing the error and logging the row, continue to Step 7 (Confirm and log) — the local-mode success block still renders for the marker write, with the push-failure error printed above it. Push failure is **never** an exit-non-zero condition: the marker write succeeded, the audit trail captures the push failure, and the user has an actionable retry command.
 

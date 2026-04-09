@@ -863,8 +863,16 @@ describe('approve-plan local marker (Step 4a)', () => {
     );
   });
 
-  it('after writing the marker, Step 4a jumps to Step 7 (log) and skips board flow', () => {
-    expect(content).toContain('jump to Step 7');
+  it('after writing the marker, Step 4a continues to Step 4c (PR 9 — was Step 7 in PR 7b)', () => {
+    // PR 7b's "jump to Step 7" was rewritten in PR 9 slice 1 / DA H2 fix:
+    // the post-marker tail now hands off to Step 4c (Optional board push),
+    // which is best-effort and gates on board credentials. Steps 5/5b/6
+    // remain unreachable in plan-file stem mode regardless.
+    const afterMarkerIdx = content.indexOf('### After writing the marker');
+    const tailEnd = content.indexOf('---', afterMarkerIdx);
+    const tail = content.slice(afterMarkerIdx, tailEnd);
+    expect(tail).toMatch(/Step 4c/);
+    expect(tail).toMatch(/Steps 5, 5b, and 6[^.]*skipped/i);
   });
 });
 
@@ -1148,6 +1156,28 @@ describe('approve-plan Step 4c run conditions (PR 9 Slice 1)', () => {
     // can still run via Step 4c when board credentials are present.
     expect(fourBBody).not.toMatch(/Skip Steps 5, 5b, and 6 entirely/);
   });
+
+  it('no stale "jump to Step 7" routing prose remains in Steps 4a/4b', () => {
+    // DA review H2/L2: the stale routing prose ("jump to Step 7" / "Steps
+    // 5, 5b, 6 are skipped entirely") existed in BOTH Step 4a's "After
+    // writing the marker" subsection AND Step 4b's tail. Slice 1 only
+    // rewrote 4b. This regression test scans the whole 4a→4c span and
+    // asserts no leftover prose still implies a direct 4a/4b → 7 jump.
+    const fourAStart = content.indexOf('## Step 4a — Write local marker');
+    const fourCStart = content.indexOf('## Step 4c — Optional board push');
+    const span = content.slice(fourAStart, fourCStart);
+    expect(span).not.toMatch(/jump to Step 7/i);
+    expect(span).not.toMatch(/Skip Steps 5, 5b, and 6 entirely/);
+  });
+
+  it('Step 4a "After writing the marker" continues to Step 4c', () => {
+    // DA review H2: the Step 4a tail must explicitly hand off to 4c so
+    // an LLM reading 4a in order doesn't internalise the old PR 7b flow.
+    const afterMarkerIdx = content.indexOf('### After writing the marker');
+    const nextHeadingIdx = content.indexOf('---', afterMarkerIdx);
+    const afterMarkerBody = content.slice(afterMarkerIdx, nextHeadingIdx);
+    expect(afterMarkerBody).toMatch(/Step 4c/);
+  });
 });
 
 // PR 9 — Slice 2: Source field is read directly from the local plan file's
@@ -1233,11 +1263,11 @@ describe('approve-plan Step 4c source-format parser (PR 9 Slice 3)', () => {
     );
   });
 
-  it('Step 4c skip-token row includes the stem and source format', () => {
-    // Token format from the locked spec:
-    //   BOARD_PUSH_SKIPPED_NO_TICKET | {stem} | {source_format}
+  it('Step 4c skip-token row uses the {stem} | TOKEN | {detail} convention', () => {
+    // Matches plan.md Step 6 / Step 7 LOCAL_APPROVE_PLAN convention:
+    //   {stem} | BOARD_PUSH_SKIPPED_NO_TICKET | {source_format}
     expect(fourCBody).toMatch(
-      /BOARD_PUSH_SKIPPED_NO_TICKET\s*\\?\|\s*\{stem\}\s*\\?\|\s*\{source_format\}/,
+      /\{stem\}\s*\\?\|\s*BOARD_PUSH_SKIPPED_NO_TICKET\s*\\?\|\s*\{source_format\}/,
     );
   });
 
@@ -1381,9 +1411,10 @@ describe('approve-plan Step 4c decision matrix (PR 9 Slice 5)', () => {
   });
 
   it('Step 4c LOCAL_ONLY token logs to .clancy/progress.txt with stem', () => {
-    // Locked spec format: LOCAL_ONLY | {stem} | afk-without-push
+    // {stem} | TOKEN | {detail} convention:
+    //   {stem} | LOCAL_ONLY | afk-without-push
     expect(fourCBody).toMatch(
-      /LOCAL_ONLY\s*\\?\|\s*\{stem\}\s*\\?\|\s*afk-without-push/,
+      /\{stem\}\s*\\?\|\s*LOCAL_ONLY\s*\\?\|\s*afk-without-push/,
     );
   });
 
@@ -1438,10 +1469,11 @@ describe('approve-plan Step 4c push failure semantics (PR 9 Slice 7)', () => {
   });
 
   it('Step 4c logs BOARD_PUSH_FAILED with stem and status class', () => {
-    // Spec format: BOARD_PUSH_FAILED | {stem} | {http_status_or_error_class}
+    // {stem} | TOKEN | {detail} convention:
+    //   {stem} | BOARD_PUSH_FAILED | {http_status_or_error_class}
     expect(fourCBody).toContain('BOARD_PUSH_FAILED');
     expect(fourCBody).toMatch(
-      /BOARD_PUSH_FAILED\s*\\?\|\s*\{stem\}\s*\\?\|\s*\{http_status_or_error_class\}/,
+      /\{stem\}\s*\\?\|\s*BOARD_PUSH_FAILED\s*\\?\|\s*\{http_status_or_error_class\}/,
     );
   });
 
@@ -1475,6 +1507,23 @@ describe('approve-plan Step 4c push failure semantics (PR 9 Slice 7)', () => {
       /never[^.]*rolls?[- ]?back|do(?:es)? not rolls?[- ]?back/i,
     );
   });
+
+  it('Step 4c logs LOCAL_APPROVE_PLAN_PUSH success row with stem and KEY', () => {
+    // DA review H1: the success path needs a second progress.txt row
+    // distinct from LOCAL_APPROVE_PLAN. Two-row audit is unambiguous.
+    expect(fourCBody).toContain('LOCAL_APPROVE_PLAN_PUSH');
+    expect(fourCBody).toMatch(
+      /\{stem\}\s*\\?\|\s*LOCAL_APPROVE_PLAN_PUSH\s*\\?\|\s*\{KEY\}/,
+    );
+  });
+
+  it('Step 4c documents the BOARD_PUSH_FAILED reason-field disambiguation', () => {
+    // DA review L1: HTTP status, error-class, and key-mismatch:{KEY} share
+    // the token. The contract that disambiguates them must be explicit.
+    expect(fourCBody).toMatch(
+      /key-mismatch:[^.]*reserved|reserved[^.]*key-mismatch/i,
+    );
+  });
 });
 
 // PR 9 — Slice 8: retry path. EEXIST + --push falls through to Step 4c
@@ -1505,7 +1554,9 @@ describe('approve-plan Step 4a EEXIST retry path (PR 9 Slice 8)', () => {
   it('EEXIST without --push still stops with the PR 7b message', () => {
     // PR 7b's existing behaviour preserved — bare EEXIST without --push
     // still hits the "Plan already approved" stop branch.
-    expect(eexistBody).toMatch(/without[^.]*--push|no `--push`/i);
+    expect(eexistBody).toMatch(
+      /without[^.]*--push|no `--push`|`--push`\s+is\s+NOT\s+set|NOT\s+set/i,
+    );
     expect(eexistBody).toContain('Plan already approved');
   });
 
