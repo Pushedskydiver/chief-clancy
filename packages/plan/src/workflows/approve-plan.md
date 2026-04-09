@@ -578,6 +578,48 @@ YYYY-MM-DD HH:MM | BOARD_PUSH_FAILED | {stem} | key-mismatch:{KEY}
 
 Then continue to Step 7 (Confirm and log) — the local-mode success block still renders for the marker write, with the mismatch error printed above it.
 
+### Flags governing Step 4c
+
+Step 4c introduces two new flags on `/clancy:approve-plan` (in addition to the existing `--afk` from PR 7b):
+
+- **`--push`** — skip the interactive prompt and push immediately. Combined with `--afk`, this is the unattended-automation path.
+- **`--ticket {KEY}`** — override the Source auto-detect from the plan file. The override `{KEY}` wins over auto-detect and is what gets validated against the configured board's regex (slice 4 above). Use this when the brief Source field is missing, ambiguous, or points at the wrong ticket.
+
+The default interactive prompt is `[y/N]` with **default No** — Step 4c never surprise-writes to a board. A user who hits Enter without typing accepts the default (no push) and the plan is approved as a local-only operation.
+
+The prompt text:
+
+```
+Push approved plan to {KEY} as a comment? [y/N]
+```
+
+`{KEY}` is the resolved ticket key — either auto-detected from the plan file's `**Source:**` line or supplied by `--ticket`.
+
+### Decision matrix
+
+Step 4c's behaviour depends on three orthogonal axes: `--push`, `--afk`, and `--ticket`. The six meaningful cells:
+
+| Cell                              | `--push` | `--afk` | `--ticket KEY` | Behaviour                                                                                       |
+| --------------------------------- | -------- | ------- | -------------- | ----------------------------------------------------------------------------------------------- |
+| **Interactive, no `--push`**      | no       | no      | no             | Auto-detect Source. Prompt `Push approved plan to {KEY} as a comment? [y/N]`. Default No.       |
+| **Interactive + `--ticket` only** | no       | no      | yes            | Validate `KEY`. Prompt with the override `KEY`. Override wins over auto-detect. Default No.     |
+| **Interactive + `--push`**        | yes      | no      | either         | Skip prompt, push immediately. `--ticket` (if present) overrides auto-detect; otherwise auto.   |
+| **`--afk` without `--push`**      | no       | yes     | either         | Skip the push entirely. Log `LOCAL_ONLY` (see token below). `--ticket` is ignored in this cell. |
+| **`--afk --push`**                | yes      | yes     | no             | Push without prompting. Auto-detect Source.                                                     |
+| **`--afk --push --ticket KEY`**   | yes      | yes     | yes            | Push without prompting using the override `KEY`.                                                |
+
+The `--afk` without `--push` cell logs a token to `.clancy/progress.txt` so the user can see in their audit trail that an unattended run deliberately stayed local-only:
+
+```
+YYYY-MM-DD HH:MM | LOCAL_ONLY | {stem} | afk-without-push
+```
+
+`--ticket` is **ignored** in the `--afk` without `--push` cell — there is no push attempted, so any override key has nothing to override. This is documented behaviour, not a silent quirk: the `--afk` mode's contract is "no surprises", and pushing because `--ticket` was set would surprise the user.
+
+### Two prompts in non-`--afk` flow is intentional
+
+In non-`--afk` mode, the user sees **two prompts** during a single approve invocation: [Step 4 — Confirm](#step-4--confirm) prompts to confirm the approval (a local commitment), and Step 4c prompts to confirm the board push (a visible-to-others publication). These are semantically distinct decisions and are intentionally kept as two separate prompts. Merging them into a single "approve and push?" prompt would conflate two different commitments and make it impossible to approve locally without also publishing.
+
 <!-- curl-blocks:approve-plan-push:start -->
 <!-- This region is reserved for the duplicated platform curl blocks. The canonical source lives between the matching anchors in plan.md Step 5b. Slice 6 populates this region; until then it is intentionally empty so the slice 0 drift-prevention test (workflows.test.ts) can assert anchor presence without enforcing byte-equality. Slice 6 promotes the test to a byte-equality check. Edit one anchored region — update the other in the same commit. -->
 <!-- curl-blocks:approve-plan-push:end -->

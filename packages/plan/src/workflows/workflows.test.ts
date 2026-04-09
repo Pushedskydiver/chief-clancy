@@ -1304,3 +1304,90 @@ describe('approve-plan Step 4c key validation (PR 9 Slice 4)', () => {
     );
   });
 });
+
+// PR 9 — Slice 5: decision matrix. Three orthogonal axes — --push, --afk,
+// --ticket — produce six meaningful cells. Default prompt is [y/N] (default
+// No, never surprise-write). Two interactive prompts in non-afk flow is
+// intentional (Step 4 confirms approval, Step 4c confirms push).
+describe('approve-plan Step 4c decision matrix (PR 9 Slice 5)', () => {
+  const content = readFileSync(
+    new URL('approve-plan.md', import.meta.url),
+    'utf8',
+  );
+  const fourCStart = content.indexOf('## Step 4c — Optional board push');
+  const fourCEnd = content.indexOf('## Step 5 — Update ticket description');
+  const fourCBody = content.slice(fourCStart, fourCEnd);
+
+  it('Step 4c declares the new --push and --ticket flags', () => {
+    expect(fourCBody).toContain('`--push`');
+    expect(fourCBody).toContain('`--ticket');
+  });
+
+  it('Step 4c interactive prompt defaults to [y/N] (default No)', () => {
+    expect(fourCBody).toContain('[y/N]');
+    expect(fourCBody).toMatch(/default[^.]*No|never surprise[- ]write/i);
+  });
+
+  it('Step 4c interactive prompt text names the resolved KEY', () => {
+    // The prompt must show which ticket the push will hit.
+    expect(fourCBody).toMatch(
+      /Push approved plan to[^.]*\{KEY\}[^.]*comment\?[^.]*\[y\/N\]/,
+    );
+  });
+
+  it('Step 4c covers interactive without --push (prompt the user)', () => {
+    expect(fourCBody).toMatch(
+      /interactive[^.]*no `--push`|no `--push`[^.]*interactive/i,
+    );
+    // Interactive cell explicitly prompts.
+    expect(fourCBody).toMatch(/prompt[\s\S]{0,300}\[y\/N\]/);
+  });
+
+  it('Step 4c covers interactive + --push (skip prompt and push)', () => {
+    expect(fourCBody).toMatch(
+      /interactive[^.]*`--push`[^.]*skip[^.]*prompt|`--push`[^.]*skip[^.]*prompt[^.]*push/i,
+    );
+  });
+
+  it('Step 4c covers --afk without --push (LOCAL_ONLY skip)', () => {
+    expect(fourCBody).toContain('LOCAL_ONLY');
+    expect(fourCBody).toMatch(
+      /--afk[^.]*without[^.]*--push|--afk[^.]*no[^.]*--push/i,
+    );
+  });
+
+  it('Step 4c LOCAL_ONLY token logs to .clancy/progress.txt with stem', () => {
+    // Locked spec format: LOCAL_ONLY | {stem} | afk-without-push
+    expect(fourCBody).toMatch(
+      /LOCAL_ONLY\s*\\?\|\s*\{stem\}\s*\\?\|\s*afk-without-push/,
+    );
+  });
+
+  it('Step 4c covers --afk --push (push without prompting)', () => {
+    expect(fourCBody).toMatch(
+      /--afk\s*--push|--afk[^.]*--push[^.]*without[^.]*prompt/i,
+    );
+  });
+
+  it('Step 4c covers --ticket KEY override (auto-detect bypassed)', () => {
+    expect(fourCBody).toMatch(/--ticket[^.]*override|override[^.]*--ticket/i);
+    // --ticket wins over Source auto-detect.
+    expect(fourCBody).toMatch(
+      /wins over[^.]*auto[- ]detect|override[^.]*auto[- ]detect/i,
+    );
+  });
+
+  it('Step 4c documents --ticket is ignored under --afk-without-push', () => {
+    // The LOCAL_ONLY skip cell ignores --ticket entirely (no push happens).
+    const localOnlyRegion = fourCBody.slice(fourCBody.indexOf('LOCAL_ONLY'));
+    expect(localOnlyRegion.slice(0, 800)).toMatch(
+      /--ticket[^.]*ignored|ignored[^.]*--ticket/i,
+    );
+  });
+
+  it('Step 4c calls out the two-prompt flow as intentional', () => {
+    // Step 4 confirms approval, Step 4c confirms push — semantically distinct.
+    expect(fourCBody).toMatch(/two[- ]prompt|two prompts|second prompt/i);
+    expect(fourCBody).toMatch(/intentional|distinct|semantically/i);
+  });
+});
