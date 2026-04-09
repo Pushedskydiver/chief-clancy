@@ -490,7 +490,7 @@ In standalone+board mode (board credentials present alongside a local plan-file 
 
 Step 4c runs only when **both** of these gates pass:
 
-1. **Step 4a wrote a marker successfully.** If Step 4a stopped on `EEXIST` (already-approved) without `--push`, or if the resolved argument was a board ticket key (which routes through Steps 5/5b/6 instead), Step 4c does not run. The retry path — `EEXIST` with `--push` set — falls through to Step 4c instead of stopping (see Step 4a's `--push` retry branch above).
+1. **A local approval marker exists for this stem** — either Step 4a just wrote it (fresh approval), or Step 4a hit `EEXIST` with `--push` set and fell through to Step 4c with the marker already in place (retry path — see Step 4a's `--push` retry branch above). If Step 4a stopped on `EEXIST` without `--push`, or if the resolved argument was a board ticket key (which routes through Steps 5/5b/6 instead), Step 4c does not run.
 2. **Board credentials are available.** Detect by reading `.clancy/.env` and confirming the configured board's credential variables are present (the same detection used by Step 1's three-state preflight). If `.clancy/.env` is absent or no board is configured, Step 4c is skipped.
 
 If either gate fails, **skip Step 4c silently** and continue to Step 7 (Confirm and log). "Silently" means no warning, no log token, no stdout note — the absence of board credentials is the standalone-mode default, not an error condition. Subsequent slices add explicit log tokens for the conditions that DO warrant user-visible output (no pushable Source field, push failure, `--afk` without `--push`, etc.).
@@ -501,7 +501,7 @@ Step 4c is **best-effort** and never rolls back the local marker. The `.clancy/p
 
 ### Read the Source field from the plan file
 
-Once both run-condition gates pass, **read the `**Source:**`header line directly from the local plan file at`.clancy/plans/{stem}.md`** (the same file Step 4a hashed and Step 4b read for the `**Brief:**` header). The plan file's header block — written by [`plan.md`](./plan.md) Step 5a — contains the brief's Source field value verbatim. Step 4c uses this header as the **single source of truth** for which board ticket (if any) the plan should be pushed to.
+Once both run-condition gates pass, read the `**Source:**` header line directly from the local plan file at `.clancy/plans/{stem}.md` (the same file Step 4a hashed and Step 4b read for the `**Brief:**` header). The plan file's header block — written by [`plan.md`](./plan.md) Step 5a — contains the brief's Source field value verbatim. Step 4c uses this header as the **single source of truth** for which board ticket (if any) the plan should be pushed to.
 
 **Do NOT open the brief file** to look up Source in Step 4c. Step 4b already chases the brief filename out of the plan header to update its `planned:`/`approved:` row marker, but that second filesystem hop is unnecessary for Step 4c — the Source value Step 4b would find inside the brief is the same value already copied into the plan header. Reading from the plan file alone keeps Step 4c self-contained.
 
@@ -515,11 +515,11 @@ Capture group 1 is the raw Source value — the next sub-step parses it into one
 
 ### Handle a missing **Source:** header gracefully
 
-If the plan file has **no `**Source:**` header line** (e.g. a hand-edited plan, or a plan generated before the Source header was added to the local plan template), Step 4c skips silently and continues to Step 7 — same semantics as the run-condition gates. No warning, no log token, no stdout note. The marker is still authoritative; the absence of a Source header just means there's no ticket to push to.
+If the plan file has no `**Source:**` header line (e.g. a hand-edited plan, or a plan generated before the Source header was added to the local plan template), Step 4c skips silently and continues to Step 7 — same semantics as the run-condition gates. No warning, no log token, no stdout note. The marker is still authoritative; the absence of a Source header just means there's no ticket to push to.
 
 ### Parse the Source value (three brief formats)
 
-Brief writes the Source field in **one of three formats** (per [`packages/brief/src/workflows/brief.md` lines ~806-810](../../brief/src/workflows/brief.md)). Step 4c classifies the captured Source value into one of these three buckets:
+Brief writes the Source field in **one of three formats** (per [`packages/brief/src/workflows/brief.md` lines ~806-810](../../../brief/src/workflows/brief.md)). Step 4c classifies the captured Source value into one of these three buckets:
 
 1. **Bracketed key — pushable.** The Source value matches `^\[(#?\d+|[A-Z][A-Z0-9]*-\d+)\]\s+.+$` (e.g. `[#50] Redesign settings page`, `[PROJ-200] Add customer portal`, `[ENG-42] Add real-time notifications`). Extract the key from inside the brackets. **This is the only format that can be pushed to a board.** Continue to the key validation sub-step below.
 2. **Inline-quoted text — no ticket.** The Source value matches `^"[^"]+"$` (e.g. `"Add dark mode support"`). The user gave brief a free-text idea instead of a board ticket reference. There is no ticket to push to.
