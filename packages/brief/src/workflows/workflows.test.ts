@@ -56,6 +56,204 @@ describe('workflows directory structure', () => {
 });
 
 // ---------------------------------------------------------------------------
+// approve-brief Step 1 install-mode preflight assertions
+// ---------------------------------------------------------------------------
+
+describe('approve-brief Step 1 install-mode preflight', () => {
+  const content = readFileSync(
+    new URL('approve-brief.md', import.meta.url),
+    'utf8',
+  );
+
+  it('detects three installation states', () => {
+    expect(content).toContain('standalone mode');
+    expect(content).toContain('standalone+board mode');
+    expect(content).toContain('terminal mode');
+  });
+
+  it('uses the same env-var probes as approve-plan and plan workflows', () => {
+    // Schema-pair contract: must mirror approve-plan.md and plan.md exactly.
+    expect(content).toContain('.clancy/.env');
+    expect(content).toContain('.clancy/clancy-implement.js');
+  });
+
+  it('hard-stops in standalone mode with the board-setup message', () => {
+    expect(content).toContain('No board credentials found');
+    expect(content).toContain('Run /clancy:board-setup first');
+  });
+
+  it('does NOT use the old /clancy:init standalone hard-stop', () => {
+    expect(content).not.toContain('Run /clancy:init to set up Clancy first');
+  });
+
+  it('terminal-mode preflight gates the strategist role check', () => {
+    expect(content).toContain(
+      '### 2. Terminal-mode preflight (skip in standalone+board mode)',
+    );
+    expect(content).toContain('CLANCY_ROLES` includes `strategist`');
+  });
+
+  it('standalone+board preflight notes the strategist role check does not apply', () => {
+    expect(content).toContain(
+      '### 3. Standalone+board preflight (only in standalone+board mode)',
+    );
+    expect(content).toContain('strategist role check above does not apply');
+  });
+
+  it('captures the install mode for Step 6 to read', () => {
+    expect(content).toContain(
+      "The detected install mode is captured for Step 6's pipeline label decision",
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// approve-brief Step 6 pipeline label selection rule
+// ---------------------------------------------------------------------------
+
+describe('approve-brief Step 6 pipeline label selection rule', () => {
+  const content = readFileSync(
+    new URL('approve-brief.md', import.meta.url),
+    'utf8',
+  );
+
+  it('has the preamble heading at the top of Step 6', () => {
+    expect(content).toContain(
+      '### Pipeline label selection rule (applies to all six platforms below)',
+    );
+  });
+
+  it('preamble enumerates rule 1 — --skip-plan flag uses build label', () => {
+    expect(content).toMatch(
+      /1\. `--skip-plan` flag is set → use `CLANCY_LABEL_BUILD`/,
+    );
+  });
+
+  it('preamble enumerates rule 2 — standalone+board uses plan label', () => {
+    expect(content).toMatch(
+      /2\. Install mode is \*\*standalone\+board\*\*[^\n]*→ use `CLANCY_LABEL_PLAN`/,
+    );
+  });
+
+  it('preamble enumerates rule 3 — terminal + planner enabled uses plan label', () => {
+    expect(content).toMatch(
+      /3\. Install mode is \*\*terminal\*\* AND `CLANCY_ROLES` includes `planner`[^\n]*→ use `CLANCY_LABEL_PLAN`/,
+    );
+  });
+
+  it('preamble enumerates rule 4 — terminal + planner not enabled uses build label', () => {
+    expect(content).toMatch(
+      /4\. Install mode is \*\*terminal\*\* AND `CLANCY_ROLES` is set but does NOT include `planner` → use `CLANCY_LABEL_BUILD`/,
+    );
+  });
+
+  it('GitHub subsection delegates to the preamble (no inline 3-rule fallthrough)', () => {
+    expect(content).toContain(
+      'Apply the pipeline label per the rule above to every child ticket',
+    );
+    // The old per-platform fallthrough must be gone — no leftover
+    // "Planner role enabled" / "Planner role NOT enabled" lines anywhere.
+    expect(content).not.toContain('Planner role enabled');
+    expect(content).not.toContain('Planner role NOT enabled');
+  });
+
+  it('all five non-GitHub platform subsections delegate to the preamble', () => {
+    // Each non-GitHub platform must reference the preamble explicitly
+    // and must NOT use the old "same logic as GitHub/other boards" wording.
+    expect(content).not.toContain('same logic as GitHub');
+    expect(content).not.toContain('same logic as other boards');
+
+    // GitHub uses "above"; the other 5 use "at the top of Step 6". Of those
+    // 5, four are "pipeline label per the rule" (Jira, Linear, Shortcut,
+    // Notion) and one is "pipeline tag determined by the rule" (Azure
+    // DevOps, which uses System.Tags rather than labels).
+    const labelDelegations = content.match(
+      /Apply the pipeline label per the rule at the top of Step 6/g,
+    );
+    const tagDelegations = content.match(
+      /Apply the pipeline tag determined by the rule at the top of Step 6/g,
+    );
+
+    expect(labelDelegations).not.toBeNull();
+    expect(labelDelegations?.length).toBe(4);
+    expect(tagDelegations).not.toBeNull();
+    expect(tagDelegations?.length).toBe(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// approve-brief test permissiveness audit
+// ---------------------------------------------------------------------------
+
+describe('approve-brief test regex permissiveness audit', () => {
+  // These tests guard against the `\\?d` class of trap from
+  // feedback_workflow_md_gotchas.md by walking through the simplest wrong
+  // inputs that the regexes above SHOULD reject.
+  const content = readFileSync(
+    new URL('approve-brief.md', import.meta.url),
+    'utf8',
+  );
+
+  /**
+   * Slice the workflow content between two literal markers, asserting both
+   * markers are present AND the end marker comes after the start marker.
+   * Without these guards a missing marker would return -1 from indexOf,
+   * which slice() interprets as a negative index — that produces a
+   * substring counted from the END of the file and silently passes
+   * (or silently fails) the body assertions for the wrong reason. Per
+   * Copilot finding on PR #222 + the test permissiveness audit discipline.
+   */
+  const sliceBetween = (start: string, end: string): string => {
+    const startIdx = content.indexOf(start);
+    const endIdx = content.indexOf(end);
+
+    expect(startIdx, `start marker not found: ${start}`).toBeGreaterThanOrEqual(
+      0,
+    );
+    expect(endIdx, `end marker not found: ${end}`).toBeGreaterThanOrEqual(0);
+    expect(endIdx, `end marker before start marker`).toBeGreaterThan(startIdx);
+
+    return content.slice(startIdx, endIdx);
+  };
+
+  it('rule-2 body does NOT contain a swapped label', () => {
+    // Sanity check: rule 2 must reference CLANCY_LABEL_PLAN, not _BUILD.
+    // If someone accidentally swapped the labels in the preamble, the
+    // existing rule-2 assertion above would still match the heading; this
+    // assertion makes the swap fail loudly.
+    const rule2ToRule3 = sliceBetween(
+      '2. Install mode is **standalone+board**',
+      '3. Install mode is **terminal** AND `CLANCY_ROLES` includes `planner`',
+    );
+
+    expect(rule2ToRule3).not.toContain('CLANCY_LABEL_BUILD');
+  });
+
+  it('rule-3 body does NOT contain a swapped label', () => {
+    // Symmetric to rule-2 / rule-4. Rule 3 must reference CLANCY_LABEL_PLAN.
+    const rule3ToRule4 = sliceBetween(
+      '3. Install mode is **terminal** AND `CLANCY_ROLES` includes `planner`',
+      '4. Install mode is **terminal** AND `CLANCY_ROLES` is set but does NOT include `planner`',
+    );
+
+    expect(rule3ToRule4).not.toContain('CLANCY_LABEL_BUILD');
+  });
+
+  it('rule-4 body does NOT contain a swapped label', () => {
+    // Symmetric to the rule-2 check: rule 4 must reference
+    // CLANCY_LABEL_BUILD, not _PLAN. Slice from rule-4 to the rule-block
+    // terminator paragraph (the "This rule replaces..." line that follows
+    // rule 4 in the preamble).
+    const rule4ToTerminator = sliceBetween(
+      '4. Install mode is **terminal** AND `CLANCY_ROLES` is set but does NOT include `planner`',
+      'This rule replaces the per-platform fallthrough',
+    );
+
+    expect(rule4ToTerminator).not.toContain('CLANCY_LABEL_PLAN');
+  });
+});
+
+// ---------------------------------------------------------------------------
 // board-setup.md content assertions
 // ---------------------------------------------------------------------------
 

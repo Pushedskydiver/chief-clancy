@@ -52,14 +52,35 @@ Briefs are saved to `.clancy/briefs/` in your project.
 
 ## Board ticket mode (optional)
 
-To brief from board tickets and push approved briefs back to the board without installing the full pipeline:
+To brief from board tickets without installing the full pipeline:
 
 1. Run `/clancy:board-setup` in Claude Code
 2. Follow the prompts to configure your board credentials
-3. Run `/clancy:brief #42` (or your board's ticket format) to brief from an existing ticket
-4. Run `/clancy:approve-brief <slug>` to convert an approved brief into child tickets on your board (creates one ticket per row in the brief's decomposition table, links dependencies, and posts a tracking summary)
+3. Run `/clancy:brief #42` (or your board's ticket format)
 
 Credentials are stored in `.clancy/.env` and are per-project (not global).
+
+Supported boards: Jira, GitHub Issues, Linear, Shortcut, Notion, Azure DevOps.
+
+## Approving briefs
+
+The brief package ships `/clancy:approve-brief` so the approval gate works without the full pipeline. The behaviour depends on the install mode.
+
+### Standalone (no board)
+
+`/clancy:approve-brief` requires board credentials. Approve-brief's job is to create child tickets ON the board, so without a board there is nothing for it to do. Run `/clancy:board-setup` first to configure your board, then re-run `/clancy:approve-brief`.
+
+### Standalone+board (board credentials but no full pipeline)
+
+`/clancy:approve-brief <slug>` walks the brief's decomposition table, creates one child ticket per row on the board (in topological/dependency order), links dependencies, and posts a tracking summary as a comment on the parent ticket. Each child ticket gets a pipeline label so downstream queue commands (`/clancy:plan`, `/clancy:implement`) know which queue picks it up.
+
+In standalone+board mode, child tickets default to `CLANCY_LABEL_PLAN` (default `clancy:plan`), even though `CLANCY_ROLES` is unset — passing `--skip-plan` overrides this and forces `CLANCY_LABEL_BUILD` (default `clancy:build`) instead. This is the **single-source-of-truth pipeline label rule**: standalone+board users have installed both `@chief-clancy/brief` and `@chief-clancy/plan` as standalone packages and clearly intend to use plan, so the workflow defaults to the planning queue rather than the build queue.
+
+Partial failures stop immediately. The brief file's approve marker tracks which rows already shipped to the board, so re-running `/clancy:approve-brief` resumes from where the previous run stopped — it never duplicates a ticket.
+
+### Terminal mode (full pipeline)
+
+Existing behaviour, unchanged. The pipeline label respects `CLANCY_ROLES`: if `planner` is enabled (or `CLANCY_ROLES` is unset, indicating a global install), child tickets get `CLANCY_LABEL_PLAN`; if `planner` is explicitly excluded, child tickets get `CLANCY_LABEL_BUILD` (the terminal user has opted out of the planning queue). The `--skip-plan` flag overrides both and forces the build label.
 
 ## Full pipeline
 
