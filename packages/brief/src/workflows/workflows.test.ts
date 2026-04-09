@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 
 const WORKFLOWS_DIR = fileURLToPath(new URL('.', import.meta.url));
 
-const EXPECTED_WORKFLOWS = ['board-setup.md', 'brief.md'];
+const EXPECTED_WORKFLOWS = ['approve-brief.md', 'board-setup.md', 'brief.md'];
 
 describe('workflows directory structure', () => {
   it('contains exactly the expected workflow files', () => {
@@ -39,6 +39,16 @@ describe('workflows directory structure', () => {
 
   it('brief workflow references the workflow reference marker', () => {
     const content = readFileSync(new URL('brief.md', import.meta.url), 'utf8');
+
+    expect(content).toContain('## Step 1');
+    expect(content).toContain('.clancy/briefs/');
+  });
+
+  it('approve-brief workflow has structural step markers', () => {
+    const content = readFileSync(
+      new URL('approve-brief.md', import.meta.url),
+      'utf8',
+    );
 
     expect(content).toContain('## Step 1');
     expect(content).toContain('.clancy/briefs/');

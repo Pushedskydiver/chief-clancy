@@ -52,17 +52,18 @@ Briefs are saved to `.clancy/briefs/` in your project.
 
 ## Board ticket mode (optional)
 
-To brief from board tickets without installing the full pipeline:
+To brief from board tickets and push approved briefs back to the board without installing the full pipeline:
 
 1. Run `/clancy:board-setup` in Claude Code
 2. Follow the prompts to configure your board credentials
-3. Run `/clancy:brief #42` (or your board's ticket format)
+3. Run `/clancy:brief #42` (or your board's ticket format) to brief from an existing ticket
+4. Run `/clancy:approve-brief <slug>` to convert an approved brief into child tickets on your board (creates one ticket per row in the brief's decomposition table, links dependencies, and posts a tracking summary)
 
 Credentials are stored in `.clancy/.env` and are per-project (not global).
 
 ## Full pipeline
 
-For ticket creation, planning, and the full development pipeline, install the complete Clancy package:
+`@chief-clancy/brief` covers brief generation and ticket creation from briefs. For planning and the full development pipeline (autopilot, implementation, review), install the complete Clancy package:
 
 ```bash
 npx chief-clancy

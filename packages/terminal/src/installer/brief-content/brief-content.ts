@@ -45,8 +45,8 @@ type CleanBriefContentOptions = {
 // Constants
 // ---------------------------------------------------------------------------
 
-const BRIEF_COMMAND = 'brief.md';
-const BRIEF_WORKFLOW = 'brief.md';
+const BRIEF_COMMANDS = ['approve-brief.md', 'brief.md'] as const;
+const BRIEF_WORKFLOWS = ['approve-brief.md', 'brief.md'] as const;
 const BRIEF_AGENT = 'devils-advocate.md';
 
 // ---------------------------------------------------------------------------
@@ -87,16 +87,12 @@ export const copyBriefContent = (options: CopyBriefContentOptions): void => {
   rejectSymlink(agentsDest);
   fs.mkdir(agentsDest);
 
-  copyChecked(
-    join(briefCommandsDir, BRIEF_COMMAND),
-    join(commandsDest, BRIEF_COMMAND),
-    fs,
-  );
-  copyChecked(
-    join(briefWorkflowsDir, BRIEF_WORKFLOW),
-    join(workflowsDest, BRIEF_WORKFLOW),
-    fs,
-  );
+  BRIEF_COMMANDS.forEach((file) => {
+    copyChecked(join(briefCommandsDir, file), join(commandsDest, file), fs);
+  });
+  BRIEF_WORKFLOWS.forEach((file) => {
+    copyChecked(join(briefWorkflowsDir, file), join(workflowsDest, file), fs);
+  });
   copyChecked(
     join(briefAgentsDir, BRIEF_AGENT),
     join(agentsDest, BRIEF_AGENT),
@@ -117,8 +113,12 @@ export const cleanBriefContent = (options: CleanBriefContentOptions): void => {
   rejectSymlink(workflowsDest);
   rejectSymlink(agentsDest);
 
-  unlinkSafe(join(commandsDest, BRIEF_COMMAND), fs);
-  unlinkSafe(join(workflowsDest, BRIEF_WORKFLOW), fs);
+  BRIEF_COMMANDS.forEach((file) => {
+    unlinkSafe(join(commandsDest, file), fs);
+  });
+  BRIEF_WORKFLOWS.forEach((file) => {
+    unlinkSafe(join(workflowsDest, file), fs);
+  });
   unlinkSafe(join(agentsDest, BRIEF_AGENT), fs);
 };
 

@@ -96,10 +96,9 @@ chief-clancy               — CLI wrapper (npx chief-clancy)
 │   │       │   └── shared/                   — hook utilities (hasErrorCode, isPlainObject)
 │   │       ├── roles/               — commands + workflows by role
 │   │       │   ├── setup/           — init, settings, doctor, help
-│   │       │   ├── strategist/      — brief, approve-brief (Phase D moves these into @chief-clancy/brief)
 │   │       │   ├── implementer/     — implement, autopilot, dry-run
 │   │       │   └── reviewer/        — review, status, logs
-│   │       │   (planner is now a virtual role — plan, approve-plan, board-setup all live in @chief-clancy/plan)
+│   │       │   (planner and strategist are virtual roles — their slash commands live in @chief-clancy/plan and @chief-clancy/brief)
 │   │       ├── agents/              — specialist agent prompts (.md)
 │   │       ├── templates/           — CLAUDE.md template, .env.example per board
 │   │       └── shared/              — ANSI colour helpers
@@ -107,8 +106,8 @@ chief-clancy               — CLI wrapper (npx chief-clancy)
 │   │   ├── bin/brief.js             — ESM entry point with shebang
 │   │   └── src/
 │   │       ├── installer/           — self-contained installer (no core/terminal deps)
-│   │       ├── commands/            — brief.md slash command
-│   │       ├── workflows/           — brief.md workflow (standalone-adapted)
+│   │       ├── commands/            — brief.md, approve-brief.md, board-setup.md slash commands
+│   │       ├── workflows/           — brief.md, approve-brief.md, board-setup.md workflows
 │   │       └── agents/              — devils-advocate.md (AI-grill agent)
 │   └── chief-clancy/               — chief-clancy (CLI wrapper)
 │       ├── bin/clancy.js            — ESM entry point with shebang

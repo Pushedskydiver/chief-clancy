@@ -84,8 +84,8 @@ const ask = (label) => new Promise((resolve) => rl.question(label, resolve));
 // File lists (keep in sync with install.ts)
 // ---------------------------------------------------------------------------
 
-const COMMAND_FILES = ['board-setup.md', 'brief.md'];
-const WORKFLOW_FILES = ['board-setup.md', 'brief.md'];
+const COMMAND_FILES = ['approve-brief.md', 'board-setup.md', 'brief.md'];
+const WORKFLOW_FILES = ['approve-brief.md', 'board-setup.md', 'brief.md'];
 const AGENT_FILES = ['devils-advocate.md'];
 
 // ---------------------------------------------------------------------------
@@ -216,6 +216,9 @@ async function main() {
   console.log('  Commands available:');
   console.log(
     `      ${cyan('/clancy:brief')}          ${dim('Generate a strategic brief')}`,
+  );
+  console.log(
+    `      ${cyan('/clancy:approve-brief')}  ${dim('Approve a brief and create board tickets')}`,
   );
   console.log(
     `      ${cyan('/clancy:board-setup')}    ${dim('Configure board credentials (optional)')}`,

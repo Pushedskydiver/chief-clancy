@@ -86,7 +86,6 @@ function createSourceFixtures(baseDir: string) {
 
   mkdirSync(join(rolesDir, 'implementer', 'commands'), { recursive: true });
   mkdirSync(join(rolesDir, 'implementer', 'workflows'), { recursive: true });
-  mkdirSync(join(rolesDir, 'strategist', 'commands'), { recursive: true });
 
   writeFileSync(
     join(rolesDir, 'implementer', 'commands', 'autopilot.md'),
@@ -95,10 +94,6 @@ function createSourceFixtures(baseDir: string) {
   writeFileSync(
     join(rolesDir, 'implementer', 'workflows', 'deploy.md'),
     '# Deploy workflow',
-  );
-  writeFileSync(
-    join(rolesDir, 'strategist', 'commands', 'approve-brief.md'),
-    '# /clancy:approve-brief\nApprove brief.',
   );
 
   mkdirSync(hooksDir, { recursive: true });
@@ -128,7 +123,15 @@ function createSourceFixtures(baseDir: string) {
     join(briefCommandsDir, 'brief.md'),
     '# /clancy:brief\n@.claude/clancy/workflows/deploy.md',
   );
+  writeFileSync(
+    join(briefCommandsDir, 'approve-brief.md'),
+    '# /clancy:approve-brief\nApprove brief.',
+  );
   writeFileSync(join(briefWorkflowsDir, 'brief.md'), '# Brief workflow');
+  writeFileSync(
+    join(briefWorkflowsDir, 'approve-brief.md'),
+    '# Approve-brief workflow',
+  );
   writeFileSync(
     join(briefAgentsDir, 'devils-advocate.md'),
     "# Devil's advocate agent",

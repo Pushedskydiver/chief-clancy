@@ -54,6 +54,16 @@ describe('copyBriefContent', () => {
     );
   });
 
+  it('copies approve-brief command to commands destination', () => {
+    const fs = createMockFs();
+    copyBriefContent({ ...defaultDirs, fs });
+
+    expect(fs.copyFile).toHaveBeenCalledWith(
+      join(defaultDirs.briefCommandsDir, 'approve-brief.md'),
+      join(defaultDirs.commandsDest, 'approve-brief.md'),
+    );
+  });
+
   it('copies brief workflow to workflows destination', () => {
     const fs = createMockFs();
     copyBriefContent({ ...defaultDirs, fs });
@@ -61,6 +71,16 @@ describe('copyBriefContent', () => {
     expect(fs.copyFile).toHaveBeenCalledWith(
       join(defaultDirs.briefWorkflowsDir, 'brief.md'),
       join(defaultDirs.workflowsDest, 'brief.md'),
+    );
+  });
+
+  it('copies approve-brief workflow to workflows destination', () => {
+    const fs = createMockFs();
+    copyBriefContent({ ...defaultDirs, fs });
+
+    expect(fs.copyFile).toHaveBeenCalledWith(
+      join(defaultDirs.briefWorkflowsDir, 'approve-brief.md'),
+      join(defaultDirs.workflowsDest, 'approve-brief.md'),
     );
   });
 
@@ -99,6 +119,18 @@ describe('cleanBriefContent', () => {
     );
     expect(fs.unlink).toHaveBeenCalledWith(
       join(defaultDirs.agentsDest, 'devils-advocate.md'),
+    );
+  });
+
+  it('unlinks approve-brief files from destinations', () => {
+    const fs = createMockFs();
+    cleanBriefContent({ ...defaultDirs, fs });
+
+    expect(fs.unlink).toHaveBeenCalledWith(
+      join(defaultDirs.commandsDest, 'approve-brief.md'),
+    );
+    expect(fs.unlink).toHaveBeenCalledWith(
+      join(defaultDirs.workflowsDest, 'approve-brief.md'),
     );
   });
 
@@ -156,7 +188,7 @@ describe('handleBriefContent', () => {
       fs,
     });
 
-    expect(fs.copyFile).toHaveBeenCalledTimes(3);
+    expect(fs.copyFile).toHaveBeenCalledTimes(5);
     expect(fs.unlink).not.toHaveBeenCalled();
   });
 
@@ -170,7 +202,7 @@ describe('handleBriefContent', () => {
       fs,
     });
 
-    expect(fs.copyFile).toHaveBeenCalledTimes(3);
+    expect(fs.copyFile).toHaveBeenCalledTimes(5);
   });
 
   it('cleans when strategist is disabled', () => {
@@ -184,6 +216,6 @@ describe('handleBriefContent', () => {
     });
 
     expect(fs.copyFile).not.toHaveBeenCalled();
-    expect(fs.unlink).toHaveBeenCalledTimes(3);
+    expect(fs.unlink).toHaveBeenCalledTimes(5);
   });
 });

@@ -96,13 +96,13 @@ Code is organised by **capability directories** that map to future packages. See
 
 ### Brief (standalone brief generator)
 
-| Path                            | Purpose                                                 |
-| ------------------------------- | ------------------------------------------------------- |
-| `packages/brief/src/commands/`  | Slash commands (`brief.md`, `board-setup.md`)           |
-| `packages/brief/src/workflows/` | Workflows (`brief.md`, `board-setup.md`)                |
-| `packages/brief/src/agents/`    | Agent prompts (`devils-advocate.md`)                    |
-| `packages/brief/src/installer/` | Self-contained installer module (no core/terminal deps) |
-| `packages/brief/bin/brief.js`   | CLI entry point for `npx @chief-clancy/brief`           |
+| Path                            | Purpose                                                           |
+| ------------------------------- | ----------------------------------------------------------------- |
+| `packages/brief/src/commands/`  | Slash commands (`brief.md`, `approve-brief.md`, `board-setup.md`) |
+| `packages/brief/src/workflows/` | Workflows (`brief.md`, `approve-brief.md`, `board-setup.md`)      |
+| `packages/brief/src/agents/`    | Agent prompts (`devils-advocate.md`)                              |
+| `packages/brief/src/installer/` | Self-contained installer module (no core/terminal deps)           |
+| `packages/brief/bin/brief.js`   | CLI entry point for `npx @chief-clancy/brief`                     |
 
 ### Plan (standalone implementation planner)
 
@@ -115,13 +115,13 @@ Code is organised by **capability directories** that map to future packages. See
 
 ### Terminal (CLI + automation)
 
-| Path                               | Future package | Purpose                                   |
-| ---------------------------------- | -------------- | ----------------------------------------- |
-| `packages/terminal/src/installer/` | terminal       | Installer modules                         |
-| `packages/terminal/src/roles/`     | terminal       | 5 roles — slash commands and workflows    |
-| `packages/terminal/src/agents/`    | terminal       | 7 agent prompts                           |
-| `packages/terminal/src/shared/`    | terminal       | Terminal utilities (ansi, prompt, notify) |
-| `packages/terminal/src/hooks/`     | terminal       | Pre-built CommonJS hooks                  |
+| Path                               | Future package | Purpose                                                                             |
+| ---------------------------------- | -------------- | ----------------------------------------------------------------------------------- |
+| `packages/terminal/src/installer/` | terminal       | Installer modules                                                                   |
+| `packages/terminal/src/roles/`     | terminal       | 3 on-disk roles (implementer, reviewer, setup) — planner and strategist are virtual |
+| `packages/terminal/src/agents/`    | terminal       | 7 agent prompts                                                                     |
+| `packages/terminal/src/shared/`    | terminal       | Terminal utilities (ansi, prompt, notify)                                           |
+| `packages/terminal/src/hooks/`     | terminal       | Pre-built CommonJS hooks                                                            |
 
 ## Testing
 

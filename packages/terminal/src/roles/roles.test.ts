@@ -13,21 +13,24 @@ import { describe, expect, it } from 'vitest';
 const ROLES_DIR = fileURLToPath(new URL('.', import.meta.url));
 
 const CORE_ROLES = ['implementer', 'reviewer', 'setup'];
-const OPTIONAL_ROLES = ['strategist'];
-const ALL_ROLES = [...CORE_ROLES, ...OPTIONAL_ROLES].sort();
+// ALL_ROLES intentionally equals CORE_ROLES — both planner and strategist are
+// virtual roles, so the structural assertions below only iterate the on-disk
+// core roles. The virtual roles are validated separately by the
+// VIRTUAL_ROLES.forEach block below (which asserts they have NO directory).
+const ALL_ROLES = [...CORE_ROLES].sort();
 
 /**
  * Roles that exist as a config-gate concept (in `installer/ui.ts` and the
  * `plan-content` / `brief-content` install gates) but no longer ship any
  * terminal-owned files. Their `src/{commands,workflows}/` files live in the
- * standalone packages (`@chief-clancy/plan`, eventually `@chief-clancy/brief`),
- * and the terminal installer copies them in via `plan-content.ts` /
+ * standalone packages (`@chief-clancy/plan` and `@chief-clancy/brief`), and
+ * the terminal installer copies them in via `plan-content.ts` /
  * `brief-content.ts`.
  *
  * The structural test asserts these roles are NOT present as directories on
  * disk so a half-finished move can't sneak past review.
  */
-const VIRTUAL_ROLES = ['planner'];
+const VIRTUAL_ROLES = ['planner', 'strategist'];
 
 const SUBDIRS = ['commands', 'workflows'];
 

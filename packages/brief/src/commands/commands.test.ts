@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest';
 
 const COMMANDS_DIR = fileURLToPath(new URL('.', import.meta.url));
 
-const EXPECTED_COMMANDS = ['board-setup.md', 'brief.md'];
+const EXPECTED_COMMANDS = ['approve-brief.md', 'board-setup.md', 'brief.md'];
 
 describe('commands directory structure', () => {
   it('contains exactly the expected command files', () => {
@@ -35,5 +35,14 @@ describe('commands directory structure', () => {
     });
 
     expect(issues).toEqual([]);
+  });
+
+  it('approve-brief command starts with the approve-brief heading', () => {
+    const content = readFileSync(
+      new URL('approve-brief.md', import.meta.url),
+      'utf8',
+    );
+
+    expect(content.split('\n')[0]?.trim()).toBe('# /clancy:approve-brief');
   });
 });
