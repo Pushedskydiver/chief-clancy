@@ -139,7 +139,7 @@ chief-clancy               — CLI wrapper (npx chief-clancy)
 Commands are thin wrappers. Each command file references a workflow:
 
 ```
-/clancy:implement  ->  roles/implementer/commands/once.md  ->  @clancy/workflows/once.md
+/clancy:implement  ->  roles/implementer/commands/implement.md  ->  @clancy/workflows/implement.md
 ```
 
 Commands are user-facing (appear in Claude Code's `/` menu). Workflows contain the actual implementation logic and are never exposed directly.
