@@ -101,9 +101,11 @@ sha256=d2c9f3a1b4e6c8f09123456789abcdef0123456789abcdef0123456789abcd
 approved_at=2026-04-08T22:30:00Z
 ```
 
-The full 64-character hex hash is what `.approved` actually stores — `/clancy:implement-from` (PR 8) reads the marker, hashes the current plan file the same way, and blocks implementation on any mismatch.
+The full 64-character hex hash is what `.approved` actually stores — any plan-implementing tool reads the marker, hashes the current plan file the same way, and blocks implementation on any mismatch.
 
-The marker is the gate `/clancy:implement-from` (shipping in the next PR) checks before applying changes — if the plan file is edited after approval, the SHA mismatch blocks implementation until you re-approve. Clancy also tries to update the brief file's `<!-- planned:1,2 -->` marker to `<!-- approved:1 planned:1,2 -->` so `/clancy:plan --list` knows which rows are approved, but that brief-marker update is best-effort and may warn-and-skip if the expected brief metadata or matching marker is missing.
+The marker is the gate plan-implementing tools check before applying changes — if the plan file is edited after approval, the SHA mismatch blocks implementation until you re-approve. A dedicated `/clancy:implement-from` slash command was originally scoped for the plan package but is **deferred** until `@chief-clancy/dev` is extracted (the slash command is convenience, not capability — Claude Code can already do the SHA gate + structured plan parse via natural-language instruction). In the meantime, you can apply approved plans by asking Claude Code directly — for example: `Implement .clancy/plans/add-dark-mode-2.md, verifying the .approved marker's sha256 first` — or by installing the full Clancy pipeline (`npx chief-clancy`) for the board-driven flow.
+
+Clancy also tries to update the brief file's `<!-- planned:1,2 -->` marker to `<!-- approved:1 planned:1,2 -->` so `/clancy:plan --list` knows which rows are approved, but that brief-marker update is best-effort and may warn-and-skip if the expected brief metadata or matching marker is missing.
 
 ### Standalone+board (board credentials but no full pipeline)
 
