@@ -727,6 +727,38 @@ curl -s \
 
 <!-- curl-blocks:approve-plan-push:end -->
 
+### Handling push failure (HTTP non-2xx, network, timeout, dns, auth)
+
+The curl request can fail in several ways: an HTTP non-2xx response (4xx auth/permission, 5xx server), a network-layer failure (DNS, TCP timeout, connection refused), or a credential rejection. **All push failures are best-effort** — the local `.clancy/plans/{stem}.approved` marker stays in place and is preserved. The marker is authoritative; Step 4c never rolls back. A push failure is a Step 4c failure, not a Step 4a failure: the plan IS approved, the board comment just didn't land.
+
+Classify the failure into one of two buckets when logging:
+
+- **HTTP status code** — when the curl returned a non-2xx response code (e.g. `403`, `404`, `429`, `500`, `502`). Use the literal numeric status code.
+- **Error class** — when the curl failed before getting an HTTP response back (transport-layer failure). Use one of the lowercase tokens: `network` (generic transport failure or connection refused), `timeout` (the request exceeded the timeout), `dns` (hostname resolution failed), or `auth` (the platform returned an explicit credential-rejection signal that isn't a clean HTTP status).
+
+Display the error to the user with both the failure detail and the retry command:
+
+```
+✗ Step 4c: failed to push approved plan to {KEY} on {board}.
+  Reason: {http_status_or_error_class}
+
+The local marker is unchanged — your plan is still approved.
+To retry the push:
+  /clancy:approve-plan {stem} --push --ticket {KEY}
+```
+
+The retry command pattern is **exact** — `/clancy:approve-plan {stem} --push --ticket {KEY}` — so the user can copy-paste it without modification. The `--push` flag triggers the retry path (slice 8 wires the `EEXIST + --push` fall-through), and `--ticket {KEY}` re-supplies the resolved key in case the user is in a fresh shell where Source auto-detect would have to re-read the plan file.
+
+Append a row to `.clancy/progress.txt`:
+
+```
+YYYY-MM-DD HH:MM | BOARD_PUSH_FAILED | {stem} | {http_status_or_error_class}
+```
+
+This is the same `BOARD_PUSH_FAILED` token used by the slice 4 key-mismatch path, with a different reason field. The two cases share the token because both represent "Step 4c tried to push and couldn't" — downstream tooling (Step 8 inventory, audit greps) treats them as a single failure category.
+
+After printing the error and logging the row, continue to Step 7 (Confirm and log) — the local-mode success block still renders for the marker write, with the push-failure error printed above it. Push failure is **never** an exit-non-zero condition: the marker write succeeded, the audit trail captures the push failure, and the user has an actionable retry command.
+
 After Step 4c completes (push attempted, push skipped, or gate failed), continue to Step 7 (Confirm and log).
 
 ---

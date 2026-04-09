@@ -1415,3 +1415,64 @@ describe('approve-plan Step 4c decision matrix (PR 9 Slice 5)', () => {
     expect(fourCBody).toMatch(/intentional|distinct|semantically/i);
   });
 });
+
+// PR 9 — Slice 7: failure semantics for actual push failures (HTTP non-2xx,
+// network/timeout/dns/auth). Marker stays, BOARD_PUSH_FAILED logged, exact
+// retry command printed. No rollback.
+describe('approve-plan Step 4c push failure semantics (PR 9 Slice 7)', () => {
+  const content = readFileSync(
+    new URL('approve-plan.md', import.meta.url),
+    'utf8',
+  );
+  const fourCStart = content.indexOf('## Step 4c — Optional board push');
+  const fourCEnd = content.indexOf('## Step 5 — Update ticket description');
+  const fourCBody = content.slice(fourCStart, fourCEnd);
+
+  it('Step 4c handles push failure as best-effort (marker preserved)', () => {
+    // Distinct from the slice 4 key-mismatch path — this is the
+    // post-validation, post-curl HTTP failure path.
+    expect(fourCBody).toMatch(/push fail/i);
+    expect(fourCBody).toMatch(
+      /marker[^.]*(stays|preserved|kept|authoritative)/i,
+    );
+  });
+
+  it('Step 4c logs BOARD_PUSH_FAILED with stem and status class', () => {
+    // Spec format: BOARD_PUSH_FAILED | {stem} | {http_status_or_error_class}
+    expect(fourCBody).toContain('BOARD_PUSH_FAILED');
+    expect(fourCBody).toMatch(
+      /BOARD_PUSH_FAILED\s*\\?\|\s*\{stem\}\s*\\?\|\s*\{http_status_or_error_class\}/,
+    );
+  });
+
+  it('Step 4c defines the error-class vocabulary', () => {
+    // Locked spec: HTTP status code on non-2xx, OR lowercase error class
+    // on transport failure: network, timeout, dns, auth.
+    expect(fourCBody).toMatch(/network/);
+    expect(fourCBody).toMatch(/timeout/);
+    expect(fourCBody).toMatch(/dns/);
+    expect(fourCBody).toMatch(/auth/);
+    // HTTP status path also documented.
+    expect(fourCBody).toMatch(/HTTP[^.]*status|status code|non-2xx/i);
+  });
+
+  it('Step 4c prints the exact retry command on push failure', () => {
+    // Exact command pattern: /clancy:approve-plan {stem} --push --ticket {KEY}
+    expect(fourCBody).toMatch(
+      /\/clancy:approve-plan\s+\{stem\}\s+--push\s+--ticket\s+\{KEY\}/,
+    );
+  });
+
+  it('Step 4c push-failure path continues to Step 7 (does not exit non-zero)', () => {
+    // Push failure is best-effort — workflow still continues to render the
+    // local-mode success block in Step 7.
+    const failRegion = fourCBody.slice(fourCBody.search(/push fail/i));
+    expect(failRegion).toMatch(/Step 7|continue|proceed/i);
+  });
+
+  it('Step 4c push-failure NEVER rolls back the marker', () => {
+    expect(fourCBody).toMatch(
+      /never[^.]*rolls?[- ]?back|do(?:es)? not rolls?[- ]?back/i,
+    );
+  });
+});
