@@ -83,8 +83,18 @@ const ask = (label) => new Promise((resolve) => rl.question(label, resolve));
 // File lists (keep in sync with install.ts)
 // ---------------------------------------------------------------------------
 
-const COMMAND_FILES = ['approve-plan.md', 'board-setup.md', 'plan.md'];
-const WORKFLOW_FILES = ['approve-plan.md', 'board-setup.md', 'plan.md'];
+const COMMAND_FILES = [
+  'approve-plan.md',
+  'board-setup.md',
+  'implement-from.md',
+  'plan.md',
+];
+const WORKFLOW_FILES = [
+  'approve-plan.md',
+  'board-setup.md',
+  'implement-from.md',
+  'plan.md',
+];
 
 // ---------------------------------------------------------------------------
 // Installer
@@ -212,6 +222,9 @@ async function main() {
   );
   console.log(
     `      ${cyan('/clancy:approve-plan')}   ${dim('Approve a plan (run /clancy:plan first)')}`,
+  );
+  console.log(
+    `      ${cyan('/clancy:implement-from')} ${dim('Implement an approved plan from .clancy/plans/')}`,
   );
   console.log(
     `      ${cyan('/clancy:board-setup')}    ${dim('Configure board credentials (optional)')}`,

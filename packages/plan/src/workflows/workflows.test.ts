@@ -11,7 +11,12 @@ import { describe, expect, it } from 'vitest';
 
 const WORKFLOWS_DIR = fileURLToPath(new URL('.', import.meta.url));
 
-const EXPECTED_WORKFLOWS = ['approve-plan.md', 'board-setup.md', 'plan.md'];
+const EXPECTED_WORKFLOWS = [
+  'approve-plan.md',
+  'board-setup.md',
+  'implement-from.md',
+  'plan.md',
+];
 
 describe('workflows directory structure', () => {
   it('contains exactly the expected workflow files', () => {
@@ -645,9 +650,9 @@ describe('plan inventory step', () => {
     expect(content).toContain('plan file was edited after approval');
   });
 
-  it('reserves an Implemented state for PR 8 without claiming it exists today', () => {
+  it('reserves an Implemented state for a follow-up PR without claiming it exists today', () => {
     expect(content).toContain('Implemented');
-    expect(content).toContain('PR 8');
+    expect(content).toContain('PR 8.1');
     expect(content).toContain('shows three states');
   });
 
@@ -700,6 +705,314 @@ describe('plan inventory step', () => {
     expect(content).toContain(
       'never logs to `.clancy/progress.txt` and never modifies any file',
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// implement-from.md content assertions (PR 8)
+// ---------------------------------------------------------------------------
+
+describe('implement-from preflight (Step 1)', () => {
+  const content = readFileSync(
+    new URL('implement-from.md', import.meta.url),
+    'utf8',
+  );
+
+  it('detects all three installation states', () => {
+    expect(content).toContain('standalone mode');
+    expect(content).toContain('standalone+board mode');
+    expect(content).toContain('terminal mode');
+  });
+
+  it('checks .clancy/.env presence for state detection', () => {
+    expect(content).toContain('.clancy/.env');
+  });
+
+  it('checks clancy-implement.js for terminal detection', () => {
+    expect(content).toContain('clancy-implement.js');
+  });
+
+  it('CLANCY_ROLES check only runs in terminal mode', () => {
+    expect(content).toContain('Terminal-mode preflight');
+    expect(content).toContain(
+      'skip in standalone mode and standalone+board mode',
+    );
+  });
+
+  it('stops if .clancy/plans/ directory is absent', () => {
+    expect(content).toContain('No plans directory found');
+  });
+});
+
+describe('implement-from arg resolution (Step 2)', () => {
+  const content = readFileSync(
+    new URL('implement-from.md', import.meta.url),
+    'utf8',
+  );
+
+  it('accepts path form', () => {
+    expect(content).toContain('Path form');
+    expect(content).toContain('.clancy/plans/');
+  });
+
+  it('accepts bare-stem form', () => {
+    expect(content).toContain('Bare-stem form');
+  });
+
+  it('path form takes precedence on collision', () => {
+    expect(content).toContain('path form takes precedence');
+  });
+
+  it('errors clearly when plan file is not found', () => {
+    expect(content).toContain('Plan file not found');
+  });
+
+  it('hint mentions /clancy:plan --list', () => {
+    expect(content).toContain('/clancy:plan --list');
+  });
+
+  it('row-number hint matches approve-plan convention', () => {
+    expect(content).toContain('Plan stems include the row number');
+  });
+
+  it('rejects absolute paths', () => {
+    expect(content).toContain('Absolute paths are not supported');
+  });
+
+  it('rejects path traversal (.. segments, null bytes)', () => {
+    expect(content).toContain("must not contain '..'");
+  });
+
+  it('rejects bare-stem form ending in .md', () => {
+    expect(content).toContain('stem must not end in `.md`');
+  });
+
+  it('rejects empty/whitespace-only argument as no-arg', () => {
+    expect(content).toContain('whitespace-only');
+  });
+
+  it('Step 2.0 validation runs before path/stem branching', () => {
+    expect(content).toContain('### 2.0 — Argument validation');
+    expect(content).toContain('before** the path/stem branch');
+  });
+});
+
+describe('implement-from approval gate (Step 3)', () => {
+  const content = readFileSync(
+    new URL('implement-from.md', import.meta.url),
+    'utf8',
+  );
+
+  it('--bypass-approval short-circuits the gate', () => {
+    expect(content).toContain('--bypass-approval');
+    expect(content).toContain('short-circuit');
+  });
+
+  it('explicitly says --afk does not imply --bypass-approval', () => {
+    expect(content).toContain('`--afk` does NOT imply `--bypass-approval`');
+  });
+
+  it('reads the sibling .approved marker', () => {
+    expect(content).toContain('.clancy/plans/{stem}.approved');
+    expect(content).toContain('sibling marker');
+  });
+
+  it('blocks with "not approved" when marker is missing', () => {
+    expect(content).toContain('Plan not approved');
+    expect(content).toContain('Marker missing');
+  });
+
+  it('parses sha256= and approved_at= lines', () => {
+    expect(content).toContain('sha256=');
+    expect(content).toContain('approved_at=');
+  });
+
+  it('validates sha256 is 64 lowercase hex characters', () => {
+    expect(content).toContain('64-char lowercase hex');
+    expect(content).toContain('/^[0-9a-f]{64}$/');
+  });
+
+  it('blocks malformed markers with delete-and-recreate hint', () => {
+    expect(content).toContain('Plan marker malformed');
+    expect(content).toContain('Delete .clancy/plans/{stem}.approved manually');
+  });
+
+  it('malformed marker error distinguishes itself from sha mismatch', () => {
+    expect(content).toContain(
+      'NOT the same as a sha mismatch — your plan file may be unchanged',
+    );
+  });
+
+  it('malformed marker uses its own log token (not sha mismatch)', () => {
+    expect(content).toContain('LOCAL_BLOCKED | malformed marker');
+  });
+
+  it('hashes the plan file the same way as approve-plan Step 4a', () => {
+    expect(content).toContain('Order of operations');
+    expect(content).toContain(
+      'Read the plan file at `.clancy/plans/{stem}.md` from disk into memory as bytes',
+    );
+    expect(content).toContain('no normalisation');
+    expect(content).toContain('Hex-encode lowercase');
+  });
+
+  it('never includes the .approved file in the hash', () => {
+    expect(content).toContain('`.approved` file is **never** included');
+  });
+
+  it('blocks with "Plan changed since approval" on hash mismatch', () => {
+    expect(content).toContain('Plan changed since approval');
+  });
+});
+
+describe('implement-from plan parsing (Step 4)', () => {
+  const content = readFileSync(
+    new URL('implement-from.md', import.meta.url),
+    'utf8',
+  );
+
+  it('extracts header fields Source, Brief, Row, Planned', () => {
+    expect(content).toContain('**Source:**');
+    expect(content).toContain('**Brief:**');
+    expect(content).toContain('**Row:**');
+    expect(content).toContain('**Planned:**');
+  });
+
+  it('uses tolerant em-dash regex for the Row line', () => {
+    expect(content).toContain('em-dash (U+2014)');
+    expect(content).toContain('en-dash (U+2013)');
+    expect(content).toContain('^\\*\\*Row:\\*\\*\\s*#(\\d+)\\s*[—–-]\\s*(.+)$');
+  });
+
+  it('parses ### Affected Files using the actual plan.md schema (File | Change Type | Description)', () => {
+    expect(content).toContain('### Affected Files');
+    expect(content).toContain('| File                    | Change Type');
+  });
+
+  it('reads File column and strips backticks', () => {
+    expect(content).toContain('strip the backticks');
+  });
+
+  it('Change Type bucketing is case-insensitive', () => {
+    expect(content).toContain('case-insensitive match');
+  });
+
+  it('rejects unrecognised Change Type values with a fail-loud error', () => {
+    expect(content).toContain('unrecognised `Change Type`');
+  });
+
+  it('fails loud when Affected Files is missing or empty', () => {
+    expect(content).toContain('Plan has no Affected Files section');
+    expect(content).toContain('Cannot implement without an explicit file list');
+  });
+
+  it('Affected Files is the central input that other sections augment', () => {
+    expect(content).toContain('central input');
+    expect(content).toContain('augment the file list rather than replace it');
+  });
+
+  it('parses ### Test Strategy as a checklist', () => {
+    expect(content).toContain('### Test Strategy');
+    expect(content).toContain('markdown checklist');
+  });
+
+  it('parses ### Acceptance Criteria as a checklist', () => {
+    expect(content).toContain('### Acceptance Criteria');
+  });
+
+  it('reads ### Implementation Approach in full before writing code', () => {
+    expect(content).toContain('### Implementation Approach');
+    expect(content).toContain('Read it in full');
+  });
+
+  it('all four plan sections are required (fail loud, no warn-and-continue)', () => {
+    expect(content).toContain('Required-section invariant');
+    expect(content).toContain('Plan is missing required section');
+    expect(content).toContain(
+      'There is no `--force` escape hatch for missing sections',
+    );
+  });
+});
+
+describe('implement-from implement loop (Step 5)', () => {
+  const content = readFileSync(
+    new URL('implement-from.md', import.meta.url),
+    'utf8',
+  );
+
+  it('reads every Modify-row file for context', () => {
+    expect(content).toContain('Read every Modify-row file');
+  });
+
+  it('writes tests first per Test Strategy (TDD vertical slices)', () => {
+    expect(content).toContain('vertical slices');
+    expect(content).toContain('Never write all tests first');
+  });
+
+  it('does NOT touch board APIs', () => {
+    expect(content).toContain('Do NOT touch board APIs');
+    expect(content).toContain('local-only');
+  });
+
+  it('does not commit the changes', () => {
+    expect(content).toContain('commit-free');
+  });
+});
+
+describe('implement-from log tokens (Step 6)', () => {
+  const content = readFileSync(
+    new URL('implement-from.md', import.meta.url),
+    'utf8',
+  );
+
+  it('writes LOCAL_IMPLEMENT on success', () => {
+    expect(content).toContain('LOCAL_IMPLEMENT | {N} files');
+  });
+
+  it('writes LOCAL_BYPASS instead of LOCAL_IMPLEMENT when --bypass-approval', () => {
+    expect(content).toContain('LOCAL_BYPASS | {N} files');
+    expect(content).toContain('written **instead of** `LOCAL_IMPLEMENT`');
+  });
+
+  it('writes LOCAL_BLOCKED | not approved when marker is missing', () => {
+    expect(content).toContain('LOCAL_BLOCKED | not approved');
+  });
+
+  it('writes LOCAL_BLOCKED | sha mismatch on hash drift', () => {
+    expect(content).toContain('LOCAL_BLOCKED | sha mismatch');
+  });
+
+  it('writes LOCAL_BLOCKED | malformed marker as a distinct token', () => {
+    expect(content).toContain('LOCAL_BLOCKED | malformed marker');
+  });
+
+  it('explains the three LOCAL_BLOCKED qualifiers are distinct', () => {
+    expect(content).toContain(
+      'three blocked tokens (`not approved`, `malformed marker`, `sha mismatch`)',
+    );
+  });
+
+  it('log tokens use the pipe-delimited four-field format', () => {
+    expect(content).toContain('YYYY-MM-DD HH:MM | {stem} | LOCAL_IMPLEMENT');
+  });
+});
+
+describe('implement-from terminal-vs-local distinction', () => {
+  const content = readFileSync(
+    new URL('implement-from.md', import.meta.url),
+    'utf8',
+  );
+
+  it('explains it does not create a board-ticket lock file', () => {
+    expect(content).toContain('No lock file');
+  });
+
+  it('explains the terminal verification gate does not fire', () => {
+    expect(content).toContain('Stop hook will not fire');
+  });
+
+  it('points users at /clancy:implement for the board-driven flow', () => {
+    expect(content).toContain('/clancy:implement` (terminal)');
   });
 });
 

@@ -138,12 +138,16 @@ const buildOptions = (
       '# /clancy:approve-plan\n\n@.claude/clancy/workflows/approve-plan.md\n',
     '/pkg/src/commands/board-setup.md':
       '# /clancy:board-setup\n\n@.claude/clancy/workflows/board-setup.md\n',
+    '/pkg/src/commands/implement-from.md':
+      '# /clancy:implement-from\n\n@.claude/clancy/workflows/implement-from.md\n',
     '/pkg/src/commands/plan.md':
       '# /clancy:plan\n\n@.claude/clancy/workflows/plan.md\n',
     '/pkg/src/workflows/approve-plan.md':
       '# Clancy Approve Plan Workflow\n\nApprove plan content here.',
     '/pkg/src/workflows/board-setup.md':
       '# Board Setup Workflow\n\nSetup content here.',
+    '/pkg/src/workflows/implement-from.md':
+      '# Clancy Implement-From Workflow\n\nImplement from content here.',
     '/pkg/src/workflows/plan.md':
       '# Clancy Plan Workflow\n\nWorkflow content here.',
     ...files,
@@ -185,6 +189,10 @@ describe('runPlanInstall', () => {
       join(defaultSources.commandsDir, 'approve-plan.md'),
       join(defaultPaths.commandsDest, 'approve-plan.md'),
     );
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.commandsDir, 'implement-from.md'),
+      join(defaultPaths.commandsDest, 'implement-from.md'),
+    );
   });
 
   it('copies all workflow files', () => {
@@ -202,6 +210,10 @@ describe('runPlanInstall', () => {
     expect(opts.fs.copyFile).toHaveBeenCalledWith(
       join(defaultSources.workflowsDir, 'approve-plan.md'),
       join(defaultPaths.workflowsDest, 'approve-plan.md'),
+    );
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.workflowsDir, 'implement-from.md'),
+      join(defaultPaths.workflowsDest, 'implement-from.md'),
     );
   });
 
@@ -282,6 +294,23 @@ describe('runPlanInstall', () => {
       expect(cmdWrite?.[1]).toContain('Approve plan content here.');
       expect(cmdWrite?.[1]).not.toContain(
         '@.claude/clancy/workflows/approve-plan.md',
+      );
+    });
+
+    it('inlines workflow content into implement-from command file', () => {
+      const opts = buildOptions({ mode: 'global' });
+      runPlanInstall(opts);
+
+      const writeCalls = opts.fs.writeFile.mock.calls;
+      const cmdWrite = writeCalls.find(
+        ([path]) =>
+          path === join(defaultPaths.commandsDest, 'implement-from.md'),
+      );
+
+      expect(cmdWrite).toBeDefined();
+      expect(cmdWrite?.[1]).toContain('Implement from content here.');
+      expect(cmdWrite?.[1]).not.toContain(
+        '@.claude/clancy/workflows/implement-from.md',
       );
     });
 

@@ -97,13 +97,13 @@ The plan package ships `/clancy:approve-plan` so the approval gate works without
 The command writes a `.clancy/plans/{stem}.approved` marker file containing the full lowercase hex SHA-256 of the plan file and an ISO 8601 UTC approval timestamp:
 
 ```
-sha256=d2c9f3a1b4e6c8f09123456789abcdef0123456789abcdef0123456789abcd
+sha256=d2c9f3a1b4e6c8f09123456789abcdef0123456789abcdef0123456789abcdef
 approved_at=2026-04-08T22:30:00Z
 ```
 
-The full 64-character hex hash is what `.approved` actually stores — `/clancy:implement-from` (PR 8) reads the marker, hashes the current plan file the same way, and blocks implementation on any mismatch.
+The full 64-character hex hash is what `.approved` actually stores — `/clancy:implement-from` reads the marker, hashes the current plan file the same way, and blocks implementation on any mismatch.
 
-The marker is the gate `/clancy:implement-from` (shipping in the next PR) checks before applying changes — if the plan file is edited after approval, the SHA mismatch blocks implementation until you re-approve. Clancy also tries to update the brief file's `<!-- planned:1,2 -->` marker to `<!-- approved:1 planned:1,2 -->` so `/clancy:plan --list` knows which rows are approved, but that brief-marker update is best-effort and may warn-and-skip if the expected brief metadata or matching marker is missing.
+The marker is the gate `/clancy:implement-from` checks before applying changes — if the plan file is edited after approval, the SHA mismatch blocks implementation until you re-approve. Clancy also tries to update the brief file's `<!-- planned:1,2 -->` marker to `<!-- approved:1 planned:1,2 -->` so `/clancy:plan --list` knows which rows are approved, but that brief-marker update is best-effort and may warn-and-skip if the expected brief metadata or matching marker is missing.
 
 ### Standalone+board (board credentials but no full pipeline)
 
@@ -117,6 +117,51 @@ The plan-file lookup runs first, so plan stems win on collision (`PROJ-123.md` e
 ### Terminal mode (full pipeline)
 
 Existing behaviour, unchanged. Board ticket transport, queue transitions, and the implementation handoff all work as they did before.
+
+## Implementing approved plans
+
+Once a plan is approved, `/clancy:implement-from` applies it to your codebase:
+
+```bash
+# Implement an approved plan (path form)
+/clancy:implement-from .clancy/plans/add-dark-mode-2.md
+
+# Or use the bare-stem form
+/clancy:implement-from add-dark-mode-2
+```
+
+The command reads the plan file, verifies the `.approved` marker's SHA-256 matches the current plan content, parses the `### Affected Files` table + `### Test Strategy` + `### Acceptance Criteria` + `### Implementation Approach` sections, and then writes the code (TDD vertical slices: one test → implement → next test).
+
+If the plan was edited after approval, the SHA mismatch blocks implementation:
+
+```
+Plan changed since approval: add-dark-mode-2
+Marker sha256:  d2c9f3a1b4e6
+Current sha256: 8a1f0c5e2b9d
+
+The plan file was edited after /clancy:approve-plan recorded the marker.
+To re-approve:
+  1. Delete .clancy/plans/add-dark-mode-2.approved manually
+  2. Run /clancy:approve-plan add-dark-mode-2
+```
+
+To skip the gate (not recommended), pass `--bypass-approval`. The flag is **required even with `--afk`** — `--afk` alone does NOT bypass the gate, because warnings scroll past in non-interactive runs and approval is the only safeguard between "plan generated" and "code changes applied".
+
+### `/clancy:implement-from` vs `/clancy:implement`
+
+The plan package's `/clancy:implement-from` and the terminal package's `/clancy:implement` are completely separate code paths. They share no logic and serve different workflows:
+
+| Aspect          | `/clancy:implement-from` (plan package)              | `/clancy:implement` (terminal-only)              |
+| --------------- | ---------------------------------------------------- | ------------------------------------------------ |
+| Input           | Local plan file (`.clancy/plans/{stem}.md`)          | Board ticket key                                 |
+| Approval gate   | SHA-256 marker check                                 | Board status / label state                       |
+| Lock file       | None — no Stop-hook verification gate                | Board-ticket lock file → Stop hook fires         |
+| Pipeline phases | None (filesystem read → write code → log)            | Full 13-phase pipeline (`runPipeline` from core) |
+| Board API calls | None (no comments, transitions, label swaps, or PRs) | All of the above                                 |
+| Commit          | None — review and commit manually                    | Pipeline opens a PR via `deliver` phase          |
+| Use when        | You ran `/clancy:plan --from {brief}` locally        | You're driving the full board-ticket workflow    |
+
+Because `/clancy:implement-from` does not create a board-ticket lock file, the terminal verification gate (Stop hook) does not fire for it. This is correct — local implement is explicitly outside the verification-gate lifecycle.
 
 ## Board ticket mode
 

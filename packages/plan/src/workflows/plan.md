@@ -1107,7 +1107,7 @@ Scan `.clancy/plans/` for all `.md` files. For each file, parse the local plan h
   4. If the marker's valid `sha256` matches the current plan file's hash → `Approved` (verdict)
   5. If the marker exists and its valid `sha256` differs from the current hash → `Stale (re-approve)` (verdict) — the plan file was edited after approval. `/clancy:implement-from` (PR 8) will refuse to run against a stale plan until it is re-approved
 
-  A future `Implemented` state — derived from `LOCAL_IMPLEMENT` entries in `.clancy/progress.txt` — will be added by PR 8. Today the inventory shows three states (`Planned`, `Approved`, `Stale (re-approve)`), with malformed `.approved` markers folded into `Stale (re-approve)`; the table format is stable so PR 8's addition will be a one-line extension.
+  A future `Implemented` state — derived from `LOCAL_IMPLEMENT` entries in `.clancy/progress.txt` — will be added by a follow-up PR (PR 8.1, after PR 8 ships `/clancy:implement-from`). Today the inventory shows three states (`Planned`, `Approved`, `Stale (re-approve)`), with malformed `.approved` markers folded into `Stale (re-approve)`; the table format is stable so the follow-up's addition will be a one-line extension.
 
 A field is considered missing if the line is absent or its value is empty after the colon. Plans missing all expected fields are still listed (with `?` placeholders) so the user can find and clean them up.
 

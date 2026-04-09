@@ -48,10 +48,18 @@ type CleanPlanContentOptions = {
  * future asymmetry — e.g. a command-only helper or an agent file — does not
  * force a refactor. Mirrors brief-content.ts's separate-constant convention.
  */
-const PLAN_COMMAND_FILES = ['approve-plan.md', 'plan.md'] as const;
+const PLAN_COMMAND_FILES = [
+  'approve-plan.md',
+  'implement-from.md',
+  'plan.md',
+] as const;
 
 /** Plan workflow files terminal copies from the @chief-clancy/plan package. */
-const PLAN_WORKFLOW_FILES = ['approve-plan.md', 'plan.md'] as const;
+const PLAN_WORKFLOW_FILES = [
+  'approve-plan.md',
+  'implement-from.md',
+  'plan.md',
+] as const;
 
 // ---------------------------------------------------------------------------
 // Helpers
