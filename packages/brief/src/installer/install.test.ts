@@ -150,10 +150,14 @@ const buildOptions = (
   files: Readonly<Record<string, string>> = {},
 ): MockOptions => {
   const sourceFiles: Record<string, string> = {
+    '/pkg/src/commands/approve-brief.md':
+      '# /clancy:approve-brief\n\n@.claude/clancy/workflows/approve-brief.md\n',
     '/pkg/src/commands/board-setup.md':
       '# /clancy:board-setup\n\n@.claude/clancy/workflows/board-setup.md\n',
     '/pkg/src/commands/brief.md':
       '# /clancy:brief\n\n@.claude/clancy/workflows/brief.md\n',
+    '/pkg/src/workflows/approve-brief.md':
+      '# Clancy Approve Brief Workflow\n\nApprove content here.',
     '/pkg/src/workflows/board-setup.md':
       '# Board Setup Workflow\n\nSetup content here.',
     '/pkg/src/workflows/brief.md':
@@ -198,6 +202,16 @@ describe('runBriefInstall', () => {
     );
   });
 
+  it('copies the approve-brief command file', () => {
+    const opts = buildOptions();
+    runBriefInstall(opts);
+
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.commandsDir, 'approve-brief.md'),
+      join(defaultPaths.commandsDest, 'approve-brief.md'),
+    );
+  });
+
   it('copies all workflow files', () => {
     const opts = buildOptions();
     runBriefInstall(opts);
@@ -209,6 +223,16 @@ describe('runBriefInstall', () => {
     expect(opts.fs.copyFile).toHaveBeenCalledWith(
       join(defaultSources.workflowsDir, 'board-setup.md'),
       join(defaultPaths.workflowsDest, 'board-setup.md'),
+    );
+  });
+
+  it('copies the approve-brief workflow file', () => {
+    const opts = buildOptions();
+    runBriefInstall(opts);
+
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.workflowsDir, 'approve-brief.md'),
+      join(defaultPaths.workflowsDest, 'approve-brief.md'),
     );
   });
 
