@@ -162,13 +162,22 @@ describe('approve-brief Step 6 pipeline label selection rule', () => {
     // and must NOT use the old "same logic as GitHub/other boards" wording.
     expect(content).not.toContain('same logic as GitHub');
     expect(content).not.toContain('same logic as other boards');
-    const delegations = content.match(
+
+    // GitHub uses "above"; the other 5 use "at the top of Step 6". Of those
+    // 5, four are "pipeline label per the rule" (Jira, Linear, Shortcut,
+    // Notion) and one is "pipeline tag determined by the rule" (Azure
+    // DevOps, which uses System.Tags rather than labels).
+    const labelDelegations = content.match(
       /Apply the pipeline label per the rule at the top of Step 6/g,
     );
+    const tagDelegations = content.match(
+      /Apply the pipeline tag determined by the rule at the top of Step 6/g,
+    );
 
-    // GitHub uses "above"; the other 5 use "at the top of Step 6".
-    expect(delegations).not.toBeNull();
-    expect(delegations?.length).toBe(5);
+    expect(labelDelegations).not.toBeNull();
+    expect(labelDelegations?.length).toBe(4);
+    expect(tagDelegations).not.toBeNull();
+    expect(tagDelegations?.length).toBe(1);
   });
 });
 
@@ -185,30 +194,48 @@ describe('approve-brief test regex permissiveness audit', () => {
     'utf8',
   );
 
+  /**
+   * Slice the workflow content between two literal markers, asserting both
+   * markers are present AND the end marker comes after the start marker.
+   * Without these guards a missing marker would return -1 from indexOf,
+   * which slice() interprets as a negative index — that produces a
+   * substring counted from the END of the file and silently passes
+   * (or silently fails) the body assertions for the wrong reason. Per
+   * Copilot finding on PR #222 + the test permissiveness audit discipline.
+   */
+  const sliceBetween = (start: string, end: string): string => {
+    const startIdx = content.indexOf(start);
+    const endIdx = content.indexOf(end);
+
+    expect(startIdx, `start marker not found: ${start}`).toBeGreaterThanOrEqual(
+      0,
+    );
+    expect(endIdx, `end marker not found: ${end}`).toBeGreaterThanOrEqual(0);
+    expect(endIdx, `end marker before start marker`).toBeGreaterThan(startIdx);
+
+    return content.slice(startIdx, endIdx);
+  };
+
   it('rule-2 body does NOT contain a swapped label', () => {
     // Sanity check: rule 2 must reference CLANCY_LABEL_PLAN, not _BUILD.
     // If someone accidentally swapped the labels in the preamble, the
     // existing rule-2 assertion above would still match the heading; this
     // assertion makes the swap fail loudly.
-    const rule2ToRule3 = content.slice(
-      content.indexOf('2. Install mode is **standalone+board**'),
-      content.indexOf(
-        '3. Install mode is **terminal** AND `CLANCY_ROLES` includes `planner`',
-      ),
+    const rule2ToRule3 = sliceBetween(
+      '2. Install mode is **standalone+board**',
+      '3. Install mode is **terminal** AND `CLANCY_ROLES` includes `planner`',
     );
+
     expect(rule2ToRule3).not.toContain('CLANCY_LABEL_BUILD');
   });
 
   it('rule-3 body does NOT contain a swapped label', () => {
     // Symmetric to rule-2 / rule-4. Rule 3 must reference CLANCY_LABEL_PLAN.
-    const rule3ToRule4 = content.slice(
-      content.indexOf(
-        '3. Install mode is **terminal** AND `CLANCY_ROLES` includes `planner`',
-      ),
-      content.indexOf(
-        '4. Install mode is **terminal** AND `CLANCY_ROLES` is set but does NOT include `planner`',
-      ),
+    const rule3ToRule4 = sliceBetween(
+      '3. Install mode is **terminal** AND `CLANCY_ROLES` includes `planner`',
+      '4. Install mode is **terminal** AND `CLANCY_ROLES` is set but does NOT include `planner`',
     );
+
     expect(rule3ToRule4).not.toContain('CLANCY_LABEL_BUILD');
   });
 
@@ -217,12 +244,11 @@ describe('approve-brief test regex permissiveness audit', () => {
     // CLANCY_LABEL_BUILD, not _PLAN. Slice from rule-4 to the rule-block
     // terminator paragraph (the "This rule replaces..." line that follows
     // rule 4 in the preamble).
-    const rule4ToTerminator = content.slice(
-      content.indexOf(
-        '4. Install mode is **terminal** AND `CLANCY_ROLES` is set but does NOT include `planner`',
-      ),
-      content.indexOf('This rule replaces the per-platform fallthrough'),
+    const rule4ToTerminator = sliceBetween(
+      '4. Install mode is **terminal** AND `CLANCY_ROLES` is set but does NOT include `planner`',
+      'This rule replaces the per-platform fallthrough',
     );
+
     expect(rule4ToTerminator).not.toContain('CLANCY_LABEL_PLAN');
   });
 });

@@ -475,7 +475,7 @@ curl -s \
 
 If the specified type is not found, stop with the available types listed.
 
-**Pipeline tag for children — mandatory.** Apply the pipeline label per the rule at the top of Step 6. Defaults: `clancy:plan` / `clancy:build`. Tags are applied via the `System.Tags` field (semicolon-delimited).
+**Pipeline tag for children — mandatory.** Apply the pipeline tag determined by the rule at the top of Step 6. Defaults: `clancy:plan` / `clancy:build`. Tags are applied via the `System.Tags` field (semicolon-delimited).
 
 **Tags:** Azure DevOps auto-creates tags — no pre-creation needed. Apply: the pipeline tag, `clancy:afk` or `clancy:hitl`. `CLANCY_LABEL` is NOT applied to children when pipeline tags are active.
 
