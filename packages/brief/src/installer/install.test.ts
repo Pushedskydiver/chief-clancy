@@ -311,6 +311,23 @@ describe('runBriefInstall', () => {
       );
     });
 
+    it('inlines workflow content into approve-brief command file', () => {
+      const opts = buildOptions({ mode: 'global' });
+      runBriefInstall(opts);
+
+      const writeCalls = opts.fs.writeFile.mock.calls;
+      const cmdWrite = writeCalls.find(
+        ([path]) =>
+          path === join(defaultPaths.commandsDest, 'approve-brief.md'),
+      );
+
+      expect(cmdWrite).toBeDefined();
+      expect(cmdWrite?.[1]).toContain('Approve content here.');
+      expect(cmdWrite?.[1]).not.toContain(
+        '@.claude/clancy/workflows/approve-brief.md',
+      );
+    });
+
     it('does not inline workflow for local mode', () => {
       const opts = buildOptions({ mode: 'local' });
       runBriefInstall(opts);
