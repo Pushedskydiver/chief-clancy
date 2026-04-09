@@ -8,39 +8,60 @@ Approve a reviewed strategic brief by creating child tickets on the board, linki
 
 ## Step 1 — Preflight checks
 
-1. Check `.clancy/` exists and `.clancy/.env` is present. If not:
+### 1. Detect installation context
 
-   ```
-   .clancy/ not found. Run /clancy:init to set up Clancy first.
-   ```
+Check for `.clancy/.env`:
 
-   Stop.
+- **Absent** → **standalone mode**. The brief package has been installed via `npx @chief-clancy/brief` but board credentials have never been configured. There is nothing approve-brief can do without a board (its job is to create tickets ON the board), so stop with:
 
-2. Source `.clancy/.env` and check board credentials are present.
+  ```
+  No board credentials found. Run /clancy:board-setup first to configure your board, then re-run /clancy:approve-brief.
+  ```
 
-3. Check `CLANCY_ROLES` includes `strategist` (or env var is unset, which indicates a global install where all roles are available). If `CLANCY_ROLES` is set but does not include `strategist`:
+  Stop.
 
-   ```
-   The Strategist role is not enabled. Add "strategist" to CLANCY_ROLES in .clancy/.env or run /clancy:settings.
-   ```
+- **Present** → continue to `.clancy/clancy-implement.js` check below.
 
-   Stop.
+If `.clancy/.env` is present, check for `.clancy/clancy-implement.js`:
 
-4. Branch freshness check:
+- **Present** → **terminal mode**. Full Clancy pipeline installed.
+- **Absent** → **standalone+board mode**. Board credentials available via `/clancy:board-setup`. Brief and plan are installed as standalone packages but the full pipeline (`clancy-implement.js`) is not.
 
-   ```bash
-   git fetch origin
-   ```
+The detected install mode is captured for Step 6's pipeline label decision.
 
-   Compare HEAD with `origin/$CLANCY_BASE_BRANCH`. If behind:
+### 2. Terminal-mode preflight (skip in standalone+board mode)
 
-   **AFK mode** (`--afk` flag or `CLANCY_MODE=afk`): auto-pull without prompting.
+If in **terminal mode** (`.clancy/.env` present AND `.clancy/clancy-implement.js` present):
 
-   **Interactive mode:**
+a. Source `.clancy/.env` and check board credentials are present.
 
-   ```
-   Behind by N commits. [1] Pull latest  [2] Continue  [3] Abort
-   ```
+b. Check `CLANCY_ROLES` includes `strategist` (or env var is unset, which indicates a global install where all roles are available). If `CLANCY_ROLES` is set but does not include `strategist`:
+
+```
+The Strategist role is not enabled. Add "strategist" to CLANCY_ROLES in .clancy/.env or run /clancy:settings.
+```
+
+Stop.
+
+### 3. Standalone+board preflight (only in standalone+board mode)
+
+If in **standalone+board mode**, source `.clancy/.env` and check board credentials are present (same presence check as the terminal-mode preflight above — an empty or partial `.clancy/.env` should fail loudly here, not later in Step 6/7). Standalone+board users came in via `npx @chief-clancy/brief` and `/clancy:board-setup`, so they have no `CLANCY_ROLES` configured and the strategist role check above does not apply.
+
+### 4. Branch freshness check (all modes)
+
+```bash
+git fetch origin
+```
+
+Compare HEAD with `origin/$CLANCY_BASE_BRANCH`. If behind:
+
+**AFK mode** (`--afk` flag or `CLANCY_MODE=afk`): auto-pull without prompting.
+
+**Interactive mode:**
+
+```
+Behind by N commits. [1] Pull latest  [2] Continue  [3] Abort
+```
 
 ---
 
@@ -298,14 +319,20 @@ Continue — omit parent fields from creation payloads. No tracking comment will
 
 Platform-specific pre-creation lookups.
 
+### Pipeline label selection rule (applies to all six platforms below)
+
+Every child ticket gets exactly one pipeline label. The label determines which queue picks the ticket up downstream (`/clancy:plan` for the planning queue, `/clancy:implement` for the build queue). The selection rule, in order of precedence:
+
+1. `--skip-plan` flag is set → use `CLANCY_LABEL_BUILD` from `.clancy/.env` if set, otherwise `clancy:build`. The user has explicitly opted out of the planning queue for this run.
+2. Install mode is **standalone+board** (Step 1 detected this) → use `CLANCY_LABEL_PLAN` from `.clancy/.env` if set, otherwise `clancy:plan`. Standalone+board users have installed both `@chief-clancy/brief` and `@chief-clancy/plan` as standalone packages and clearly intend to use plan, even though they have no `CLANCY_ROLES` configured.
+3. Install mode is **terminal** AND `CLANCY_ROLES` includes `planner` (or `CLANCY_ROLES` is unset, indicating a global install where all roles are available) → use `CLANCY_LABEL_PLAN` from `.clancy/.env` if set, otherwise `clancy:plan`.
+4. Install mode is **terminal** AND `CLANCY_ROLES` is set but does NOT include `planner` → use `CLANCY_LABEL_BUILD` from `.clancy/.env` if set, otherwise `clancy:build`. The terminal user has explicitly opted out of the planning queue by not enabling the planner role.
+
+This rule replaces the per-platform fallthrough that used to live in each of the six platform subsections below. Each subsection now applies the rule rather than re-enumerating it. Ensure the chosen label exists on the board (create it if missing), then add it to each child ticket.
+
 ### GitHub
 
-**Pipeline label for children — this is mandatory, always apply a pipeline label to every child ticket.** Determine which label to use:
-
-- `--skip-plan` flag → use `CLANCY_LABEL_BUILD` from `.clancy/.env` if set, otherwise `clancy:build`
-- Planner role enabled (`CLANCY_ROLES` includes `planner`) → use `CLANCY_LABEL_PLAN` from `.clancy/.env` if set, otherwise `clancy:plan`
-- Planner role NOT enabled → use `CLANCY_LABEL_BUILD` from `.clancy/.env` if set, otherwise `clancy:build`
-  Ensure the label exists on the board (create it if missing), then add it to each child ticket.
+**Pipeline label for children — mandatory.** Apply the pipeline label per the rule above to every child ticket.
 
 **Labels to apply per ticket:**
 
@@ -362,7 +389,7 @@ Set CLANCY_BRIEF_ISSUE_TYPE in .clancy/.env.
 
 Stop.
 
-**Pipeline label for children — mandatory, same logic as GitHub.** Use `CLANCY_LABEL_PLAN` or `CLANCY_LABEL_BUILD` from `.clancy/.env` (defaults: `clancy:plan` / `clancy:build`). Always apply to every child ticket.
+**Pipeline label for children — mandatory.** Apply the pipeline label per the rule at the top of Step 6. Defaults: `clancy:plan` / `clancy:build`. Always apply to every child ticket.
 
 **Labels:** Jira auto-creates labels — no pre-creation needed. Apply: the pipeline label determined above, `clancy:afk` or `clancy:hitl`. `CLANCY_LABEL` is NOT applied to children when pipeline labels are active.
 
@@ -404,7 +431,7 @@ query {
 }
 ```
 
-**Pipeline label for children — mandatory, same logic as GitHub/Jira.** Use `CLANCY_LABEL_PLAN` or `CLANCY_LABEL_BUILD` from `.clancy/.env` (defaults: `clancy:plan` / `clancy:build`). Always apply to every child ticket.
+**Pipeline label for children — mandatory.** Apply the pipeline label per the rule at the top of Step 6. Defaults: `clancy:plan` / `clancy:build`. Always apply to every child ticket.
 
 For each required label (the pipeline label, `component:{CLANCY_COMPONENT}`, `clancy:afk`, `clancy:hitl`): search by exact name. `CLANCY_LABEL` is NOT applied to children when pipeline labels are active. If not found in team labels, check workspace labels:
 
@@ -448,7 +475,7 @@ curl -s \
 
 If the specified type is not found, stop with the available types listed.
 
-**Pipeline tag for children — mandatory, same logic as other boards.** Use `CLANCY_LABEL_PLAN` or `CLANCY_LABEL_BUILD` from `.clancy/.env` (defaults: `clancy:plan` / `clancy:build`). Tags are applied via the `System.Tags` field (semicolon-delimited).
+**Pipeline tag for children — mandatory.** Apply the pipeline label per the rule at the top of Step 6. Defaults: `clancy:plan` / `clancy:build`. Tags are applied via the `System.Tags` field (semicolon-delimited).
 
 **Tags:** Azure DevOps auto-creates tags — no pre-creation needed. Apply: the pipeline tag, `clancy:afk` or `clancy:hitl`. `CLANCY_LABEL` is NOT applied to children when pipeline tags are active.
 
@@ -467,7 +494,7 @@ Use `authenticatedUser.providerDisplayName` for the `System.AssignedTo` field.
 
 **Story type:** Shortcut creates stories by default. Use `story_type` field if needed (`feature`, `bug`, `chore` — default: `feature`).
 
-**Pipeline label for children — mandatory, same logic as other boards.** Use `CLANCY_LABEL_PLAN` or `CLANCY_LABEL_BUILD` from `.clancy/.env` (defaults: `clancy:plan` / `clancy:build`).
+**Pipeline label for children — mandatory.** Apply the pipeline label per the rule at the top of Step 6. Defaults: `clancy:plan` / `clancy:build`.
 
 **Labels:** Resolve label IDs via `GET /api/v3/labels`. If the required label does not exist, create it:
 
@@ -494,7 +521,7 @@ Use `id` as the `owner_ids` value for story creation.
 
 ### Notion
 
-**Pipeline label for children — mandatory, same logic as other boards.** Use `CLANCY_LABEL_PLAN` or `CLANCY_LABEL_BUILD` from `.clancy/.env` (defaults: `clancy:plan` / `clancy:build`). Labels are applied via multi-select properties.
+**Pipeline label for children — mandatory.** Apply the pipeline label per the rule at the top of Step 6. Defaults: `clancy:plan` / `clancy:build`. Labels are applied via multi-select properties.
 
 **Labels:** Notion auto-creates multi-select options when first used — no pre-creation needed. Apply: the pipeline label, `clancy:afk` or `clancy:hitl`. `CLANCY_LABEL` is NOT applied to children when pipeline labels are active.
 
