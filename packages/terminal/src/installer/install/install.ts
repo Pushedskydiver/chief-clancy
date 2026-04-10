@@ -19,6 +19,7 @@ import {
 } from '~/t/installer/manifest/manifest.js';
 import { handlePlanContent } from '~/t/installer/plan-content/index.js';
 import { copyRoleFiles } from '~/t/installer/role-filter/role-filter.js';
+import { handleScanContent } from '~/t/installer/scan-content/index.js';
 import {
   requirePath,
   validateOptionalDirs,
@@ -46,6 +47,9 @@ type InstallSources = {
   readonly briefAgentsDir?: string;
   readonly planCommandsDir?: string;
   readonly planWorkflowsDir?: string;
+  readonly scanAgentsDir?: string;
+  readonly scanCommandsDir?: string;
+  readonly scanWorkflowsDir?: string;
 };
 
 /** All resolved destination paths for an installation. */
@@ -218,6 +222,12 @@ export function validateSources(
     [sources.planCommandsDir, sources.planWorkflowsDir],
     exists,
   );
+  const { scanAgentsDir, scanCommandsDir, scanWorkflowsDir } = sources;
+  validateOptionalDirs(
+    'Scan',
+    [scanAgentsDir, scanCommandsDir, scanWorkflowsDir],
+    exists,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -323,6 +333,7 @@ function installContent(options: {
 
   handleBriefContent({ sources, dests: paths, enabledRoles, fs });
   handlePlanContent({ sources, dests: paths, enabledRoles, fs });
+  handleScanContent({ sources, dests: paths, fs });
 
   if (mode === 'global') {
     inlineWorkflows(paths.commandsDest, paths.workflowsDest);
