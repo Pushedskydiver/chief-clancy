@@ -35,7 +35,7 @@ import { join } from 'node:path';
 
 import { buildPipelineDeps } from '~/t/runner/dep-factory/dep-factory.js';
 
-import { createContext, runPipeline } from '@chief-clancy/core';
+import { createContext, runPipeline } from '@chief-clancy/dev';
 
 import { createClaudeSimulator } from '../../helpers/claude-simulator.js';
 
