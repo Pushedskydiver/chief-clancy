@@ -174,8 +174,10 @@ const inlineWorkflow = (
       WORKFLOW_REF,
       (match, fileName: string) => {
         const wfPath = join(workflowsDest, fileName);
+        if (!fs.exists(wfPath)) return match;
+        rejectSymlink(wfPath, fs.isSymlink);
 
-        return fs.exists(wfPath) ? fs.readFile(wfPath) : match;
+        return fs.readFile(wfPath);
       },
     );
 
