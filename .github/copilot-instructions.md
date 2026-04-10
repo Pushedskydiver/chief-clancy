@@ -85,14 +85,19 @@ Code is organised by **capability directories** that map to future packages. See
 
 ### Core (domain model + capabilities)
 
-| Path                          | Future package | Purpose                                                            |
-| ----------------------------- | -------------- | ------------------------------------------------------------------ |
-| `packages/core/src/board/`    | core (forever) | Board type, factory, 6 implementations                             |
-| `packages/core/src/types/`    | core (forever) | Shared type definitions                                            |
-| `packages/core/src/schemas/`  | core (forever) | Zod validation schemas                                             |
-| `packages/core/src/shared/`   | core (forever) | Pure utilities (cache, env-parser, git-ops, git-token, http, etc.) |
-| `packages/dev/src/lifecycle/` | @c-c/dev       | Ticket lifecycle (branch, deliver, rework, PR creation, progress)  |
-| `packages/dev/src/pipeline/`  | @c-c/dev       | Phase orchestration (context, run-pipeline, 13 phases)             |
+| Path                         | Purpose                                                            |
+| ---------------------------- | ------------------------------------------------------------------ |
+| `packages/core/src/board/`   | Board type, factory, 6 implementations                             |
+| `packages/core/src/types/`   | Shared type definitions                                            |
+| `packages/core/src/schemas/` | Zod validation schemas                                             |
+| `packages/core/src/shared/`  | Pure utilities (cache, env-parser, git-ops, git-token, http, etc.) |
+
+### Dev (autonomous execution)
+
+| Path                          | Purpose                                                           |
+| ----------------------------- | ----------------------------------------------------------------- |
+| `packages/dev/src/lifecycle/` | Ticket lifecycle (branch, deliver, rework, PR creation, progress) |
+| `packages/dev/src/pipeline/`  | Phase orchestration (context, run-pipeline, 13 phases)            |
 
 ### Brief (standalone brief generator)
 

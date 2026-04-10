@@ -132,7 +132,7 @@ Both packages use the same `.clancy/.env` and `.clancy/clancy-implement.js` env-
 
 ## Phase E — `@chief-clancy/dev` extraction decisions (locked 2026-04-10)
 
-Phase E lifts `packages/core/src/dev/` (lifecycle + pipeline, ~7,261 LOC of non-test source) into a new standalone package `@chief-clancy/dev`, then layers an autonomous "Ralph Wiggum" execution surface on top of it. The decisions below were locked through 3 rounds of research and 3 rounds of Devil's Advocate review. They are the source of truth for whoever implements Phase E and any future phase that depends on dev.
+Phase E lifted `packages/core/src/dev/` (lifecycle + pipeline, ~7,261 LOC of non-test source) into a new standalone package `@chief-clancy/dev`, then layers an autonomous "Ralph Wiggum" execution surface on top of it. The decisions below were locked through 3 rounds of research and 3 rounds of Devil's Advocate review. They are the source of truth for whoever implements Phase E and any future phase that depends on dev.
 
 ### Hybrid package shape (a new third category)
 
