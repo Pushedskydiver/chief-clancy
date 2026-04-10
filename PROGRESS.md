@@ -4,7 +4,7 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 
 ## Current state (2026-04-10)
 
-**PRs 3.5 (#230) and 4a (#231) merged. PR 4b (#232) open.** Phase E extraction continues: shared types, cli-bridge, notify, and invoke-phase now in `@chief-clancy/dev`. Next: merge PR 4b, then PR 4c (remaining dep-factory move).
+**PR 5 (#234) merged.** Phase E extraction: all dep-factory modules now in `@chief-clancy/dev`, `core/src/dev/` deleted. Next: rest of Phase E plan (PR 6+).
 
 **Published versions:**
 
@@ -16,11 +16,19 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 | `@chief-clancy/plan`     | 0.5.0   |
 | `chief-clancy` (wrapper) | 0.9.15  |
 
-**Test counts:** 872 core, 797 terminal, 778 dev, 73 brief, 264 plan = **2784 total**.
+**Test counts:** 872 core, 783 terminal, 792 dev, 73 brief, 264 plan = **2784 total**.
 
-**Last shipped:** Phase E PRs 3.5 (#230) + 4a (#231) in Session 63. PR 4b (#232) open.
+**Last shipped:** Phase E PRs 4c (#233) + 5 (#234) in Session 64.
 
-## Phase E — completed PRs (Sessions 60–63)
+## Phase E — completed PRs (Sessions 60–64)
+
+### PR 4c (#233) — dep-factory + deliver-phase move (Session 64)
+
+Injected `buildPrompt`/`buildReworkPrompt` into `DepFactoryOpts` via DI (using `InvokePhaseDeps` types) to remove dep-factory's last terminal import. Moved `dep-factory.ts`, `deliver-phase.ts`, and both test files from `terminal/runner/dep-factory/` to `dev/src/dep-factory/`. All `@chief-clancy/dev` self-imports rewritten to relative paths. Terminal's dep-factory barrel becomes a thin re-export. Consumers (implement.ts, autopilot entrypoint, test helpers) now pass prompt builders at call sites.
+
+### PR 5 (#234) — delete core/src/dev/ + doc path cleanup (Session 64)
+
+Deleted the empty `packages/core/src/dev/` directory (README placeholder). Updated stale path references in 5 docs (TECHNICAL-REFERENCE, ARCHITECTURE, VISUAL-ARCHITECTURE, copilot-instructions, package-evolution). DA caught: dev rows under "Core" heading in copilot-instructions.md — fixed by creating new "Dev" section. Fixed 4 broken markdown links and 2 checklist items in Phase E plan file.
 
 ### PR 3.5 (#230) — shared types split (Session 63)
 
@@ -47,11 +55,11 @@ Entire pipeline directory (46 files) moved from `core/src/dev/pipeline/` to `dev
 - **Merge cluster PRs when intermediate states don't compile** — TypeScript's rootDir enforcement blocks half-moved states. Merged 2a/2b/2c into PR 2a and 3a/3b into PR 3. Each commit stays small and the full review chain still runs.
 - **Wildcard subpath export** — core has `./*.js` in package.json exports for NodeNext-compatible deep imports from dev.
 - **Vitest aliases use directory paths** (not file paths) for @chief-clancy/core and @chief-clancy/dev. ~/d alias needed in terminal vitest config.
-- **core/src/dev/ is now empty** — cleanup deferred to PR 5.
+- **core/src/dev/ deleted** in PR 5 (#234).
 
 ### Remaining PR sequence
 
-PRs 2b/2c/3a/3b all absorbed. Sequence continues: 3.5 → 4a → 4b → 4c → [4c.1/4c.2] → 5 (delete core/dev/) → rest of Phase E.
+PRs 2b/2c/3a/3b all absorbed. PRs 3.5 through 5 shipped. Sequence continues from PR 6 onwards — see `.clancy/plans/phase-e-dev-extraction.md`.
 
 ## Phase ledger
 
