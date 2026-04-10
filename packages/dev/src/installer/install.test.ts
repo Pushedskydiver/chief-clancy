@@ -45,32 +45,50 @@ describe('resolveDevInstallPaths', () => {
   const cwd = '/projects/my-app';
 
   describe('global mode', () => {
-    it('resolves bundles destination under ~/.claude', () => {
+    it('resolves commands destination under ~/.claude', () => {
       const paths = resolveDevInstallPaths('global', homeDir, cwd);
 
-      expect(paths.bundlesDest).toBe(
-        join(homeDir, '.claude', 'clancy', 'bundles'),
+      expect(paths.commandsDest).toBe(
+        join(homeDir, '.claude', 'commands', 'clancy'),
       );
     });
 
-    it('resolves hooks destination under ~/.claude', () => {
+    it('resolves workflows destination under ~/.claude', () => {
       const paths = resolveDevInstallPaths('global', homeDir, cwd);
 
-      expect(paths.hooksDest).toBe(join(homeDir, '.claude', 'clancy', 'hooks'));
+      expect(paths.workflowsDest).toBe(
+        join(homeDir, '.claude', 'clancy', 'workflows'),
+      );
+    });
+
+    it('resolves clancyProjectDir to cwd/.clancy regardless of mode', () => {
+      const paths = resolveDevInstallPaths('global', homeDir, cwd);
+
+      expect(paths.clancyProjectDir).toBe(join(cwd, '.clancy'));
     });
   });
 
   describe('local mode', () => {
-    it('resolves bundles destination under cwd/.claude', () => {
+    it('resolves commands destination under cwd/.claude', () => {
       const paths = resolveDevInstallPaths('local', homeDir, cwd);
 
-      expect(paths.bundlesDest).toBe(join(cwd, '.claude', 'clancy', 'bundles'));
+      expect(paths.commandsDest).toBe(
+        join(cwd, '.claude', 'commands', 'clancy'),
+      );
     });
 
-    it('resolves hooks destination under cwd/.claude', () => {
+    it('resolves workflows destination under cwd/.claude', () => {
       const paths = resolveDevInstallPaths('local', homeDir, cwd);
 
-      expect(paths.hooksDest).toBe(join(cwd, '.claude', 'clancy', 'hooks'));
+      expect(paths.workflowsDest).toBe(
+        join(cwd, '.claude', 'clancy', 'workflows'),
+      );
+    });
+
+    it('resolves clancyProjectDir to cwd/.clancy regardless of mode', () => {
+      const paths = resolveDevInstallPaths('local', homeDir, cwd);
+
+      expect(paths.clancyProjectDir).toBe(join(cwd, '.clancy'));
     });
   });
 });
@@ -86,6 +104,11 @@ const createMockFs = (files: Record<string, string> = {}) => {
 
   return {
     exists: vi.fn((p: string) => store.has(p) || dirs.has(p)),
+    readFile: vi.fn((p: string) => {
+      const content = store.get(p);
+      if (content === undefined) throw new Error(`ENOENT: ${p}`);
+      return content;
+    }),
     writeFile: vi.fn((p: string, c: string) => {
       store.set(p, c);
     }),
@@ -102,13 +125,15 @@ const createMockFs = (files: Record<string, string> = {}) => {
 };
 
 const defaultPaths = {
-  bundlesDest: '/dest/clancy/bundles',
-  hooksDest: '/dest/clancy/hooks',
+  commandsDest: '/dest/commands/clancy',
+  workflowsDest: '/dest/clancy/workflows',
+  clancyProjectDir: '/projects/my-app/.clancy',
 };
 
 const defaultSources = {
+  commandsDir: '/pkg/dist/commands',
+  workflowsDir: '/pkg/dist/workflows',
   bundlesDir: '/pkg/dist/bundle',
-  hooksDir: '/pkg/dist/hooks',
 };
 
 type MockFs = ReturnType<typeof createMockFs>;
@@ -124,6 +149,12 @@ const buildOptions = (
   files: Readonly<Record<string, string>> = {},
 ): MockOptions => {
   const sourceFiles: Record<string, string> = {
+    '/pkg/dist/commands/board-setup.md':
+      '# /clancy:board-setup\n\n@.claude/clancy/workflows/board-setup.md\n\nFollow the board setup workflow.',
+    '/pkg/dist/commands/dev.md':
+      '# /clancy:dev\n\n@.claude/clancy/workflows/dev.md\n\nFollow the dev workflow above.',
+    '/pkg/dist/workflows/board-setup.md': '# Board Setup Workflow\n\nStep 1...',
+    '/pkg/dist/workflows/dev.md': '# Clancy Dev Workflow\n\nStep 1...',
     '/pkg/dist/bundle/clancy-dev.js': '// clancy-dev bundle',
     '/pkg/dist/bundle/clancy-dev-autopilot.js':
       '// clancy-dev-autopilot bundle',
@@ -132,6 +163,7 @@ const buildOptions = (
   const fs = createMockFs(sourceFiles);
 
   return {
+    mode: 'local',
     cwd: defaultCwd,
     paths: defaultPaths,
     sources: defaultSources,
@@ -146,8 +178,7 @@ describe('runDevInstall', () => {
     const opts = buildOptions();
     runDevInstall(opts);
 
-    expect(opts.fs.mkdir).toHaveBeenCalledWith(defaultPaths.bundlesDest);
-    expect(opts.fs.mkdir).toHaveBeenCalledWith(defaultPaths.hooksDest);
+    expect(opts.fs.mkdir).toHaveBeenCalledWith(defaultPaths.clancyProjectDir);
   });
 
   it('writes VERSION.dev with the package version', () => {
@@ -155,41 +186,41 @@ describe('runDevInstall', () => {
     runDevInstall(opts);
 
     expect(opts.fs.writeFile).toHaveBeenCalledWith(
-      join(defaultPaths.bundlesDest, 'VERSION.dev'),
+      join(defaultPaths.clancyProjectDir, 'VERSION.dev'),
       '1.2.3',
     );
   });
 
-  it('copies bundle files to bundles destination', () => {
+  it('writes ESM package.json to .clancy/', () => {
+    const opts = buildOptions();
+    runDevInstall(opts);
+
+    expect(opts.fs.writeFile).toHaveBeenCalledWith(
+      join(defaultPaths.clancyProjectDir, 'package.json'),
+      JSON.stringify({ type: 'module' }, null, 2) + '\n',
+    );
+  });
+
+  it('copies bundle files to .clancy/', () => {
     const opts = buildOptions();
     runDevInstall(opts);
 
     expect(opts.fs.copyFile).toHaveBeenCalledWith(
       join(defaultSources.bundlesDir, 'clancy-dev.js'),
-      join(defaultPaths.bundlesDest, 'clancy-dev.js'),
+      join(defaultPaths.clancyProjectDir, 'clancy-dev.js'),
     );
     expect(opts.fs.copyFile).toHaveBeenCalledWith(
       join(defaultSources.bundlesDir, 'clancy-dev-autopilot.js'),
-      join(defaultPaths.bundlesDest, 'clancy-dev-autopilot.js'),
+      join(defaultPaths.clancyProjectDir, 'clancy-dev-autopilot.js'),
     );
   });
 
-  it('does not copy hook files when hook list is empty', () => {
-    const opts = buildOptions();
-    runDevInstall(opts);
-
-    const hookCopyCalls = opts.fs.copyFile.mock.calls.filter(([, dest]) =>
-      (dest as string).startsWith(defaultPaths.hooksDest),
-    );
-
-    expect(hookCopyCalls).toHaveLength(0);
-  });
-
-  it('throws when a bundle source file is missing', () => {
+  it('throws when a source file is missing', () => {
     const fs = createMockFs({});
 
     expect(() =>
       runDevInstall({
+        mode: 'local',
         cwd: defaultCwd,
         paths: defaultPaths,
         sources: defaultSources,
@@ -204,18 +235,18 @@ describe('runDevInstall', () => {
     opts.fs.isSymlink.mockReturnValue(true);
 
     expect(() => runDevInstall(opts)).toThrow(
-      `Symlink rejected: ${defaultPaths.bundlesDest}`,
+      `Symlink rejected: ${defaultPaths.commandsDest}`,
     );
   });
 
   it('rejects symlink at version marker path', () => {
     const opts = buildOptions();
     opts.fs.isSymlink.mockImplementation(
-      (p: string) => p === join(defaultPaths.bundlesDest, 'VERSION.dev'),
+      (p: string) => p === join(defaultPaths.clancyProjectDir, 'VERSION.dev'),
     );
 
     expect(() => runDevInstall(opts)).toThrow(
-      `Symlink rejected: ${join(defaultPaths.bundlesDest, 'VERSION.dev')}`,
+      `Symlink rejected: ${join(defaultPaths.clancyProjectDir, 'VERSION.dev')}`,
     );
   });
 
@@ -225,5 +256,71 @@ describe('runDevInstall', () => {
     const state = runDevInstall(opts);
 
     expect(state).toBe('standalone-board');
+  });
+
+  it('copies command files to commands destination', () => {
+    const opts = buildOptions();
+    runDevInstall(opts);
+
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.commandsDir, 'board-setup.md'),
+      join(defaultPaths.commandsDest, 'board-setup.md'),
+    );
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.commandsDir, 'dev.md'),
+      join(defaultPaths.commandsDest, 'dev.md'),
+    );
+  });
+
+  it('copies workflow files to workflows destination', () => {
+    const opts = buildOptions();
+    runDevInstall(opts);
+
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.workflowsDir, 'board-setup.md'),
+      join(defaultPaths.workflowsDest, 'board-setup.md'),
+    );
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.workflowsDir, 'dev.md'),
+      join(defaultPaths.workflowsDest, 'dev.md'),
+    );
+  });
+
+  it('inlines workflow content in global mode', () => {
+    const opts = buildOptions({ mode: 'global' });
+    runDevInstall(opts);
+
+    const writeCall = opts.fs.writeFile.mock.calls.find(
+      ([path]) => path === join(defaultPaths.commandsDest, 'dev.md'),
+    );
+
+    expect(writeCall).toBeDefined();
+
+    const content = writeCall![1] as string;
+
+    expect(content).toContain('# Clancy Dev Workflow');
+    expect(content).not.toContain('@.claude/clancy/workflows/dev.md');
+  });
+
+  it('rejects symlink on workflow file during global inlining', () => {
+    const opts = buildOptions({ mode: 'global' });
+    opts.fs.isSymlink.mockImplementation(
+      (p: string) =>
+        p === join(defaultPaths.workflowsDest, 'dev.md') ||
+        p === join(defaultPaths.workflowsDest, 'board-setup.md'),
+    );
+
+    expect(() => runDevInstall(opts)).toThrow('Symlink rejected');
+  });
+
+  it('does not inline workflow content in local mode', () => {
+    const opts = buildOptions({ mode: 'local' });
+    runDevInstall(opts);
+
+    const writeCallsToCmd = opts.fs.writeFile.mock.calls.filter(
+      ([path]) => path === join(defaultPaths.commandsDest, 'dev.md'),
+    );
+
+    expect(writeCallsToCmd).toHaveLength(0);
   });
 });

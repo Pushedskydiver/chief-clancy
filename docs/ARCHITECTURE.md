@@ -251,21 +251,50 @@ Human reviews brief
 
 Grill modes: **human grill** (default, interactive Q&A) or **AI grill** (`--afk`, devil's advocate agent interrogates codebase, board, and web autonomously).
 
+## Two Directory Trees
+
+Clancy uses two separate directory trees in user projects. The split is load-bearing — putting files in the wrong tree breaks either Claude Code discovery or Node.js execution.
+
+| Directory  | Owner                    | Purpose                                                                                                                           |
+| ---------- | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| `.claude/` | Claude Code              | Slash commands, workflows, agents, hooks. Claude Code discovers and serves these. Global (`~/.claude/`) or local (`./.claude/`).  |
+| `.clancy/` | Node.js / Clancy runtime | Board credentials, executable bundles, plans, briefs, lock files, logs. Always project-relative (`<cwd>/.clancy/`), never global. |
+
+**Rule:** Markdown files that Claude reads → `.claude/`. Scripts that Node.js executes → `.clancy/`. Credentials and project state → `.clancy/`.
+
+Every package follows this:
+
+- **brief, plan** install commands + workflows to `.claude/` only (no bundles)
+- **dev** installs commands + workflows to `.claude/`, bundles to `.clancy/`
+- **terminal** installs commands + workflows + hooks to `.claude/`, bundles to `.clancy/`
+- **core** has no installer (library only)
+
 ## What Gets Created in User Projects
 
-After `/clancy:init` + `/clancy:map-codebase`:
+After running the installers:
 
 ```
+.claude/
+  commands/clancy/            — slash command files (brief, plan, dev, terminal)
+  clancy/workflows/           — workflow markdown (brief, plan, dev, terminal)
+  clancy/agents/              — agent prompts (brief, terminal)
+  clancy/hooks/               — Claude Code hooks (terminal)
+
 .clancy/
-  clancy-implement.js        — bundled once orchestrator (self-contained)
-  clancy-autopilot.js         — bundled AFK loop runner (self-contained)
-  docs/                 — structured docs (read before every run)
-  progress.txt          — append-only completion log
-  costs.log             — duration-based token cost estimates per ticket
-  lock.json             — lock file for crash recovery (transient)
-  session-report.md     — AFK session summary (generated after /clancy:autopilot)
-  .env                  — board credentials (gitignored)
-  .env.example          — credential template
+  clancy-implement.js         — bundled implement orchestrator (terminal)
+  clancy-autopilot.js         — bundled AFK loop runner (terminal)
+  clancy-dev.js               — bundled dev executor (dev)
+  clancy-dev-autopilot.js     — bundled dev AFK runner (dev)
+  package.json                — {"type":"module"} for ESM bundle execution
+  plans/                      — local plan files
+  briefs/                     — local brief files
+  docs/                       — structured docs (read before every run)
+  progress.txt                — append-only completion log
+  costs.log                   — duration-based token cost estimates per ticket
+  lock.json                   — lock file for crash recovery (transient)
+  session-report.md           — AFK session summary (after /clancy:autopilot)
+  .env                        — board credentials (gitignored)
+  .env.example                — credential template
 ```
 
 Plus a `<!-- clancy:start -->` / `<!-- clancy:end -->` block in the project's `CLAUDE.md`.

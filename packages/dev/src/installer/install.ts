@@ -19,8 +19,10 @@ type DevInstallMode = 'global' | 'local';
 
 /** All resolved destination paths for a dev installation. */
 export type DevInstallPaths = {
-  readonly bundlesDest: string;
-  readonly hooksDest: string;
+  readonly commandsDest: string;
+  readonly workflowsDest: string;
+  /** Always `<cwd>/.clancy` — runtime bundles live at project root. */
+  readonly clancyProjectDir: string;
 };
 
 /**
@@ -30,6 +32,7 @@ export type DevInstallPaths = {
  */
 type DevInstallerFs = {
   readonly exists: (path: string) => boolean;
+  readonly readFile: (path: string) => string;
   readonly writeFile: (path: string, content: string) => void;
   readonly mkdir: (path: string) => void;
   readonly copyFile: (src: string, dest: string) => void;
@@ -39,12 +42,14 @@ type DevInstallerFs = {
 
 /** Source directories within the npm package. */
 type DevInstallSources = {
+  readonly commandsDir: string;
+  readonly workflowsDir: string;
   readonly bundlesDir: string;
-  readonly hooksDir: string;
 };
 
 /** Options for {@link runDevInstall}. */
 export type RunDevInstallOptions = {
+  readonly mode: DevInstallMode;
   readonly cwd: string;
   readonly paths: DevInstallPaths;
   readonly sources: DevInstallSources;
@@ -56,11 +61,17 @@ export type RunDevInstallOptions = {
 // Constants
 // ---------------------------------------------------------------------------
 
-/** Bundle files copied into `.clancy/bundles/`. */
+/** Command files shipped with the dev package. */
+const COMMAND_FILES = ['board-setup.md', 'dev.md'] as const;
+
+/** Workflow files shipped with the dev package. */
+const WORKFLOW_FILES = ['board-setup.md', 'dev.md'] as const;
+
+/** Bundle files copied into `.clancy/`. */
 const BUNDLE_FILES = ['clancy-dev.js', 'clancy-dev-autopilot.js'] as const;
 
-/** Hook files copied into `.clancy/hooks/`. */
-const HOOK_FILES: readonly string[] = [];
+/** Matches `@.claude/clancy/workflows/<filename>.md` on its own line. */
+const WORKFLOW_REF = /^@\.claude\/clancy\/workflows\/([^/\\]+\.md)\r?$/gm;
 
 // ---------------------------------------------------------------------------
 // Pure functions
@@ -98,8 +109,9 @@ export const resolveDevInstallPaths = (
     mode === 'global' ? join(homeDir, '.claude') : join(cwd, '.claude');
 
   return {
-    bundlesDest: join(baseDir, 'clancy', 'bundles'),
-    hooksDest: join(baseDir, 'clancy', 'hooks'),
+    commandsDest: join(baseDir, 'commands', 'clancy'),
+    workflowsDest: join(baseDir, 'clancy', 'workflows'),
+    clancyProjectDir: join(cwd, '.clancy'),
   };
 };
 
@@ -143,6 +155,39 @@ const copyFiles = (options: CopyFilesOptions): void => {
   });
 };
 
+/**
+ * Inline workflow content into command files (global mode only).
+ *
+ * Replaces `@.claude/clancy/workflows/<name>.md` references with the
+ * actual workflow content so global installs work without project-relative
+ * @-file resolution.
+ */
+const inlineWorkflow = (
+  commandsDest: string,
+  workflowsDest: string,
+  fs: DevInstallerFs,
+): void => {
+  COMMAND_FILES.forEach((file) => {
+    const cmdPath = join(commandsDest, file);
+    const content = fs.readFile(cmdPath);
+    const resolved = content.replace(
+      WORKFLOW_REF,
+      (match, fileName: string) => {
+        const wfPath = join(workflowsDest, fileName);
+        if (!fs.exists(wfPath)) return match;
+        rejectSymlink(wfPath, fs.isSymlink);
+
+        return fs.readFile(wfPath);
+      },
+    );
+
+    if (resolved !== content) {
+      rejectSymlink(cmdPath, fs.isSymlink);
+      fs.writeFile(cmdPath, resolved);
+    }
+  });
+};
+
 // ---------------------------------------------------------------------------
 // Main pipeline
 // ---------------------------------------------------------------------------
@@ -150,9 +195,9 @@ const copyFiles = (options: CopyFilesOptions): void => {
 /**
  * Run the dev installation pipeline.
  *
- * Copies bundle files to the bundles destination, creates hook
- * directories, writes a VERSION.dev marker, and returns the
- * detected installation state.
+ * Copies commands, workflows, and bundles to their destinations,
+ * writes an ESM package.json and VERSION.dev marker to `.clancy/`,
+ * and returns the detected installation state.
  *
  * @param options - All dependencies and configuration.
  * @returns The detected installation state after install completes.
@@ -160,22 +205,37 @@ const copyFiles = (options: CopyFilesOptions): void => {
 export const runDevInstall = (
   options: RunDevInstallOptions,
 ): DevInstallState => {
-  const { cwd, paths, sources, version, fs } = options;
+  const { mode, cwd, paths, sources, version, fs } = options;
 
+  copyFiles({
+    files: COMMAND_FILES,
+    srcDir: sources.commandsDir,
+    destDir: paths.commandsDest,
+    fs,
+  });
+  copyFiles({
+    files: WORKFLOW_FILES,
+    srcDir: sources.workflowsDir,
+    destDir: paths.workflowsDest,
+    fs,
+  });
   copyFiles({
     files: BUNDLE_FILES,
     srcDir: sources.bundlesDir,
-    destDir: paths.bundlesDest,
+    destDir: paths.clancyProjectDir,
     fs,
   });
-  copyFiles({
-    files: HOOK_FILES,
-    srcDir: sources.hooksDir,
-    destDir: paths.hooksDest,
-    fs,
-  });
+  if (mode === 'global') {
+    inlineWorkflow(paths.commandsDest, paths.workflowsDest, fs);
+  }
 
-  const versionPath = join(paths.bundlesDest, 'VERSION.dev');
+  // ESM package.json — required for `node .clancy/clancy-dev.js` to work.
+  // Idempotent: same content as terminal's setupProjectRuntime writes.
+  const pkgJsonPath = join(paths.clancyProjectDir, 'package.json');
+  rejectSymlink(pkgJsonPath, fs.isSymlink);
+  fs.writeFile(pkgJsonPath, JSON.stringify({ type: 'module' }, null, 2) + '\n');
+
+  const versionPath = join(paths.clancyProjectDir, 'VERSION.dev');
   rejectSymlink(versionPath, fs.isSymlink);
   fs.writeFile(versionPath, version);
 

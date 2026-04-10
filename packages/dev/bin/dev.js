@@ -12,6 +12,7 @@ import {
   existsSync,
   lstatSync,
   mkdirSync,
+  readFileSync,
   writeFileSync,
 } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -76,8 +77,12 @@ const ask = (label) => new Promise((resolve) => rl.question(label, resolve));
 // File lists (keep in sync with install.ts)
 // ---------------------------------------------------------------------------
 
+const COMMAND_FILES = ['board-setup.md', 'dev.md'];
+const WORKFLOW_FILES = ['board-setup.md', 'dev.md'];
 const BUNDLE_FILES = ['clancy-dev.js', 'clancy-dev-autopilot.js'];
-const HOOK_FILES = [];
+
+/** Matches `@.claude/clancy/workflows/<filename>.md` on its own line. */
+const WORKFLOW_REF = /^@\.claude\/clancy\/workflows\/([^/\\]+\.md)\r?$/gm;
 
 // ---------------------------------------------------------------------------
 // Installer
@@ -148,31 +153,63 @@ async function main() {
   const baseDir =
     mode === 'global' ? join(homeDir, '.claude') : join(cwd, '.claude');
 
-  const bundlesDest = join(baseDir, 'clancy', 'bundles');
-  const hooksDest = join(baseDir, 'clancy', 'hooks');
+  const commandsDest = join(baseDir, 'commands', 'clancy');
+  const workflowsDest = join(baseDir, 'clancy', 'workflows');
+  const clancyProjectDir = join(cwd, '.clancy');
 
-  console.log(dim(`  Installing to: ${bundlesDest}`));
+  console.log(dim(`  Installing to: ${baseDir}`));
 
   // Reject symlinked destination directories
-  rejectSymlink(bundlesDest);
-  rejectSymlink(hooksDest);
+  rejectSymlink(commandsDest);
+  rejectSymlink(workflowsDest);
+  rejectSymlink(clancyProjectDir);
 
   // Create directories
-  mkdirSync(bundlesDest, { recursive: true });
-  mkdirSync(hooksDest, { recursive: true });
+  mkdirSync(commandsDest, { recursive: true });
+  mkdirSync(workflowsDest, { recursive: true });
+  mkdirSync(clancyProjectDir, { recursive: true });
 
-  // Copy bundle files (empty until PR 7)
-  BUNDLE_FILES.forEach((f) =>
-    copyChecked(join(devRoot, 'dist', 'bundle', f), join(bundlesDest, f)),
+  // Copy command files (shipped from src/, not dist/)
+  COMMAND_FILES.forEach((f) =>
+    copyChecked(join(devRoot, 'src', 'commands', f), join(commandsDest, f)),
   );
 
-  // Copy hook files (empty until hooks are extracted)
-  HOOK_FILES.forEach((f) =>
-    copyChecked(join(devRoot, 'dist', 'hooks', f), join(hooksDest, f)),
+  // Copy workflow files (shipped from src/, not dist/)
+  WORKFLOW_FILES.forEach((f) =>
+    copyChecked(join(devRoot, 'src', 'workflows', f), join(workflowsDest, f)),
+  );
+
+  // Copy bundle files to .clancy/ (runtime scripts execute from project root)
+  BUNDLE_FILES.forEach((f) =>
+    copyChecked(join(devRoot, 'dist', 'bundle', f), join(clancyProjectDir, f)),
+  );
+
+  // Inline workflow content in global mode
+  if (mode === 'global') {
+    COMMAND_FILES.forEach((f) => {
+      const cmdPath = join(commandsDest, f);
+      const content = readFileSync(cmdPath, 'utf-8');
+      const resolved = content.replace(WORKFLOW_REF, (match, fileName) => {
+        const wfPath = join(workflowsDest, fileName);
+        return existsSync(wfPath) ? readFileSync(wfPath, 'utf-8') : match;
+      });
+      if (resolved !== content) {
+        rejectSymlink(cmdPath);
+        writeFileSync(cmdPath, resolved);
+      }
+    });
+  }
+
+  // ESM package.json — required for `node .clancy/clancy-dev.js` to work
+  const pkgJsonPath = join(clancyProjectDir, 'package.json');
+  rejectSymlink(pkgJsonPath);
+  writeFileSync(
+    pkgJsonPath,
+    JSON.stringify({ type: 'module' }, null, 2) + '\n',
   );
 
   // Write version marker
-  const versionPath = join(bundlesDest, 'VERSION.dev');
+  const versionPath = join(clancyProjectDir, 'VERSION.dev');
   rejectSymlink(versionPath);
   writeFileSync(versionPath, pkg.version);
 
@@ -180,9 +217,18 @@ async function main() {
   console.log('');
   console.log(green('  ✓ Clancy Dev installed successfully.'));
   console.log('');
-  console.log(dim('  Bundles installed:'));
-  console.log(dim('    clancy-dev.js'));
-  console.log(dim('    clancy-dev-autopilot.js'));
+  console.log('  Commands available:');
+  console.log(
+    `      ${cyan('/clancy:dev')}            ${dim('Execute a board ticket autonomously')}`,
+  );
+  console.log(
+    `      ${cyan('/clancy:board-setup')}    ${dim('Configure board credentials')}`,
+  );
+  console.log('');
+  console.log('  Next steps:');
+  console.log(`    1. Open a project in Claude Code`);
+  console.log(`    2. Run: ${cyan('/clancy:board-setup')}`);
+  console.log(`    3. Run: ${cyan('/clancy:dev PROJ-123')}`);
   console.log('');
   console.log(
     dim('  For the full pipeline (tickets, planning, implementation):'),
