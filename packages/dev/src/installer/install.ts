@@ -4,7 +4,11 @@
  * Copies dev and autopilot bundles to the user's `.clancy/` directory,
  * scaffolds the directory structure, and writes a VERSION.dev marker.
  */
+import type { DevInstallState } from './preflight.js';
+
 import { join } from 'node:path';
+
+import { detectDevInstallState } from './preflight.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -41,6 +45,7 @@ type DevInstallSources = {
 
 /** Options for {@link runDevInstall}. */
 export type RunDevInstallOptions = {
+  readonly cwd: string;
   readonly paths: DevInstallPaths;
   readonly sources: DevInstallSources;
   readonly version: string;
@@ -146,12 +151,16 @@ const copyFiles = (options: CopyFilesOptions): void => {
  * Run the dev installation pipeline.
  *
  * Copies bundle files to the bundles destination, creates hook
- * directories, and writes a VERSION.dev marker.
+ * directories, writes a VERSION.dev marker, and returns the
+ * detected installation state.
  *
  * @param options - All dependencies and configuration.
+ * @returns The detected installation state after install completes.
  */
-export const runDevInstall = (options: RunDevInstallOptions): void => {
-  const { paths, sources, version, fs } = options;
+export const runDevInstall = (
+  options: RunDevInstallOptions,
+): DevInstallState => {
+  const { cwd, paths, sources, version, fs } = options;
 
   copyFiles({
     files: BUNDLE_FILES,
@@ -169,4 +178,6 @@ export const runDevInstall = (options: RunDevInstallOptions): void => {
   const versionPath = join(paths.bundlesDest, 'VERSION.dev');
   rejectSymlink(versionPath, fs.isSymlink);
   fs.writeFile(versionPath, version);
+
+  return detectDevInstallState(cwd, fs);
 };

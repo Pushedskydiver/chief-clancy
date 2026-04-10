@@ -117,6 +117,8 @@ type MockOptions = Omit<RunDevInstallOptions, 'fs'> & {
   readonly fs: MockFs;
 };
 
+const defaultCwd = '/projects/my-app';
+
 const buildOptions = (
   overrides: Partial<Omit<RunDevInstallOptions, 'fs'>> = {},
   files: Readonly<Record<string, string>> = {},
@@ -130,6 +132,7 @@ const buildOptions = (
   const fs = createMockFs(sourceFiles);
 
   return {
+    cwd: defaultCwd,
     paths: defaultPaths,
     sources: defaultSources,
     version: '0.1.0',
@@ -187,6 +190,7 @@ describe('runDevInstall', () => {
 
     expect(() =>
       runDevInstall({
+        cwd: defaultCwd,
         paths: defaultPaths,
         sources: defaultSources,
         version: '0.1.0',
@@ -213,5 +217,13 @@ describe('runDevInstall', () => {
     expect(() => runDevInstall(opts)).toThrow(
       `Symlink rejected: ${join(defaultPaths.bundlesDest, 'VERSION.dev')}`,
     );
+  });
+
+  it('returns the detected install state after installation', () => {
+    const envPath = join(defaultCwd, '.clancy', '.env');
+    const opts = buildOptions({}, { [envPath]: 'BOARD=github' });
+    const state = runDevInstall(opts);
+
+    expect(state).toBe('standalone-board');
   });
 });
