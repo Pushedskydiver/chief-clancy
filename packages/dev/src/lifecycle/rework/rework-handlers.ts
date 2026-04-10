@@ -6,9 +6,9 @@
  * duplication — callers use `handlers.checkReviewState(...)` instead
  * of switching on `remote.host`.
  */
-import type { FetchFn } from '~/c/dev/lifecycle/pr-creation/index.js';
 import type { SharedEnv } from '~/c/schemas/env/env.js';
 import type { PrReviewState, RemoteInfo } from '~/c/types/remote.js';
+import type { FetchFn } from '~/d/lifecycle/pr-creation/index.js';
 
 import { resolveGitToken } from '~/c/shared/git-token/index.js';
 import { buildApiBaseUrl } from '~/c/shared/remote/index.js';

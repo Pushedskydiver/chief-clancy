@@ -1,5 +1,5 @@
-import type { LockData } from '~/c/dev/lifecycle/lock/index.js';
-import type { ProgressEntry } from '~/c/dev/lifecycle/progress/index.js';
+import type { LockData } from '~/d/lifecycle/lock/index.js';
+import type { ProgressEntry } from '~/d/lifecycle/progress/index.js';
 
 import { describe, expect, it, vi } from 'vitest';
 

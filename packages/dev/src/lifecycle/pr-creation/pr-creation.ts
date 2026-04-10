@@ -16,15 +16,15 @@ import type {
   RemoteInfo,
 } from '~/c/types/remote.js';
 
-import { createPullRequest as createAzdoPr } from '~/c/dev/lifecycle/pull-request/azdo/index.js';
+import { resolveGitToken } from '~/c/shared/git-token/index.js';
+import { buildApiBaseUrl } from '~/c/shared/remote/index.js';
+import { createPullRequest as createAzdoPr } from '~/d/lifecycle/pull-request/azdo/index.js';
 import {
   createPullRequest as createBbCloudPr,
   createServerPullRequest as createBbServerPr,
-} from '~/c/dev/lifecycle/pull-request/bitbucket/index.js';
-import { createPullRequest as createGitHubPr } from '~/c/dev/lifecycle/pull-request/github/index.js';
-import { createMergeRequest as createGitLabMr } from '~/c/dev/lifecycle/pull-request/gitlab/index.js';
-import { resolveGitToken } from '~/c/shared/git-token/index.js';
-import { buildApiBaseUrl } from '~/c/shared/remote/index.js';
+} from '~/d/lifecycle/pull-request/bitbucket/index.js';
+import { createPullRequest as createGitHubPr } from '~/d/lifecycle/pull-request/github/index.js';
+import { createMergeRequest as createGitLabMr } from '~/d/lifecycle/pull-request/gitlab/index.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

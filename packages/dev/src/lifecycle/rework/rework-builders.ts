@@ -18,7 +18,7 @@ import {
   checkPrReviewState as checkAzdoReviewState,
   fetchPrReviewComments as fetchAzdoComments,
   postPrComment as postAzdoComment,
-} from '~/c/dev/lifecycle/pull-request/azdo/index.js';
+} from '~/d/lifecycle/pull-request/azdo/index.js';
 import {
   checkPrReviewState as checkBbCloudReviewState,
   checkServerPrReviewState,
@@ -26,19 +26,19 @@ import {
   fetchServerPrReviewComments,
   postCloudPrComment,
   postServerPrComment,
-} from '~/c/dev/lifecycle/pull-request/bitbucket/index.js';
+} from '~/d/lifecycle/pull-request/bitbucket/index.js';
 import {
   checkPrReviewState as checkGitHubReviewState,
   fetchPrReviewComments as fetchGitHubComments,
   postPrComment as postGitHubComment,
   requestReview as requestGitHubReview,
-} from '~/c/dev/lifecycle/pull-request/github/index.js';
+} from '~/d/lifecycle/pull-request/github/index.js';
 import {
   checkMrReviewState,
   fetchMrReviewComments,
   postMrNote,
   resolveDiscussions,
-} from '~/c/dev/lifecycle/pull-request/gitlab/index.js';
+} from '~/d/lifecycle/pull-request/gitlab/index.js';
 
 const noopResolve = async (): Promise<number> => 0;
 const noopReRequest = async (): Promise<boolean> => false;
