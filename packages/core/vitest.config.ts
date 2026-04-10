@@ -6,8 +6,6 @@ export default defineProject({
   resolve: {
     alias: {
       '~/c': resolve(import.meta.dirname, 'src'),
-      '~/d': resolve(import.meta.dirname, '../dev/src'),
-      '@chief-clancy/dev': resolve(import.meta.dirname, '../dev/src/index.ts'),
     },
   },
   test: {

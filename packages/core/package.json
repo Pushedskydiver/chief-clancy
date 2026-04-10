@@ -43,7 +43,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@chief-clancy/dev": "workspace:*",
     "zod": "^4.3.6"
   }
 }

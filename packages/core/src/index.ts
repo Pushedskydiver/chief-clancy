@@ -178,42 +178,6 @@ export {
   shortcutWorkflowsResponseSchema,
 } from './schemas/index.js';
 
-// ─── Pipeline re-exports (delegated to @chief-clancy/dev) ─────────────────
-export {
-  branchSetup,
-  cleanupPhase,
-  costPhase,
-  createContext,
-  deliverPhase,
-  dryRun,
-  epicCompletion,
-  feasibilityPhase,
-  lockCheck,
-  prRetry,
-  preflightPhase,
-  reworkDetection,
-  RunContext,
-  runPipeline,
-  ticketFetch,
-  transition,
-} from '@chief-clancy/dev';
-export type {
-  BranchSetupDeps,
-  CleanupDeps,
-  CostPhaseDeps,
-  DeliverPhaseDeps,
-  EpicCompletionDeps,
-  FeasibilityPhaseDeps,
-  LockCheckDeps,
-  PipelineDeps,
-  PipelineResult,
-  PreflightPhaseDeps,
-  PrRetryDeps,
-  ReworkDetectionDeps,
-  TicketFetchDeps,
-  TransitionDeps,
-} from '@chief-clancy/dev';
-
 // Shared utilities (consumed by terminal dep factory for phase wiring)
 export type { ExecGit } from './shared/git-ops/index.js';
 export {
@@ -223,49 +187,6 @@ export {
   ensureBranch,
   fetchRemoteBranch,
 } from './shared/git-ops/index.js';
-
-// ─── Lifecycle re-exports (delegated to @chief-clancy/dev) ─────────────────
-export type {
-  CostFs,
-  FetchFn,
-  LockFs,
-  PlatformReworkHandlers,
-  PreflightDeps,
-  ProgressEntry,
-  ProgressFs,
-  QualityFs,
-} from '@chief-clancy/dev';
-export {
-  appendCostEntry,
-  appendProgress,
-  attemptPrCreation,
-  buildPrBody,
-  checkFeasibility,
-  computeTargetBranch,
-  computeTicketBranch,
-  countReworkCycles,
-  deleteLock,
-  deleteVerifyAttempt,
-  deliverEpicToBase,
-  deliverViaPullRequest,
-  detectResume,
-  ensureEpicBranch,
-  executeResume,
-  fetchReworkFromPrReview,
-  findEntriesWithStatus,
-  formatDuration,
-  formatTimestamp,
-  parseProgressFile,
-  postReworkActions,
-  readLock,
-  resolveCommitType,
-  getQualityData,
-  recordDelivery,
-  recordRework,
-  resolvePlatformHandlers,
-  runPreflight,
-  writeLock,
-} from '@chief-clancy/dev';
 
 export { detectBoard, sharedEnv } from './board/index.js';
 export { createBoard } from './board/factory/index.js';
