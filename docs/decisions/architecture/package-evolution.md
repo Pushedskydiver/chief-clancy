@@ -142,7 +142,7 @@ This finding emerged when the canonical brief/plan template was applied to dev's
 
 ### Locked decision revision: `FATAL_ABORT_PHASES` + `checkStopCondition` move to dev
 
-An earlier draft of this doc said these symbols should "stay in terminal as a loop-policy concern". DA review surfaced the contradiction: phase-name string literals are produced inside the pipeline ([`packages/core/src/dev/pipeline/run-pipeline.ts`](../../../packages/core/src/dev/pipeline/run-pipeline.ts)), the pipeline moves to dev in Phase E, and a `Set<string>` whose members are defined in another package is exactly the leaky coupling extraction was supposed to eliminate.
+An earlier draft of this doc said these symbols should "stay in terminal as a loop-policy concern". DA review surfaced the contradiction: phase-name string literals are produced inside the pipeline ([`packages/dev/src/pipeline/run-pipeline.ts`](../../../packages/dev/src/pipeline/run-pipeline.ts)), the pipeline moves to dev in Phase E, and a `Set<string>` whose members are defined in another package is exactly the leaky coupling extraction was supposed to eliminate.
 
 **Revised:** `FATAL_ABORT_PHASES` and `checkStopCondition` are pipeline-contract primitives. They move to `@chief-clancy/dev` alongside `run-pipeline.ts`. Terminal's autopilot (after becoming a thin wrapper over dev's `executeFixedCount`) imports `checkStopCondition` from `@chief-clancy/dev` like any other consumer.
 
@@ -157,7 +157,7 @@ The 5-check readiness gate (running as a Devil's-Advocate-style fresh-Claude sub
 
 ### Pre-seed `ctx.ticket` (Q8 resolution)
 
-For `/clancy:dev TICKET-123` (single-ticket interactive mode), the executor pre-seeds `ctx.ticket` from a one-shot board lookup BEFORE calling `runPipeline`. The existing `if (!ctx.ticket)` guard at [`packages/core/src/dev/pipeline/phases/ticket-fetch/ticket-fetch.ts`](../../../packages/core/src/dev/pipeline/phases/ticket-fetch/ticket-fetch.ts) (which will live at `packages/dev/src/pipeline/phases/ticket-fetch/ticket-fetch.ts` after Phase E PR 3b) makes the ticket-fetch path a no-op when `ctx.ticket` is already set. `computeBranches` still runs inside `ticketFetch` regardless, so `branchSetup` reads its computed values normally.
+For `/clancy:dev TICKET-123` (single-ticket interactive mode), the executor pre-seeds `ctx.ticket` from a one-shot board lookup BEFORE calling `runPipeline`. The existing `if (!ctx.ticket)` guard at [`packages/dev/src/pipeline/phases/ticket-fetch/ticket-fetch.ts`](../../../packages/dev/src/pipeline/phases/ticket-fetch/ticket-fetch.ts) makes the ticket-fetch path a no-op when `ctx.ticket` is already set. `computeBranches` still runs inside `ticketFetch` regardless, so `branchSetup` reads its computed values normally.
 
 **This is intentional and contractual.** The pre-seed pattern is documented as a public behaviour of the `ticketFetch` phase. Future pipeline changes that might remove the `if (!ctx.ticket)` guard must preserve the pre-seed escape hatch by some other means (or extend the Board API with a uniform `fetchTicketByKey()` and migrate the pre-seed pattern to the new method). Phase E PR 8c includes a regression test asserting `ctx.targetBranch` and `ctx.ticketBranch` are populated after `runPipeline` returns under the pre-seed path.
 
@@ -185,7 +185,7 @@ The new module `packages/dev/src/agents/claude-spawn.ts` (~120 LOC, shipping in 
 
 ### No mid-loop discovery in Phase E
 
-An earlier draft included a "mid-loop discovery" path: a green-graded ticket that turned yellow during execution would get deferred and the loop would continue. DA review verified by reading [`packages/core/src/dev/pipeline/phases/feasibility/feasibility.ts`](../../../packages/core/src/dev/pipeline/phases/feasibility/feasibility.ts) that the feasibility phase returns a binary `{ feasible: boolean, reason?: string }` — there is no third "ambiguous" state. Adding one would be a hidden pipeline-contract change Phase E does not budget for, and the "ticket may have already created a branch" cleanup story is unspecified.
+An earlier draft included a "mid-loop discovery" path: a green-graded ticket that turned yellow during execution would get deferred and the loop would continue. DA review verified by reading [`packages/dev/src/pipeline/phases/feasibility/feasibility.ts`](../../../packages/dev/src/pipeline/phases/feasibility/feasibility.ts) that the feasibility phase returns a binary `{ feasible: boolean, reason?: string }` — there is no third "ambiguous" state. Adding one would be a hidden pipeline-contract change Phase E does not budget for, and the "ticket may have already created a branch" cleanup story is unspecified.
 
 **Phase E ships pre-flight batch grading only.** `/clancy:dev --loop --afk` grades all tickets up front, writes `.clancy/dev/readiness-report.md`, and halts before the loop if any are not green. `/clancy:dev --loop --afk --afk-strict` skips yellows, executes greens only, writes `deferred.json` for the skipped tickets. Phase F or later may extend `FeasibilityPhaseResult` with an `ambiguous` discriminated-union variant and add mid-loop discovery on top.
 
