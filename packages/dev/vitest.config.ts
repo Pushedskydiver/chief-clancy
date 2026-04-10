@@ -8,7 +8,7 @@ export default defineProject({
       '~/d': fileURLToPath(new URL('./src', import.meta.url)),
       '~/c': fileURLToPath(new URL('../core/src', import.meta.url)),
       '@chief-clancy/core': fileURLToPath(
-        new URL('../core/src/index.ts', import.meta.url),
+        new URL('../core/src', import.meta.url),
       ),
     },
   },
