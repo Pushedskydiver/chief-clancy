@@ -66,7 +66,7 @@ const copyChecked = (src: string, dest: string, fs: ScanCopyFs): void => {
  *
  * Always copies — scan content is unconditional (not role-gated).
  */
-export const copyScanContent = (options: CopyScanContentOptions): void => {
+const copyScanContent = (options: CopyScanContentOptions): void => {
   const { scanAgentsDir, scanCommandsDir, scanWorkflowsDir, fs } = options;
   const { commandsDest, workflowsDest, agentsDest } = options;
 

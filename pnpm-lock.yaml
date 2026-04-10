@@ -98,6 +98,9 @@ importers:
       '@chief-clancy/plan':
         specifier: workspace:*
         version: link:../plan
+      '@chief-clancy/scan':
+        specifier: workspace:*
+        version: link:../scan
       '@chief-clancy/terminal':
         specifier: workspace:*
         version: link:../terminal
@@ -140,9 +143,6 @@ importers:
       '@chief-clancy/dev':
         specifier: workspace:*
         version: link:../dev
-      '@chief-clancy/scan':
-        specifier: workspace:*
-        version: link:../scan
     devDependencies:
       esbuild:
         specifier: ^0.27.4
