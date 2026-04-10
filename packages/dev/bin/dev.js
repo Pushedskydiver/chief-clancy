@@ -155,19 +155,19 @@ async function main() {
 
   const commandsDest = join(baseDir, 'commands', 'clancy');
   const workflowsDest = join(baseDir, 'clancy', 'workflows');
-  const bundlesDest = join(baseDir, 'clancy', 'bundles');
+  const clancyProjectDir = join(cwd, '.clancy');
 
   console.log(dim(`  Installing to: ${baseDir}`));
 
   // Reject symlinked destination directories
   rejectSymlink(commandsDest);
   rejectSymlink(workflowsDest);
-  rejectSymlink(bundlesDest);
+  rejectSymlink(clancyProjectDir);
 
   // Create directories
   mkdirSync(commandsDest, { recursive: true });
   mkdirSync(workflowsDest, { recursive: true });
-  mkdirSync(bundlesDest, { recursive: true });
+  mkdirSync(clancyProjectDir, { recursive: true });
 
   // Copy command files (shipped from src/, not dist/)
   COMMAND_FILES.forEach((f) =>
@@ -179,9 +179,9 @@ async function main() {
     copyChecked(join(devRoot, 'src', 'workflows', f), join(workflowsDest, f)),
   );
 
-  // Copy bundle files
+  // Copy bundle files to .clancy/ (runtime scripts execute from project root)
   BUNDLE_FILES.forEach((f) =>
-    copyChecked(join(devRoot, 'dist', 'bundle', f), join(bundlesDest, f)),
+    copyChecked(join(devRoot, 'dist', 'bundle', f), join(clancyProjectDir, f)),
   );
 
   // Inline workflow content in global mode
@@ -200,8 +200,13 @@ async function main() {
     });
   }
 
+  // ESM package.json — required for `node .clancy/clancy-dev.js` to work
+  const pkgJsonPath = join(clancyProjectDir, 'package.json');
+  rejectSymlink(pkgJsonPath);
+  writeFileSync(pkgJsonPath, '{"type":"module"}\n');
+
   // Write version marker
-  const versionPath = join(bundlesDest, 'VERSION.dev');
+  const versionPath = join(clancyProjectDir, 'VERSION.dev');
   rejectSymlink(versionPath);
   writeFileSync(versionPath, pkg.version);
 

@@ -21,7 +21,8 @@ type DevInstallMode = 'global' | 'local';
 export type DevInstallPaths = {
   readonly commandsDest: string;
   readonly workflowsDest: string;
-  readonly bundlesDest: string;
+  /** Always `<cwd>/.clancy` — runtime bundles live at project root. */
+  readonly clancyProjectDir: string;
 };
 
 /**
@@ -66,7 +67,7 @@ const COMMAND_FILES = ['dev.md'] as const;
 /** Workflow files shipped with the dev package. */
 const WORKFLOW_FILES = ['dev.md'] as const;
 
-/** Bundle files copied into `.clancy/bundles/`. */
+/** Bundle files copied into `.clancy/`. */
 const BUNDLE_FILES = ['clancy-dev.js', 'clancy-dev-autopilot.js'] as const;
 
 /** Matches `@.claude/clancy/workflows/<filename>.md` on its own line. */
@@ -110,7 +111,7 @@ export const resolveDevInstallPaths = (
   return {
     commandsDest: join(baseDir, 'commands', 'clancy'),
     workflowsDest: join(baseDir, 'clancy', 'workflows'),
-    bundlesDest: join(baseDir, 'clancy', 'bundles'),
+    clancyProjectDir: join(cwd, '.clancy'),
   };
 };
 
@@ -219,14 +220,20 @@ export const runDevInstall = (
   copyFiles({
     files: BUNDLE_FILES,
     srcDir: sources.bundlesDir,
-    destDir: paths.bundlesDest,
+    destDir: paths.clancyProjectDir,
     fs,
   });
   if (mode === 'global') {
     inlineWorkflow(paths.commandsDest, paths.workflowsDest, fs);
   }
 
-  const versionPath = join(paths.bundlesDest, 'VERSION.dev');
+  // ESM package.json — required for `node .clancy/clancy-dev.js` to work.
+  // Idempotent: same content as terminal's setupProjectRuntime writes.
+  const pkgJsonPath = join(paths.clancyProjectDir, 'package.json');
+  rejectSymlink(pkgJsonPath, fs.isSymlink);
+  fs.writeFile(pkgJsonPath, '{"type":"module"}\n');
+
+  const versionPath = join(paths.clancyProjectDir, 'VERSION.dev');
   rejectSymlink(versionPath, fs.isSymlink);
   fs.writeFile(versionPath, version);
 

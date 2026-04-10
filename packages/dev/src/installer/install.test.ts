@@ -61,12 +61,10 @@ describe('resolveDevInstallPaths', () => {
       );
     });
 
-    it('resolves bundles destination under ~/.claude', () => {
+    it('resolves clancyProjectDir to cwd/.clancy regardless of mode', () => {
       const paths = resolveDevInstallPaths('global', homeDir, cwd);
 
-      expect(paths.bundlesDest).toBe(
-        join(homeDir, '.claude', 'clancy', 'bundles'),
-      );
+      expect(paths.clancyProjectDir).toBe(join(cwd, '.clancy'));
     });
   });
 
@@ -87,10 +85,10 @@ describe('resolveDevInstallPaths', () => {
       );
     });
 
-    it('resolves bundles destination under cwd/.claude', () => {
+    it('resolves clancyProjectDir to cwd/.clancy regardless of mode', () => {
       const paths = resolveDevInstallPaths('local', homeDir, cwd);
 
-      expect(paths.bundlesDest).toBe(join(cwd, '.claude', 'clancy', 'bundles'));
+      expect(paths.clancyProjectDir).toBe(join(cwd, '.clancy'));
     });
   });
 });
@@ -129,7 +127,7 @@ const createMockFs = (files: Record<string, string> = {}) => {
 const defaultPaths = {
   commandsDest: '/dest/commands/clancy',
   workflowsDest: '/dest/clancy/workflows',
-  bundlesDest: '/dest/clancy/bundles',
+  clancyProjectDir: '/projects/my-app/.clancy',
 };
 
 const defaultSources = {
@@ -177,7 +175,7 @@ describe('runDevInstall', () => {
     const opts = buildOptions();
     runDevInstall(opts);
 
-    expect(opts.fs.mkdir).toHaveBeenCalledWith(defaultPaths.bundlesDest);
+    expect(opts.fs.mkdir).toHaveBeenCalledWith(defaultPaths.clancyProjectDir);
   });
 
   it('writes VERSION.dev with the package version', () => {
@@ -185,22 +183,32 @@ describe('runDevInstall', () => {
     runDevInstall(opts);
 
     expect(opts.fs.writeFile).toHaveBeenCalledWith(
-      join(defaultPaths.bundlesDest, 'VERSION.dev'),
+      join(defaultPaths.clancyProjectDir, 'VERSION.dev'),
       '1.2.3',
     );
   });
 
-  it('copies bundle files to bundles destination', () => {
+  it('writes ESM package.json to .clancy/', () => {
+    const opts = buildOptions();
+    runDevInstall(opts);
+
+    expect(opts.fs.writeFile).toHaveBeenCalledWith(
+      join(defaultPaths.clancyProjectDir, 'package.json'),
+      '{"type":"module"}\n',
+    );
+  });
+
+  it('copies bundle files to .clancy/', () => {
     const opts = buildOptions();
     runDevInstall(opts);
 
     expect(opts.fs.copyFile).toHaveBeenCalledWith(
       join(defaultSources.bundlesDir, 'clancy-dev.js'),
-      join(defaultPaths.bundlesDest, 'clancy-dev.js'),
+      join(defaultPaths.clancyProjectDir, 'clancy-dev.js'),
     );
     expect(opts.fs.copyFile).toHaveBeenCalledWith(
       join(defaultSources.bundlesDir, 'clancy-dev-autopilot.js'),
-      join(defaultPaths.bundlesDest, 'clancy-dev-autopilot.js'),
+      join(defaultPaths.clancyProjectDir, 'clancy-dev-autopilot.js'),
     );
   });
 
@@ -231,11 +239,11 @@ describe('runDevInstall', () => {
   it('rejects symlink at version marker path', () => {
     const opts = buildOptions();
     opts.fs.isSymlink.mockImplementation(
-      (p: string) => p === join(defaultPaths.bundlesDest, 'VERSION.dev'),
+      (p: string) => p === join(defaultPaths.clancyProjectDir, 'VERSION.dev'),
     );
 
     expect(() => runDevInstall(opts)).toThrow(
-      `Symlink rejected: ${join(defaultPaths.bundlesDest, 'VERSION.dev')}`,
+      `Symlink rejected: ${join(defaultPaths.clancyProjectDir, 'VERSION.dev')}`,
     );
   });
 
