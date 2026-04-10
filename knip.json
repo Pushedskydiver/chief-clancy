@@ -15,6 +15,7 @@
     "packages/plan": {
       "project": ["src/**/*.ts"]
     },
+    "packages/scan": {},
     "packages/dev": {
       "project": ["src/**/*.ts"],
       "entry": [
