@@ -1,10 +1,8 @@
 /**
- * Shared types used across runner modules.
+ * Shared process-spawning types used across runner modules.
  *
- * Consolidates types that were previously duplicated in cli-bridge,
- * dep-factory, invoke-phase, implement, autopilot, and deliver-phase.
+ * Consolidates types that were previously in terminal's runner/shared/types.ts.
  */
-import type { ProgressStatus } from '@chief-clancy/core';
 import type { SpawnSyncReturns } from 'node:child_process';
 
 export type StdioValue = 'inherit' | 'ignore' | 'pipe' | number;
@@ -25,13 +23,3 @@ export type ConsoleLike = {
   readonly log: (message: string) => void;
   readonly error: (message: string) => void;
 };
-
-/** Progress append function used by dep-factory and deliver-phase. */
-export type AppendFn = (opts: {
-  readonly key: string;
-  readonly summary: string;
-  readonly status: ProgressStatus;
-  readonly prNumber?: number;
-  readonly parent?: string;
-  readonly ticketType?: string;
-}) => void;

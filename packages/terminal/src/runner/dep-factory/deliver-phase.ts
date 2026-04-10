@@ -3,9 +3,9 @@
  *
  * Extracted from the dep factory to stay within file-length limits.
  */
-import type { AppendFn } from '../shared/types.js';
 import type { ExecGit } from '@chief-clancy/core';
 import type {
+  AppendFn,
   FetchFn,
   PipelineDeps,
   ProgressFs,

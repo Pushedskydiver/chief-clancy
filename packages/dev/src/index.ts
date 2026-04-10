@@ -8,6 +8,15 @@
  */
 export const PACKAGE_NAME = '@chief-clancy/dev' as const;
 
+// ─── Types ──────────────────────────────────────────────────────────────────
+
+export type {
+  AppendFn,
+  ConsoleLike,
+  SpawnSyncFn,
+  StdioValue,
+} from './types/index.js';
+
 // ─── Lifecycle re-exports ───────────────────────────────────────────────────
 
 export {

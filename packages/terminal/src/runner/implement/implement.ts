@@ -6,9 +6,9 @@
  * All exit paths use exit code 0 — the autopilot runner detects stop
  * conditions by parsing stdout, not exit codes.
  */
-import type { ConsoleLike, SpawnSyncFn } from '../shared/types.js';
 import type { EnvFileSystem, ExecGit } from '@chief-clancy/core';
 import type {
+  ConsoleLike,
   CostFs,
   FetchFn,
   LockFs,
@@ -17,6 +17,7 @@ import type {
   ProgressFs,
   QualityFs,
   RunContext,
+  SpawnSyncFn,
 } from '@chief-clancy/dev';
 
 import { createContext, formatDuration } from '@chief-clancy/dev';

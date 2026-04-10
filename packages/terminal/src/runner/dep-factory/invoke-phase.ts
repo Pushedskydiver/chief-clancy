@@ -3,8 +3,7 @@
  *
  * Extracted from the dep factory to stay within file-length limits.
  */
-import type { SpawnSyncFn } from '../shared/types.js';
-import type { RunContext } from '@chief-clancy/dev';
+import type { RunContext, SpawnSyncFn } from '@chief-clancy/dev';
 
 import { invokeClaudeSession } from '../cli-bridge/index.js';
 import { buildPrompt, buildReworkPrompt } from '../prompt-builder/index.js';

@@ -7,7 +7,7 @@
  * Designed for DI injection into `invokeClaudeSession` and
  * `invokeClaudePrint`, which both accept a `spawn` parameter.
  */
-import type { SpawnSyncFn, StdioValue } from '~/t/runner/shared/types.js';
+import type { SpawnSyncFn, StdioValue } from '@chief-clancy/dev';
 import type { SpawnSyncReturns } from 'node:child_process';
 
 /** A recorded simulator invocation. */

@@ -16,8 +16,8 @@ import type {
   PipelineResult,
   ProgressFs,
   QualityFs,
+  SpawnSyncFn,
 } from '@chief-clancy/dev';
-import type { SpawnSyncFn } from '~/t/runner/shared/types.js';
 
 import { execFileSync } from 'node:child_process';
 import {
