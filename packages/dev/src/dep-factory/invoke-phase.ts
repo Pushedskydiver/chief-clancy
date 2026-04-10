@@ -4,10 +4,11 @@
  * Extracted from the dep factory to stay within file-length limits.
  * Prompt builders are injected so this module has no terminal dependency.
  */
+import type { RunContext } from '../pipeline/index.js';
+import type { SpawnSyncFn } from '../types/index.js';
 import type { BoardProvider } from '@chief-clancy/core';
-import type { RunContext, SpawnSyncFn } from '@chief-clancy/dev';
 
-import { invokeClaudeSession } from '@chief-clancy/dev';
+import { invokeClaudeSession } from '../cli-bridge/index.js';
 
 /** Prompt builder for fresh tickets. */
 type BuildPromptFn = (opts: {

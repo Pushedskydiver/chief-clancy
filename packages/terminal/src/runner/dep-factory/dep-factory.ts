@@ -60,6 +60,7 @@ import {
   findEntriesWithStatus,
   invokeClaudePrint,
   lockCheck,
+  makeInvokePhase,
   preflightPhase,
   prRetry,
   readLock,
@@ -75,7 +76,6 @@ import {
 
 import { buildPrompt, buildReworkPrompt } from '../prompt-builder/index.js';
 import { wireDeliver } from './deliver-phase.js';
-import { makeInvokePhase } from './invoke-phase.js';
 
 /** Options for building the pipeline dependency object. */
 type DepFactoryOpts = {
