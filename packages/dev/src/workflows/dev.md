@@ -21,7 +21,7 @@ Check for `.clancy/.env`:
 - **Absent** → **standalone mode**. No board credentials configured. Stop with:
 
   ```
-  No board credentials found. Run /clancy:board-setup first to configure your board, then re-run /clancy:dev.
+  No board credentials found. Install @chief-clancy/brief or @chief-clancy/plan and run /clancy:board-setup first, then re-run /clancy:dev.
   ```
 
   Stop.
