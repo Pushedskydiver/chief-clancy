@@ -20,14 +20,12 @@ import {
 import { handlePlanContent } from '~/t/installer/plan-content/index.js';
 import { copyRoleFiles } from '~/t/installer/role-filter/role-filter.js';
 import { handleScanContent } from '~/t/installer/scan-content/index.js';
-import {
-  requirePath,
-  validateOptionalDirs,
-} from '~/t/installer/shared/fs-guards/index.js';
 import { printSuccess } from '~/t/installer/ui/ui.js';
 import { blue, dim, green } from '~/t/shared/ansi/index.js';
 
 import { loadClancyEnv } from '@chief-clancy/core';
+
+import { validateSources } from './validate-sources.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -183,51 +181,6 @@ export function parseEnabledRoles(
     .filter(Boolean);
 
   return new Set(normalised);
-}
-
-/**
- * Validate that all required source directories and files exist.
- *
- * Guards against a corrupted npm package. Throws on the first missing path.
- * `agentsDir` is intentionally not validated — the verification gate prompt
- * is read best-effort in {@link registerHooks} and skipped if missing.
- *
- * @param sources - The source directories to check.
- * @param exists - File existence check (injected for testability).
- */
-export function validateSources(
-  sources: InstallSources,
-  exists: (path: string) => boolean,
-): void {
-  requirePath('Roles source', sources.rolesDir, exists);
-  requirePath('Hooks source', sources.hooksDir, exists);
-  requirePath('Runtime bundles source', sources.bundleDir, exists);
-
-  BUNDLE_SCRIPTS.forEach((script) => {
-    requirePath(
-      `Bundled script ${script}`,
-      join(sources.bundleDir, script),
-      exists,
-    );
-  });
-
-  const { briefCommandsDir, briefWorkflowsDir, briefAgentsDir } = sources;
-  validateOptionalDirs(
-    'Brief',
-    [briefCommandsDir, briefWorkflowsDir, briefAgentsDir],
-    exists,
-  );
-  validateOptionalDirs(
-    'Plan',
-    [sources.planCommandsDir, sources.planWorkflowsDir],
-    exists,
-  );
-  const { scanAgentsDir, scanCommandsDir, scanWorkflowsDir } = sources;
-  validateOptionalDirs(
-    'Scan',
-    [scanAgentsDir, scanCommandsDir, scanWorkflowsDir],
-    exists,
-  );
 }
 
 // ---------------------------------------------------------------------------

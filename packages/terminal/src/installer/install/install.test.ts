@@ -4,8 +4,8 @@ import {
   parseEnabledRoles,
   parseInstallFlag,
   resolveInstallPaths,
-  validateSources,
 } from '~/t/installer/install/install.js';
+import { validateSources } from '~/t/installer/install/validate-sources.js';
 import { describe, expect, it } from 'vitest';
 
 describe('parseInstallFlag', () => {
