@@ -48,7 +48,7 @@ Two execution modes powered by the `@chief-clancy/core` pipeline:
 
 ### Agents
 
-Specialist agent prompts (`.md` files) for codebase scanning, devil's advocate grilling, verification gates, and more.
+Specialist agent prompts (`.md` files) for devil's advocate grilling and verification gates. Codebase scanning agents and the `/clancy:map-codebase` + `/clancy:update-docs` commands come from [`@chief-clancy/scan`](https://www.npmjs.com/package/@chief-clancy/scan).
 
 ## Documentation
 

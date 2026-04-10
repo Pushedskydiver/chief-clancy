@@ -90,9 +90,20 @@ Existing behaviour, unchanged. The pipeline label respects `CLANCY_ROLES`: if `p
 npx chief-clancy
 ```
 
+## Also included
+
+Installing `@chief-clancy/brief` also installs codebase scanning commands from [`@chief-clancy/scan`](https://www.npmjs.com/package/@chief-clancy/scan):
+
+- `/clancy:map-codebase` — scan your codebase with 5 parallel agents and generate `.clancy/docs/`
+- `/clancy:update-docs` — incrementally refresh docs affected by recent changes
+
+Running `/clancy:map-codebase` before briefing enriches the devil's advocate analysis with real codebase context.
+
 ## Part of the Clancy monorepo
 
 - [`chief-clancy`](https://www.npmjs.com/package/chief-clancy) — full pipeline (install, configure, implement, autopilot)
+- [`@chief-clancy/scan`](https://www.npmjs.com/package/@chief-clancy/scan) — codebase scanning agents and workflows
+- [`@chief-clancy/plan`](https://www.npmjs.com/package/@chief-clancy/plan) — implementation planner
 - [`@chief-clancy/terminal`](https://www.npmjs.com/package/@chief-clancy/terminal) — installer, slash commands, hooks, runners
 - [`@chief-clancy/core`](https://www.npmjs.com/package/@chief-clancy/core) — board integrations, pipeline phases, schemas
 

@@ -246,16 +246,19 @@ Clancy also merges a section into your `CLAUDE.md` (or creates one) that tells C
 
 ## Packages
 
-This is a monorepo with four packages:
+This is a monorepo with seven packages:
 
 | Package                                         | Purpose                                                                    |
 | ----------------------------------------------- | -------------------------------------------------------------------------- |
 | [`chief-clancy`](./packages/chief-clancy)       | CLI wrapper — `npx chief-clancy` delegates to terminal                     |
 | [`@chief-clancy/terminal`](./packages/terminal) | Installer, slash commands, hooks, runners, agents                          |
 | [`@chief-clancy/core`](./packages/core)         | Board integrations, pipeline phases, lifecycle modules, schemas            |
+| [`@chief-clancy/scan`](./packages/scan)         | Shared codebase scanning agents and workflows (map-codebase, update-docs)  |
 | [`@chief-clancy/brief`](./packages/brief)       | Standalone brief generator — `npx @chief-clancy/brief` (no board required) |
+| [`@chief-clancy/plan`](./packages/plan)         | Standalone implementation planner — `npx @chief-clancy/plan`               |
+| [`@chief-clancy/dev`](./packages/dev)           | Ticket executor (pre-release, not yet published)                           |
 
-Dependency direction: `core` ← `terminal` ← `chief-clancy`. Brief is standalone (no core/terminal deps). See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full module map.
+Dependency direction: `core` ← `dev` ← `terminal` ← `chief-clancy`. Brief and plan are standalone (no core/terminal deps). Scan is a shared content package consumed by dev, brief, plan, and terminal. See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full module map.
 
 ---
 
