@@ -21,6 +21,7 @@
     "dev",
     "executor",
     "autonomous",
+    "slash-commands",
     "developer-tools"
   ],
   "type": "module",

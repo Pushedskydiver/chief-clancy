@@ -14,6 +14,6 @@ Autonomous Ralph Wiggum execution surface for Claude Code — pick up tickets an
 
 A new third package category in the chief-clancy monorepo: **standalone installer + esbuild runtime bundle + slash commands, with no hooks**. Distinct from `@chief-clancy/brief` and `@chief-clancy/plan` (zero-runtime markdown-only standalones) and from `@chief-clancy/terminal` (full installer + hooks + bundles).
 
-`@chief-clancy/dev` sits between `@chief-clancy/core` (which it imports types and shared utilities from) and `@chief-clancy/terminal` (which imports it for the `executeFixedCount` loop primitive after Phase E PR 11b).
+`@chief-clancy/dev` sits between `@chief-clancy/core` (which it imports types and shared utilities from) and `@chief-clancy/terminal` (which imports it for the `executeFixedCount` loop primitive once the loop primitive is extracted later in Phase E).
 
 See [`docs/decisions/architecture/package-evolution.md`](../../docs/decisions/architecture/package-evolution.md) for the full architectural rationale, including the locked decisions about hybrid package shape, the readiness gate, the spawn-based grader, and the Cut E ticket schema.

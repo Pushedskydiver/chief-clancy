@@ -7,6 +7,7 @@ export default defineConfig({
       'packages/terminal',
       'packages/brief',
       'packages/plan',
+      'packages/dev',
     ],
     coverage: {
       provider: 'v8',

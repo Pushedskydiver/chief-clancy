@@ -61,7 +61,7 @@ Dependency direction: core ← terminal ← chief-clancy. Brief AND plan are bot
 - `zod/mini` for all runtime validation — not `zod`
 - Hooks must be CommonJS — best-effort, must never crash
 - Runtime scripts are esbuild bundles — self-contained, zero npm dependency
-- Path aliases: `~/c/` → `core/src/*`, `~/t/` → `terminal/src/*`, `~/b/` → `brief/src/*`, `~/p/` → `plan/src/*`. Rewritten by `tsc-alias` at build time
+- Path aliases: `~/c/` → `core/src/*`, `~/t/` → `terminal/src/*`, `~/b/` → `brief/src/*`, `~/p/` → `plan/src/*`, `~/d/` → `dev/src/*`. Rewritten by `tsc-alias` at build time
 - Types/opts objects start non-exported — only export when consumed outside the file
 - Board modules: reuse header builders, schema-validate all responses, cache via `Cached<T>` class
 - See `docs/CONVENTIONS.md` for export hygiene and board implementation patterns
