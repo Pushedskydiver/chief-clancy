@@ -100,11 +100,21 @@ importers:
 
   packages/core:
     dependencies:
+      '@chief-clancy/dev':
+        specifier: workspace:*
+        version: link:../dev
       zod:
         specifier: ^4.3.6
         version: 4.3.6
 
-  packages/dev: {}
+  packages/dev:
+    dependencies:
+      '@chief-clancy/core':
+        specifier: workspace:*
+        version: link:../core
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
 
   packages/plan: {}
 
@@ -113,6 +123,9 @@ importers:
       '@chief-clancy/core':
         specifier: workspace:*
         version: link:../core
+      '@chief-clancy/dev':
+        specifier: workspace:*
+        version: link:../dev
     devDependencies:
       esbuild:
         specifier: ^0.27.4

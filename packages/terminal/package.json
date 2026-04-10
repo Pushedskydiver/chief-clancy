@@ -37,7 +37,8 @@
     "src/templates"
   ],
   "dependencies": {
-    "@chief-clancy/core": "workspace:*"
+    "@chief-clancy/core": "workspace:*",
+    "@chief-clancy/dev": "workspace:*"
   },
   "scripts": {
     "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc --project tsconfig.build.json && tsc-alias --project tsconfig.build.json && node dist/hooks/esbuild.hooks.js && node dist/runner/esbuild.runtime.js",

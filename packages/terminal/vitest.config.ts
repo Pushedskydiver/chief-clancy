@@ -10,6 +10,9 @@ export default defineProject({
       '@chief-clancy/core': fileURLToPath(
         new URL('../core/src/index.ts', import.meta.url),
       ),
+      '@chief-clancy/dev': fileURLToPath(
+        new URL('../dev/src/index.ts', import.meta.url),
+      ),
     },
   },
   test: {
