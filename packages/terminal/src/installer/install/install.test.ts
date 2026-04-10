@@ -270,4 +270,23 @@ describe('validateSources', () => {
 
     expect(() => validateSources(full, () => true)).not.toThrow();
   });
+
+  it('throws when only some scan source dirs are provided', () => {
+    const partial = { ...sources, scanAgentsDir: '/pkg/scan/agents' };
+
+    expect(() => validateSources(partial, () => true)).toThrow(
+      'Scan source dirs must be all-or-none',
+    );
+  });
+
+  it('does not throw when all scan source dirs are provided', () => {
+    const full = {
+      ...sources,
+      scanAgentsDir: '/pkg/scan/agents',
+      scanCommandsDir: '/pkg/scan/commands',
+      scanWorkflowsDir: '/pkg/scan/workflows',
+    };
+
+    expect(() => validateSources(full, () => true)).not.toThrow();
+  });
 });
