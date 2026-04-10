@@ -6,7 +6,10 @@
  * `lockOwner` on the context. Returns structured results — no console output.
  */
 import type { RunContext } from '../../context.js';
-import type { ChildrenStatus, FetchedTicket } from '~/c/types/board.js';
+import type {
+  ChildrenStatus,
+  FetchedTicket,
+} from '@chief-clancy/core/types/board.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

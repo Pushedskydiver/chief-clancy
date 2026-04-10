@@ -6,9 +6,13 @@
  * Returns structured results — no console output.
  */
 import type { RunContext } from '../../context.js';
-import type { BoardConfig } from '~/c/schemas/env/env.js';
-import type { Board, BoardProvider, FetchedTicket } from '~/c/types/board.js';
-import type { ProgressStatus } from '~/c/types/progress.js';
+import type { BoardConfig } from '@chief-clancy/core/schemas/env/env.js';
+import type {
+  Board,
+  BoardProvider,
+  FetchedTicket,
+} from '@chief-clancy/core/types/board.js';
+import type { ProgressStatus } from '@chief-clancy/core/types/progress.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

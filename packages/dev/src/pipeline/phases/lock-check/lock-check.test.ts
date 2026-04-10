@@ -1,5 +1,5 @@
 import type { LockCheckDeps } from './lock-check.js';
-import type { LockData, LockFs } from '@chief-clancy/dev';
+import type { LockData, LockFs } from '~/d/lifecycle/lock/index.js';
 
 import { describe, expect, it, vi } from 'vitest';
 

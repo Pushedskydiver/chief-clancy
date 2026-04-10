@@ -5,15 +5,16 @@
  * handles display. Decomposed into helpers to stay under 50-line limit.
  */
 import type { RunContext } from '../../context.js';
-import type { LockData, LockFs, ProgressFs } from '@chief-clancy/dev';
-import type { ExecGit } from '~/c/shared/git-ops/index.js';
+import type { ExecGit } from '@chief-clancy/core/shared/git-ops/index.js';
+import type { LockData, LockFs } from '~/d/lifecycle/lock/index.js';
+import type { ProgressFs } from '~/d/lifecycle/progress/index.js';
 
 import {
   deleteLock,
   deleteVerifyAttempt,
   isLockStale,
   readLock,
-} from '@chief-clancy/dev';
+} from '~/d/lifecycle/lock/lock.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

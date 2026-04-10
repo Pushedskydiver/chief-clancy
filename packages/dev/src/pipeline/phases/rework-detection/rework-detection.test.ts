@@ -1,5 +1,5 @@
 import type { ReworkDetectionDeps } from './rework-detection.js';
-import type { FetchedTicket } from '~/c/types/board.js';
+import type { FetchedTicket } from '@chief-clancy/core/types/board.js';
 
 import { describe, expect, it, vi } from 'vitest';
 

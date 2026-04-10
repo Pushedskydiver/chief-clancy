@@ -8,8 +8,8 @@
  * progressively — phases that depend on prior state assert required
  * fields at the top (a missing field means a pipeline ordering bug).
  */
-import type { BoardConfig } from '~/c/schemas/env/env.js';
-import type { Board, FetchedTicket } from '~/c/types/board.js';
+import type { BoardConfig } from '@chief-clancy/core/schemas/env/env.js';
+import type { Board, FetchedTicket } from '@chief-clancy/core/types/board.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

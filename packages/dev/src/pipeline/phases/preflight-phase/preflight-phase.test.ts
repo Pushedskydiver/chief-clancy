@@ -1,6 +1,6 @@
 import type { PreflightPhaseDeps } from './preflight-phase.js';
-import type { BoardConfig } from '~/c/schemas/env/env.js';
-import type { Board } from '~/c/types/board.js';
+import type { BoardConfig } from '@chief-clancy/core/schemas/env/env.js';
+import type { Board } from '@chief-clancy/core/types/board.js';
 
 import { describe, expect, it, vi } from 'vitest';
 

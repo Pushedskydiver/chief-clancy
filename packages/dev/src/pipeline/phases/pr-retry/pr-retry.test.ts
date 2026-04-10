@@ -1,7 +1,10 @@
 import type { PrRetryDeps } from './pr-retry.js';
-import type { ProgressEntry } from '@chief-clancy/dev';
-import type { BoardConfig } from '~/c/schemas/env/env.js';
-import type { PrCreationResult, RemoteInfo } from '~/c/types/remote.js';
+import type { BoardConfig } from '@chief-clancy/core/schemas/env/env.js';
+import type {
+  PrCreationResult,
+  RemoteInfo,
+} from '@chief-clancy/core/types/remote.js';
+import type { ProgressEntry } from '~/d/lifecycle/progress/index.js';
 
 import { describe, expect, it, vi } from 'vitest';
 
