@@ -121,7 +121,13 @@ const buildOptions = (
   overrides: Partial<Omit<RunDevInstallOptions, 'fs'>> = {},
   files: Readonly<Record<string, string>> = {},
 ): MockOptions => {
-  const fs = createMockFs(files);
+  const sourceFiles: Record<string, string> = {
+    '/pkg/dist/bundle/clancy-dev.js': '// clancy-dev bundle',
+    '/pkg/dist/bundle/clancy-dev-autopilot.js':
+      '// clancy-dev-autopilot bundle',
+    ...files,
+  };
+  const fs = createMockFs(sourceFiles);
 
   return {
     paths: defaultPaths,
@@ -151,11 +157,42 @@ describe('runDevInstall', () => {
     );
   });
 
-  it('does not copy any files when bundle list is empty', () => {
+  it('copies bundle files to bundles destination', () => {
     const opts = buildOptions();
     runDevInstall(opts);
 
-    expect(opts.fs.copyFile).not.toHaveBeenCalled();
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.bundlesDir, 'clancy-dev.js'),
+      join(defaultPaths.bundlesDest, 'clancy-dev.js'),
+    );
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.bundlesDir, 'clancy-dev-autopilot.js'),
+      join(defaultPaths.bundlesDest, 'clancy-dev-autopilot.js'),
+    );
+  });
+
+  it('does not copy hook files when hook list is empty', () => {
+    const opts = buildOptions();
+    runDevInstall(opts);
+
+    const hookCopyCalls = opts.fs.copyFile.mock.calls.filter(([, dest]) =>
+      (dest as string).startsWith(defaultPaths.hooksDest),
+    );
+
+    expect(hookCopyCalls).toHaveLength(0);
+  });
+
+  it('throws when a bundle source file is missing', () => {
+    const fs = createMockFs({});
+
+    expect(() =>
+      runDevInstall({
+        paths: defaultPaths,
+        sources: defaultSources,
+        version: '0.1.0',
+        fs,
+      }),
+    ).toThrow('Source file not found');
   });
 
   it('rejects symlink at destination directory', () => {
