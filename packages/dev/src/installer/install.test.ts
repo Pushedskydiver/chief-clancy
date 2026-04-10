@@ -263,6 +263,10 @@ describe('runDevInstall', () => {
     runDevInstall(opts);
 
     expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.commandsDir, 'board-setup.md'),
+      join(defaultPaths.commandsDest, 'board-setup.md'),
+    );
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
       join(defaultSources.commandsDir, 'dev.md'),
       join(defaultPaths.commandsDest, 'dev.md'),
     );
@@ -272,6 +276,10 @@ describe('runDevInstall', () => {
     const opts = buildOptions();
     runDevInstall(opts);
 
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.workflowsDir, 'board-setup.md'),
+      join(defaultPaths.workflowsDest, 'board-setup.md'),
+    );
     expect(opts.fs.copyFile).toHaveBeenCalledWith(
       join(defaultSources.workflowsDir, 'dev.md'),
       join(defaultPaths.workflowsDest, 'dev.md'),
