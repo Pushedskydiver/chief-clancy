@@ -100,7 +100,10 @@ export type RunInstallOptions = {
 // Constants
 // ---------------------------------------------------------------------------
 
-const BUNDLE_SCRIPTS = ['clancy-implement.js', 'clancy-autopilot.js'] as const;
+export const BUNDLE_SCRIPTS = [
+  'clancy-implement.js',
+  'clancy-autopilot.js',
+] as const;
 
 // ---------------------------------------------------------------------------
 // Pure functions

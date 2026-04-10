@@ -13,11 +13,7 @@ import {
   validateOptionalDirs,
 } from '~/t/installer/shared/fs-guards/index.js';
 
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
-const BUNDLE_SCRIPTS = ['clancy-implement.js', 'clancy-autopilot.js'] as const;
+import { BUNDLE_SCRIPTS } from './install.js';
 
 // ---------------------------------------------------------------------------
 // Public API
