@@ -256,9 +256,9 @@ This is a monorepo with seven packages:
 | [`@chief-clancy/scan`](./packages/scan)         | Shared codebase scanning agents and workflows (map-codebase, update-docs)  |
 | [`@chief-clancy/brief`](./packages/brief)       | Standalone brief generator — `npx @chief-clancy/brief` (no board required) |
 | [`@chief-clancy/plan`](./packages/plan)         | Standalone implementation planner — `npx @chief-clancy/plan`               |
-| [`@chief-clancy/dev`](./packages/dev)           | Standalone ticket executor — `npx @chief-clancy/dev`                       |
+| [`@chief-clancy/dev`](./packages/dev)           | Ticket executor (pre-release, not yet published)                           |
 
-Dependency direction: `core` ← `terminal` ← `chief-clancy`. Brief, plan, and dev are standalone (no core/terminal deps). Scan is a shared content package consumed by dev, brief, plan, and terminal. See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full module map.
+Dependency direction: `core` ← `dev` ← `terminal` ← `chief-clancy`. Brief and plan are standalone (no core/terminal deps). Scan is a shared content package consumed by dev, brief, plan, and terminal. See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full module map.
 
 ---
 
