@@ -97,7 +97,7 @@ const createMockFs = (files: Record<string, string> = {}) => {
       if (content === undefined) throw new Error(`ENOENT: ${src}`);
       store.set(dest, content);
     }),
-    isSymlink: vi.fn(() => false),
+    isSymlink: vi.fn((_p: string) => false),
   };
 };
 
