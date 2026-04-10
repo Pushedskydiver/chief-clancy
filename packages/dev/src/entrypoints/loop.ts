@@ -5,4 +5,3 @@
  * validate the esbuild config produces a working bundle.
  */
 console.log('clancy-dev-autopilot v0.0.0 (stub)');
-process.exit(0);
