@@ -28,7 +28,11 @@ import { resolve } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 
-import { createContext, runPipeline } from '@chief-clancy/dev';
+import {
+  createContext,
+  runPipeline,
+  sendNotification,
+} from '@chief-clancy/dev';
 
 import { buildPipelineDeps } from '../dep-factory/index.js';
 import {
@@ -39,7 +43,6 @@ import {
   makeProgressFs,
   makeQualityFs,
 } from '../implement/entrypoint.js';
-import { sendNotification } from '../notify/index.js';
 import { buildSessionReport } from '../session-report/index.js';
 import { runAutopilot } from './autopilot.js';
 

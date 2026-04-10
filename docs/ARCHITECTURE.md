@@ -79,11 +79,9 @@ chief-clancy               — CLI wrapper (npx chief-clancy)
 │   │       ├── runner/              — execution engine
 │   │       │   ├── autopilot/       — AFK loop runner
 │   │       │   ├── implement/       — single-ticket runner
-│   │       │   ├── cli-bridge/      — Claude CLI invocation
 │   │       │   ├── dep-factory/     — dependency injection wiring
 │   │       │   ├── prompt-builder/  — prompt generation for Claude sessions
-│   │       │   ├── session-report/  — AFK session summary
-│   │       │   └── notify/          — desktop notifications
+│   │       │   └── session-report/  — AFK session summary
 │   │       ├── hooks/               — CJS hook bundles (esbuild)
 │   │       │   ├── clancy-credential-guard/  — PreToolUse: blocks credential writes
 │   │       │   ├── clancy-branch-guard/      — PreToolUse: blocks force push + destructive resets

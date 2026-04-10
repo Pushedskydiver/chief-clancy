@@ -40,12 +40,9 @@ export {
 } from './shared/ansi/index.js';
 
 export { runAutopilot } from './runner/autopilot/index.js';
-export {
-  invokeClaudePrint,
-  invokeClaudeSession,
-} from './runner/cli-bridge/index.js';
+export { invokeClaudePrint, invokeClaudeSession } from '@chief-clancy/dev';
 export { buildPipelineDeps } from './runner/dep-factory/index.js';
-export { sendNotification } from './runner/notify/index.js';
+export { sendNotification } from '@chief-clancy/dev';
 export { runImplement } from './runner/implement/index.js';
 export {
   buildPrompt,

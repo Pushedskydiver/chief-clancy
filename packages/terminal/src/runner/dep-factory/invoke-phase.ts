@@ -5,7 +5,8 @@
  */
 import type { RunContext, SpawnSyncFn } from '@chief-clancy/dev';
 
-import { invokeClaudeSession } from '../cli-bridge/index.js';
+import { invokeClaudeSession } from '@chief-clancy/dev';
+
 import { buildPrompt, buildReworkPrompt } from '../prompt-builder/index.js';
 
 /**
