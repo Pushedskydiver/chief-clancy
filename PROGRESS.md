@@ -2,25 +2,30 @@
 
 Living state document for the Clancy monorepo. Records the current state, the phase ledger, and the next decision. Session-by-session detail lives in git history (each phase's PRs are tagged + commit messages reference them).
 
-## Current state (2026-04-10)
+## Current state (2026-04-11)
 
-**PR 8b (#239) merged.** Phase E: dev package has installer, entrypoints, esbuild bundles, three-state preflight, `/clancy:dev` + `/clancy:board-setup` slash commands. Bundles go to `.clancy/` (matching terminal). Next: scan extraction (PRs S1–S7), then PR 8c (single-ticket executor).
+**Scan extraction complete.** New `@chief-clancy/scan` package extracted and consumed by all four packages (dev, brief, plan, terminal). Single source of truth for 5 scanning agents + map-codebase/update-docs commands/workflows. Next: PR 8c (single-ticket executor).
 
 **Published versions:**
 
 | Package                  | Version |
 | ------------------------ | ------- |
 | `@chief-clancy/core`     | 0.1.0   |
-| `@chief-clancy/terminal` | 0.1.7   |
-| `@chief-clancy/brief`    | 0.3.0   |
-| `@chief-clancy/plan`     | 0.5.0   |
-| `chief-clancy` (wrapper) | 0.9.15  |
+| `@chief-clancy/terminal` | 0.1.8   |
+| `@chief-clancy/brief`    | 0.3.1   |
+| `@chief-clancy/plan`     | 0.5.1   |
+| `@chief-clancy/scan`     | 0.2.0   |
+| `chief-clancy` (wrapper) | 0.9.16  |
 
-**Test counts:** 872 core, 783 terminal, 820 dev, 73 brief, 264 plan = **2812 total**.
+**Test counts:** 872 core, 791 terminal, 826 dev, 77 brief, 270 plan = **2836 total**.
 
-**Last shipped:** Phase E PRs 8a (#238) + 8b (#239) in Session 66.
+**Last shipped:** Scan extraction (S0–S5, #240–#245) + publish readiness (#246) + README (#248) in Session 67.
 
-## Phase E — completed PRs (Sessions 60–66)
+## Phase E — completed PRs (Sessions 60–67)
+
+### Scan extraction S0–S5 (#240–#245) + publish (#246) + README (#248) (Session 67)
+
+Extracted `@chief-clancy/scan` package — 5 scanning agents (tech, arch, quality, design, concerns) + map-codebase/update-docs commands/workflows. S0: made .clancy/docs/ references conditional. S1: scaffolded scan package. S2–S4: wired scan into dev, brief, plan installers. S5: wired into terminal + removed duplicate files (atomic swap). Publish readiness PR flipped scan to public. README PR added scan references across all package READMEs. DA reviews caught: symlink check gaps (3 packages), missing mkdir(agentsDest), duplicated types/constants — all fixed. Copilot caught: pnpm lockfile coverage, dangling scaffold.md ref, private:true publishing concern, dev dependency direction — all addressed. 9 PRs total.
 
 ### PR 8b (#239) — /clancy:dev + /clancy:board-setup + installer overhaul (Session 66)
 
