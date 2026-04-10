@@ -24,6 +24,7 @@ import { createContext, formatDuration } from '@chief-clancy/dev';
 
 import { dim, green, red } from '../../shared/ansi/index.js';
 import { buildPipelineDeps } from '../dep-factory/index.js';
+import { buildPrompt, buildReworkPrompt } from '../prompt-builder/index.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -120,6 +121,8 @@ export async function runImplement(opts: ImplementOpts): Promise<void> {
     qualityFs: opts.qualityFs,
     spawn: opts.spawn,
     fetch: opts.fetch,
+    buildPrompt,
+    buildReworkPrompt,
   });
 
   const result = await opts.runPipeline(ctx, deps);

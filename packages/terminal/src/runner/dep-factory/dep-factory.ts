@@ -18,6 +18,7 @@ import type {
   AppendFn,
   CostFs,
   FetchFn,
+  InvokePhaseDeps,
   LockFs,
   PipelineDeps,
   ProgressEntry,
@@ -74,7 +75,6 @@ import {
   writeLock,
 } from '@chief-clancy/dev';
 
-import { buildPrompt, buildReworkPrompt } from '../prompt-builder/index.js';
 import { wireDeliver } from './deliver-phase.js';
 
 /** Options for building the pipeline dependency object. */
@@ -88,6 +88,8 @@ type DepFactoryOpts = {
   readonly qualityFs: QualityFs;
   readonly spawn: SpawnSyncFn;
   readonly fetch: FetchFn;
+  readonly buildPrompt: InvokePhaseDeps['buildPrompt'];
+  readonly buildReworkPrompt: InvokePhaseDeps['buildReworkPrompt'];
 };
 
 function makeAppendProgress(
@@ -299,7 +301,11 @@ function wireGitAndInvoke(opts: DepFactoryOpts) {
           ctx.board!.transitionTicket(ticket, status),
       }),
 
-    invoke: makeInvokePhase({ spawn, buildPrompt, buildReworkPrompt }),
+    invoke: makeInvokePhase({
+      spawn,
+      buildPrompt: opts.buildPrompt,
+      buildReworkPrompt: opts.buildReworkPrompt,
+    }),
   };
 }
 

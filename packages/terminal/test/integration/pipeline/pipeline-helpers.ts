@@ -31,6 +31,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { buildPipelineDeps } from '~/t/runner/dep-factory/dep-factory.js';
+import {
+  buildPrompt,
+  buildReworkPrompt,
+} from '~/t/runner/prompt-builder/index.js';
 
 import { createContext, runPipeline } from '@chief-clancy/dev';
 
@@ -231,6 +235,8 @@ export function setupPipeline(opts: SetupOpts): PipelineSetup {
     qualityFs: fs.qualityFs,
     spawn: sim.spawn,
     fetch: opts.fetcher,
+    buildPrompt,
+    buildReworkPrompt,
   });
 
   const run = (argv: readonly string[] = []) => {
