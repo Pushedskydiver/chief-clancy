@@ -160,6 +160,7 @@ type CopyFilesOptions = {
 /** Copy a list of files from src dir to dest dir with symlink protection. */
 const copyFiles = (options: CopyFilesOptions): void => {
   const { files, srcDir, destDir, fs } = options;
+  rejectSymlink(destDir, fs.isSymlink);
   fs.mkdir(destDir);
 
   files.forEach((file) => {
@@ -194,8 +195,8 @@ const inlineWorkflow = (
       WORKFLOW_REF,
       (match, fileName: string) => {
         const wfPath = join(workflowsDest, fileName);
-        if (!fs.exists(wfPath)) return match;
         rejectSymlink(wfPath, fs.isSymlink);
+        if (!fs.exists(wfPath)) return match;
 
         return fs.readFile(wfPath);
       },
