@@ -203,7 +203,10 @@ async function main() {
   // ESM package.json — required for `node .clancy/clancy-dev.js` to work
   const pkgJsonPath = join(clancyProjectDir, 'package.json');
   rejectSymlink(pkgJsonPath);
-  writeFileSync(pkgJsonPath, '{"type":"module"}\n');
+  writeFileSync(
+    pkgJsonPath,
+    JSON.stringify({ type: 'module' }, null, 2) + '\n',
+  );
 
   // Write version marker
   const versionPath = join(clancyProjectDir, 'VERSION.dev');

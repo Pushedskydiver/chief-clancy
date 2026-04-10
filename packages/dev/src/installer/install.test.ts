@@ -194,7 +194,7 @@ describe('runDevInstall', () => {
 
     expect(opts.fs.writeFile).toHaveBeenCalledWith(
       join(defaultPaths.clancyProjectDir, 'package.json'),
-      '{"type":"module"}\n',
+      JSON.stringify({ type: 'module' }, null, 2) + '\n',
     );
   });
 
@@ -279,10 +279,16 @@ describe('runDevInstall', () => {
     const opts = buildOptions({ mode: 'global' });
     runDevInstall(opts);
 
-    expect(opts.fs.writeFile).toHaveBeenCalledWith(
-      join(defaultPaths.commandsDest, 'dev.md'),
-      expect.stringContaining('# Clancy Dev Workflow'),
+    const writeCall = opts.fs.writeFile.mock.calls.find(
+      ([path]) => path === join(defaultPaths.commandsDest, 'dev.md'),
     );
+
+    expect(writeCall).toBeDefined();
+
+    const content = writeCall![1] as string;
+
+    expect(content).toContain('# Clancy Dev Workflow');
+    expect(content).not.toContain('@.claude/clancy/workflows/dev.md');
   });
 
   it('does not inline workflow content in local mode', () => {

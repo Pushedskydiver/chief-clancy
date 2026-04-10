@@ -193,9 +193,9 @@ const inlineWorkflow = (
 /**
  * Run the dev installation pipeline.
  *
- * Copies bundle files to the bundles destination, creates hook
- * directories, writes a VERSION.dev marker, and returns the
- * detected installation state.
+ * Copies commands, workflows, and bundles to their destinations,
+ * writes an ESM package.json and VERSION.dev marker to `.clancy/`,
+ * and returns the detected installation state.
  *
  * @param options - All dependencies and configuration.
  * @returns The detected installation state after install completes.
@@ -231,7 +231,7 @@ export const runDevInstall = (
   // Idempotent: same content as terminal's setupProjectRuntime writes.
   const pkgJsonPath = join(paths.clancyProjectDir, 'package.json');
   rejectSymlink(pkgJsonPath, fs.isSymlink);
-  fs.writeFile(pkgJsonPath, '{"type":"module"}\n');
+  fs.writeFile(pkgJsonPath, JSON.stringify({ type: 'module' }, null, 2) + '\n');
 
   const versionPath = join(paths.clancyProjectDir, 'VERSION.dev');
   rejectSymlink(versionPath, fs.isSymlink);
