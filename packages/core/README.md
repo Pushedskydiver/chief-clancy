@@ -1,6 +1,6 @@
 # @chief-clancy/core
 
-Board integrations, pipeline phases, ticket lifecycle modules, schemas, and shared utilities for [Clancy](https://github.com/Pushedskydiver/chief-clancy).
+Board integrations, schemas, types, and shared utilities for [Clancy](https://github.com/Pushedskydiver/chief-clancy).
 
 [![npm](https://img.shields.io/npm/v/@chief-clancy/core?style=for-the-badge&color=cb3837)](https://www.npmjs.com/package/@chief-clancy/core) [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](../../LICENSE)
 
@@ -20,16 +20,6 @@ Unified `Board` type abstraction with implementations for 6 platforms:
 - **Azure DevOps** — REST API, WIQL queries, work item management
 
 All boards implement the same interface: `ping`, `validateInputs`, `fetchTicket`, `fetchTickets`, `fetchBlockerStatus`, `fetchChildrenStatus`, `transitionTicket`, `ensureLabel`, `addLabel`, `removeLabel`, `sharedEnv`.
-
-### Pipeline phases
-
-The phase orchestrator runs a sequence of composable phases that take a ticket from fetch to delivery:
-
-`lock-check` → `preflight` → `epic-completion` → `pr-retry` → `rework-detection` → `ticket-fetch` → `dry-run` → `feasibility` → `branch-setup` → `transition` → `deliver` → `cost` → `cleanup`
-
-### Lifecycle modules
-
-Re-exported from `@chief-clancy/dev` for backward compatibility. The implementations live in the dev package; core provides pass-through re-exports.
 
 ### Schemas
 
