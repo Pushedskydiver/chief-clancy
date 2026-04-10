@@ -106,7 +106,7 @@ Community can add boards — see [CONTRIBUTING.md](./CONTRIBUTING.md).
 npx chief-clancy
 ```
 
-You'll be asked: global install (`~/.claude`) or local (`./.claude`). Either works. Global makes commands available in all projects.
+You'll be asked: global install (`~/.claude`) or local (`./.claude`). Either works. Global makes commands available in all projects. Runtime bundles and project state always go to `.clancy/` at project root — see [Two Directory Trees](docs/ARCHITECTURE.md#two-directory-trees) for the full layout.
 
 **Prerequisites:**
 
