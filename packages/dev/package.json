@@ -29,6 +29,9 @@
     "developer-tools"
   ],
   "type": "module",
+  "bin": {
+    "clancy-dev": "./bin/dev.js"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -36,7 +39,8 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "bin"
   ],
   "scripts": {
     "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc --project tsconfig.build.json && tsc-alias --project tsconfig.build.json",
