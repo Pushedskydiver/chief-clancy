@@ -1,11 +1,10 @@
-import type { RunContext } from '@chief-clancy/core';
+import type { RunContext } from '@chief-clancy/dev';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { wireDeliver } from './deliver-phase.js';
 
 vi.mock('@chief-clancy/core', () => ({
-  deliverPhase: vi.fn((_ctx: unknown, deps: unknown) => deps),
   detectRemote: vi.fn(() => ({
     owner: 'org',
     repo: 'repo',
@@ -14,6 +13,7 @@ vi.mock('@chief-clancy/core', () => ({
 }));
 
 vi.mock('@chief-clancy/dev', () => ({
+  deliverPhase: vi.fn((_ctx: unknown, deps: unknown) => deps),
   deliverViaPullRequest: vi.fn(),
   recordDelivery: vi.fn(),
   recordRework: vi.fn(),

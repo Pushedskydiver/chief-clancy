@@ -23,7 +23,7 @@ import {
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { runPipeline } from '@chief-clancy/core';
+import { runPipeline } from '@chief-clancy/dev';
 
 import { runImplement } from './implement.js';
 

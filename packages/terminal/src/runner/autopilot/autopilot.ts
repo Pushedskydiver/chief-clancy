@@ -6,7 +6,7 @@
  * optionally sends a webhook notification when the loop ends.
  */
 import type { ConsoleLike } from '../shared/types.js';
-import type { PipelineResult } from '@chief-clancy/core';
+import type { PipelineResult } from '@chief-clancy/dev';
 
 import { formatDuration } from '@chief-clancy/dev';
 

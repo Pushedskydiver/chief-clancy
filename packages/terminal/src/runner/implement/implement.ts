@@ -7,23 +7,19 @@
  * conditions by parsing stdout, not exit codes.
  */
 import type { ConsoleLike, SpawnSyncFn } from '../shared/types.js';
-import type {
-  EnvFileSystem,
-  ExecGit,
-  PipelineDeps,
-  PipelineResult,
-  RunContext,
-} from '@chief-clancy/core';
+import type { EnvFileSystem, ExecGit } from '@chief-clancy/core';
 import type {
   CostFs,
   FetchFn,
   LockFs,
+  PipelineDeps,
+  PipelineResult,
   ProgressFs,
   QualityFs,
+  RunContext,
 } from '@chief-clancy/dev';
 
-import { createContext } from '@chief-clancy/core';
-import { formatDuration } from '@chief-clancy/dev';
+import { createContext, formatDuration } from '@chief-clancy/dev';
 
 import { dim, green, red } from '../../shared/ansi/index.js';
 import { buildPipelineDeps } from '../dep-factory/index.js';
