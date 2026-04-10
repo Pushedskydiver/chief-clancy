@@ -203,7 +203,9 @@ describe('buildPrompt', () => {
     expect(prompt).toContain(
       'If .clancy/docs/ does not exist, work with what you find in the codebase directly.',
     );
-    expect(prompt).toContain('Follow the conventions in GIT.md exactly');
+    expect(prompt).toContain(
+      'If .clancy/docs/GIT.md exists, follow its conventions exactly.',
+    );
   });
 
   it('includes TDD instructions when tdd is true', () => {
@@ -349,7 +351,9 @@ describe('buildReworkPrompt', () => {
     expect(prompt).toContain(
       'If .clancy/docs/ does not exist, work with what you find in the codebase directly.',
     );
-    expect(prompt).toContain('Follow the conventions in GIT.md exactly');
+    expect(prompt).toContain(
+      'If .clancy/docs/GIT.md exists, follow its conventions exactly.',
+    );
   });
 
   it('includes focus instruction', () => {

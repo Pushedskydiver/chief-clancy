@@ -109,9 +109,9 @@ If the ${ticketWord} IS implementable, continue:${input.tdd ? TDD_BLOCK : ''}
 1. If the directory .clancy/docs/ exists, read: STACK.md, ARCHITECTURE.md, CONVENTIONS.md, GIT.md, DEFINITION-OF-DONE.md, CONCERNS.md
    Also read if relevant to this ticket: INTEGRATIONS.md (external APIs/services/auth), TESTING.md (tests/specs/coverage), DESIGN-SYSTEM.md (UI/components/styles), ACCESSIBILITY.md (accessibility/ARIA/WCAG)
    If .clancy/docs/ does not exist, work with what you find in the codebase directly.
-2. Follow the conventions in GIT.md exactly
+2. If .clancy/docs/GIT.md exists, follow its conventions exactly. Otherwise, follow the repository's existing git conventions.
 3. Implement the ${ticketWord} fully
-4. Commit your work following the conventions in GIT.md
+4. Commit your work following GIT.md if available; otherwise match the existing commit style in the repository history.
 5. When done, confirm you are finished.`;
 }
 
@@ -158,8 +158,8 @@ Steps:
 1. If the directory .clancy/docs/ exists, read: STACK.md, ARCHITECTURE.md, CONVENTIONS.md, GIT.md, DEFINITION-OF-DONE.md, CONCERNS.md
    Also read if relevant to this ticket: INTEGRATIONS.md (external APIs/services/auth), TESTING.md (tests/specs/coverage), DESIGN-SYSTEM.md (UI/components/styles), ACCESSIBILITY.md (accessibility/ARIA/WCAG)
    If .clancy/docs/ does not exist, work with what you find in the codebase directly.
-2. Follow the conventions in GIT.md exactly
+2. If .clancy/docs/GIT.md exists, follow its conventions exactly. Otherwise, follow the repository's existing git conventions.
 3. Fix the issues identified in the reviewer feedback
-4. Commit your work following the conventions in GIT.md
+4. Commit your work following GIT.md if available; otherwise match the existing commit style in the repository history.
 5. When done, confirm you are finished.`;
 }
