@@ -188,7 +188,7 @@ describe('buildPrompt', () => {
     );
   });
 
-  it('includes doc reading instructions', () => {
+  it('includes conditional doc reading instructions', () => {
     const prompt = buildPrompt({
       provider: 'linear',
       key: 'ENG-1',
@@ -197,7 +197,12 @@ describe('buildPrompt', () => {
       parentInfo: 'none',
     });
 
-    expect(prompt).toContain('STACK.md, ARCHITECTURE.md, CONVENTIONS.md');
+    expect(prompt).toContain(
+      'If the directory .clancy/docs/ exists, read: STACK.md, ARCHITECTURE.md, CONVENTIONS.md',
+    );
+    expect(prompt).toContain(
+      'If .clancy/docs/ does not exist, work with what you find in the codebase directly.',
+    );
     expect(prompt).toContain('Follow the conventions in GIT.md exactly');
   });
 
@@ -335,10 +340,15 @@ describe('buildReworkPrompt', () => {
     expect(prompt).not.toContain('## Previous Implementation');
   });
 
-  it('includes doc reading instructions', () => {
+  it('includes conditional doc reading instructions', () => {
     const prompt = buildReworkPrompt(baseInput);
 
-    expect(prompt).toContain('STACK.md, ARCHITECTURE.md, CONVENTIONS.md');
+    expect(prompt).toContain(
+      'If the directory .clancy/docs/ exists, read: STACK.md, ARCHITECTURE.md, CONVENTIONS.md',
+    );
+    expect(prompt).toContain(
+      'If .clancy/docs/ does not exist, work with what you find in the codebase directly.',
+    );
     expect(prompt).toContain('Follow the conventions in GIT.md exactly');
   });
 

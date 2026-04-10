@@ -18,7 +18,7 @@ Then continue normally. If the file is missing or unreadable, continue silently.
 
 ### Docs
 
-Before every run, read these core docs from `.clancy/docs/`:
+If the directory `.clancy/docs/` exists, read these core docs before every run:
 
 - STACK.md — tech stack and dependencies
 - ARCHITECTURE.md — system design and data flow
@@ -33,6 +33,8 @@ Also read these if relevant to the ticket:
 - TESTING.md — if the ticket involves tests, specs, or coverage requirements
 - DESIGN-SYSTEM.md — if the ticket touches UI, components, styles, or visual design
 - ACCESSIBILITY.md — if the ticket touches accessibility, ARIA, or WCAG requirements
+
+If `.clancy/docs/` does not exist, work with what you find in the codebase directly.
 
 ### Executability check
 

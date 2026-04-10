@@ -106,8 +106,9 @@ If you must SKIP this ${ticketWord}:
 4. Stop — no branches, no file changes, no git operations.
 
 If the ${ticketWord} IS implementable, continue:${input.tdd ? TDD_BLOCK : ''}
-1. Read core docs in .clancy/docs/: STACK.md, ARCHITECTURE.md, CONVENTIONS.md, GIT.md, DEFINITION-OF-DONE.md, CONCERNS.md
+1. If the directory .clancy/docs/ exists, read: STACK.md, ARCHITECTURE.md, CONVENTIONS.md, GIT.md, DEFINITION-OF-DONE.md, CONCERNS.md
    Also read if relevant to this ticket: INTEGRATIONS.md (external APIs/services/auth), TESTING.md (tests/specs/coverage), DESIGN-SYSTEM.md (UI/components/styles), ACCESSIBILITY.md (accessibility/ARIA/WCAG)
+   If .clancy/docs/ does not exist, work with what you find in the codebase directly.
 2. Follow the conventions in GIT.md exactly
 3. Implement the ${ticketWord} fully
 4. Commit your work following the conventions in GIT.md
@@ -154,8 +155,9 @@ ${feedbackSection}${previousSection}
 Address the specific feedback above. Don't re-implement unrelated areas. Focus only on what was flagged.${input.tdd ? TDD_BLOCK : ''}
 
 Steps:
-1. Read core docs in .clancy/docs/: STACK.md, ARCHITECTURE.md, CONVENTIONS.md, GIT.md, DEFINITION-OF-DONE.md, CONCERNS.md
+1. If the directory .clancy/docs/ exists, read: STACK.md, ARCHITECTURE.md, CONVENTIONS.md, GIT.md, DEFINITION-OF-DONE.md, CONCERNS.md
    Also read if relevant to this ticket: INTEGRATIONS.md (external APIs/services/auth), TESTING.md (tests/specs/coverage), DESIGN-SYSTEM.md (UI/components/styles), ACCESSIBILITY.md (accessibility/ARIA/WCAG)
+   If .clancy/docs/ does not exist, work with what you find in the codebase directly.
 2. Follow the conventions in GIT.md exactly
 3. Fix the issues identified in the reviewer feedback
 4. Commit your work following the conventions in GIT.md
