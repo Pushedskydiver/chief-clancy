@@ -26,6 +26,9 @@ type BriefInstallSources = {
   readonly commandsDir: string;
   readonly workflowsDir: string;
   readonly agentsDir: string;
+  readonly scanAgentsDir: string;
+  readonly scanCommandsDir: string;
+  readonly scanWorkflowsDir: string;
 };
 
 /**
@@ -72,6 +75,21 @@ const WORKFLOW_FILES = [
 
 /** Agent files shipped with the brief package. */
 const AGENT_FILES = ['devils-advocate.md'] as const;
+
+/** Scan agent files from @chief-clancy/scan. */
+const SCAN_AGENT_FILES = [
+  'arch-agent.md',
+  'concerns-agent.md',
+  'design-agent.md',
+  'quality-agent.md',
+  'tech-agent.md',
+] as const;
+
+/** Scan command files from @chief-clancy/scan. */
+const SCAN_COMMAND_FILES = ['map-codebase.md', 'update-docs.md'] as const;
+
+/** Scan workflow files from @chief-clancy/scan. */
+const SCAN_WORKFLOW_FILES = ['map-codebase.md', 'update-docs.md'] as const;
 
 /** Matches `@.claude/clancy/workflows/<filename>.md` on its own line. */
 const WORKFLOW_REF = /^@\.claude\/clancy\/workflows\/([^/\\]+\.md)\r?$/gm;
@@ -169,15 +187,17 @@ const inlineWorkflow = (
   workflowsDest: string,
   fs: BriefInstallerFs,
 ): void => {
-  COMMAND_FILES.forEach((file) => {
+  [...COMMAND_FILES, ...SCAN_COMMAND_FILES].forEach((file) => {
     const cmdPath = join(commandsDest, file);
     const content = fs.readFile(cmdPath);
     const resolved = content.replace(
       WORKFLOW_REF,
       (match, fileName: string) => {
         const wfPath = join(workflowsDest, fileName);
+        if (!fs.exists(wfPath)) return match;
+        rejectSymlink(wfPath, fs.isSymlink);
 
-        return fs.exists(wfPath) ? fs.readFile(wfPath) : match;
+        return fs.readFile(wfPath);
       },
     );
 
@@ -220,6 +240,24 @@ export const runBriefInstall = (options: RunBriefInstallOptions): void => {
     files: AGENT_FILES,
     srcDir: sources.agentsDir,
     destDir: paths.agentsDest,
+    fs,
+  });
+  copyFiles({
+    files: SCAN_AGENT_FILES,
+    srcDir: sources.scanAgentsDir,
+    destDir: paths.agentsDest,
+    fs,
+  });
+  copyFiles({
+    files: SCAN_COMMAND_FILES,
+    srcDir: sources.scanCommandsDir,
+    destDir: paths.commandsDest,
+    fs,
+  });
+  copyFiles({
+    files: SCAN_WORKFLOW_FILES,
+    srcDir: sources.scanWorkflowsDir,
+    destDir: paths.workflowsDest,
     fs,
   });
 
