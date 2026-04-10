@@ -3,26 +3,20 @@
  *
  * Extracted from the dep factory to stay within file-length limits.
  */
+import type { FetchFn } from '../lifecycle/pr-creation/index.js';
+import type { ProgressFs } from '../lifecycle/progress/index.js';
+import type { QualityFs } from '../lifecycle/quality/quality.js';
+import type { PipelineDeps, RunContext } from '../pipeline/index.js';
+import type { AppendFn } from '../types/index.js';
 import type { ExecGit } from '@chief-clancy/core';
-import type {
-  AppendFn,
-  FetchFn,
-  PipelineDeps,
-  ProgressFs,
-  QualityFs,
-  RunContext,
-} from '@chief-clancy/dev';
 
 import { detectRemote } from '@chief-clancy/core';
-import {
-  deliverPhase,
-  deliverViaPullRequest,
-  postReworkActions,
-  recordDelivery,
-  recordRework,
-  resolvePlatformHandlers,
-} from '@chief-clancy/dev';
 
+import { deliverViaPullRequest } from '../lifecycle/deliver-ticket/deliver-ticket.js';
+import { recordDelivery, recordRework } from '../lifecycle/quality/quality.js';
+import { resolvePlatformHandlers } from '../lifecycle/rework/rework-handlers.js';
+import { postReworkActions } from '../lifecycle/rework/rework.js';
+import { deliverPhase } from '../pipeline/index.js';
 import { resolveBuildLabel } from './dep-factory.js';
 
 type DeliverOpts = {

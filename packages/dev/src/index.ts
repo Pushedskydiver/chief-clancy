@@ -93,6 +93,10 @@ export { sendNotification } from './notify/index.js';
 
 export type { InvokePhaseDeps } from './dep-factory/invoke-phase.js';
 export { makeInvokePhase } from './dep-factory/invoke-phase.js';
+export {
+  buildPipelineDeps,
+  resolveBuildLabel,
+} from './dep-factory/dep-factory.js';
 
 // ─── Pipeline re-exports ──────────────────────────────────────────────────
 

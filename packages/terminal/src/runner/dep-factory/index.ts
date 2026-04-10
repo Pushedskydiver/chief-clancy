@@ -1,1 +1,1 @@
-export { buildPipelineDeps } from './dep-factory.js';
+export { buildPipelineDeps } from '@chief-clancy/dev';

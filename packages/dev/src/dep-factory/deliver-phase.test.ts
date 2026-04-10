@@ -1,4 +1,4 @@
-import type { RunContext } from '@chief-clancy/dev';
+import type { RunContext } from '../pipeline/index.js';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -12,13 +12,25 @@ vi.mock('@chief-clancy/core', () => ({
   })),
 }));
 
-vi.mock('@chief-clancy/dev', () => ({
+vi.mock('../pipeline/index.js', () => ({
   deliverPhase: vi.fn((_ctx: unknown, deps: unknown) => deps),
+}));
+
+vi.mock('../lifecycle/deliver-ticket/deliver-ticket.js', () => ({
   deliverViaPullRequest: vi.fn(),
+}));
+
+vi.mock('../lifecycle/quality/quality.js', () => ({
   recordDelivery: vi.fn(),
   recordRework: vi.fn(),
-  resolvePlatformHandlers: vi.fn(() => undefined),
+}));
+
+vi.mock('../lifecycle/rework/rework.js', () => ({
   postReworkActions: vi.fn(),
+}));
+
+vi.mock('../lifecycle/rework/rework-handlers.js', () => ({
+  resolvePlatformHandlers: vi.fn(() => undefined),
 }));
 
 type DeliverOpts = Parameters<typeof wireDeliver>[0];
@@ -73,12 +85,12 @@ describe('wireDeliver', () => {
   });
 
   it('wires deliverViaPullRequest with exec, fetchFn, and projectRoot', async () => {
-    const opts = createOpts();
-    const result = wireDeliver(opts, vi.fn());
+    const { deliverViaPullRequest } =
+      await import('../lifecycle/deliver-ticket/deliver-ticket.js');
+    const result = wireDeliver(createOpts(), vi.fn());
     const deps = await result.deliver(createCtx());
 
     // Call the wired function to verify it delegates
-    const { deliverViaPullRequest } = await import('@chief-clancy/dev');
     (
       deps as unknown as Record<string, (...args: unknown[]) => unknown>
     ).deliverViaPullRequest({ base: 'main' });
@@ -92,6 +104,7 @@ describe('wireDeliver', () => {
   });
 
   it('recordDelivery calls core recordDelivery with ticket key', async () => {
+    const { recordDelivery } = await import('../lifecycle/quality/quality.js');
     const result = wireDeliver(createOpts(), vi.fn());
     const deps = await result.deliver(createCtx());
 
@@ -99,7 +112,6 @@ describe('wireDeliver', () => {
       deps as unknown as Record<string, (...args: unknown[]) => unknown>
     ).recordDelivery();
 
-    const { recordDelivery } = await import('@chief-clancy/dev');
     expect(recordDelivery).toHaveBeenCalledWith(
       expect.anything(),
       '/tmp/test',
@@ -108,6 +120,7 @@ describe('wireDeliver', () => {
   });
 
   it('recordRework calls core recordRework with ticket key', async () => {
+    const { recordRework } = await import('../lifecycle/quality/quality.js');
     const result = wireDeliver(createOpts(), vi.fn());
     const deps = await result.deliver(createCtx());
 
@@ -115,7 +128,6 @@ describe('wireDeliver', () => {
       deps as unknown as Record<string, (...args: unknown[]) => unknown>
     ).recordRework();
 
-    const { recordRework } = await import('@chief-clancy/dev');
     expect(recordRework).toHaveBeenCalledWith(
       expect.anything(),
       '/tmp/test',
@@ -124,6 +136,7 @@ describe('wireDeliver', () => {
   });
 
   it('postReworkActions returns early when no platform handlers', async () => {
+    const { postReworkActions } = await import('../lifecycle/rework/rework.js');
     const result = wireDeliver(createOpts(), vi.fn());
     const deps = await result.deliver(createCtx());
 
@@ -131,13 +144,13 @@ describe('wireDeliver', () => {
       deps as unknown as Record<string, (...args: unknown[]) => unknown>
     ).postReworkActions({});
 
-    const { postReworkActions } = await import('@chief-clancy/dev');
     expect(postReworkActions).not.toHaveBeenCalled();
   });
 
   it('postReworkActions delegates when platform handlers are resolved', async () => {
-    const { resolvePlatformHandlers, postReworkActions } =
-      await import('@chief-clancy/dev');
+    const { resolvePlatformHandlers } =
+      await import('../lifecycle/rework/rework-handlers.js');
+    const { postReworkActions } = await import('../lifecycle/rework/rework.js');
     const mockHandlers = { createPr: vi.fn() };
     vi.mocked(resolvePlatformHandlers).mockReturnValueOnce(
       mockHandlers as never,
