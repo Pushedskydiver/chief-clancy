@@ -132,7 +132,7 @@ Both packages use the same `.clancy/.env` and `.clancy/clancy-implement.js` env-
 
 ## Phase E — `@chief-clancy/dev` extraction decisions (locked 2026-04-10)
 
-Phase E lifts `packages/core/src/dev/` (lifecycle + pipeline, ~7,261 LOC of non-test source across 19 lifecycle modules and 16 pipeline phases) into a new standalone package `@chief-clancy/dev`, then layers an autonomous "Ralph Wiggum" execution surface on top of it. The decisions below were locked through 3 rounds of research and 3 rounds of Devil's Advocate review. They are the source of truth for whoever implements Phase E and any future phase that depends on dev.
+Phase E lifts `packages/core/src/dev/` (lifecycle + pipeline, ~7,261 LOC of non-test source) into a new standalone package `@chief-clancy/dev`, then layers an autonomous "Ralph Wiggum" execution surface on top of it. The decisions below were locked through 3 rounds of research and 3 rounds of Devil's Advocate review. They are the source of truth for whoever implements Phase E and any future phase that depends on dev.
 
 ### Hybrid package shape (a new third category)
 
@@ -161,7 +161,7 @@ For `/clancy:dev TICKET-123` (single-ticket interactive mode), the executor pre-
 
 **This is intentional and contractual.** The pre-seed pattern is documented as a public behaviour of the `ticketFetch` phase. Future pipeline changes that might remove the `if (!ctx.ticket)` guard must preserve the pre-seed escape hatch by some other means (or extend the Board API with a uniform `fetchTicketByKey()` and migrate the pre-seed pattern to the new method). Phase E PR 8c includes a regression test asserting `ctx.targetBranch` and `ctx.ticketBranch` are populated after `runPipeline` returns under the pre-seed path.
 
-The alternative (adding `Board.fetchTicketByKey()` across all 7 board providers in Phase E) was considered and rejected as scope creep — Cut F or later may promote to the uniform method if a real consumer demands it. Until then, pre-seed is the intentional escape hatch.
+The alternative (adding `Board.fetchTicketByKey()` across every board provider in Phase E) was considered and rejected as scope creep — Cut F or later may promote to the uniform method if a real consumer demands it. Until then, pre-seed is the intentional escape hatch.
 
 ### Readiness gate via spawn-based grading (Q5 resolution)
 
