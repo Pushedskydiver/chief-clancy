@@ -21,6 +21,7 @@ type DevInstallMode = 'global' | 'local';
 export type DevInstallPaths = {
   readonly commandsDest: string;
   readonly workflowsDest: string;
+  readonly agentsDest: string;
   /** Always `<cwd>/.clancy` — runtime bundles live at project root. */
   readonly clancyProjectDir: string;
 };
@@ -45,6 +46,9 @@ type DevInstallSources = {
   readonly commandsDir: string;
   readonly workflowsDir: string;
   readonly bundlesDir: string;
+  readonly scanAgentsDir: string;
+  readonly scanCommandsDir: string;
+  readonly scanWorkflowsDir: string;
 };
 
 /** Options for {@link runDevInstall}. */
@@ -69,6 +73,21 @@ const WORKFLOW_FILES = ['board-setup.md', 'dev.md'] as const;
 
 /** Bundle files copied into `.clancy/`. */
 const BUNDLE_FILES = ['clancy-dev.js', 'clancy-dev-autopilot.js'] as const;
+
+/** Scan agent files from @chief-clancy/scan. */
+const SCAN_AGENT_FILES = [
+  'arch-agent.md',
+  'concerns-agent.md',
+  'design-agent.md',
+  'quality-agent.md',
+  'tech-agent.md',
+] as const;
+
+/** Scan command files from @chief-clancy/scan. */
+const SCAN_COMMAND_FILES = ['map-codebase.md', 'update-docs.md'] as const;
+
+/** Scan workflow files from @chief-clancy/scan. */
+const SCAN_WORKFLOW_FILES = ['map-codebase.md', 'update-docs.md'] as const;
 
 /** Matches `@.claude/clancy/workflows/<filename>.md` on its own line. */
 const WORKFLOW_REF = /^@\.claude\/clancy\/workflows\/([^/\\]+\.md)\r?$/gm;
@@ -111,6 +130,7 @@ export const resolveDevInstallPaths = (
   return {
     commandsDest: join(baseDir, 'commands', 'clancy'),
     workflowsDest: join(baseDir, 'clancy', 'workflows'),
+    agentsDest: join(baseDir, 'clancy', 'agents'),
     clancyProjectDir: join(cwd, '.clancy'),
   };
 };
@@ -167,7 +187,7 @@ const inlineWorkflow = (
   workflowsDest: string,
   fs: DevInstallerFs,
 ): void => {
-  COMMAND_FILES.forEach((file) => {
+  [...COMMAND_FILES, ...SCAN_COMMAND_FILES].forEach((file) => {
     const cmdPath = join(commandsDest, file);
     const content = fs.readFile(cmdPath);
     const resolved = content.replace(
@@ -185,6 +205,50 @@ const inlineWorkflow = (
       rejectSymlink(cmdPath, fs.isSymlink);
       fs.writeFile(cmdPath, resolved);
     }
+  });
+};
+
+/** Copy all dev + scan content to their destinations. */
+const copyAllContent = (
+  paths: DevInstallPaths,
+  sources: DevInstallSources,
+  fs: DevInstallerFs,
+): void => {
+  copyFiles({
+    files: COMMAND_FILES,
+    srcDir: sources.commandsDir,
+    destDir: paths.commandsDest,
+    fs,
+  });
+  copyFiles({
+    files: WORKFLOW_FILES,
+    srcDir: sources.workflowsDir,
+    destDir: paths.workflowsDest,
+    fs,
+  });
+  copyFiles({
+    files: BUNDLE_FILES,
+    srcDir: sources.bundlesDir,
+    destDir: paths.clancyProjectDir,
+    fs,
+  });
+  copyFiles({
+    files: SCAN_AGENT_FILES,
+    srcDir: sources.scanAgentsDir,
+    destDir: paths.agentsDest,
+    fs,
+  });
+  copyFiles({
+    files: SCAN_COMMAND_FILES,
+    srcDir: sources.scanCommandsDir,
+    destDir: paths.commandsDest,
+    fs,
+  });
+  copyFiles({
+    files: SCAN_WORKFLOW_FILES,
+    srcDir: sources.scanWorkflowsDir,
+    destDir: paths.workflowsDest,
+    fs,
   });
 };
 
@@ -207,24 +271,8 @@ export const runDevInstall = (
 ): DevInstallState => {
   const { mode, cwd, paths, sources, version, fs } = options;
 
-  copyFiles({
-    files: COMMAND_FILES,
-    srcDir: sources.commandsDir,
-    destDir: paths.commandsDest,
-    fs,
-  });
-  copyFiles({
-    files: WORKFLOW_FILES,
-    srcDir: sources.workflowsDir,
-    destDir: paths.workflowsDest,
-    fs,
-  });
-  copyFiles({
-    files: BUNDLE_FILES,
-    srcDir: sources.bundlesDir,
-    destDir: paths.clancyProjectDir,
-    fs,
-  });
+  copyAllContent(paths, sources, fs);
+
   if (mode === 'global') {
     inlineWorkflow(paths.commandsDest, paths.workflowsDest, fs);
   }
