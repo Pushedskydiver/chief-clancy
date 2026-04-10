@@ -76,7 +76,7 @@ const ask = (label) => new Promise((resolve) => rl.question(label, resolve));
 // File lists (keep in sync with install.ts)
 // ---------------------------------------------------------------------------
 
-const BUNDLE_FILES = [];
+const BUNDLE_FILES = ['clancy-dev.js', 'clancy-dev-autopilot.js'];
 const HOOK_FILES = [];
 
 // ---------------------------------------------------------------------------
@@ -178,12 +178,11 @@ async function main() {
 
   // Success
   console.log('');
-  console.log(green('  ✓ Clancy Dev scaffolding installed successfully.'));
+  console.log(green('  ✓ Clancy Dev installed successfully.'));
   console.log('');
-  console.log(dim('  No bundles or commands installed yet.'));
-  console.log(
-    dim('  This scaffolds the directory structure for future dev entrypoints.'),
-  );
+  console.log(dim('  Bundles installed:'));
+  console.log(dim('    clancy-dev.js'));
+  console.log(dim('    clancy-dev-autopilot.js'));
   console.log('');
   console.log(
     dim('  For the full pipeline (tickets, planning, implementation):'),

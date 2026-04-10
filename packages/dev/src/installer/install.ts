@@ -1,9 +1,8 @@
 /**
  * Dev installer — self-contained module for `npx @chief-clancy/dev`.
  *
- * Scaffolds the directory structure and writes a VERSION.dev marker.
- * No bundles or commands are copied yet — file lists are populated as
- * the dev package gains entrypoints (PR 7+).
+ * Copies dev and autopilot bundles to the user's `.clancy/` directory,
+ * scaffolds the directory structure, and writes a VERSION.dev marker.
  */
 import { join } from 'node:path';
 
@@ -52,11 +51,8 @@ export type RunDevInstallOptions = {
 // Constants
 // ---------------------------------------------------------------------------
 
-/**
- * Bundle files copied into `.clancy/bundles/`.
- * Empty until PR 7 adds the esbuild config and entrypoints.
- */
-const BUNDLE_FILES: readonly string[] = [];
+/** Bundle files copied into `.clancy/bundles/`. */
+const BUNDLE_FILES = ['clancy-dev.js', 'clancy-dev-autopilot.js'] as const;
 
 /** Hook files copied into `.clancy/hooks/`. */
 const HOOK_FILES: readonly string[] = [];
@@ -149,9 +145,8 @@ const copyFiles = (options: CopyFilesOptions): void => {
 /**
  * Run the dev installation pipeline.
  *
- * Creates destination directories and writes a VERSION.dev marker.
- * Bundle and hook file lists are currently empty — they'll be populated
- * as the dev package gains entrypoints and hooks.
+ * Copies bundle files to the bundles destination, creates hook
+ * directories, and writes a VERSION.dev marker.
  *
  * @param options - All dependencies and configuration.
  */
