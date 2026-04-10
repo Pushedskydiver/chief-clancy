@@ -12,6 +12,7 @@ import {
   existsSync,
   lstatSync,
   mkdirSync,
+  readFileSync,
   writeFileSync,
 } from 'node:fs';
 import { createRequire } from 'node:module';
@@ -76,8 +77,13 @@ const ask = (label) => new Promise((resolve) => rl.question(label, resolve));
 // File lists (keep in sync with install.ts)
 // ---------------------------------------------------------------------------
 
+const COMMAND_FILES = ['dev.md'];
+const WORKFLOW_FILES = ['dev.md'];
 const BUNDLE_FILES = ['clancy-dev.js', 'clancy-dev-autopilot.js'];
 const HOOK_FILES = [];
+
+/** Matches `@.claude/clancy/workflows/<filename>.md` on its own line. */
+const WORKFLOW_REF = /^@\.claude\/clancy\/workflows\/([^/\\]+\.md)\r?$/gm;
 
 // ---------------------------------------------------------------------------
 // Installer
@@ -148,20 +154,36 @@ async function main() {
   const baseDir =
     mode === 'global' ? join(homeDir, '.claude') : join(cwd, '.claude');
 
+  const commandsDest = join(baseDir, 'commands', 'clancy');
+  const workflowsDest = join(baseDir, 'clancy', 'workflows');
   const bundlesDest = join(baseDir, 'clancy', 'bundles');
   const hooksDest = join(baseDir, 'clancy', 'hooks');
 
-  console.log(dim(`  Installing to: ${bundlesDest}`));
+  console.log(dim(`  Installing to: ${baseDir}`));
 
   // Reject symlinked destination directories
+  rejectSymlink(commandsDest);
+  rejectSymlink(workflowsDest);
   rejectSymlink(bundlesDest);
   rejectSymlink(hooksDest);
 
   // Create directories
+  mkdirSync(commandsDest, { recursive: true });
+  mkdirSync(workflowsDest, { recursive: true });
   mkdirSync(bundlesDest, { recursive: true });
   mkdirSync(hooksDest, { recursive: true });
 
-  // Copy bundle files (empty until PR 7)
+  // Copy command files (shipped from src/, not dist/)
+  COMMAND_FILES.forEach((f) =>
+    copyChecked(join(devRoot, 'src', 'commands', f), join(commandsDest, f)),
+  );
+
+  // Copy workflow files (shipped from src/, not dist/)
+  WORKFLOW_FILES.forEach((f) =>
+    copyChecked(join(devRoot, 'src', 'workflows', f), join(workflowsDest, f)),
+  );
+
+  // Copy bundle files
   BUNDLE_FILES.forEach((f) =>
     copyChecked(join(devRoot, 'dist', 'bundle', f), join(bundlesDest, f)),
   );
@@ -170,6 +192,22 @@ async function main() {
   HOOK_FILES.forEach((f) =>
     copyChecked(join(devRoot, 'dist', 'hooks', f), join(hooksDest, f)),
   );
+
+  // Inline workflow content in global mode
+  if (mode === 'global') {
+    COMMAND_FILES.forEach((f) => {
+      const cmdPath = join(commandsDest, f);
+      const content = readFileSync(cmdPath, 'utf-8');
+      const resolved = content.replace(WORKFLOW_REF, (match, fileName) => {
+        const wfPath = join(workflowsDest, fileName);
+        return existsSync(wfPath) ? readFileSync(wfPath, 'utf-8') : match;
+      });
+      if (resolved !== content) {
+        rejectSymlink(cmdPath);
+        writeFileSync(cmdPath, resolved);
+      }
+    });
+  }
 
   // Write version marker
   const versionPath = join(bundlesDest, 'VERSION.dev');
@@ -180,9 +218,8 @@ async function main() {
   console.log('');
   console.log(green('  ✓ Clancy Dev installed successfully.'));
   console.log('');
-  console.log(dim('  Bundles installed:'));
-  console.log(dim('    clancy-dev.js'));
-  console.log(dim('    clancy-dev-autopilot.js'));
+  console.log(dim('  Commands: /clancy:dev'));
+  console.log(dim('  Bundles:  clancy-dev.js, clancy-dev-autopilot.js'));
   console.log('');
   console.log(
     dim('  For the full pipeline (tickets, planning, implementation):'),

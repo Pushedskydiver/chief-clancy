@@ -19,6 +19,8 @@ type DevInstallMode = 'global' | 'local';
 
 /** All resolved destination paths for a dev installation. */
 export type DevInstallPaths = {
+  readonly commandsDest: string;
+  readonly workflowsDest: string;
   readonly bundlesDest: string;
   readonly hooksDest: string;
 };
@@ -30,6 +32,7 @@ export type DevInstallPaths = {
  */
 type DevInstallerFs = {
   readonly exists: (path: string) => boolean;
+  readonly readFile: (path: string) => string;
   readonly writeFile: (path: string, content: string) => void;
   readonly mkdir: (path: string) => void;
   readonly copyFile: (src: string, dest: string) => void;
@@ -39,12 +42,15 @@ type DevInstallerFs = {
 
 /** Source directories within the npm package. */
 type DevInstallSources = {
+  readonly commandsDir: string;
+  readonly workflowsDir: string;
   readonly bundlesDir: string;
   readonly hooksDir: string;
 };
 
 /** Options for {@link runDevInstall}. */
 export type RunDevInstallOptions = {
+  readonly mode: DevInstallMode;
   readonly cwd: string;
   readonly paths: DevInstallPaths;
   readonly sources: DevInstallSources;
@@ -56,11 +62,20 @@ export type RunDevInstallOptions = {
 // Constants
 // ---------------------------------------------------------------------------
 
+/** Command files shipped with the dev package. */
+const COMMAND_FILES = ['dev.md'] as const;
+
+/** Workflow files shipped with the dev package. */
+const WORKFLOW_FILES = ['dev.md'] as const;
+
 /** Bundle files copied into `.clancy/bundles/`. */
 const BUNDLE_FILES = ['clancy-dev.js', 'clancy-dev-autopilot.js'] as const;
 
 /** Hook files copied into `.clancy/hooks/`. */
 const HOOK_FILES: readonly string[] = [];
+
+/** Matches `@.claude/clancy/workflows/<filename>.md` on its own line. */
+const WORKFLOW_REF = /^@\.claude\/clancy\/workflows\/([^/\\]+\.md)\r?$/gm;
 
 // ---------------------------------------------------------------------------
 // Pure functions
@@ -98,6 +113,8 @@ export const resolveDevInstallPaths = (
     mode === 'global' ? join(homeDir, '.claude') : join(cwd, '.claude');
 
   return {
+    commandsDest: join(baseDir, 'commands', 'clancy'),
+    workflowsDest: join(baseDir, 'clancy', 'workflows'),
     bundlesDest: join(baseDir, 'clancy', 'bundles'),
     hooksDest: join(baseDir, 'clancy', 'hooks'),
   };
@@ -143,6 +160,37 @@ const copyFiles = (options: CopyFilesOptions): void => {
   });
 };
 
+/**
+ * Inline workflow content into command files (global mode only).
+ *
+ * Replaces `@.claude/clancy/workflows/<name>.md` references with the
+ * actual workflow content so global installs work without project-relative
+ * @-file resolution.
+ */
+const inlineWorkflow = (
+  commandsDest: string,
+  workflowsDest: string,
+  fs: DevInstallerFs,
+): void => {
+  COMMAND_FILES.forEach((file) => {
+    const cmdPath = join(commandsDest, file);
+    const content = fs.readFile(cmdPath);
+    const resolved = content.replace(
+      WORKFLOW_REF,
+      (match, fileName: string) => {
+        const wfPath = join(workflowsDest, fileName);
+
+        return fs.exists(wfPath) ? fs.readFile(wfPath) : match;
+      },
+    );
+
+    if (resolved !== content) {
+      rejectSymlink(cmdPath, fs.isSymlink);
+      fs.writeFile(cmdPath, resolved);
+    }
+  });
+};
+
 // ---------------------------------------------------------------------------
 // Main pipeline
 // ---------------------------------------------------------------------------
@@ -160,8 +208,20 @@ const copyFiles = (options: CopyFilesOptions): void => {
 export const runDevInstall = (
   options: RunDevInstallOptions,
 ): DevInstallState => {
-  const { cwd, paths, sources, version, fs } = options;
+  const { mode, cwd, paths, sources, version, fs } = options;
 
+  copyFiles({
+    files: COMMAND_FILES,
+    srcDir: sources.commandsDir,
+    destDir: paths.commandsDest,
+    fs,
+  });
+  copyFiles({
+    files: WORKFLOW_FILES,
+    srcDir: sources.workflowsDir,
+    destDir: paths.workflowsDest,
+    fs,
+  });
   copyFiles({
     files: BUNDLE_FILES,
     srcDir: sources.bundlesDir,
@@ -174,6 +234,10 @@ export const runDevInstall = (
     destDir: paths.hooksDest,
     fs,
   });
+
+  if (mode === 'global') {
+    inlineWorkflow(paths.commandsDest, paths.workflowsDest, fs);
+  }
 
   const versionPath = join(paths.bundlesDest, 'VERSION.dev');
   rejectSymlink(versionPath, fs.isSymlink);
