@@ -1,5 +1,12 @@
 # @chief-clancy/dev
 
+## 0.0.2
+
+### Patch Changes
+
+- Updated dependencies [[`a0c7145`](https://github.com/Pushedskydiver/chief-clancy/commit/a0c71458edc5a38d893ef93e1aa33f4ffea7c368)]:
+  - @chief-clancy/scan@0.2.1
+
 ## 0.0.1
 
 ### Patch Changes
