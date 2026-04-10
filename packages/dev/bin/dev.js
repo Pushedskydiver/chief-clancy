@@ -80,7 +80,6 @@ const ask = (label) => new Promise((resolve) => rl.question(label, resolve));
 const COMMAND_FILES = ['dev.md'];
 const WORKFLOW_FILES = ['dev.md'];
 const BUNDLE_FILES = ['clancy-dev.js', 'clancy-dev-autopilot.js'];
-const HOOK_FILES = [];
 
 /** Matches `@.claude/clancy/workflows/<filename>.md` on its own line. */
 const WORKFLOW_REF = /^@\.claude\/clancy\/workflows\/([^/\\]+\.md)\r?$/gm;
@@ -157,7 +156,6 @@ async function main() {
   const commandsDest = join(baseDir, 'commands', 'clancy');
   const workflowsDest = join(baseDir, 'clancy', 'workflows');
   const bundlesDest = join(baseDir, 'clancy', 'bundles');
-  const hooksDest = join(baseDir, 'clancy', 'hooks');
 
   console.log(dim(`  Installing to: ${baseDir}`));
 
@@ -165,13 +163,11 @@ async function main() {
   rejectSymlink(commandsDest);
   rejectSymlink(workflowsDest);
   rejectSymlink(bundlesDest);
-  rejectSymlink(hooksDest);
 
   // Create directories
   mkdirSync(commandsDest, { recursive: true });
   mkdirSync(workflowsDest, { recursive: true });
   mkdirSync(bundlesDest, { recursive: true });
-  mkdirSync(hooksDest, { recursive: true });
 
   // Copy command files (shipped from src/, not dist/)
   COMMAND_FILES.forEach((f) =>
@@ -186,11 +182,6 @@ async function main() {
   // Copy bundle files
   BUNDLE_FILES.forEach((f) =>
     copyChecked(join(devRoot, 'dist', 'bundle', f), join(bundlesDest, f)),
-  );
-
-  // Copy hook files (empty until hooks are extracted)
-  HOOK_FILES.forEach((f) =>
-    copyChecked(join(devRoot, 'dist', 'hooks', f), join(hooksDest, f)),
   );
 
   // Inline workflow content in global mode

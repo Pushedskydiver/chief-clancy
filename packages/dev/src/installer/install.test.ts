@@ -68,12 +68,6 @@ describe('resolveDevInstallPaths', () => {
         join(homeDir, '.claude', 'clancy', 'bundles'),
       );
     });
-
-    it('resolves hooks destination under ~/.claude', () => {
-      const paths = resolveDevInstallPaths('global', homeDir, cwd);
-
-      expect(paths.hooksDest).toBe(join(homeDir, '.claude', 'clancy', 'hooks'));
-    });
   });
 
   describe('local mode', () => {
@@ -97,12 +91,6 @@ describe('resolveDevInstallPaths', () => {
       const paths = resolveDevInstallPaths('local', homeDir, cwd);
 
       expect(paths.bundlesDest).toBe(join(cwd, '.claude', 'clancy', 'bundles'));
-    });
-
-    it('resolves hooks destination under cwd/.claude', () => {
-      const paths = resolveDevInstallPaths('local', homeDir, cwd);
-
-      expect(paths.hooksDest).toBe(join(cwd, '.claude', 'clancy', 'hooks'));
     });
   });
 });
@@ -142,14 +130,12 @@ const defaultPaths = {
   commandsDest: '/dest/commands/clancy',
   workflowsDest: '/dest/clancy/workflows',
   bundlesDest: '/dest/clancy/bundles',
-  hooksDest: '/dest/clancy/hooks',
 };
 
 const defaultSources = {
   commandsDir: '/pkg/dist/commands',
   workflowsDir: '/pkg/dist/workflows',
   bundlesDir: '/pkg/dist/bundle',
-  hooksDir: '/pkg/dist/hooks',
 };
 
 type MockFs = ReturnType<typeof createMockFs>;
@@ -192,7 +178,6 @@ describe('runDevInstall', () => {
     runDevInstall(opts);
 
     expect(opts.fs.mkdir).toHaveBeenCalledWith(defaultPaths.bundlesDest);
-    expect(opts.fs.mkdir).toHaveBeenCalledWith(defaultPaths.hooksDest);
   });
 
   it('writes VERSION.dev with the package version', () => {
@@ -217,17 +202,6 @@ describe('runDevInstall', () => {
       join(defaultSources.bundlesDir, 'clancy-dev-autopilot.js'),
       join(defaultPaths.bundlesDest, 'clancy-dev-autopilot.js'),
     );
-  });
-
-  it('does not copy hook files when hook list is empty', () => {
-    const opts = buildOptions();
-    runDevInstall(opts);
-
-    const hookCopyCalls = opts.fs.copyFile.mock.calls.filter(([, dest]) =>
-      (dest as string).startsWith(defaultPaths.hooksDest),
-    );
-
-    expect(hookCopyCalls).toHaveLength(0);
   });
 
   it('throws when a source file is missing', () => {

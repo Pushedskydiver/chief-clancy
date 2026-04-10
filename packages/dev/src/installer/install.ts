@@ -22,7 +22,6 @@ export type DevInstallPaths = {
   readonly commandsDest: string;
   readonly workflowsDest: string;
   readonly bundlesDest: string;
-  readonly hooksDest: string;
 };
 
 /**
@@ -45,7 +44,6 @@ type DevInstallSources = {
   readonly commandsDir: string;
   readonly workflowsDir: string;
   readonly bundlesDir: string;
-  readonly hooksDir: string;
 };
 
 /** Options for {@link runDevInstall}. */
@@ -70,9 +68,6 @@ const WORKFLOW_FILES = ['dev.md'] as const;
 
 /** Bundle files copied into `.clancy/bundles/`. */
 const BUNDLE_FILES = ['clancy-dev.js', 'clancy-dev-autopilot.js'] as const;
-
-/** Hook files copied into `.clancy/hooks/`. */
-const HOOK_FILES: readonly string[] = [];
 
 /** Matches `@.claude/clancy/workflows/<filename>.md` on its own line. */
 const WORKFLOW_REF = /^@\.claude\/clancy\/workflows\/([^/\\]+\.md)\r?$/gm;
@@ -116,7 +111,6 @@ export const resolveDevInstallPaths = (
     commandsDest: join(baseDir, 'commands', 'clancy'),
     workflowsDest: join(baseDir, 'clancy', 'workflows'),
     bundlesDest: join(baseDir, 'clancy', 'bundles'),
-    hooksDest: join(baseDir, 'clancy', 'hooks'),
   };
 };
 
@@ -228,13 +222,6 @@ export const runDevInstall = (
     destDir: paths.bundlesDest,
     fs,
   });
-  copyFiles({
-    files: HOOK_FILES,
-    srcDir: sources.hooksDir,
-    destDir: paths.hooksDest,
-    fs,
-  });
-
   if (mode === 'global') {
     inlineWorkflow(paths.commandsDest, paths.workflowsDest, fs);
   }
