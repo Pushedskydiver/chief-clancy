@@ -2,15 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeInvokePhase } from './invoke-phase.js';
 
-vi.mock('@chief-clancy/dev', async (importOriginal) => ({
-  ...((await importOriginal()) as Record<string, unknown>),
+vi.mock('../cli-bridge/index.js', () => ({
   invokeClaudeSession: vi.fn(() => true),
 }));
 
-vi.mock('../prompt-builder/index.js', () => ({
-  buildPrompt: vi.fn(() => 'fresh-prompt'),
-  buildReworkPrompt: vi.fn(() => 'rework-prompt'),
-}));
+const buildPrompt = vi.fn(() => 'fresh-prompt');
+const buildReworkPrompt = vi.fn(() => 'rework-prompt');
 
 function createCtx(overrides: Record<string, unknown> = {}) {
   return {
@@ -22,8 +19,8 @@ function createCtx(overrides: Record<string, unknown> = {}) {
       key: 'GH-1',
       title: 'Test ticket',
       description: 'Do the thing',
-      parentInfo: undefined,
-      blockers: [],
+      parentInfo: '',
+      blockers: '',
     },
     isRework: false,
     prFeedback: undefined,
@@ -38,11 +35,10 @@ describe('makeInvokePhase', () => {
 
   it('builds a fresh prompt and delegates to invokeClaudeSession', async () => {
     const spawn = vi.fn();
-    const invoke = makeInvokePhase(spawn);
+    const invoke = makeInvokePhase({ spawn, buildPrompt, buildReworkPrompt });
 
     const result = await invoke(createCtx());
 
-    const { buildPrompt } = await import('../prompt-builder/index.js');
     expect(buildPrompt).toHaveBeenCalledWith(
       expect.objectContaining({
         provider: 'github',
@@ -51,7 +47,7 @@ describe('makeInvokePhase', () => {
       }),
     );
 
-    const { invokeClaudeSession } = await import('@chief-clancy/dev');
+    const { invokeClaudeSession } = await import('../cli-bridge/index.js');
     expect(invokeClaudeSession).toHaveBeenCalledWith({
       prompt: 'fresh-prompt',
       model: 'opus',
@@ -62,7 +58,7 @@ describe('makeInvokePhase', () => {
 
   it('builds a rework prompt when ctx.isRework is true', async () => {
     const spawn = vi.fn();
-    const invoke = makeInvokePhase(spawn);
+    const invoke = makeInvokePhase({ spawn, buildPrompt, buildReworkPrompt });
 
     await invoke(
       createCtx({
@@ -71,7 +67,6 @@ describe('makeInvokePhase', () => {
       }),
     );
 
-    const { buildReworkPrompt } = await import('../prompt-builder/index.js');
     expect(buildReworkPrompt).toHaveBeenCalledWith(
       expect.objectContaining({
         provider: 'github',
@@ -82,11 +77,11 @@ describe('makeInvokePhase', () => {
   });
 
   it('returns ok: false when session fails', async () => {
-    const { invokeClaudeSession } = await import('@chief-clancy/dev');
+    const { invokeClaudeSession } = await import('../cli-bridge/index.js');
     vi.mocked(invokeClaudeSession).mockReturnValueOnce(false);
 
     const spawn = vi.fn();
-    const invoke = makeInvokePhase(spawn);
+    const invoke = makeInvokePhase({ spawn, buildPrompt, buildReworkPrompt });
 
     const result = await invoke(createCtx());
 
@@ -95,7 +90,7 @@ describe('makeInvokePhase', () => {
 
   it('forwards TDD flag from config', async () => {
     const spawn = vi.fn();
-    const invoke = makeInvokePhase(spawn);
+    const invoke = makeInvokePhase({ spawn, buildPrompt, buildReworkPrompt });
 
     await invoke(
       createCtx({
@@ -106,7 +101,6 @@ describe('makeInvokePhase', () => {
       }),
     );
 
-    const { buildPrompt } = await import('../prompt-builder/index.js');
     expect(buildPrompt).toHaveBeenCalledWith(
       expect.objectContaining({ tdd: true }),
     );
@@ -114,7 +108,7 @@ describe('makeInvokePhase', () => {
 
   it('defaults prFeedback to empty array for rework', async () => {
     const spawn = vi.fn();
-    const invoke = makeInvokePhase(spawn);
+    const invoke = makeInvokePhase({ spawn, buildPrompt, buildReworkPrompt });
 
     await invoke(
       createCtx({
@@ -123,7 +117,6 @@ describe('makeInvokePhase', () => {
       }),
     );
 
-    const { buildReworkPrompt } = await import('../prompt-builder/index.js');
     expect(buildReworkPrompt).toHaveBeenCalledWith(
       expect.objectContaining({ feedbackComments: [] }),
     );

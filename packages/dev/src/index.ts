@@ -89,6 +89,11 @@ export { invokeClaudePrint, invokeClaudeSession } from './cli-bridge/index.js';
 
 export { sendNotification } from './notify/index.js';
 
+// ─── Dep-factory re-exports ────────────────────────────────────────────────
+
+export type { InvokePhaseDeps } from './dep-factory/invoke-phase.js';
+export { makeInvokePhase } from './dep-factory/invoke-phase.js';
+
 // ─── Pipeline re-exports ──────────────────────────────────────────────────
 
 export { createContext, RunContext } from './pipeline/index.js';

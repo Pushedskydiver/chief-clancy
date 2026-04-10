@@ -4,7 +4,7 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 
 ## Current state (2026-04-10)
 
-**PRs #228 and #229 merged.** Phase E extraction: lifecycle + pipeline now in `@chief-clancy/dev`. Circular dep eliminated. Next: PR 3.5 or 4a.
+**PRs 3.5 (#230) and 4a (#231) merged. PR 4b (#232) open.** Phase E extraction continues: shared types, cli-bridge, notify, and invoke-phase now in `@chief-clancy/dev`. Next: merge PR 4b, then PR 4c (remaining dep-factory move).
 
 **Published versions:**
 
@@ -16,11 +16,23 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 | `@chief-clancy/plan`     | 0.5.0   |
 | `chief-clancy` (wrapper) | 0.9.15  |
 
-**Test counts:** 982 core, 838 terminal, 627 dev, 73 brief, 264 plan = **2784 total**.
+**Test counts:** 872 core, 797 terminal, 778 dev, 73 brief, 264 plan = **2784 total**.
 
-**Last shipped:** Phase E PRs 2a (#228) + 3 (#229) in Session 62.
+**Last shipped:** Phase E PRs 3.5 (#230) + 4a (#231) in Session 63. PR 4b (#232) open.
 
-## Phase E — completed PRs (Sessions 60–62)
+## Phase E — completed PRs (Sessions 60–63)
+
+### PR 3.5 (#230) — shared types split (Session 63)
+
+Split `SpawnSyncFn`, `StdioValue`, `ConsoleLike`, `AppendFn` from `terminal/runner/shared/types.ts` into `dev/src/types/{spawn,progress}.ts`. All 10 terminal consumers (8 source + 2 test) rewritten to import from `@chief-clancy/dev`. Original file and empty directory deleted (zero transition period since all migrations happened in one PR).
+
+### PR 4a (#231) — cli-bridge + notify move (Session 63)
+
+Moved `cli-bridge/` (Claude CLI invocation) and `notify/` (webhook notifications) from `terminal/runner/` to `dev/src/`. Both standalone modules with zero terminal-internal dependencies. Terminal barrel re-exports from `@chief-clancy/dev`. DA caught self-import through barrel — fixed to relative import.
+
+### PR 4b (#232) — invoke-phase move (Session 63)
+
+Refactored `makeInvokePhase` to accept prompt builders via DI (`InvokePhaseDeps`) instead of directly importing terminal's prompt-builder. Moved to `dev/src/dep-factory/`. All self-imports replaced with relative paths within dev.
 
 ### PR 2a (#228) — lifecycle move (Session 61–62)
 

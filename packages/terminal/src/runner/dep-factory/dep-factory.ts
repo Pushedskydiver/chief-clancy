@@ -60,6 +60,7 @@ import {
   findEntriesWithStatus,
   invokeClaudePrint,
   lockCheck,
+  makeInvokePhase,
   preflightPhase,
   prRetry,
   readLock,
@@ -73,8 +74,8 @@ import {
   writeLock,
 } from '@chief-clancy/dev';
 
+import { buildPrompt, buildReworkPrompt } from '../prompt-builder/index.js';
 import { wireDeliver } from './deliver-phase.js';
-import { makeInvokePhase } from './invoke-phase.js';
 
 /** Options for building the pipeline dependency object. */
 type DepFactoryOpts = {
@@ -298,7 +299,7 @@ function wireGitAndInvoke(opts: DepFactoryOpts) {
           ctx.board!.transitionTicket(ticket, status),
       }),
 
-    invoke: makeInvokePhase(spawn),
+    invoke: makeInvokePhase({ spawn, buildPrompt, buildReworkPrompt }),
   };
 }
 
