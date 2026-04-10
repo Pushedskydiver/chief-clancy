@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@chief-clancy/core": "workspace:*",
+    "@chief-clancy/scan": "workspace:*",
     "zod": "^4.3.6"
   },
   "keywords": [

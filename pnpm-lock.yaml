@@ -109,6 +109,9 @@ importers:
       '@chief-clancy/core':
         specifier: workspace:*
         version: link:../core
+      '@chief-clancy/scan':
+        specifier: workspace:*
+        version: link:../scan
       zod:
         specifier: ^4.3.6
         version: 4.3.6
