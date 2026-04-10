@@ -39,6 +39,9 @@ const require = createRequire(import.meta.url);
 const pkg = require('../package.json');
 
 const planRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+const scanRoot = join(
+  dirname(require.resolve('@chief-clancy/scan/package.json')),
+);
 
 const sources = {
   commandsDir: join(planRoot, 'src', 'commands'),
@@ -85,6 +88,15 @@ const ask = (label) => new Promise((resolve) => rl.question(label, resolve));
 
 const COMMAND_FILES = ['approve-plan.md', 'board-setup.md', 'plan.md'];
 const WORKFLOW_FILES = ['approve-plan.md', 'board-setup.md', 'plan.md'];
+const SCAN_AGENT_FILES = [
+  'arch-agent.md',
+  'concerns-agent.md',
+  'design-agent.md',
+  'quality-agent.md',
+  'tech-agent.md',
+];
+const SCAN_COMMAND_FILES = ['map-codebase.md', 'update-docs.md'];
+const SCAN_WORKFLOW_FILES = ['map-codebase.md', 'update-docs.md'];
 
 // ---------------------------------------------------------------------------
 // Installer
@@ -111,11 +123,12 @@ function copyChecked(src, dest) {
 function inlineWorkflows(commandsDest, workflowsDest) {
   const WORKFLOW_REF = /^@\.claude\/clancy\/workflows\/([^/\\]+\.md)\r?$/gm;
 
-  COMMAND_FILES.forEach((file) => {
+  [...COMMAND_FILES, ...SCAN_COMMAND_FILES].forEach((file) => {
     const cmdPath = join(commandsDest, file);
     const content = readFileSync(cmdPath, 'utf8');
     const resolved = content.replace(WORKFLOW_REF, (match, fileName) => {
       const wfPath = join(workflowsDest, fileName);
+      rejectSymlink(wfPath);
       if (!existsSync(wfPath)) return match;
       return readFileSync(wfPath, 'utf8');
     });
@@ -154,6 +167,79 @@ async function chooseMode() {
 }
 
 // ---------------------------------------------------------------------------
+// Install helpers
+// ---------------------------------------------------------------------------
+
+/** Copy all plan + scan files and write version marker. */
+function installFiles(dest, mode) {
+  const { commandsDest, workflowsDest, agentsDest } = dest;
+
+  // Plan files
+  COMMAND_FILES.forEach((f) =>
+    copyChecked(join(sources.commandsDir, f), join(commandsDest, f)),
+  );
+  WORKFLOW_FILES.forEach((f) =>
+    copyChecked(join(sources.workflowsDir, f), join(workflowsDest, f)),
+  );
+
+  // Scan files (agents, commands, workflows from @chief-clancy/scan)
+  SCAN_AGENT_FILES.forEach((f) =>
+    copyChecked(join(scanRoot, 'src', 'agents', f), join(agentsDest, f)),
+  );
+  SCAN_COMMAND_FILES.forEach((f) =>
+    copyChecked(join(scanRoot, 'src', 'commands', f), join(commandsDest, f)),
+  );
+  SCAN_WORKFLOW_FILES.forEach((f) =>
+    copyChecked(join(scanRoot, 'src', 'workflows', f), join(workflowsDest, f)),
+  );
+
+  if (mode === 'global') inlineWorkflows(commandsDest, workflowsDest);
+
+  const versionPath = join(commandsDest, 'VERSION.plan');
+  rejectSymlink(versionPath);
+  writeFileSync(versionPath, pkg.version);
+}
+
+/** Print the install success output. */
+function printSuccess() {
+  console.log('');
+  console.log(green('  ✓ Clancy Plan installed successfully.'));
+  console.log('');
+  console.log('  Commands available:');
+  console.log(
+    `      ${cyan('/clancy:plan')}           ${dim('Generate an implementation plan')}`,
+  );
+  console.log(
+    `      ${cyan('/clancy:approve-plan')}   ${dim('Approve a plan (run /clancy:plan first)')}`,
+  );
+  console.log(
+    `      ${cyan('/clancy:board-setup')}    ${dim('Configure board credentials (optional)')}`,
+  );
+  console.log(
+    `      ${cyan('/clancy:map-codebase')}   ${dim('Scan codebase and generate .clancy/docs/')}`,
+  );
+  console.log(
+    `      ${cyan('/clancy:update-docs')}    ${dim('Refresh .clancy/docs/ incrementally')}`,
+  );
+  console.log('');
+  console.log('  Next steps:');
+  console.log(`    1. Open a project in Claude Code`);
+  console.log(
+    `    2. Optional: ${cyan('/clancy:map-codebase')} ${dim('for better plans')}`,
+  );
+  console.log(`    3. Run: ${cyan('/clancy:plan TICKET-123')}`);
+  console.log('');
+  console.log(dim('  Want to plan board tickets?'));
+  console.log(dim(`    Run: ${cyan('/clancy:board-setup')}`));
+  console.log('');
+  console.log(
+    dim('  For the full pipeline (tickets, planning, implementation):'),
+  );
+  console.log(dim(`    npx chief-clancy`));
+  console.log('');
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -177,58 +263,16 @@ async function main() {
 
   const commandsDest = join(baseDir, 'commands', 'clancy');
   const workflowsDest = join(baseDir, 'clancy', 'workflows');
+  const agentsDest = join(baseDir, 'clancy', 'agents');
 
   console.log(dim(`  Installing to: ${commandsDest}`));
 
-  // Create directories
   mkdirSync(commandsDest, { recursive: true });
   mkdirSync(workflowsDest, { recursive: true });
+  mkdirSync(agentsDest, { recursive: true });
 
-  // Copy files
-  COMMAND_FILES.forEach((f) =>
-    copyChecked(join(sources.commandsDir, f), join(commandsDest, f)),
-  );
-  WORKFLOW_FILES.forEach((f) =>
-    copyChecked(join(sources.workflowsDir, f), join(workflowsDest, f)),
-  );
-
-  // Inline workflows for global mode
-  if (mode === 'global') {
-    inlineWorkflows(commandsDest, workflowsDest);
-  }
-
-  // Write version marker
-  const versionPath = join(commandsDest, 'VERSION.plan');
-  rejectSymlink(versionPath);
-  writeFileSync(versionPath, pkg.version);
-
-  // Success
-  console.log('');
-  console.log(green('  ✓ Clancy Plan installed successfully.'));
-  console.log('');
-  console.log('  Commands available:');
-  console.log(
-    `      ${cyan('/clancy:plan')}           ${dim('Generate an implementation plan')}`,
-  );
-  console.log(
-    `      ${cyan('/clancy:approve-plan')}   ${dim('Approve a plan (run /clancy:plan first)')}`,
-  );
-  console.log(
-    `      ${cyan('/clancy:board-setup')}    ${dim('Configure board credentials (optional)')}`,
-  );
-  console.log('');
-  console.log('  Next steps:');
-  console.log(`    1. Open a project in Claude Code`);
-  console.log(`    2. Run: ${cyan('/clancy:plan TICKET-123')}`);
-  console.log('');
-  console.log(dim('  Want to plan board tickets?'));
-  console.log(dim(`    Run: ${cyan('/clancy:board-setup')}`));
-  console.log('');
-  console.log(
-    dim('  For the full pipeline (tickets, planning, implementation):'),
-  );
-  console.log(dim(`    npx chief-clancy`));
-  console.log('');
+  installFiles({ commandsDest, workflowsDest, agentsDest }, mode);
+  printSuccess();
 
   rl.close();
 }
