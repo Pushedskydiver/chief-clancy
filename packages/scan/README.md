@@ -4,7 +4,7 @@
 
 [![npm](https://img.shields.io/npm/v/@chief-clancy/scan?style=for-the-badge&color=cb3837)](https://www.npmjs.com/package/@chief-clancy/scan) [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](https://github.com/Pushedskydiver/chief-clancy/blob/main/LICENSE)
 
-Shared package containing the 5 specialist scanning agents and the `map-codebase` / `update-docs` commands and workflows. Consumed as a dependency by [`@chief-clancy/brief`](https://www.npmjs.com/package/@chief-clancy/brief), [`@chief-clancy/plan`](https://www.npmjs.com/package/@chief-clancy/plan), [`@chief-clancy/terminal`](https://www.npmjs.com/package/@chief-clancy/terminal), and `@chief-clancy/dev` (pre-release).
+Shared package containing the 5 specialist scanning agents and the `map-codebase` / `update-docs` commands and workflows. Consumed by [`@chief-clancy/brief`](https://www.npmjs.com/package/@chief-clancy/brief), [`@chief-clancy/plan`](https://www.npmjs.com/package/@chief-clancy/plan), [`chief-clancy`](https://www.npmjs.com/package/chief-clancy) (which passes scan content to terminal), and `@chief-clancy/dev` (pre-release).
 
 ## What it contains
 
