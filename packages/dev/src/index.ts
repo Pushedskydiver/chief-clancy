@@ -71,3 +71,39 @@ export {
 } from './lifecycle/rework/rework.js';
 export type { PlatformReworkHandlers } from './lifecycle/rework/rework-handlers.js';
 export { resolvePlatformHandlers } from './lifecycle/rework/rework-handlers.js';
+
+// ─── Pipeline re-exports ──────────────────────────────────────────────────
+
+export { createContext, RunContext } from './pipeline/index.js';
+export { runPipeline } from './pipeline/index.js';
+export type { PipelineDeps, PipelineResult } from './pipeline/index.js';
+
+export {
+  branchSetup,
+  cleanupPhase,
+  costPhase,
+  deliverPhase,
+  dryRun,
+  epicCompletion,
+  feasibilityPhase,
+  lockCheck,
+  prRetry,
+  preflightPhase,
+  reworkDetection,
+  ticketFetch,
+  transition,
+} from './pipeline/index.js';
+export type {
+  BranchSetupDeps,
+  CleanupDeps,
+  CostPhaseDeps,
+  DeliverPhaseDeps,
+  EpicCompletionDeps,
+  FeasibilityPhaseDeps,
+  LockCheckDeps,
+  PreflightPhaseDeps,
+  PrRetryDeps,
+  ReworkDetectionDeps,
+  TicketFetchDeps,
+  TransitionDeps,
+} from './pipeline/index.js';

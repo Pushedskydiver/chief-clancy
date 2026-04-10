@@ -4,7 +4,7 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 
 ## Current state (2026-04-10)
 
-**PR #228 open** (`feature/phase-e-pr-2a-lifecycle-move`, 12 commits). Waiting for CI + Alex merge.
+**PR #228 merged.** PR #229 open (`feature/phase-e-pr-3-pipeline-move`, 9 commits). Waiting for CI + Alex merge.
 
 **Published versions:**
 

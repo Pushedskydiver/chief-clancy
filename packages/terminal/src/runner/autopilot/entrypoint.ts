@@ -9,19 +9,16 @@
  * Built by esbuild into a self-contained ESM bundle with zero npm deps.
  */
 import type { ConsoleLike, SpawnSyncFn } from '../shared/types.js';
-import type {
-  EnvFileSystem,
-  ExecGit,
-  PipelineDeps,
-  PipelineResult,
-  RunContext,
-} from '@chief-clancy/core';
+import type { EnvFileSystem, ExecGit } from '@chief-clancy/core';
 import type {
   CostFs,
   FetchFn,
   LockFs,
+  PipelineDeps,
+  PipelineResult,
   ProgressFs,
   QualityFs,
+  RunContext,
 } from '@chief-clancy/dev';
 
 import { spawnSync } from 'node:child_process';
@@ -30,7 +27,7 @@ import { resolve } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 
-import { createContext, runPipeline } from '@chief-clancy/core';
+import { createContext, runPipeline } from '@chief-clancy/dev';
 
 import { buildPipelineDeps } from '../dep-factory/index.js';
 import {

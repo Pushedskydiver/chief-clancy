@@ -7,14 +7,14 @@
  * - {@link setupPipeline} — full pipeline wiring with configurable overrides
  */
 import type { SimulatorResponse } from '../../helpers/claude-simulator.js';
+import type { EnvFileSystem } from '@chief-clancy/core';
 import type {
   CostFs,
-  EnvFileSystem,
   LockFs,
   PipelineResult,
   ProgressFs,
   QualityFs,
-} from '@chief-clancy/core';
+} from '@chief-clancy/dev';
 
 import { execFileSync } from 'node:child_process';
 import {
@@ -32,7 +32,7 @@ import { join } from 'node:path';
 
 import { buildPipelineDeps } from '~/t/runner/dep-factory/dep-factory.js';
 
-import { createContext, runPipeline } from '@chief-clancy/core';
+import { createContext, runPipeline } from '@chief-clancy/dev';
 
 import { createClaudeSimulator } from '../../helpers/claude-simulator.js';
 

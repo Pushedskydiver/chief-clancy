@@ -1,7 +1,7 @@
 {
   "name": "@chief-clancy/core",
   "version": "0.1.0",
-  "description": "Board intelligence, schemas, types, ticket lifecycle, phase pipeline, shared utilities",
+  "description": "Board integrations, schemas, types, and shared utilities",
   "author": "Alex Clapperton",
   "license": "MIT",
   "repository": {
@@ -43,7 +43,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@chief-clancy/dev": "workspace:*",
     "zod": "^4.3.6"
   }
 }

@@ -1,8 +1,7 @@
 /**
  * @chief-clancy/core
  *
- * Board intelligence, schemas, types, ticket lifecycle, phase pipeline,
- * and shared utilities.
+ * Board integrations, schemas, types, and shared utilities.
  */
 export const PACKAGE_NAME = '@chief-clancy/core' as const;
 
@@ -178,44 +177,6 @@ export {
   shortcutWorkflowsResponseSchema,
 } from './schemas/index.js';
 
-export {
-  createContext,
-  RunContext,
-  runPipeline,
-} from './dev/pipeline/index.js';
-export type { PipelineDeps, PipelineResult } from './dev/pipeline/index.js';
-
-// Phase functions + deps types (consumed by terminal dep factory)
-export {
-  branchSetup,
-  cleanupPhase,
-  costPhase,
-  deliverPhase,
-  dryRun,
-  epicCompletion,
-  feasibilityPhase,
-  lockCheck,
-  prRetry,
-  preflightPhase,
-  reworkDetection,
-  ticketFetch,
-  transition,
-} from './dev/pipeline/index.js';
-export type {
-  BranchSetupDeps,
-  CleanupDeps,
-  CostPhaseDeps,
-  DeliverPhaseDeps,
-  EpicCompletionDeps,
-  FeasibilityPhaseDeps,
-  LockCheckDeps,
-  PreflightPhaseDeps,
-  PrRetryDeps,
-  ReworkDetectionDeps,
-  TicketFetchDeps,
-  TransitionDeps,
-} from './dev/pipeline/index.js';
-
 // Shared utilities (consumed by terminal dep factory for phase wiring)
 export type { ExecGit } from './shared/git-ops/index.js';
 export {
@@ -225,49 +186,6 @@ export {
   ensureBranch,
   fetchRemoteBranch,
 } from './shared/git-ops/index.js';
-
-// ─── Lifecycle re-exports (delegated to @chief-clancy/dev) ─────────────────
-export type {
-  CostFs,
-  FetchFn,
-  LockFs,
-  PlatformReworkHandlers,
-  PreflightDeps,
-  ProgressEntry,
-  ProgressFs,
-  QualityFs,
-} from '@chief-clancy/dev';
-export {
-  appendCostEntry,
-  appendProgress,
-  attemptPrCreation,
-  buildPrBody,
-  checkFeasibility,
-  computeTargetBranch,
-  computeTicketBranch,
-  countReworkCycles,
-  deleteLock,
-  deleteVerifyAttempt,
-  deliverEpicToBase,
-  deliverViaPullRequest,
-  detectResume,
-  ensureEpicBranch,
-  executeResume,
-  fetchReworkFromPrReview,
-  findEntriesWithStatus,
-  formatDuration,
-  formatTimestamp,
-  parseProgressFile,
-  postReworkActions,
-  readLock,
-  resolveCommitType,
-  getQualityData,
-  recordDelivery,
-  recordRework,
-  resolvePlatformHandlers,
-  runPreflight,
-  writeLock,
-} from '@chief-clancy/dev';
 
 export { detectBoard, sharedEnv } from './board/index.js';
 export { createBoard } from './board/factory/index.js';

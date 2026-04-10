@@ -4,11 +4,18 @@
  * Extracted from the dep factory to stay within file-length limits.
  */
 import type { AppendFn } from '../shared/types.js';
-import type { ExecGit, PipelineDeps, RunContext } from '@chief-clancy/core';
-import type { FetchFn, ProgressFs, QualityFs } from '@chief-clancy/dev';
+import type { ExecGit } from '@chief-clancy/core';
+import type {
+  FetchFn,
+  PipelineDeps,
+  ProgressFs,
+  QualityFs,
+  RunContext,
+} from '@chief-clancy/dev';
 
-import { deliverPhase, detectRemote } from '@chief-clancy/core';
+import { detectRemote } from '@chief-clancy/core';
 import {
+  deliverPhase,
   deliverViaPullRequest,
   postReworkActions,
   recordDelivery,
