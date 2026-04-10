@@ -55,7 +55,7 @@ packages/core/src/
 
 packages/terminal/src/
 ├── installer/                            — install, file-ops, hook-installer, manifest, prompts, role-filter
-├── runner/                               — autopilot, implement, cli-bridge, prompt-builder, session-report
+├── runner/                               — autopilot, implement, dep-factory, prompt-builder, session-report
 └── hooks/                                — credential-guard, branch-guard, context-monitor, etc.
 ```
 

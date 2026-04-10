@@ -58,6 +58,7 @@ import {
   feasibilityPhase,
   fetchReworkFromPrReview,
   findEntriesWithStatus,
+  invokeClaudePrint,
   lockCheck,
   preflightPhase,
   prRetry,
@@ -66,13 +67,12 @@ import {
   resolvePlatformHandlers,
   reworkDetection,
   runPreflight,
+  sendNotification,
   ticketFetch,
   transition,
   writeLock,
 } from '@chief-clancy/dev';
 
-import { invokeClaudePrint } from '../cli-bridge/index.js';
-import { sendNotification } from '../notify/index.js';
 import { wireDeliver } from './deliver-phase.js';
 import { makeInvokePhase } from './invoke-phase.js';
 

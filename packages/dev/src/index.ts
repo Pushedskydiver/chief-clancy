@@ -81,6 +81,14 @@ export {
 export type { PlatformReworkHandlers } from './lifecycle/rework/rework-handlers.js';
 export { resolvePlatformHandlers } from './lifecycle/rework/rework-handlers.js';
 
+// ─── CLI bridge re-exports ─────────────────────────────────────────────────
+
+export { invokeClaudePrint, invokeClaudeSession } from './cli-bridge/index.js';
+
+// ─── Notify re-exports ─────────────────────────────────────────────────────
+
+export { sendNotification } from './notify/index.js';
+
 // ─── Pipeline re-exports ──────────────────────────────────────────────────
 
 export { createContext, RunContext } from './pipeline/index.js';
