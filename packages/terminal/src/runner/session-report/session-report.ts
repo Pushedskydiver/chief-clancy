@@ -5,8 +5,12 @@
  * an autopilot session. Pure functions handle parsing and generation;
  * the orchestrator reads FS and writes the report.
  */
-import type { ConsoleLike } from '../shared/types.js';
-import type { ProgressEntry, ProgressFs, QualityFs } from '@chief-clancy/dev';
+import type {
+  ConsoleLike,
+  ProgressEntry,
+  ProgressFs,
+  QualityFs,
+} from '@chief-clancy/dev';
 
 import { join } from 'node:path';
 

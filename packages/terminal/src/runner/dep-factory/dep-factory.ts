@@ -6,7 +6,6 @@
  * captures the shared resources and delegates to the corresponding
  * core phase function.
  */
-import type { AppendFn, SpawnSyncFn } from '../shared/types.js';
 import type {
   Board,
   BoardProvider,
@@ -16,6 +15,7 @@ import type {
   RemoteInfo,
 } from '@chief-clancy/core';
 import type {
+  AppendFn,
   CostFs,
   FetchFn,
   LockFs,
@@ -24,6 +24,7 @@ import type {
   ProgressFs,
   QualityFs,
   RunContext,
+  SpawnSyncFn,
 } from '@chief-clancy/dev';
 
 import {

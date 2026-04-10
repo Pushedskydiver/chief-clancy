@@ -8,9 +8,9 @@
  *
  * Built by esbuild into a self-contained ESM bundle with zero npm deps.
  */
-import type { ConsoleLike, SpawnSyncFn } from '../shared/types.js';
 import type { EnvFileSystem, ExecGit } from '@chief-clancy/core';
 import type {
+  ConsoleLike,
   CostFs,
   FetchFn,
   LockFs,
@@ -19,6 +19,7 @@ import type {
   ProgressFs,
   QualityFs,
   RunContext,
+  SpawnSyncFn,
 } from '@chief-clancy/dev';
 
 import { spawnSync } from 'node:child_process';

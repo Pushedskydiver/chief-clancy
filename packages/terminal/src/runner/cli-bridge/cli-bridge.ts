@@ -1,4 +1,4 @@
-import type { SpawnSyncFn } from '../shared/types.js';
+import type { SpawnSyncFn } from '@chief-clancy/dev';
 import type { SpawnSyncReturns } from 'node:child_process';
 
 /** Options for both print and session invocations. */

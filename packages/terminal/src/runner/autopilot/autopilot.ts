@@ -5,8 +5,7 @@
  * stop conditions between iterations. Generates a session report and
  * optionally sends a webhook notification when the loop ends.
  */
-import type { ConsoleLike } from '../shared/types.js';
-import type { PipelineResult } from '@chief-clancy/dev';
+import type { ConsoleLike, PipelineResult } from '@chief-clancy/dev';
 
 import { formatDuration } from '@chief-clancy/dev';
 
