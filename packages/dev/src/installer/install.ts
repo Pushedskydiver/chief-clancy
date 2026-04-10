@@ -62,10 +62,10 @@ export type RunDevInstallOptions = {
 // ---------------------------------------------------------------------------
 
 /** Command files shipped with the dev package. */
-const COMMAND_FILES = ['dev.md'] as const;
+const COMMAND_FILES = ['board-setup.md', 'dev.md'] as const;
 
 /** Workflow files shipped with the dev package. */
-const WORKFLOW_FILES = ['dev.md'] as const;
+const WORKFLOW_FILES = ['board-setup.md', 'dev.md'] as const;
 
 /** Bundle files copied into `.clancy/`. */
 const BUNDLE_FILES = ['clancy-dev.js', 'clancy-dev-autopilot.js'] as const;

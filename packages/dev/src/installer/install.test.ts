@@ -149,8 +149,11 @@ const buildOptions = (
   files: Readonly<Record<string, string>> = {},
 ): MockOptions => {
   const sourceFiles: Record<string, string> = {
+    '/pkg/dist/commands/board-setup.md':
+      '# /clancy:board-setup\n\n@.claude/clancy/workflows/board-setup.md\n\nFollow the board setup workflow.',
     '/pkg/dist/commands/dev.md':
       '# /clancy:dev\n\n@.claude/clancy/workflows/dev.md\n\nFollow the dev workflow above.',
+    '/pkg/dist/workflows/board-setup.md': '# Board Setup Workflow\n\nStep 1...',
     '/pkg/dist/workflows/dev.md': '# Clancy Dev Workflow\n\nStep 1...',
     '/pkg/dist/bundle/clancy-dev.js': '// clancy-dev bundle',
     '/pkg/dist/bundle/clancy-dev-autopilot.js':

@@ -77,8 +77,8 @@ const ask = (label) => new Promise((resolve) => rl.question(label, resolve));
 // File lists (keep in sync with install.ts)
 // ---------------------------------------------------------------------------
 
-const COMMAND_FILES = ['dev.md'];
-const WORKFLOW_FILES = ['dev.md'];
+const COMMAND_FILES = ['board-setup.md', 'dev.md'];
+const WORKFLOW_FILES = ['board-setup.md', 'dev.md'];
 const BUNDLE_FILES = ['clancy-dev.js', 'clancy-dev-autopilot.js'];
 
 /** Matches `@.claude/clancy/workflows/<filename>.md` on its own line. */
