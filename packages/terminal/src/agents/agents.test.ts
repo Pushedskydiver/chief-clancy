@@ -11,15 +11,7 @@ import { describe, expect, it } from 'vitest';
 
 const AGENTS_DIR = fileURLToPath(new URL('.', import.meta.url));
 
-const EXPECTED_AGENTS = [
-  'arch-agent.md',
-  'concerns-agent.md',
-  'design-agent.md',
-  'devils-advocate.md',
-  'quality-agent.md',
-  'tech-agent.md',
-  'verification-gate.md',
-];
+const EXPECTED_AGENTS = ['devils-advocate.md', 'verification-gate.md'];
 
 describe('agents directory structure', () => {
   it('contains exactly the expected agent files', () => {
