@@ -124,7 +124,11 @@ importers:
         specifier: ^0.27.4
         version: 0.27.4
 
-  packages/plan: {}
+  packages/plan:
+    dependencies:
+      '@chief-clancy/scan':
+        specifier: workspace:*
+        version: link:../scan
 
   packages/scan: {}
 

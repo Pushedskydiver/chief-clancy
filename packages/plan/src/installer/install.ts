@@ -18,12 +18,16 @@ export type PlanInstallMode = 'global' | 'local';
 export type PlanInstallPaths = {
   readonly commandsDest: string;
   readonly workflowsDest: string;
+  readonly agentsDest: string;
 };
 
 /** Source directories within the npm package. */
 type PlanInstallSources = {
   readonly commandsDir: string;
   readonly workflowsDir: string;
+  readonly scanAgentsDir: string;
+  readonly scanCommandsDir: string;
+  readonly scanWorkflowsDir: string;
 };
 
 /**
@@ -63,6 +67,21 @@ const WORKFLOW_FILES = [
   'board-setup.md',
   'plan.md',
 ] as const;
+
+/** Scan agent files from @chief-clancy/scan. */
+const SCAN_AGENT_FILES = [
+  'arch-agent.md',
+  'concerns-agent.md',
+  'design-agent.md',
+  'quality-agent.md',
+  'tech-agent.md',
+] as const;
+
+/** Scan command files from @chief-clancy/scan. */
+const SCAN_COMMAND_FILES = ['map-codebase.md', 'update-docs.md'] as const;
+
+/** Scan workflow files from @chief-clancy/scan. */
+const SCAN_WORKFLOW_FILES = ['map-codebase.md', 'update-docs.md'] as const;
 
 /** Matches `@.claude/clancy/workflows/<filename>.md` on its own line. */
 const WORKFLOW_REF = /^@\.claude\/clancy\/workflows\/([^/\\]+\.md)\r?$/gm;
@@ -105,6 +124,7 @@ export const resolvePlanInstallPaths = (
   return {
     commandsDest: join(baseDir, 'commands', 'clancy'),
     workflowsDest: join(baseDir, 'clancy', 'workflows'),
+    agentsDest: join(baseDir, 'clancy', 'agents'),
   };
 };
 
@@ -132,6 +152,7 @@ type CopyFilesOptions = {
 /** Copy a list of files from src dir to dest dir with symlink protection. */
 const copyFiles = (options: CopyFilesOptions): void => {
   const { files, srcDir, destDir, fs } = options;
+  rejectSymlink(destDir, fs.isSymlink);
   fs.mkdir(destDir);
 
   files.forEach((file) => {
@@ -159,15 +180,17 @@ const inlineWorkflow = (
   workflowsDest: string,
   fs: PlanInstallerFs,
 ): void => {
-  COMMAND_FILES.forEach((file) => {
+  [...COMMAND_FILES, ...SCAN_COMMAND_FILES].forEach((file) => {
     const cmdPath = join(commandsDest, file);
     const content = fs.readFile(cmdPath);
     const resolved = content.replace(
       WORKFLOW_REF,
       (match, fileName: string) => {
         const wfPath = join(workflowsDest, fileName);
+        rejectSymlink(wfPath, fs.isSymlink);
+        if (!fs.exists(wfPath)) return match;
 
-        return fs.exists(wfPath) ? fs.readFile(wfPath) : match;
+        return fs.readFile(wfPath);
       },
     );
 
@@ -203,6 +226,24 @@ export const runPlanInstall = (options: RunPlanInstallOptions): void => {
   copyFiles({
     files: WORKFLOW_FILES,
     srcDir: sources.workflowsDir,
+    destDir: paths.workflowsDest,
+    fs,
+  });
+  copyFiles({
+    files: SCAN_AGENT_FILES,
+    srcDir: sources.scanAgentsDir,
+    destDir: paths.agentsDest,
+    fs,
+  });
+  copyFiles({
+    files: SCAN_COMMAND_FILES,
+    srcDir: sources.scanCommandsDir,
+    destDir: paths.commandsDest,
+    fs,
+  });
+  copyFiles({
+    files: SCAN_WORKFLOW_FILES,
+    srcDir: sources.scanWorkflowsDir,
     destDir: paths.workflowsDest,
     fs,
   });

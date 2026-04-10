@@ -39,6 +39,9 @@
     "src/commands",
     "src/workflows"
   ],
+  "dependencies": {
+    "@chief-clancy/scan": "workspace:*"
+  },
   "scripts": {
     "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc --project tsconfig.build.json && tsc-alias --project tsconfig.build.json",
     "test": "vitest run",

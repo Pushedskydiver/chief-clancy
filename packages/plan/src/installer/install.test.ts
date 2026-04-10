@@ -60,6 +60,14 @@ describe('resolvePlanInstallPaths', () => {
         join(homeDir, '.claude', 'clancy', 'workflows'),
       );
     });
+
+    it('resolves agents destination under ~/.claude', () => {
+      const paths = resolvePlanInstallPaths('global', homeDir, cwd);
+
+      expect(paths.agentsDest).toBe(
+        join(homeDir, '.claude', 'clancy', 'agents'),
+      );
+    });
   });
 
   describe('local mode', () => {
@@ -77,6 +85,12 @@ describe('resolvePlanInstallPaths', () => {
       expect(paths.workflowsDest).toBe(
         join(cwd, '.claude', 'clancy', 'workflows'),
       );
+    });
+
+    it('resolves agents destination under cwd/.claude', () => {
+      const paths = resolvePlanInstallPaths('local', homeDir, cwd);
+
+      expect(paths.agentsDest).toBe(join(cwd, '.claude', 'clancy', 'agents'));
     });
   });
 });
@@ -116,11 +130,15 @@ const createMockFs = (files: Record<string, string> = {}) => {
 const defaultSources = {
   commandsDir: '/pkg/src/commands',
   workflowsDir: '/pkg/src/workflows',
+  scanAgentsDir: '/scan/src/agents',
+  scanCommandsDir: '/scan/src/commands',
+  scanWorkflowsDir: '/scan/src/workflows',
 };
 
 const defaultPaths = {
   commandsDest: '/dest/commands/clancy',
   workflowsDest: '/dest/clancy/workflows',
+  agentsDest: '/dest/clancy/agents',
 };
 
 type MockFs = ReturnType<typeof createMockFs>;
@@ -146,6 +164,18 @@ const buildOptions = (
       '# Board Setup Workflow\n\nSetup content here.',
     '/pkg/src/workflows/plan.md':
       '# Clancy Plan Workflow\n\nWorkflow content here.',
+    '/scan/src/agents/arch-agent.md': '# Architecture Agent',
+    '/scan/src/agents/concerns-agent.md': '# Concerns Agent',
+    '/scan/src/agents/design-agent.md': '# Design Agent',
+    '/scan/src/agents/quality-agent.md': '# Quality Agent',
+    '/scan/src/agents/tech-agent.md': '# Tech Agent',
+    '/scan/src/commands/map-codebase.md':
+      '# /clancy:map-codebase\n\n@.claude/clancy/workflows/map-codebase.md\n\nRun the scan.',
+    '/scan/src/commands/update-docs.md':
+      '# /clancy:update-docs\n\n@.claude/clancy/workflows/update-docs.md\n\nRun the update.',
+    '/scan/src/workflows/map-codebase.md':
+      '# Map Codebase Workflow\n\nStep 1...',
+    '/scan/src/workflows/update-docs.md': '# Update Docs Workflow\n\nStep 1...',
     ...files,
   };
   const fs = createMockFs(sourceFiles);
@@ -167,6 +197,7 @@ describe('runPlanInstall', () => {
 
     expect(opts.fs.mkdir).toHaveBeenCalledWith(defaultPaths.commandsDest);
     expect(opts.fs.mkdir).toHaveBeenCalledWith(defaultPaths.workflowsDest);
+    expect(opts.fs.mkdir).toHaveBeenCalledWith(defaultPaths.agentsDest);
   });
 
   it('copies all command files', () => {
@@ -236,6 +267,64 @@ describe('runPlanInstall', () => {
     opts.fs.isSymlink.mockReturnValue(true);
 
     expect(() => runPlanInstall(opts)).toThrow('Symlink rejected');
+  });
+
+  it('copies scan agent files to agents destination', () => {
+    const opts = buildOptions();
+    runPlanInstall(opts);
+
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.scanAgentsDir, 'tech-agent.md'),
+      join(defaultPaths.agentsDest, 'tech-agent.md'),
+    );
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.scanAgentsDir, 'arch-agent.md'),
+      join(defaultPaths.agentsDest, 'arch-agent.md'),
+    );
+  });
+
+  it('copies scan command files to commands destination', () => {
+    const opts = buildOptions();
+    runPlanInstall(opts);
+
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.scanCommandsDir, 'map-codebase.md'),
+      join(defaultPaths.commandsDest, 'map-codebase.md'),
+    );
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.scanCommandsDir, 'update-docs.md'),
+      join(defaultPaths.commandsDest, 'update-docs.md'),
+    );
+  });
+
+  it('copies scan workflow files to workflows destination', () => {
+    const opts = buildOptions();
+    runPlanInstall(opts);
+
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.scanWorkflowsDir, 'map-codebase.md'),
+      join(defaultPaths.workflowsDest, 'map-codebase.md'),
+    );
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.scanWorkflowsDir, 'update-docs.md'),
+      join(defaultPaths.workflowsDest, 'update-docs.md'),
+    );
+  });
+
+  it('inlines scan workflow content in global mode', () => {
+    const opts = buildOptions({ mode: 'global' });
+    runPlanInstall(opts);
+
+    const writeCall = opts.fs.writeFile.mock.calls.find(
+      ([path]) => path === join(defaultPaths.commandsDest, 'map-codebase.md'),
+    );
+
+    expect(writeCall).toBeDefined();
+
+    const content = writeCall![1] as string;
+
+    expect(content).toContain('# Map Codebase Workflow');
+    expect(content).not.toContain('@.claude/clancy/workflows/map-codebase.md');
   });
 
   describe('global mode inlining', () => {
