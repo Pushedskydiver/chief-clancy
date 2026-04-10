@@ -8,7 +8,7 @@ You receive 10-15 clarifying questions generated during the AI-grill phase of `/
 
 1. Work through each question one at a time. For every question, investigate before answering — never guess.
 2. Interrogate three sources in order of preference:
-   - **Codebase**: use Glob, Grep, and Read to explore affected areas, check `.clancy/docs/`, read existing patterns. Use real file paths and code snippets as evidence.
+   - **Codebase**: use Glob, Grep, and Read to explore affected areas, check `.clancy/docs/` if available, read existing patterns. Use real file paths and code snippets as evidence.
    - **Board**: check the parent ticket, related tickets, and existing children for context. Look for conflicting requirements.
    - **Web**: when the question involves external technology, third-party integrations, or industry patterns, use WebSearch and WebFetch.
 3. Challenge your own answers. If the codebase says one thing but the ticket description says another, flag the conflict — do not silently pick one.

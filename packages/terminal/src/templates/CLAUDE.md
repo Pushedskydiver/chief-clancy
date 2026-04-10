@@ -18,7 +18,7 @@ Then continue normally. If the file is missing or unreadable, continue silently.
 
 ### Docs
 
-Before every run, read these core docs from `.clancy/docs/`:
+If the directory `.clancy/docs/` exists, read these core docs before every run:
 
 - STACK.md — tech stack and dependencies
 - ARCHITECTURE.md — system design and data flow
@@ -33,6 +33,8 @@ Also read these if relevant to the ticket:
 - TESTING.md — if the ticket involves tests, specs, or coverage requirements
 - DESIGN-SYSTEM.md — if the ticket touches UI, components, styles, or visual design
 - ACCESSIBILITY.md — if the ticket touches accessibility, ARIA, or WCAG requirements
+
+If `.clancy/docs/` does not exist, work with what you find in the codebase directly.
 
 ### Executability check
 
@@ -58,8 +60,8 @@ When in doubt: "Is the primary deliverable a code change committed to this repo?
 
 ### Git workflow
 
-- Read GIT.md before every run — follow its conventions exactly
-- Default (if GIT.md is silent): one feature branch per ticket `feature/{ticket-key-lowercase}`, push and create a PR, conventional commits `feat(TICKET-123): summary`
+- If `.clancy/docs/GIT.md` exists, read it before every run and follow its conventions exactly
+- Default (if GIT.md is absent or silent): one feature branch per ticket `feature/{ticket-key-lowercase}`, push and create a PR, conventional commits `feat(TICKET-123): summary`
 - Target branch is auto-detected from the ticket: if it has a parent epic, PR targets `epic/{epic-key}` (created from `CLANCY_BASE_BRANCH` if it doesn't exist); otherwise PR targets `CLANCY_BASE_BRANCH` directly
 
 ### Progress
@@ -89,7 +91,7 @@ Use the three-tier approach in order:
 ### Visual checks
 
 After implementing a UI ticket, run a visual check before committing.
-Read `.clancy/docs/PLAYWRIGHT.md` for the authoritative Playwright configuration (which server to use: Storybook or dev server). Use `.clancy/.env` only for ports and start commands as needed.
+If `.clancy/docs/PLAYWRIGHT.md` exists, read it for the authoritative Playwright configuration (which server to use: Storybook or dev server). Use `.clancy/.env` only for ports and start commands as needed.
 Apply the decision rule against this ticket's description — route/page/screen/layout → dev server,
 component/atom/molecule/organism/variant/story → Storybook, ambiguous → dev server default.
 Start the server using health check polling (not sleep). Navigate to the relevant route or story.

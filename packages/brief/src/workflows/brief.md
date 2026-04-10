@@ -582,7 +582,7 @@ Same relentless energy as the human grill, but directed at the strategist itself
    - The path to the agent prompt: `.claude/clancy/agents/devils-advocate.md`
 
 3. The devil's advocate agent answers each question by INTERROGATING ITS SOURCES:
-   - **Codebase:** explore affected areas, read `.clancy/docs/`, check existing patterns. Don't assume — look.
+   - **Codebase:** explore affected areas, read `.clancy/docs/` if available, check existing patterns. Don't assume — look.
    - **Board:** parent ticket, related tickets, existing children. Check for conflicting requirements.
    - **Web:** when the question involves external technology, patterns, or third-party integrations. Same trigger as Step 6: `--research` flag forces it, otherwise judgement-based.
 
@@ -695,7 +695,7 @@ Web research agent (adds 1 to the count above, max 4 total):
 
 ### What agents explore
 
-- `.clancy/docs/` — STACK.md, ARCHITECTURE.md, CONVENTIONS.md, TESTING.md, DESIGN-SYSTEM.md
+- `.clancy/docs/` (if available) — STACK.md, ARCHITECTURE.md, CONVENTIONS.md, TESTING.md, DESIGN-SYSTEM.md
 - Affected code areas via Glob + Read
 - Board for duplicates/related tickets (text-match against title):
   - **GitHub:** `GET /repos/$GITHUB_REPO/issues?state=open&per_page=30` and text-match
