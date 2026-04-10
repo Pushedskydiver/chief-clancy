@@ -4,7 +4,7 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 
 ## Current state (2026-04-10)
 
-**PR #228 merged.** PR #229 open (`feature/phase-e-pr-3-pipeline-move`, 9 commits). Waiting for CI + Alex merge.
+**PRs #228 and #229 merged.** Phase E extraction: lifecycle + pipeline now in `@chief-clancy/dev`. Circular dep eliminated. Next: PR 3.5 or 4a.
 
 **Published versions:**
 
@@ -16,37 +16,30 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 | `@chief-clancy/plan`     | 0.5.0   |
 | `chief-clancy` (wrapper) | 0.9.15  |
 
-**Test counts:** 1050 core, 838 terminal, 559 dev, 73 brief, 264 plan = **2784 total**.
+**Test counts:** 982 core, 838 terminal, 627 dev, 73 brief, 264 plan = **2784 total**.
 
-**Last shipped:** Phase E PRs 0/1/1.5 (Sessions 60). PR 2a opened as #228 (Sessions 61–62).
+**Last shipped:** Phase E PRs 2a (#228) + 3 (#229) in Session 62.
 
-## In progress: Phase E PR 2a — lifecycle move
+## Phase E — completed PRs (Sessions 60–62)
 
-**Branch:** `feature/phase-e-pr-2a-lifecycle-move` (12 commits, pushed, PR #228)
+### PR 2a (#228) — lifecycle move (Session 61–62)
 
-**Scope change:** Original plan split lifecycle into 3 cluster PRs (2a/2b/2c). TypeScript's rootDir + composite constraints made the intermediate state unworkable (circular build deps, esbuild resolution failures). Merged all 18 lifecycle modules into one PR. Terminal imports updated to split core/dev.
+All 18 lifecycle directories (65 files) moved from `core/src/dev/lifecycle/` to `dev/src/lifecycle/`. Original 3-PR cluster (2a/2b/2c) merged into one because TypeScript's rootDir enforcement made the intermediate state unworkable. Introduced temporary circular dep (core ↔ dev) with declarations-first build bootstrap. 13 commits.
 
-### Commits (Sessions 61–62)
+### PR 3 (#229) — pipeline move (Session 62)
 
-1. `f192d15` — git mv all 18 lifecycle dirs (65 files, 100% similarity)
-2. `730b361` — dev config: deps, vitest aliases, turbo cycle override, build bootstrap
-3. `427131c` — dev/src/index.ts barrel re-exports for all lifecycle symbols
-4. `7bb7cef` — intra-lifecycle import rewrite: ~/c/dev/lifecycle/ → ~/d/lifecycle/
-5. `177b7fe` — cross-package import rewrite: ~/c/ → @chief-clancy/core (+ wildcard subpath export)
-6. `42fb9a0` — core/src/index.ts swaps lifecycle re-exports to @chief-clancy/dev
-7. `81cdc58` — core pipeline phases import from @chief-clancy/dev (lock-check, pr-retry)
-8. `62ef2ae` — terminal splits lifecycle imports: core → dev (8 files)
-9. `cba7958` — wiring: eslint boundary, workspace deps, vitest aliases, pnpm install
-10. `eaa3b7c` — fix circular build: declarations-first strategy + core subpath export ./_ → ./_.js
-11. `5bcf206` — fix vitest: directory paths for cross-package resolution, ~/d alias
-12. `3931711` — DA review fixes: stale READMEs, forward-ref, alphabetical exports
+Entire pipeline directory (46 files) moved from `core/src/dev/pipeline/` to `dev/src/pipeline/`. Original 2-PR split (3a/3b) merged into one — same rationale as PR 2a. **Eliminated the circular dependency**: removed core's `@chief-clancy/dev` dep, temporary eslint boundary, declarations-first build, turbo cycle override, and all lifecycle + pipeline re-exports from core barrel. 11 commits.
 
-### Key decisions
+### Key technical decisions (Sessions 61–62)
 
-- **Circular dep (core ↔ dev) is temporary** — removed when pipeline phases move to dev. Turbo cycle broken by `packages/dev/turbo.json` (`dependsOn: []`). Build bootstrapped by declarations-first strategy.
-- **Declarations-first build** — dev emits `.d.ts` stubs from source (tsconfig.declarations.json maps @chief-clancy/core to source, no rootDir), copies to dist/, builds core, then rebuilds dev fully.
-- **Wildcard subpath export** — core gains `./*.js` in package.json exports for NodeNext-compatible deep imports.
-- **Vitest aliases** — directory paths (not file paths) for @chief-clancy/core and @chief-clancy/dev to support subpath imports via Vite's prefix matching. ~/d alias added to core + terminal configs.
+- **Merge cluster PRs when intermediate states don't compile** — TypeScript's rootDir enforcement blocks half-moved states. Merged 2a/2b/2c into PR 2a and 3a/3b into PR 3. Each commit stays small and the full review chain still runs.
+- **Wildcard subpath export** — core has `./*.js` in package.json exports for NodeNext-compatible deep imports from dev.
+- **Vitest aliases use directory paths** (not file paths) for @chief-clancy/core and @chief-clancy/dev. ~/d alias needed in terminal vitest config.
+- **core/src/dev/ is now empty** — cleanup deferred to PR 5.
+
+### Remaining PR sequence
+
+PRs 2b/2c/3a/3b all absorbed. Sequence continues: 3.5 → 4a → 4b → 4c → [4c.1/4c.2] → 5 (delete core/dev/) → rest of Phase E.
 
 ## Phase ledger
 
