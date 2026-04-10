@@ -1,5 +1,14 @@
 # @chief-clancy/terminal
 
+## 0.1.9
+
+### Patch Changes
+
+- [#248](https://github.com/Pushedskydiver/chief-clancy/pull/248) [`a0c7145`](https://github.com/Pushedskydiver/chief-clancy/commit/a0c71458edc5a38d893ef93e1aa33f4ffea7c368) Thanks [@Pushedskydiver](https://github.com/Pushedskydiver)! - Add scan README and update all package READMEs with scan references.
+
+- Updated dependencies []:
+  - @chief-clancy/dev@0.0.2
+
 ## 0.1.8
 
 ### Patch Changes
