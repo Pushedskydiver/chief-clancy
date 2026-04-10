@@ -217,8 +217,18 @@ async function main() {
   console.log('');
   console.log(green('  ✓ Clancy Dev installed successfully.'));
   console.log('');
-  console.log(dim('  Commands: /clancy:dev'));
-  console.log(dim('  Bundles:  clancy-dev.js, clancy-dev-autopilot.js'));
+  console.log('  Commands available:');
+  console.log(
+    `      ${cyan('/clancy:dev')}            ${dim('Execute a board ticket autonomously')}`,
+  );
+  console.log(
+    `      ${cyan('/clancy:board-setup')}    ${dim('Configure board credentials')}`,
+  );
+  console.log('');
+  console.log('  Next steps:');
+  console.log(`    1. Open a project in Claude Code`);
+  console.log(`    2. Run: ${cyan('/clancy:board-setup')}`);
+  console.log(`    3. Run: ${cyan('/clancy:dev PROJ-123')}`);
   console.log('');
   console.log(
     dim('  For the full pipeline (tickets, planning, implementation):'),
