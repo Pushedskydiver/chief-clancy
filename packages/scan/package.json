@@ -1,0 +1,32 @@
+{
+  "name": "@chief-clancy/scan",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Codebase scanning agents and workflows for Clancy — shared across dev, brief, plan, and terminal",
+  "author": "Alex Clapperton",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pushedskydiver/chief-clancy.git",
+    "directory": "packages/scan"
+  },
+  "homepage": "https://github.com/Pushedskydiver/chief-clancy#readme",
+  "bugs": {
+    "url": "https://github.com/Pushedskydiver/chief-clancy/issues"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "ai",
+    "scan",
+    "codebase",
+    "agents",
+    "developer-tools"
+  ],
+  "type": "module",
+  "files": [
+    "src/agents",
+    "src/commands",
+    "src/workflows"
+  ]
+}

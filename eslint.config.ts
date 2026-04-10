@@ -34,6 +34,7 @@ export default defineConfig(
         { type: 'brief', pattern: 'packages/brief/*' },
         { type: 'plan', pattern: 'packages/plan/*' },
         { type: 'dev', pattern: 'packages/dev/*' },
+        { type: 'scan', pattern: 'packages/scan/*' },
         { type: 'terminal', pattern: 'packages/terminal/*' },
         { type: 'chat', pattern: 'packages/chat/*' },
         { type: 'wrapper', pattern: 'packages/chief-clancy/*' },
@@ -92,6 +93,10 @@ export default defineConfig(
             {
               from: { type: 'plan' },
               allow: [{ to: { type: 'plan' } }],
+            },
+            {
+              from: { type: 'scan' },
+              allow: [{ to: { type: 'scan' } }],
             },
             {
               from: { type: 'dev' },

@@ -119,6 +119,8 @@ importers:
 
   packages/plan: {}
 
+  packages/scan: {}
+
   packages/terminal:
     dependencies:
       '@chief-clancy/core':
