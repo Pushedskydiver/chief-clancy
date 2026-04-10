@@ -4,12 +4,5 @@
  * Replaced with real loop wiring in a later PR. Exists so PR 7 can
  * validate the esbuild config produces a working bundle.
  */
-import { createRequire } from 'node:module';
-
-const require = createRequire(import.meta.url);
-const { version } = require('../../package.json') as {
-  readonly version: string;
-};
-
-console.log(`clancy-dev-autopilot v${version}`);
+console.log('clancy-dev-autopilot v0.0.0 (stub)');
 process.exit(0);

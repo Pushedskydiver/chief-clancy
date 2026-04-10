@@ -4,12 +4,5 @@
  * Replaced with real pipeline wiring in PR 8c. Exists so PR 7 can
  * validate the esbuild config produces a working bundle.
  */
-import { createRequire } from 'node:module';
-
-const require = createRequire(import.meta.url);
-const { version } = require('../../package.json') as {
-  readonly version: string;
-};
-
-console.log(`clancy-dev v${version}`);
+console.log('clancy-dev v0.0.0 (stub)');
 process.exit(0);
