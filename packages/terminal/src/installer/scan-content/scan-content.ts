@@ -15,6 +15,7 @@ import { rejectSymlink } from '~/t/installer/shared/fs-guards/index.js';
 
 /** File system operations for scan content copying. */
 type ScanCopyFs = {
+  readonly mkdir: (path: string) => void;
   readonly copyFile: (src: string, dest: string) => void;
 };
 
@@ -73,6 +74,7 @@ const copyScanContent = (options: CopyScanContentOptions): void => {
   rejectSymlink(commandsDest);
   rejectSymlink(workflowsDest);
   rejectSymlink(agentsDest);
+  fs.mkdir(agentsDest);
 
   SCAN_AGENT_FILES.forEach((file) => {
     copyChecked(join(scanAgentsDir, file), join(agentsDest, file), fs);
