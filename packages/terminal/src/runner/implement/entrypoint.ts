@@ -7,14 +7,8 @@
  *
  * Built by esbuild into a self-contained ESM bundle with zero npm deps.
  */
-import type {
-  CostFs,
-  EnvFileSystem,
-  ExecGit,
-  LockFs,
-  ProgressFs,
-  QualityFs,
-} from '@chief-clancy/core';
+import type { EnvFileSystem, ExecGit } from '@chief-clancy/core';
+import type { CostFs, LockFs, ProgressFs, QualityFs } from '@chief-clancy/dev';
 import type { SpawnSyncReturns } from 'node:child_process';
 
 import { spawnSync } from 'node:child_process';

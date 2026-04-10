@@ -10,17 +10,19 @@
  */
 import type { ConsoleLike, SpawnSyncFn } from '../shared/types.js';
 import type {
-  CostFs,
   EnvFileSystem,
   ExecGit,
-  FetchFn,
-  LockFs,
   PipelineDeps,
   PipelineResult,
-  ProgressFs,
-  QualityFs,
   RunContext,
 } from '@chief-clancy/core';
+import type {
+  CostFs,
+  FetchFn,
+  LockFs,
+  ProgressFs,
+  QualityFs,
+} from '@chief-clancy/dev';
 
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';

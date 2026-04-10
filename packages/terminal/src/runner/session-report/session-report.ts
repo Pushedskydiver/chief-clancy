@@ -6,17 +6,16 @@
  * the orchestrator reads FS and writes the report.
  */
 import type { ConsoleLike } from '../shared/types.js';
-import type { ProgressEntry, ProgressFs, QualityFs } from '@chief-clancy/core';
+import type { ProgressEntry, ProgressFs, QualityFs } from '@chief-clancy/dev';
 
 import { join } from 'node:path';
 
+import { COMPLETED_STATUSES, FAILED_STATUSES } from '@chief-clancy/core';
 import {
-  COMPLETED_STATUSES,
-  FAILED_STATUSES,
   formatDuration,
   getQualityData,
   parseProgressFile,
-} from '@chief-clancy/core';
+} from '@chief-clancy/dev';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
