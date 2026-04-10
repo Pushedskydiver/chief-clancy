@@ -4,7 +4,7 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 
 ## Current state (2026-04-10)
 
-**PR 7 (#237) merged.** Phase E extraction: dev package now has installer infrastructure, no-op entrypoints, and esbuild bundles. Next: PR 8a (three-state install preflight).
+**PR 8b (#239) merged.** Phase E: dev package has installer, entrypoints, esbuild bundles, three-state preflight, `/clancy:dev` + `/clancy:board-setup` slash commands. Bundles go to `.clancy/` (matching terminal). Next: scan extraction (PRs S1–S7), then PR 8c (single-ticket executor).
 
 **Published versions:**
 
@@ -16,11 +16,19 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 | `@chief-clancy/plan`     | 0.5.0   |
 | `chief-clancy` (wrapper) | 0.9.15  |
 
-**Test counts:** 872 core, 783 terminal, 808 dev, 73 brief, 264 plan = **2800 total**.
+**Test counts:** 872 core, 783 terminal, 820 dev, 73 brief, 264 plan = **2812 total**.
 
-**Last shipped:** Phase E PRs 6 (#235) + 6.5 (#236) + 7 (#237) in Session 65.
+**Last shipped:** Phase E PRs 8a (#238) + 8b (#239) in Session 66.
 
-## Phase E — completed PRs (Sessions 60–65)
+## Phase E — completed PRs (Sessions 60–66)
+
+### PR 8b (#239) — /clancy:dev + /clancy:board-setup + installer overhaul (Session 66)
+
+Added `/clancy:dev` slash command + workflow (preflight → bundle execution) and `/clancy:board-setup` (adapted from brief for standalone self-containment). Installer overhauled: bundles moved from `.claude/clancy/bundles/` to `.clancy/` (matching terminal's `clancy-implement.js` convention), dead hooks scaffolding removed, ESM `package.json` + `VERSION.dev` written to `.clancy/`, global-mode workflow inlining with symlink guard. `.claude/` vs `.clancy/` directory split documented in ARCHITECTURE.md. Install success output lists both commands with "Next steps" guidance. DA review (subagent) caught 3 MEDIUMs + Copilot caught 3 findings — all addressed. 12 commits.
+
+### PR 8a (#238) — three-state install preflight (Session 66)
+
+Added `detectDevInstallState()` classifying standalone / standalone-board / terminal by probing `.clancy/.env` + `.clancy/clancy-implement.js`. `runDevInstall` returns detected state. 5 new tests.
 
 ### PR 7 (#237) — esbuild config + bundles (Session 65)
 
@@ -69,9 +77,13 @@ Entire pipeline directory (46 files) moved from `core/src/dev/pipeline/` to `dev
 - **Vitest aliases use directory paths** (not file paths) for @chief-clancy/core and @chief-clancy/dev. ~/d alias needed in terminal vitest config.
 - **core/src/dev/ deleted** in PR 5 (#234).
 
+### Scan extraction (planned Session 66, blocks PR 8c)
+
+`/clancy:map-codebase` lives only in terminal but brief, plan, and dev all consume `.clancy/docs/`. New `@chief-clancy/scan` package (markdown only, no installer) will be consumed as a dependency by all four packages. Their installers copy scan's agents/commands/workflows automatically — users never see scan as a separate step. Also fixes pre-existing bug where terminal's installer never copies the 5 agent files. See `.clancy/plans/phase-e-dev-extraction.md` Section 9 for full plan (PRs S1–S7).
+
 ### Remaining PR sequence
 
-PRs 2b/2c/3a/3b all absorbed. PRs 3.5 through 7 shipped. Sequence continues from PR 8a onwards — see `.clancy/plans/phase-e-dev-extraction.md`.
+PRs 2b/2c/3a/3b all absorbed. PRs 3.5 through 8b shipped. Next: scan extraction (S1–S7), then PR 8c onwards — see `.clancy/plans/phase-e-dev-extraction.md`.
 
 ## Phase ledger
 

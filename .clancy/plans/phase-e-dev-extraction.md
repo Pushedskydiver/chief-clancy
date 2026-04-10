@@ -1769,3 +1769,73 @@ Very few — v3 has addressed the known findings. These are the only places I'm 
 ---
 
 **End of v3 deltas. Read alongside v1 + v2 for full context. v3 is ready for DA round 3 sanity-check.**
+
+---
+
+## 9. Scan extraction — `@chief-clancy/scan` (added Session 66)
+
+### Problem
+
+`/clancy:map-codebase` lives only in terminal. It produces `.clancy/docs/` (10 structured codebase docs via 5 parallel agents). Brief, plan, and dev all reference these docs in their workflows but have no way to produce them standalone. Additionally, terminal's installer has a pre-existing bug: the 5 agent files (`tech-agent.md`, `arch-agent.md`, `quality-agent.md`, `design-agent.md`, `concerns-agent.md`) are never copied to the user's machine — the workflow references `src/agents/` paths that don't exist post-install.
+
+**Release blocker for dev.** Dev executes tickets against the codebase. Without `.clancy/docs/`, the prompt-builder has no codebase context and implementations will be significantly lower quality.
+
+### Decision: new `@chief-clancy/scan` package (consumed as dependency, not user-facing)
+
+Create `@chief-clancy/scan` as a published npm package containing only markdown files:
+
+- `src/agents/` — 5 agent prompts (~600 lines total)
+- `src/commands/` — `map-codebase.md`, `update-docs.md`
+- `src/workflows/` — `map-codebase.md`, `update-docs.md`
+
+No installer, no `bin` field, no TypeScript runtime. Just `"files": ["src"]` in `package.json`. The package exists purely so other packages can depend on it and resolve its files at install time.
+
+**Consuming packages add `@chief-clancy/scan` as a dependency.** Each package's installer resolves scan's source directories (e.g. `require.resolve('@chief-clancy/scan/package.json')` → find root → `src/agents/`) and copies the files alongside its own commands/workflows. Users never run `npx @chief-clancy/scan` — they run `npx @chief-clancy/dev` (or brief, plan, terminal) and get scan's files automatically.
+
+### Why not the alternatives
+
+- **Copy to each package (Option A):** 5 complex agent prompts × 4 packages = drift risk. When an agent prompt improves, 4 copies need updating. Single source of truth is critical for ~600 lines of nuanced scanning instructions.
+- **Move to dev (Option C):** brief and plan need the docs too. Making brief depend on dev breaks the "standalone packages have zero deps on dev/terminal" rule.
+- **Shared monorepo directory without npm package:** Works for terminal (monorepo-relative path) but doesn't work for brief/plan/dev when installed from npm — they can't resolve monorepo-relative paths.
+- **Standalone `npx @chief-clancy/scan`:** Adds a user-facing install step. Users shouldn't need to know about scan as a separate concept.
+
+### What each consuming package does
+
+| Package | Adds scan as dep | Installer copies agents | Installer copies commands/workflows | Install output mentions map-codebase |
+| ------- | ---------------- | ---------------------- | ----------------------------------- | ------------------------------------ |
+| **dev** | Yes | Yes → `.claude/clancy/agents/` | Yes → `.claude/commands/clancy/` + `.claude/clancy/workflows/` | "Recommended: Run `/clancy:map-codebase` for better results" |
+| **brief** | Yes | Yes → `.claude/clancy/agents/` | Yes → `.claude/commands/clancy/` + `.claude/clancy/workflows/` | "Optional: Run `/clancy:map-codebase` for richer briefs" |
+| **plan** | Yes | Yes → `.claude/clancy/agents/` | Yes → `.claude/commands/clancy/` + `.claude/clancy/workflows/` | "Optional: Run `/clancy:map-codebase` for better plans" |
+| **terminal** (via chief-clancy) | Yes (in chief-clancy wrapper) | Yes → `.claude/clancy/agents/` | Yes (already has map-codebase in setup role) | Existing init flow offers map-codebase |
+
+### Workflow wording changes
+
+References to `.clancy/docs/` in downstream workflows must handle absence gracefully:
+
+1. **`prompt-builder.ts`** (HARD dependency, lines 109-110): Change from unconditional "Read core docs in .clancy/docs/" to conditional "If `.clancy/docs/` exists, read: STACK.md, ARCHITECTURE.md, ... If the directory is missing, work with what you find in the codebase directly."
+
+2. **`brief.md` line 585** (devil's advocate agent): Change "read `.clancy/docs/`" to "read `.clancy/docs/` if available".
+
+3. **`brief.md` line 698** (Step 7 agent exploration): Already soft — agents explore what's there.
+
+4. **`plan.md` Step 3**: Already handles absence with interactive warning. No change needed.
+
+5. **`review.md`**: Already conditional. No change needed.
+
+6. **`map-codebase.md` workflow**: Agent path references must change from `src/agents/` to `.claude/clancy/agents/` to match installed location.
+
+### PR sequence
+
+This work inserts into the Phase E sequence. Suggested placement: after PR 8b (shipped), before PR 8c (single-ticket executor needs the docs).
+
+| PR | Description | Size | Risk |
+| --- | --- | --- | --- |
+| **S1** | `📦 chore: scaffold @chief-clancy/scan package (markdown only, no installer)` — package.json, files array, move agent + command + workflow markdown from terminal | S | Low |
+| **S2** | `✨ feat(dev): consume @chief-clancy/scan in dev installer` — add scan dep, add `agentsDest` to paths, copy agents/commands/workflows, update install output | S | Low |
+| **S3** | `✨ feat(brief): consume @chief-clancy/scan in brief installer` — same pattern as S2 | S | Low |
+| **S4** | `✨ feat(plan): consume @chief-clancy/scan in plan installer` — same pattern as S2 | S | Low |
+| **S5** | `✨ feat(terminal): consume @chief-clancy/scan in terminal installer` — add scan slots to InstallSources, add handleScanContent, fix agent path refs in map-codebase.md workflow | S | Low |
+| **S6** | `♻️ refactor: make .clancy/docs/ references conditional` — prompt-builder.ts + brief.md + tests | S | Medium |
+| **S7** | `📝 docs: update install output and docs for map-codebase availability` | XS | Low |
+
+**S1–S5 can potentially be merged into fewer PRs if the changes are small enough.** Each is a mechanical "add dep + copy files" change following the board-setup pattern. S6 is the most important — it fixes the hard dependency in prompt-builder.ts.
