@@ -4,7 +4,7 @@
  * Verifies env var parsing and the iteration/report closures
  * that wire real Node.js APIs into runAutopilot.
  */
-import type { PipelineResult } from '@chief-clancy/core';
+import type { PipelineResult } from '@chief-clancy/dev';
 
 import {
   buildNotify,

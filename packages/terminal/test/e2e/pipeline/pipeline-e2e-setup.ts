@@ -9,14 +9,14 @@
  * The Claude CLI is never invoked for real — the simulator creates
  * dummy implementation files and commits, then returns exit code 0.
  */
+import type { EnvFileSystem } from '@chief-clancy/core';
 import type {
   CostFs,
-  EnvFileSystem,
   LockFs,
   PipelineResult,
   ProgressFs,
   QualityFs,
-} from '@chief-clancy/core';
+} from '@chief-clancy/dev';
 import type { SpawnSyncFn } from '~/t/runner/shared/types.js';
 
 import { execFileSync } from 'node:child_process';
