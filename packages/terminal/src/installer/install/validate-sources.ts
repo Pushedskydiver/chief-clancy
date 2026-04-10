@@ -4,6 +4,8 @@
  * Guards against a corrupted npm package by checking that all required
  * source directories and bundle scripts exist before installation begins.
  */
+import type { InstallSources } from './install.js';
+
 import { join } from 'node:path';
 
 import {
@@ -16,25 +18,6 @@ import {
 // ---------------------------------------------------------------------------
 
 const BUNDLE_SCRIPTS = ['clancy-implement.js', 'clancy-autopilot.js'] as const;
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-type InstallSources = {
-  readonly rolesDir: string;
-  readonly hooksDir: string;
-  readonly bundleDir: string;
-  readonly agentsDir: string;
-  readonly briefCommandsDir?: string;
-  readonly briefWorkflowsDir?: string;
-  readonly briefAgentsDir?: string;
-  readonly planCommandsDir?: string;
-  readonly planWorkflowsDir?: string;
-  readonly scanAgentsDir?: string;
-  readonly scanCommandsDir?: string;
-  readonly scanWorkflowsDir?: string;
-};
 
 // ---------------------------------------------------------------------------
 // Public API

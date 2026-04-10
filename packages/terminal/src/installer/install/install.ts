@@ -35,7 +35,7 @@ import { validateSources } from './validate-sources.js';
 export type InstallMode = 'global' | 'local';
 
 /** Source directories within the npm package. */
-type InstallSources = {
+export type InstallSources = {
   readonly rolesDir: string;
   readonly hooksDir: string;
   readonly bundleDir: string;
