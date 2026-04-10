@@ -4,7 +4,7 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 
 ## Current state (2026-04-10)
 
-**PR 5 (#234) merged.** Phase E extraction: all dep-factory modules now in `@chief-clancy/dev`, `core/src/dev/` deleted. Next: rest of Phase E plan (PR 6+).
+**PR 7 (#237) merged.** Phase E extraction: dev package now has installer infrastructure, no-op entrypoints, and esbuild bundles. Next: PR 8a (three-state install preflight).
 
 **Published versions:**
 
@@ -16,11 +16,23 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 | `@chief-clancy/plan`     | 0.5.0   |
 | `chief-clancy` (wrapper) | 0.9.15  |
 
-**Test counts:** 872 core, 783 terminal, 792 dev, 73 brief, 264 plan = **2784 total**.
+**Test counts:** 872 core, 783 terminal, 808 dev, 73 brief, 264 plan = **2800 total**.
 
-**Last shipped:** Phase E PRs 4c (#233) + 5 (#234) in Session 64.
+**Last shipped:** Phase E PRs 6 (#235) + 6.5 (#236) + 7 (#237) in Session 65.
 
-## Phase E — completed PRs (Sessions 60–64)
+## Phase E — completed PRs (Sessions 60–65)
+
+### PR 7 (#237) — esbuild config + bundles (Session 65)
+
+Added `esbuild.runtime.ts` that produces `clancy-dev.js` and `clancy-dev-autopilot.js` bundles from the no-op entrypoints. Build chain: `tsc → tsc-alias → node dist/esbuild.runtime.js`. Same zod-locale stub plugin as terminal (with cross-platform regex fix for Windows path separators). Installer BUNDLE_FILES populated in both `install.ts` and `bin/dev.js`. Terminal's esbuild config intentionally kept — different bundle names, different execution surface.
+
+### PR 6.5 (#236) — no-op entrypoints (Session 65)
+
+Added `src/entrypoints/dev.ts` and `src/entrypoints/loop.ts` as no-op stubs (print version, exit). Gives PR 7 stable esbuild entry points. DA caught `createRequire('../../package.json')` would break under esbuild bundling (path resolves to nonexistent `dist/package.json`) — fixed by hardcoding version in stubs. Registered as Knip entry points.
+
+### PR 6 (#235) — installer infrastructure (Session 65)
+
+Added `src/installer/install.ts` with pure functions (`parseDevInstallFlag`, `resolveDevInstallPaths`, `runDevInstall`) following brief/plan pattern. ESM CLI entry point `bin/dev.js` with interactive global/local mode selection. DA caught: directory-level symlink protection needed before `mkdir` (not just file-level), bin key should be `clancy-dev` not `@chief-clancy/dev`, `sources` parameter needed to match brief's `BriefInstallSources` pattern. 16 tests.
 
 ### PR 4c (#233) — dep-factory + deliver-phase move (Session 64)
 
@@ -59,7 +71,7 @@ Entire pipeline directory (46 files) moved from `core/src/dev/pipeline/` to `dev
 
 ### Remaining PR sequence
 
-PRs 2b/2c/3a/3b all absorbed. PRs 3.5 through 5 shipped. Sequence continues from PR 6 onwards — see `.clancy/plans/phase-e-dev-extraction.md`.
+PRs 2b/2c/3a/3b all absorbed. PRs 3.5 through 7 shipped. Sequence continues from PR 8a onwards — see `.clancy/plans/phase-e-dev-extraction.md`.
 
 ## Phase ledger
 
