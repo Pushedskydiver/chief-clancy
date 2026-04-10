@@ -1824,18 +1824,29 @@ References to `.clancy/docs/` in downstream workflows must handle absence gracef
 
 6. **`map-codebase.md` workflow**: Agent path references must change from `src/agents/` to `.claude/clancy/agents/` to match installed location.
 
-### PR sequence
+### PR sequence (revised after DA grill)
 
-This work inserts into the Phase E sequence. Suggested placement: after PR 8b (shipped), before PR 8c (single-ticket executor needs the docs).
+This work inserts into the Phase E sequence. Placement: after PR 8b (shipped), before PR 8c (single-ticket executor needs the docs). **S2–S4 must be sequential** (each modifies `pnpm-lock.yaml`).
 
-| PR | Description | Size | Risk |
-| --- | --- | --- | --- |
-| **S1** | `📦 chore: scaffold @chief-clancy/scan package (markdown only, no installer)` — package.json, files array, move agent + command + workflow markdown from terminal | S | Low |
-| **S2** | `✨ feat(dev): consume @chief-clancy/scan in dev installer` — add scan dep, add `agentsDest` to paths, copy agents/commands/workflows, update install output | S | Low |
-| **S3** | `✨ feat(brief): consume @chief-clancy/scan in brief installer` — same pattern as S2 | S | Low |
-| **S4** | `✨ feat(plan): consume @chief-clancy/scan in plan installer` — same pattern as S2 | S | Low |
-| **S5** | `✨ feat(terminal): consume @chief-clancy/scan in terminal installer` — add scan slots to InstallSources, add handleScanContent, fix agent path refs in map-codebase.md workflow | S | Low |
-| **S6** | `♻️ refactor: make .clancy/docs/ references conditional` — prompt-builder.ts + brief.md + tests | S | Medium |
-| **S7** | `📝 docs: update install output and docs for map-codebase availability` | XS | Low |
+| PR | Description | Size | Depends on | Risk |
+| --- | --- | --- | --- | --- |
+| **S0** | `♻️ refactor: make .clancy/docs/ references conditional` — `prompt-builder.ts` (hard dep → conditional), `brief.md` lines 585/698 ("if available"), `devils-advocate.md` line 11, + prompt-builder tests. Independent of scan package. | S | None | Low |
+| **S1** | `📦 chore: scaffold @chief-clancy/scan package` — new `packages/scan/` with `package.json` (`private: false`, no bin, no installer). COPY (not move) 5 scan agents from `terminal/src/agents/` (tech, arch, quality, design, concerns — NOT devils-advocate or verification-gate). COPY `map-codebase.md` + `update-docs.md` commands + workflows. Fix agent path refs from `src/agents/` to `.claude/clancy/agents/` (matches brief's established `devils-advocate.md` reference pattern). Add scan entry to `eslint.config.ts` boundaries + `knip.json`. Terminal retains its copies until S5. | S–M | None | Low |
+| **S2** | `✨ feat(dev): consume @chief-clancy/scan` — add scan dep to `package.json`, add `agentsDest` + `SCAN_AGENT_FILES` / `SCAN_COMMAND_FILES` / `SCAN_WORKFLOW_FILES` to `install.ts`, resolve scan root via `createRequire`. Update `bin/dev.js` to resolve and copy scan files (accepts the dependency — scan is markdown-only, not a heavy runtime). Update install output: "Recommended: Run `/clancy:map-codebase`". | M | S1 | Low |
+| **S3** | `✨ feat(brief): consume @chief-clancy/scan` — same pattern as S2 for `install.ts` + `bin/brief.js`. Update install output: "Optional: Run `/clancy:map-codebase` for richer briefs". | M | S2 (lockfile) | Low |
+| **S4** | `✨ feat(plan): consume @chief-clancy/scan` — same pattern as S2 for `install.ts` + `bin/plan.js`. Update install output: "Optional: Run `/clancy:map-codebase` for better plans". | M | S3 (lockfile) | Low |
+| **S5** | `✨ feat(terminal): consume @chief-clancy/scan + remove duplicates` — add scan slots to `InstallSources` (`scanCommandsDir`, `scanWorkflowsDir`, `scanAgentsDir`), add `handleScanContent`. Update `chief-clancy/bin/clancy.js` to resolve scan package root + pass source paths. **In the same PR:** remove 5 scan agent files from `terminal/src/agents/` (keep `devils-advocate.md`, `verification-gate.md`), remove `map-codebase.md` + `update-docs.md` from `terminal/src/roles/setup/commands/` + `workflows/`. Update `agents.test.ts`. Atomic swap avoids dual installation. | M | S4 (lockfile) | Medium |
 
-**S1–S5 can potentially be merged into fewer PRs if the changes are small enough.** Each is a mechanical "add dep + copy files" change following the board-setup pattern. S6 is the most important — it fixes the hard dependency in prompt-builder.ts.
+**6 PRs total (S0–S5).** S0 can merge at any time. S1 is the foundation. S2–S5 are sequential (lockfile). S7 from the original plan is eliminated — install output changes are absorbed into S2–S5.
+
+### Resolved blockers from DA grill
+
+1. **bin/*.js zero-dependency contract (Blocker 1):** Accepted as an architectural evolution. Scan is markdown-only — not a heavy runtime dep like core or terminal. The bin file header comments ("No dependencies on @chief-clancy/core or terminal") remain true; scan is a different category (content, not code). `createRequire` resolves scan's `package.json` to find its root, then copies from `src/`. For `npx` installs, npm installs transitive deps automatically.
+
+2. **Dual installation in terminal (Blocker 2):** S5 does both the add (handleScanContent) AND the remove (delete from src/roles/setup/) in one PR. No intermediate state with dual installation. `copyRoleFiles` uses `readdirSync` (not a static list), so removing files from the directory is safe.
+
+3. **Global mode agent paths (Issue):** Agents use `.claude/clancy/agents/tech-agent.md` path convention (not `@`-file syntax). This matches the established pattern — brief's workflow already references `devils-advocate.md` at `.claude/clancy/agents/devils-advocate.md` (line 582 of brief.md). Claude Code resolves from `~/.claude/` in global mode.
+
+4. **Brief wording fix (Issue):** Absorbed into S0. Lines 585, 698 in `brief.md` get "if available" conditionals. `devils-advocate.md` line 11 gets the same treatment.
+
+5. **S2–S4 lockfile conflicts (Issue):** Sequenced S2 → S3 → S4 → S5. Each merges before the next starts.

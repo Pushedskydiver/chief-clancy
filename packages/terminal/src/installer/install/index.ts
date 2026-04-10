@@ -8,5 +8,5 @@ export {
   parseInstallFlag,
   resolveInstallPaths,
   runInstall,
-  validateSources,
 } from './install.js';
+export { validateSources } from './validate-sources.js';

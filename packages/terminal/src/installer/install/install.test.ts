@@ -4,8 +4,8 @@ import {
   parseEnabledRoles,
   parseInstallFlag,
   resolveInstallPaths,
-  validateSources,
 } from '~/t/installer/install/install.js';
+import { validateSources } from '~/t/installer/install/validate-sources.js';
 import { describe, expect, it } from 'vitest';
 
 describe('parseInstallFlag', () => {
@@ -266,6 +266,25 @@ describe('validateSources', () => {
       ...sources,
       planCommandsDir: '/pkg/plan/commands',
       planWorkflowsDir: '/pkg/plan/workflows',
+    };
+
+    expect(() => validateSources(full, () => true)).not.toThrow();
+  });
+
+  it('throws when only some scan source dirs are provided', () => {
+    const partial = { ...sources, scanAgentsDir: '/pkg/scan/agents' };
+
+    expect(() => validateSources(partial, () => true)).toThrow(
+      'Scan source dirs must be all-or-none',
+    );
+  });
+
+  it('does not throw when all scan source dirs are provided', () => {
+    const full = {
+      ...sources,
+      scanAgentsDir: '/pkg/scan/agents',
+      scanCommandsDir: '/pkg/scan/commands',
+      scanWorkflowsDir: '/pkg/scan/workflows',
     };
 
     expect(() => validateSources(full, () => true)).not.toThrow();

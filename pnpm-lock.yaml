@@ -98,6 +98,9 @@ importers:
       '@chief-clancy/plan':
         specifier: workspace:*
         version: link:../plan
+      '@chief-clancy/scan':
+        specifier: workspace:*
+        version: link:../scan
       '@chief-clancy/terminal':
         specifier: workspace:*
         version: link:../terminal

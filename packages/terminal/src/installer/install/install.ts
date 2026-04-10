@@ -19,14 +19,13 @@ import {
 } from '~/t/installer/manifest/manifest.js';
 import { handlePlanContent } from '~/t/installer/plan-content/index.js';
 import { copyRoleFiles } from '~/t/installer/role-filter/role-filter.js';
-import {
-  requirePath,
-  validateOptionalDirs,
-} from '~/t/installer/shared/fs-guards/index.js';
+import { handleScanContent } from '~/t/installer/scan-content/index.js';
 import { printSuccess } from '~/t/installer/ui/ui.js';
 import { blue, dim, green } from '~/t/shared/ansi/index.js';
 
 import { loadClancyEnv } from '@chief-clancy/core';
+
+import { validateSources } from './validate-sources.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -36,7 +35,7 @@ import { loadClancyEnv } from '@chief-clancy/core';
 export type InstallMode = 'global' | 'local';
 
 /** Source directories within the npm package. */
-type InstallSources = {
+export type InstallSources = {
   readonly rolesDir: string;
   readonly hooksDir: string;
   readonly bundleDir: string;
@@ -46,6 +45,9 @@ type InstallSources = {
   readonly briefAgentsDir?: string;
   readonly planCommandsDir?: string;
   readonly planWorkflowsDir?: string;
+  readonly scanAgentsDir?: string;
+  readonly scanCommandsDir?: string;
+  readonly scanWorkflowsDir?: string;
 };
 
 /** All resolved destination paths for an installation. */
@@ -98,7 +100,10 @@ export type RunInstallOptions = {
 // Constants
 // ---------------------------------------------------------------------------
 
-const BUNDLE_SCRIPTS = ['clancy-implement.js', 'clancy-autopilot.js'] as const;
+export const BUNDLE_SCRIPTS = [
+  'clancy-implement.js',
+  'clancy-autopilot.js',
+] as const;
 
 // ---------------------------------------------------------------------------
 // Pure functions
@@ -179,45 +184,6 @@ export function parseEnabledRoles(
     .filter(Boolean);
 
   return new Set(normalised);
-}
-
-/**
- * Validate that all required source directories and files exist.
- *
- * Guards against a corrupted npm package. Throws on the first missing path.
- * `agentsDir` is intentionally not validated — the verification gate prompt
- * is read best-effort in {@link registerHooks} and skipped if missing.
- *
- * @param sources - The source directories to check.
- * @param exists - File existence check (injected for testability).
- */
-export function validateSources(
-  sources: InstallSources,
-  exists: (path: string) => boolean,
-): void {
-  requirePath('Roles source', sources.rolesDir, exists);
-  requirePath('Hooks source', sources.hooksDir, exists);
-  requirePath('Runtime bundles source', sources.bundleDir, exists);
-
-  BUNDLE_SCRIPTS.forEach((script) => {
-    requirePath(
-      `Bundled script ${script}`,
-      join(sources.bundleDir, script),
-      exists,
-    );
-  });
-
-  const { briefCommandsDir, briefWorkflowsDir, briefAgentsDir } = sources;
-  validateOptionalDirs(
-    'Brief',
-    [briefCommandsDir, briefWorkflowsDir, briefAgentsDir],
-    exists,
-  );
-  validateOptionalDirs(
-    'Plan',
-    [sources.planCommandsDir, sources.planWorkflowsDir],
-    exists,
-  );
 }
 
 // ---------------------------------------------------------------------------
@@ -323,6 +289,7 @@ function installContent(options: {
 
   handleBriefContent({ sources, dests: paths, enabledRoles, fs });
   handlePlanContent({ sources, dests: paths, enabledRoles, fs });
+  handleScanContent({ sources, dests: paths, fs });
 
   if (mode === 'global') {
     inlineWorkflows(paths.commandsDest, paths.workflowsDest);

@@ -50,6 +50,10 @@ const briefRoot = join(dirname(briefEntry), '..');
 const planEntry = fileURLToPath(import.meta.resolve('@chief-clancy/plan'));
 const planRoot = join(dirname(planEntry), '..');
 
+const scanRoot = join(
+  dirname(require.resolve('@chief-clancy/scan/package.json')),
+);
+
 const sources = {
   rolesDir: join(terminalRoot, 'src', 'roles'),
   hooksDir: join(terminalRoot, 'dist', 'hooks'),
@@ -60,6 +64,9 @@ const sources = {
   briefAgentsDir: join(briefRoot, 'src', 'agents'),
   planCommandsDir: join(planRoot, 'src', 'commands'),
   planWorkflowsDir: join(planRoot, 'src', 'workflows'),
+  scanAgentsDir: join(scanRoot, 'src', 'agents'),
+  scanCommandsDir: join(scanRoot, 'src', 'commands'),
+  scanWorkflowsDir: join(scanRoot, 'src', 'workflows'),
 };
 
 // ---------------------------------------------------------------------------
