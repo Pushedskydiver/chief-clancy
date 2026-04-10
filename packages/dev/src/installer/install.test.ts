@@ -1,0 +1,167 @@
+import type { RunDevInstallOptions } from './install.js';
+
+import { join } from 'node:path';
+
+import { describe, expect, it, vi } from 'vitest';
+
+import {
+  parseDevInstallFlag,
+  resolveDevInstallPaths,
+  runDevInstall,
+} from './install.js';
+
+// ---------------------------------------------------------------------------
+// parseDevInstallFlag
+// ---------------------------------------------------------------------------
+
+describe('parseDevInstallFlag', () => {
+  it('returns "global" when --global is present', () => {
+    expect(parseDevInstallFlag(['--global'])).toBe('global');
+  });
+
+  it('returns "local" when --local is present', () => {
+    expect(parseDevInstallFlag(['--local'])).toBe('local');
+  });
+
+  it('returns null when no flag is present', () => {
+    expect(parseDevInstallFlag([])).toBeNull();
+  });
+
+  it('returns null for unrelated flags', () => {
+    expect(parseDevInstallFlag(['--verbose', '--force'])).toBeNull();
+  });
+
+  it('prefers --global when both flags are present', () => {
+    expect(parseDevInstallFlag(['--global', '--local'])).toBe('global');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// resolveDevInstallPaths
+// ---------------------------------------------------------------------------
+
+describe('resolveDevInstallPaths', () => {
+  const homeDir = '/home/user';
+  const cwd = '/projects/my-app';
+
+  describe('global mode', () => {
+    it('resolves bundles destination under ~/.claude', () => {
+      const paths = resolveDevInstallPaths('global', homeDir, cwd);
+
+      expect(paths.bundlesDest).toBe(
+        join(homeDir, '.claude', 'clancy', 'bundles'),
+      );
+    });
+
+    it('resolves hooks destination under ~/.claude', () => {
+      const paths = resolveDevInstallPaths('global', homeDir, cwd);
+
+      expect(paths.hooksDest).toBe(join(homeDir, '.claude', 'clancy', 'hooks'));
+    });
+  });
+
+  describe('local mode', () => {
+    it('resolves bundles destination under cwd/.claude', () => {
+      const paths = resolveDevInstallPaths('local', homeDir, cwd);
+
+      expect(paths.bundlesDest).toBe(join(cwd, '.claude', 'clancy', 'bundles'));
+    });
+
+    it('resolves hooks destination under cwd/.claude', () => {
+      const paths = resolveDevInstallPaths('local', homeDir, cwd);
+
+      expect(paths.hooksDest).toBe(join(cwd, '.claude', 'clancy', 'hooks'));
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// runDevInstall
+// ---------------------------------------------------------------------------
+
+/** Build a mock FS with in-memory file storage. */
+const createMockFs = (files: Record<string, string> = {}) => {
+  const store = new Map(Object.entries(files));
+  const dirs = new Set<string>();
+
+  return {
+    exists: vi.fn((p: string) => store.has(p) || dirs.has(p)),
+    writeFile: vi.fn((p: string, c: string) => {
+      store.set(p, c);
+    }),
+    mkdir: vi.fn((p: string) => {
+      dirs.add(p);
+    }),
+    copyFile: vi.fn((src: string, dest: string) => {
+      const content = store.get(src);
+      if (content === undefined) throw new Error(`ENOENT: ${src}`);
+      store.set(dest, content);
+    }),
+    isSymlink: vi.fn(() => false),
+  };
+};
+
+const defaultPaths = {
+  bundlesDest: '/dest/clancy/bundles',
+  hooksDest: '/dest/clancy/hooks',
+};
+
+const defaultSources = {
+  bundlesDir: '/pkg/dist/bundle',
+  hooksDir: '/pkg/dist/hooks',
+};
+
+type MockFs = ReturnType<typeof createMockFs>;
+
+type MockOptions = Omit<RunDevInstallOptions, 'fs'> & {
+  readonly fs: MockFs;
+};
+
+const buildOptions = (
+  overrides: Partial<Omit<RunDevInstallOptions, 'fs'>> = {},
+  files: Readonly<Record<string, string>> = {},
+): MockOptions => {
+  const fs = createMockFs(files);
+
+  return {
+    paths: defaultPaths,
+    sources: defaultSources,
+    version: '0.1.0',
+    fs,
+    ...overrides,
+  };
+};
+
+describe('runDevInstall', () => {
+  it('creates destination directories', () => {
+    const opts = buildOptions();
+    runDevInstall(opts);
+
+    expect(opts.fs.mkdir).toHaveBeenCalledWith(defaultPaths.bundlesDest);
+    expect(opts.fs.mkdir).toHaveBeenCalledWith(defaultPaths.hooksDest);
+  });
+
+  it('writes VERSION.dev with the package version', () => {
+    const opts = buildOptions({ version: '1.2.3' });
+    runDevInstall(opts);
+
+    expect(opts.fs.writeFile).toHaveBeenCalledWith(
+      join(defaultPaths.bundlesDest, 'VERSION.dev'),
+      '1.2.3',
+    );
+  });
+
+  it('does not copy any files when bundle list is empty', () => {
+    const opts = buildOptions();
+    runDevInstall(opts);
+
+    expect(opts.fs.copyFile).not.toHaveBeenCalled();
+  });
+
+  it('rejects symlink at version marker path', () => {
+    const opts = buildOptions();
+    opts.fs.isSymlink.mockReturnValue(true);
+
+    expect(() => runDevInstall(opts)).toThrow('Symlink rejected');
+  });
+});
