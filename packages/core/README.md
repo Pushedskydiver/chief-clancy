@@ -29,7 +29,7 @@ The phase orchestrator runs a sequence of composable phases that take a ticket f
 
 ### Lifecycle modules
 
-Focused modules for each concern in the ticket lifecycle: branching, locking, PR creation (GitHub/GitLab/Bitbucket/Azure DevOps), rework detection, epic delivery, cost tracking, progress logging, crash recovery, and more.
+Re-exported from `@chief-clancy/dev` for backward compatibility. The implementations live in the dev package; core provides pass-through re-exports.
 
 ### Schemas
 

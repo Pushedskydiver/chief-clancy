@@ -8,7 +8,7 @@
 import type { ConsoleLike } from '../shared/types.js';
 import type { PipelineResult } from '@chief-clancy/core';
 
-import { formatDuration } from '@chief-clancy/core';
+import { formatDuration } from '@chief-clancy/dev';
 
 import { bold, dim, green, yellow } from '../../shared/ansi/index.js';
 

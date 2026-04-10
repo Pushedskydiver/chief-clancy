@@ -226,65 +226,48 @@ export {
   fetchRemoteBranch,
 } from './shared/git-ops/index.js';
 
-export type { LockFs } from './dev/lifecycle/lock/index.js';
-export {
-  deleteLock,
-  deleteVerifyAttempt,
-  readLock,
-  writeLock,
-} from './dev/lifecycle/lock/index.js';
-
+// ─── Lifecycle re-exports (delegated to @chief-clancy/dev) ─────────────────
 export type {
+  CostFs,
+  FetchFn,
+  LockFs,
+  PlatformReworkHandlers,
+  PreflightDeps,
   ProgressEntry,
   ProgressFs,
-} from './dev/lifecycle/progress/index.js';
+  QualityFs,
+} from '@chief-clancy/dev';
 export {
+  appendCostEntry,
   appendProgress,
-  countReworkCycles,
-  findEntriesWithStatus,
-  formatTimestamp,
-  parseProgressFile,
-} from './dev/lifecycle/progress/index.js';
-
-export {
+  attemptPrCreation,
+  buildPrBody,
+  checkFeasibility,
   computeTargetBranch,
   computeTicketBranch,
-} from './dev/lifecycle/branch/index.js';
-
-export { runPreflight } from './dev/lifecycle/preflight/preflight.js';
-export type { PreflightDeps } from './dev/lifecycle/preflight/preflight.js';
-
-export { detectResume, executeResume } from './dev/lifecycle/resume/resume.js';
-
-export { fetchReworkFromPrReview } from './dev/lifecycle/rework/rework.js';
-export { postReworkActions } from './dev/lifecycle/rework/rework.js';
-export type { PlatformReworkHandlers } from './dev/lifecycle/rework/rework-handlers.js';
-export { resolvePlatformHandlers } from './dev/lifecycle/rework/rework-handlers.js';
-
-export { checkFeasibility } from './dev/lifecycle/feasibility/feasibility.js';
-
-export { deliverViaPullRequest } from './dev/lifecycle/deliver-ticket/deliver-ticket.js';
-
-export { deliverEpicToBase } from './dev/lifecycle/deliver-epic/deliver-epic.js';
-
-export { ensureEpicBranch } from './dev/lifecycle/epic/epic.js';
-
-export {
+  countReworkCycles,
+  deleteLock,
+  deleteVerifyAttempt,
+  deliverEpicToBase,
+  deliverViaPullRequest,
+  detectResume,
+  ensureEpicBranch,
+  executeResume,
+  fetchReworkFromPrReview,
+  findEntriesWithStatus,
+  formatDuration,
+  formatTimestamp,
+  parseProgressFile,
+  postReworkActions,
+  readLock,
+  resolveCommitType,
   getQualityData,
   recordDelivery,
   recordRework,
-} from './dev/lifecycle/quality/quality.js';
-export type { QualityFs } from './dev/lifecycle/quality/quality.js';
-
-export type { FetchFn } from './dev/lifecycle/pr-creation/pr-creation.js';
-export { attemptPrCreation } from './dev/lifecycle/pr-creation/pr-creation.js';
-export { resolveCommitType } from './dev/lifecycle/commit-type/commit-type.js';
-export { buildPrBody } from './dev/lifecycle/pull-request/pr-body/pr-body.js';
-
-export type { CostFs } from './dev/lifecycle/cost/cost.js';
-export { appendCostEntry } from './dev/lifecycle/cost/cost.js';
-
-export { formatDuration } from './dev/lifecycle/format/format.js';
+  resolvePlatformHandlers,
+  runPreflight,
+  writeLock,
+} from '@chief-clancy/dev';
 
 export { detectBoard, sharedEnv } from './board/index.js';
 export { createBoard } from './board/factory/index.js';

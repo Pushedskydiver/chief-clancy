@@ -6,12 +6,15 @@ import { wireDeliver } from './deliver-phase.js';
 
 vi.mock('@chief-clancy/core', () => ({
   deliverPhase: vi.fn((_ctx: unknown, deps: unknown) => deps),
-  deliverViaPullRequest: vi.fn(),
   detectRemote: vi.fn(() => ({
     owner: 'org',
     repo: 'repo',
     host: 'github.com',
   })),
+}));
+
+vi.mock('@chief-clancy/dev', () => ({
+  deliverViaPullRequest: vi.fn(),
   recordDelivery: vi.fn(),
   recordRework: vi.fn(),
   resolvePlatformHandlers: vi.fn(() => undefined),
@@ -75,7 +78,7 @@ describe('wireDeliver', () => {
     const deps = await result.deliver(createCtx());
 
     // Call the wired function to verify it delegates
-    const { deliverViaPullRequest } = await import('@chief-clancy/core');
+    const { deliverViaPullRequest } = await import('@chief-clancy/dev');
     (
       deps as unknown as Record<string, (...args: unknown[]) => unknown>
     ).deliverViaPullRequest({ base: 'main' });
@@ -96,7 +99,7 @@ describe('wireDeliver', () => {
       deps as unknown as Record<string, (...args: unknown[]) => unknown>
     ).recordDelivery();
 
-    const { recordDelivery } = await import('@chief-clancy/core');
+    const { recordDelivery } = await import('@chief-clancy/dev');
     expect(recordDelivery).toHaveBeenCalledWith(
       expect.anything(),
       '/tmp/test',
@@ -112,7 +115,7 @@ describe('wireDeliver', () => {
       deps as unknown as Record<string, (...args: unknown[]) => unknown>
     ).recordRework();
 
-    const { recordRework } = await import('@chief-clancy/core');
+    const { recordRework } = await import('@chief-clancy/dev');
     expect(recordRework).toHaveBeenCalledWith(
       expect.anything(),
       '/tmp/test',
@@ -128,13 +131,13 @@ describe('wireDeliver', () => {
       deps as unknown as Record<string, (...args: unknown[]) => unknown>
     ).postReworkActions({});
 
-    const { postReworkActions } = await import('@chief-clancy/core');
+    const { postReworkActions } = await import('@chief-clancy/dev');
     expect(postReworkActions).not.toHaveBeenCalled();
   });
 
   it('postReworkActions delegates when platform handlers are resolved', async () => {
     const { resolvePlatformHandlers, postReworkActions } =
-      await import('@chief-clancy/core');
+      await import('@chief-clancy/dev');
     const mockHandlers = { createPr: vi.fn() };
     vi.mocked(resolvePlatformHandlers).mockReturnValueOnce(
       mockHandlers as never,

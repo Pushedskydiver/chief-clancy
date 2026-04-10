@@ -14,6 +14,10 @@
   "bugs": {
     "url": "https://github.com/Pushedskydiver/chief-clancy/issues"
   },
+  "dependencies": {
+    "@chief-clancy/core": "workspace:*",
+    "zod": "^4.3.6"
+  },
   "keywords": [
     "claude",
     "claude-code",
@@ -35,7 +39,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc --project tsconfig.build.json && tsc-alias --project tsconfig.build.json",
+    "build": "rm -rf dist .declarations tsconfig.build.tsbuildinfo && tsc -p tsconfig.declarations.json && cp -r .declarations/dev/src/ dist/ && rm -rf .declarations && pnpm --filter @chief-clancy/core build && tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "test": "vitest run",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"

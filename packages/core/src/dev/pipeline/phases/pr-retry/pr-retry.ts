@@ -9,7 +9,7 @@
  * — no console output.
  */
 import type { RunContext } from '../../context.js';
-import type { ProgressEntry } from '~/c/dev/lifecycle/progress/index.js';
+import type { ProgressEntry } from '@chief-clancy/dev';
 import type { ProgressStatus } from '~/c/types/progress.js';
 import type { PrCreationResult, RemoteInfo } from '~/c/types/remote.js';
 

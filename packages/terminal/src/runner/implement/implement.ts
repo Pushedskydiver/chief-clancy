@@ -8,19 +8,22 @@
  */
 import type { ConsoleLike, SpawnSyncFn } from '../shared/types.js';
 import type {
-  CostFs,
   EnvFileSystem,
   ExecGit,
-  FetchFn,
-  LockFs,
   PipelineDeps,
   PipelineResult,
-  ProgressFs,
-  QualityFs,
   RunContext,
 } from '@chief-clancy/core';
+import type {
+  CostFs,
+  FetchFn,
+  LockFs,
+  ProgressFs,
+  QualityFs,
+} from '@chief-clancy/dev';
 
-import { createContext, formatDuration } from '@chief-clancy/core';
+import { createContext } from '@chief-clancy/core';
+import { formatDuration } from '@chief-clancy/dev';
 
 import { dim, green, red } from '../../shared/ansi/index.js';
 import { buildPipelineDeps } from '../dep-factory/index.js';
