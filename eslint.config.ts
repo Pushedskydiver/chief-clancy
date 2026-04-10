@@ -83,7 +83,7 @@ export default defineConfig(
           rules: [
             {
               // Temporary: core → dev allowed for lifecycle re-exports + pipeline
-              // phase imports. Removed in PR 5 when pipeline phases move to dev.
+              // phase imports. Removed when pipeline phases move to dev.
               from: { type: 'core' },
               allow: [{ to: { type: 'core' } }, { to: { type: 'dev' } }],
             },

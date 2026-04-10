@@ -261,10 +261,10 @@ export {
   postReworkActions,
   readLock,
   resolveCommitType,
-  resolvePlatformHandlers,
+  getQualityData,
   recordDelivery,
   recordRework,
-  getQualityData,
+  resolvePlatformHandlers,
   runPreflight,
   writeLock,
 } from '@chief-clancy/dev';
