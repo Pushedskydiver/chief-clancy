@@ -5,7 +5,7 @@ import type {
   NoRemote,
   PrCreationResult,
   RemoteInfo,
-} from '~/c/types/remote.js';
+} from '@chief-clancy/core/types/remote.js';
 
 import { describe, expect, it } from 'vitest';
 

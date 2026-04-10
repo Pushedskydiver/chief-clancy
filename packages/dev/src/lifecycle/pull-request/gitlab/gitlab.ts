@@ -10,14 +10,17 @@
 import type {
   GitLabDiscussion,
   GitLabNote,
-} from '~/c/schemas/gitlab/gitlab.js';
-import type { PrCreationResult, PrReviewState } from '~/c/types/index.js';
+} from '@chief-clancy/core/schemas/gitlab/gitlab.js';
+import type {
+  PrCreationResult,
+  PrReviewState,
+} from '@chief-clancy/core/types/index.js';
 
 import {
   gitlabDiscussionsSchema,
   gitlabMrCreatedSchema,
   gitlabMrListSchema,
-} from '~/c/schemas/gitlab/gitlab.js';
+} from '@chief-clancy/core/schemas/gitlab/gitlab.js';
 
 import { postPullRequest } from '../post-pr/post-pr.js';
 import {

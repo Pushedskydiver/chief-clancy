@@ -1,6 +1,6 @@
 import type { EpicContext } from './pr-body.js';
-import type { BoardConfig } from '~/c/schemas/env/env.js';
-import type { Ticket } from '~/c/types/index.js';
+import type { BoardConfig } from '@chief-clancy/core/schemas/env/env.js';
+import type { Ticket } from '@chief-clancy/core/types/index.js';
 
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';

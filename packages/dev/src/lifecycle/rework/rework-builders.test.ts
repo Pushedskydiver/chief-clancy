@@ -5,7 +5,7 @@ import type {
   BitbucketServerRemote,
   GitHubRemote,
   GitLabRemote,
-} from '~/c/types/remote.js';
+} from '@chief-clancy/core/types/remote.js';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 

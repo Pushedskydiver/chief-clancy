@@ -5,7 +5,7 @@
  * git host PR creation functions (GitHub, GitLab, Bitbucket, Azure DevOps).
  * Fetch is dependency-injected for testability.
  */
-import type { PrCreationResult } from '~/c/types/index.js';
+import type { PrCreationResult } from '@chief-clancy/core/types/index.js';
 
 /** Minimal fetch signature needed for PR creation. */
 type PostPrFetch = (url: string, init: RequestInit) => Promise<Response>;

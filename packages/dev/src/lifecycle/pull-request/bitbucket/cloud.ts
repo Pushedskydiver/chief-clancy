@@ -3,14 +3,17 @@
  *
  * Auth: HTTP Basic Auth (username:apppassword).
  */
-import type { BitbucketComment } from '~/c/schemas/bitbucket/bitbucket.js';
-import type { PrCreationResult, PrReviewState } from '~/c/types/index.js';
+import type { BitbucketComment } from '@chief-clancy/core/schemas/bitbucket/bitbucket.js';
+import type {
+  PrCreationResult,
+  PrReviewState,
+} from '@chief-clancy/core/types/index.js';
 
 import {
   bitbucketCommentsSchema,
   bitbucketPrCreatedSchema,
   bitbucketPrListSchema,
-} from '~/c/schemas/bitbucket/bitbucket.js';
+} from '@chief-clancy/core/schemas/bitbucket/bitbucket.js';
 
 import { basicAuth, postPullRequest } from '../post-pr/post-pr.js';
 import {

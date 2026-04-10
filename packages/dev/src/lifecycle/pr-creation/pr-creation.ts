@@ -5,7 +5,7 @@
  * delegates to the appropriate platform-specific creation function.
  * Also provides {@link buildManualPrUrl} for fallback URLs.
  */
-import type { SharedEnv } from '~/c/schemas/env/env.js';
+import type { SharedEnv } from '@chief-clancy/core/schemas/env/env.js';
 import type {
   AzdoRemote,
   BitbucketRemote,
@@ -14,10 +14,8 @@ import type {
   GitLabRemote,
   PrCreationResult,
   RemoteInfo,
-} from '~/c/types/remote.js';
+} from '@chief-clancy/core/types/remote.js';
 
-import { resolveGitToken } from '~/c/shared/git-token/index.js';
-import { buildApiBaseUrl } from '~/c/shared/remote/index.js';
 import { createPullRequest as createAzdoPr } from '~/d/lifecycle/pull-request/azdo/index.js';
 import {
   createPullRequest as createBbCloudPr,
@@ -25,6 +23,9 @@ import {
 } from '~/d/lifecycle/pull-request/bitbucket/index.js';
 import { createPullRequest as createGitHubPr } from '~/d/lifecycle/pull-request/github/index.js';
 import { createMergeRequest as createGitLabMr } from '~/d/lifecycle/pull-request/gitlab/index.js';
+
+import { resolveGitToken } from '@chief-clancy/core/shared/git-token/index.js';
+import { buildApiBaseUrl } from '@chief-clancy/core/shared/remote/index.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

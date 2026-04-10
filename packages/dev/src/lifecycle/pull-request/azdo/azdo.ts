@@ -3,14 +3,17 @@
  *
  * Auth: PAT via HTTP Basic Auth (empty username, PAT as password).
  */
-import type { AzdoThread } from '~/c/schemas/azdo/azdo-pr.js';
-import type { PrCreationResult, PrReviewState } from '~/c/types/index.js';
+import type { AzdoThread } from '@chief-clancy/core/schemas/azdo/azdo-pr.js';
+import type {
+  PrCreationResult,
+  PrReviewState,
+} from '@chief-clancy/core/types/index.js';
 
 import {
   azdoPrCreatedSchema,
   azdoPrListSchema,
   azdoThreadListSchema,
-} from '~/c/schemas/azdo/azdo-pr.js';
+} from '@chief-clancy/core/schemas/azdo/azdo-pr.js';
 
 import { basicAuth, postPullRequest } from '../post-pr/post-pr.js';
 import {

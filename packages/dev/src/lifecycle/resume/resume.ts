@@ -5,10 +5,12 @@
  * locally with uncommitted or unpushed work. If so, the caller can
  * resume by committing, pushing, and optionally creating a PR.
  */
-import type { ExecGit } from '~/c/shared/git-ops/index.js';
-import type { PrCreationResult } from '~/c/types/remote.js';
+import type { ExecGit } from '@chief-clancy/core/shared/git-ops/index.js';
+import type { PrCreationResult } from '@chief-clancy/core/types/remote.js';
 import type { LockData } from '~/d/lifecycle/lock/index.js';
 import type { ProgressFs } from '~/d/lifecycle/progress/index.js';
+
+import { appendProgress, findLastEntry } from '~/d/lifecycle/progress/index.js';
 
 import {
   branchExists,
@@ -16,9 +18,8 @@ import {
   currentBranch,
   hasUncommittedChanges,
   pushBranch,
-} from '~/c/shared/git-ops/index.js';
-import { DELIVERED_STATUSES } from '~/c/types/progress.js';
-import { appendProgress, findLastEntry } from '~/d/lifecycle/progress/index.js';
+} from '@chief-clancy/core/shared/git-ops/index.js';
+import { DELIVERED_STATUSES } from '@chief-clancy/core/types/progress.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

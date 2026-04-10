@@ -4,7 +4,7 @@
  * Pure functions that compute feature and target branch names
  * based on the board provider and ticket metadata.
  */
-import type { BoardProvider } from '~/c/types/index.js';
+import type { BoardProvider } from '@chief-clancy/core/types/index.js';
 
 /**
  * Compute the feature branch name for a ticket.

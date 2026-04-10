@@ -5,16 +5,22 @@
  * and fetch review comments.
  * Supports both github.com and GitHub Enterprise (GHE).
  */
-import type { PrCreationResult, PrReviewState } from '~/c/types/index.js';
+import type {
+  PrCreationResult,
+  PrReviewState,
+} from '@chief-clancy/core/types/index.js';
 
-import { GITHUB_API, githubHeaders } from '~/c/board/github/api/index.js';
+import {
+  GITHUB_API,
+  githubHeaders,
+} from '@chief-clancy/core/board/github/api/index.js';
 import {
   githubCommentsResponseSchema,
   githubPrCommentsSchema,
   githubPrCreatedSchema,
   githubPrListSchema,
   githubReviewListSchema,
-} from '~/c/schemas/github/github.js';
+} from '@chief-clancy/core/schemas/github/github.js';
 
 import { postPullRequest } from '../post-pr/post-pr.js';
 import {

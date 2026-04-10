@@ -1,4 +1,4 @@
-import type { Board, FetchedTicket } from '~/c/types/board.js';
+import type { Board, FetchedTicket } from '@chief-clancy/core/types/board.js';
 
 import { describe, expect, it, vi } from 'vitest';
 

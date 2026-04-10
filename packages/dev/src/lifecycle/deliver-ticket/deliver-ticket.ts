@@ -5,19 +5,17 @@
  * progress. No console output — returns structured results for the
  * terminal layer to display.
  */
-import type { BoardConfig } from '~/c/schemas/env/env.js';
-import type { ExecGit } from '~/c/shared/git-ops/index.js';
-import type { FetchedTicket } from '~/c/types/board.js';
-import type { PrCreationResult, RemoteInfo } from '~/c/types/remote.js';
+import type { BoardConfig } from '@chief-clancy/core/schemas/env/env.js';
+import type { ExecGit } from '@chief-clancy/core/shared/git-ops/index.js';
+import type { FetchedTicket } from '@chief-clancy/core/types/board.js';
+import type {
+  PrCreationResult,
+  RemoteInfo,
+} from '@chief-clancy/core/types/remote.js';
 import type { FetchFn } from '~/d/lifecycle/pr-creation/index.js';
 import type { ProgressFs } from '~/d/lifecycle/progress/index.js';
 import type { EpicContext } from '~/d/lifecycle/pull-request/pr-body/index.js';
 
-import {
-  checkout,
-  detectRemote,
-  pushBranch,
-} from '~/c/shared/git-ops/index.js';
 import { resolveCommitType } from '~/d/lifecycle/commit-type/index.js';
 import { buildEpicContext } from '~/d/lifecycle/epic/index.js';
 import {
@@ -27,6 +25,12 @@ import {
 import { attemptPrCreation } from '~/d/lifecycle/pr-creation/index.js';
 import { appendProgress } from '~/d/lifecycle/progress/index.js';
 import { buildPrBody } from '~/d/lifecycle/pull-request/pr-body/index.js';
+
+import {
+  checkout,
+  detectRemote,
+  pushBranch,
+} from '@chief-clancy/core/shared/git-ops/index.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

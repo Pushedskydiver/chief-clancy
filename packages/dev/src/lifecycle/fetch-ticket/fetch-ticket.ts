@@ -5,7 +5,7 @@
  * by pipeline labels and blocker status. All board interaction goes
  * through the injected {@link Board} abstraction.
  */
-import type { Board, FetchedTicket } from '~/c/types/board.js';
+import type { Board, FetchedTicket } from '@chief-clancy/core/types/board.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

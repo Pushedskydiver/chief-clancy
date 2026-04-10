@@ -5,8 +5,11 @@
  * discriminated union. The orchestrator switches on `type` for
  * logging and progress, keeping side effects separate from decisions.
  */
-import type { ProgressStatus } from '~/c/types/progress.js';
-import type { PrCreationResult, RemoteInfo } from '~/c/types/remote.js';
+import type { ProgressStatus } from '@chief-clancy/core/types/progress.js';
+import type {
+  PrCreationResult,
+  RemoteInfo,
+} from '@chief-clancy/core/types/remote.js';
 
 import { buildManualPrUrl } from '~/d/lifecycle/pr-creation/index.js';
 

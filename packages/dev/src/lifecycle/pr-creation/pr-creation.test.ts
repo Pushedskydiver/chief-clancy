@@ -6,7 +6,7 @@ import type {
   GitHubRemote,
   GitLabRemote,
   NoRemote,
-} from '~/c/types/remote.js';
+} from '@chief-clancy/core/types/remote.js';
 
 import fc from 'fast-check';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

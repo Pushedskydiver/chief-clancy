@@ -12,7 +12,7 @@ import type {
   BitbucketServerRemote,
   GitHubRemote,
   GitLabRemote,
-} from '~/c/types/remote.js';
+} from '@chief-clancy/core/types/remote.js';
 
 import {
   checkPrReviewState as checkAzdoReviewState,
