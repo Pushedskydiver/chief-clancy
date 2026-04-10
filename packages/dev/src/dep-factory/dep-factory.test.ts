@@ -21,6 +21,8 @@ function createMockOpts() {
     qualityFs: { readFile: vi.fn(), writeFile: vi.fn(), mkdir: vi.fn() },
     spawn: vi.fn(),
     fetch: vi.fn(),
+    buildPrompt: vi.fn(),
+    buildReworkPrompt: vi.fn(),
   } as unknown as DepFactoryOpts & {
     exec: ReturnType<typeof vi.fn>;
     lockFs: { deleteFile: ReturnType<typeof vi.fn> };

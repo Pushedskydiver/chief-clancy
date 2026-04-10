@@ -33,9 +33,16 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { buildPipelineDeps } from '~/t/runner/dep-factory/dep-factory.js';
+import {
+  buildPrompt,
+  buildReworkPrompt,
+} from '~/t/runner/prompt-builder/index.js';
 
-import { createContext, runPipeline } from '@chief-clancy/dev';
+import {
+  buildPipelineDeps,
+  createContext,
+  runPipeline,
+} from '@chief-clancy/dev';
 
 import { createClaudeSimulator } from '../../helpers/claude-simulator.js';
 
@@ -277,6 +284,8 @@ export function setupE2EPipeline(opts: E2ESetupOpts): E2EPipelineSetup {
     qualityFs: fs.qualityFs,
     spawn,
     fetch: globalThis.fetch,
+    buildPrompt,
+    buildReworkPrompt,
   });
 
   const run = (argv: readonly string[] = []) => {

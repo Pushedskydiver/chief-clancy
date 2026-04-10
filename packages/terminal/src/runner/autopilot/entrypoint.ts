@@ -43,6 +43,7 @@ import {
   makeProgressFs,
   makeQualityFs,
 } from '../implement/entrypoint.js';
+import { buildPrompt, buildReworkPrompt } from '../prompt-builder/index.js';
 import { buildSessionReport } from '../session-report/index.js';
 import { runAutopilot } from './autopilot.js';
 
@@ -132,6 +133,8 @@ export function buildRunIteration(
       qualityFs: opts.qualityFs,
       spawn: opts.spawn,
       fetch: opts.fetch,
+      buildPrompt,
+      buildReworkPrompt,
     });
 
     return opts.runPipeline(ctx, deps);

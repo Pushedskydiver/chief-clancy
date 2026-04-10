@@ -6,6 +6,14 @@
  * captures the shared resources and delegates to the corresponding
  * core phase function.
  */
+import type { CostFs } from '../lifecycle/cost/cost.js';
+import type { LockFs } from '../lifecycle/lock/index.js';
+import type { FetchFn } from '../lifecycle/pr-creation/index.js';
+import type { ProgressEntry, ProgressFs } from '../lifecycle/progress/index.js';
+import type { QualityFs } from '../lifecycle/quality/quality.js';
+import type { PipelineDeps, RunContext } from '../pipeline/index.js';
+import type { AppendFn, SpawnSyncFn } from '../types/index.js';
+import type { InvokePhaseDeps } from './invoke-phase.js';
 import type {
   Board,
   BoardProvider,
@@ -14,18 +22,6 @@ import type {
   FetchedTicket,
   RemoteInfo,
 } from '@chief-clancy/core';
-import type {
-  AppendFn,
-  CostFs,
-  FetchFn,
-  LockFs,
-  PipelineDeps,
-  ProgressEntry,
-  ProgressFs,
-  QualityFs,
-  RunContext,
-  SpawnSyncFn,
-} from '@chief-clancy/dev';
 
 import {
   checkout,
@@ -36,46 +32,50 @@ import {
   fetchRemoteBranch,
   currentBranch as gitCurrentBranch,
 } from '@chief-clancy/core';
+
+import { invokeClaudePrint } from '../cli-bridge/index.js';
 import {
-  appendCostEntry,
-  appendProgress,
-  attemptPrCreation,
-  branchSetup,
-  buildPrBody,
-  checkFeasibility,
-  cleanupPhase,
   computeTargetBranch,
   computeTicketBranch,
-  costPhase,
-  countReworkCycles,
+} from '../lifecycle/branch/index.js';
+import { resolveCommitType } from '../lifecycle/commit-type/index.js';
+import { appendCostEntry } from '../lifecycle/cost/cost.js';
+import { deliverEpicToBase } from '../lifecycle/deliver-epic/deliver-epic.js';
+import { ensureEpicBranch } from '../lifecycle/epic/epic.js';
+import { checkFeasibility } from '../lifecycle/feasibility/feasibility.js';
+import {
   deleteLock,
   deleteVerifyAttempt,
-  deliverEpicToBase,
-  detectResume,
-  ensureEpicBranch,
-  epicCompletion,
-  executeResume,
-  feasibilityPhase,
-  fetchReworkFromPrReview,
+  readLock,
+  writeLock,
+} from '../lifecycle/lock/index.js';
+import { attemptPrCreation } from '../lifecycle/pr-creation/index.js';
+import { runPreflight } from '../lifecycle/preflight/preflight.js';
+import {
+  appendProgress,
+  countReworkCycles,
   findEntriesWithStatus,
-  invokeClaudePrint,
+} from '../lifecycle/progress/index.js';
+import { buildPrBody } from '../lifecycle/pull-request/pr-body/pr-body.js';
+import { detectResume, executeResume } from '../lifecycle/resume/resume.js';
+import { resolvePlatformHandlers } from '../lifecycle/rework/rework-handlers.js';
+import { fetchReworkFromPrReview } from '../lifecycle/rework/rework.js';
+import { sendNotification } from '../notify/index.js';
+import {
+  branchSetup,
+  cleanupPhase,
+  costPhase,
+  epicCompletion,
+  feasibilityPhase,
   lockCheck,
-  makeInvokePhase,
   preflightPhase,
   prRetry,
-  readLock,
-  resolveCommitType,
-  resolvePlatformHandlers,
   reworkDetection,
-  runPreflight,
-  sendNotification,
   ticketFetch,
   transition,
-  writeLock,
-} from '@chief-clancy/dev';
-
-import { buildPrompt, buildReworkPrompt } from '../prompt-builder/index.js';
+} from '../pipeline/index.js';
 import { wireDeliver } from './deliver-phase.js';
+import { makeInvokePhase } from './invoke-phase.js';
 
 /** Options for building the pipeline dependency object. */
 type DepFactoryOpts = {
@@ -88,6 +88,8 @@ type DepFactoryOpts = {
   readonly qualityFs: QualityFs;
   readonly spawn: SpawnSyncFn;
   readonly fetch: FetchFn;
+  readonly buildPrompt: InvokePhaseDeps['buildPrompt'];
+  readonly buildReworkPrompt: InvokePhaseDeps['buildReworkPrompt'];
 };
 
 function makeAppendProgress(
@@ -299,7 +301,11 @@ function wireGitAndInvoke(opts: DepFactoryOpts) {
           ctx.board!.transitionTicket(ticket, status),
       }),
 
-    invoke: makeInvokePhase({ spawn, buildPrompt, buildReworkPrompt }),
+    invoke: makeInvokePhase({
+      spawn,
+      buildPrompt: opts.buildPrompt,
+      buildReworkPrompt: opts.buildReworkPrompt,
+    }),
   };
 }
 
