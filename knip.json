@@ -16,7 +16,8 @@
       "project": ["src/**/*.ts"]
     },
     "packages/dev": {
-      "project": ["src/**/*.ts"]
+      "project": ["src/**/*.ts"],
+      "entry": ["src/entrypoints/dev.ts", "src/entrypoints/loop.ts"]
     },
     "packages/terminal": {
       "project": ["src/**/*.ts", "test/**/*.ts"],
