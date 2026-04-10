@@ -126,6 +126,7 @@ type CopyFilesOptions = {
 /** Copy a list of files from src dir to dest dir with symlink protection. */
 const copyFiles = (options: CopyFilesOptions): void => {
   const { files, srcDir, destDir, fs } = options;
+  rejectSymlink(destDir, fs.isSymlink);
   fs.mkdir(destDir);
 
   files.forEach((file) => {

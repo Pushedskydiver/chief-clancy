@@ -153,6 +153,10 @@ async function main() {
 
   console.log(dim(`  Installing to: ${bundlesDest}`));
 
+  // Reject symlinked destination directories
+  rejectSymlink(bundlesDest);
+  rejectSymlink(hooksDest);
+
   // Create directories
   mkdirSync(bundlesDest, { recursive: true });
   mkdirSync(hooksDest, { recursive: true });

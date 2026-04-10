@@ -158,10 +158,23 @@ describe('runDevInstall', () => {
     expect(opts.fs.copyFile).not.toHaveBeenCalled();
   });
 
-  it('rejects symlink at version marker path', () => {
+  it('rejects symlink at destination directory', () => {
     const opts = buildOptions();
     opts.fs.isSymlink.mockReturnValue(true);
 
-    expect(() => runDevInstall(opts)).toThrow('Symlink rejected');
+    expect(() => runDevInstall(opts)).toThrow(
+      `Symlink rejected: ${defaultPaths.bundlesDest}`,
+    );
+  });
+
+  it('rejects symlink at version marker path', () => {
+    const opts = buildOptions();
+    opts.fs.isSymlink.mockImplementation(
+      (p: string) => p === join(defaultPaths.bundlesDest, 'VERSION.dev'),
+    );
+
+    expect(() => runDevInstall(opts)).toThrow(
+      `Symlink rejected: ${join(defaultPaths.bundlesDest, 'VERSION.dev')}`,
+    );
   });
 });
