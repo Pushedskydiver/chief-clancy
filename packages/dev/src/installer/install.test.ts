@@ -302,6 +302,17 @@ describe('runDevInstall', () => {
     expect(content).not.toContain('@.claude/clancy/workflows/dev.md');
   });
 
+  it('rejects symlink on workflow file during global inlining', () => {
+    const opts = buildOptions({ mode: 'global' });
+    opts.fs.isSymlink.mockImplementation(
+      (p: string) =>
+        p === join(defaultPaths.workflowsDest, 'dev.md') ||
+        p === join(defaultPaths.workflowsDest, 'board-setup.md'),
+    );
+
+    expect(() => runDevInstall(opts)).toThrow('Symlink rejected');
+  });
+
   it('does not inline workflow content in local mode', () => {
     const opts = buildOptions({ mode: 'local' });
     runDevInstall(opts);
