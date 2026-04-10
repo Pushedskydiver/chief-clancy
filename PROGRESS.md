@@ -2,9 +2,9 @@
 
 Living state document for the Clancy monorepo. Records the current state, the phase ledger, and the next decision. Session-by-session detail lives in git history (each phase's PRs are tagged + commit messages reference them).
 
-## Current state (2026-04-09)
+## Current state (2026-04-10)
 
-**On main, working tree clean.** No PRs in flight.
+**PR #228 open** (`feature/phase-e-pr-2a-lifecycle-move`, 12 commits). Waiting for CI + Alex merge.
 
 **Published versions:**
 
@@ -16,38 +16,37 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 | `@chief-clancy/plan`     | 0.5.0   |
 | `chief-clancy` (wrapper) | 0.9.15  |
 
-**Test counts:** 1608 core, 838 terminal, 73 brief, 264 plan = **2783 total**.
+**Test counts:** 1050 core, 838 terminal, 559 dev, 73 brief, 264 plan = **2784 total**.
 
-**Last shipped:** Phase D (2026-04-09) + the docs lifecycle update (also 2026-04-09).
+**Last shipped:** Phase E PRs 0/1/1.5 (Sessions 60). PR 2a opened as #228 (Sessions 61–62).
 
-## Next: Phase E
+## In progress: Phase E PR 2a — lifecycle move
 
-Two valid options on the build order. No urgency on either — pick whichever one matches the next session's energy.
+**Branch:** `feature/phase-e-pr-2a-lifecycle-move` (12 commits, pushed, PR #228)
 
-### Option 1: `@chief-clancy/dev` extraction
+**Scope change:** Original plan split lifecycle into 3 cluster PRs (2a/2b/2c). TypeScript's rootDir + composite constraints made the intermediate state unworkable (circular build deps, esbuild resolution failures). Merged all 18 lifecycle modules into one PR. Terminal imports updated to split core/dev.
 
-Extract `core/dev/` into `@chief-clancy/dev`. This unblocks the deferred `/clancy:implement-from` slash command. Closed PR #213 is preserved as the reference implementation; the cohesion rationale is documented in [`docs/decisions/architecture/package-evolution.md`](docs/decisions/architecture/package-evolution.md) and the do-not-re-ship constraint lives in the `project_implement_from_deferred.md` memory.
+### Commits (Sessions 61–62)
 
-- **Heavy dep** — board APIs, pipeline orchestration, lifecycle modules
-- Drag-and-extract from `core/dev/`. The internal capability boundary is already enforced by eslint-plugin-boundaries, so the move is mechanical
-- **Closes the loop** on PR 8 — once dev exists, implement-from can ship there with the SHA-256 marker gate (the marker format from PR 7b ships unchanged)
-- Closest analogue: how brief and plan were extracted (Phase A and Phase B)
+1. `f192d15` — git mv all 18 lifecycle dirs (65 files, 100% similarity)
+2. `730b361` — dev config: deps, vitest aliases, turbo cycle override, build bootstrap
+3. `427131c` — dev/src/index.ts barrel re-exports for all lifecycle symbols
+4. `7bb7cef` — intra-lifecycle import rewrite: ~/c/dev/lifecycle/ → ~/d/lifecycle/
+5. `177b7fe` — cross-package import rewrite: ~/c/ → @chief-clancy/core (+ wildcard subpath export)
+6. `42fb9a0` — core/src/index.ts swaps lifecycle re-exports to @chief-clancy/dev
+7. `81cdc58` — core pipeline phases import from @chief-clancy/dev (lock-check, pr-retry)
+8. `62ef2ae` — terminal splits lifecycle imports: core → dev (8 files)
+9. `cba7958` — wiring: eslint boundary, workspace deps, vitest aliases, pnpm install
+10. `eaa3b7c` — fix circular build: declarations-first strategy + core subpath export ./_ → ./_.js
+11. `5bcf206` — fix vitest: directory paths for cross-package resolution, ~/d alias
+12. `3931711` — DA review fixes: stale READMEs, forward-ref, alphabetical exports
 
-### Option 2: `@chief-clancy/design` extraction
+### Key decisions
 
-Extract a new design package following the brief/plan pattern. This is the next entry on the locked build order in [`docs/decisions/architecture/package-evolution.md`](docs/decisions/architecture/package-evolution.md).
-
-- **Light dep** — types/schemas only, parallel pattern to brief and plan
-- Includes Stitch integration work
-- **No deferred work depending on it** — pure forward motion
-- Audience: designers, frontend engineers writing component specs and a11y requirements
-
-### Decision criteria
-
-- **Pick `dev` if:** the `/clancy:implement-from` deferral has been bothering you, or if the next phase wants to close existing loops before starting new capability packages
-- **Pick `design` if:** the build order matters more than the implement-from deferral, or if you want a clean parallel-to-brief-and-plan extraction without the additional complexity of pulling pipeline phases
-
-Either way, the next session starts with the architectural review chain documented in [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) and the Required disciplines in [`docs/DA-REVIEW.md`](docs/DA-REVIEW.md).
+- **Circular dep (core ↔ dev) is temporary** — removed when pipeline phases move to dev. Turbo cycle broken by `packages/dev/turbo.json` (`dependsOn: []`). Build bootstrapped by declarations-first strategy.
+- **Declarations-first build** — dev emits `.d.ts` stubs from source (tsconfig.declarations.json maps @chief-clancy/core to source, no rootDir), copies to dist/, builds core, then rebuilds dev fully.
+- **Wildcard subpath export** — core gains `./*.js` in package.json exports for NodeNext-compatible deep imports.
+- **Vitest aliases** — directory paths (not file paths) for @chief-clancy/core and @chief-clancy/dev to support subpath imports via Vite's prefix matching. ~/d alias added to core + terminal configs.
 
 ## Phase ledger
 
