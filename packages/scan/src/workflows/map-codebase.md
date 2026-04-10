@@ -95,7 +95,7 @@ Warning: {filename} is missing or empty. The {agent} agent may have failed.
 Run /clancy:update-docs to re-run only that agent.
 ```
 
-Also check: if `PLAYWRIGHT_ENABLED=true` in `.clancy/.env`, verify `.clancy/docs/PLAYWRIGHT.md` exists. If not, create it from the template (see scaffold.md).
+Also check: if `PLAYWRIGHT_ENABLED=true` in `.clancy/.env`, verify `.clancy/docs/PLAYWRIGHT.md` exists. If not, create it directly in `.clancy/docs/` using the same documentation standards as the other generated files: include actual Playwright-related file paths, explain how Playwright is configured and run in this codebase, list key test locations/helpers/commands, and write `<!-- Not applicable to this project -->` if no project-specific Playwright details are found.
 
 ---
 

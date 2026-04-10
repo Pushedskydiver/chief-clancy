@@ -13,7 +13,7 @@ Check `.clancy/` exists and `.clancy/.env` is present.
 If either is missing:
 
 ```
-.clancy/ not found. Run /clancy:init to set up Clancy first.
+Missing required Clancy setup: .clancy/ and/or .clancy/.env not found. Run /clancy:init to set up Clancy first.
 ```
 
 Stop.
