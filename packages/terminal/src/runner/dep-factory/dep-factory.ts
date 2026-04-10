@@ -73,6 +73,7 @@ import {
   writeLock,
 } from '@chief-clancy/dev';
 
+import { buildPrompt, buildReworkPrompt } from '../prompt-builder/index.js';
 import { wireDeliver } from './deliver-phase.js';
 import { makeInvokePhase } from './invoke-phase.js';
 
@@ -298,7 +299,7 @@ function wireGitAndInvoke(opts: DepFactoryOpts) {
           ctx.board!.transitionTicket(ticket, status),
       }),
 
-    invoke: makeInvokePhase(spawn),
+    invoke: makeInvokePhase({ spawn, buildPrompt, buildReworkPrompt }),
   };
 }
 

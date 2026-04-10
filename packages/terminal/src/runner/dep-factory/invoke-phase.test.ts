@@ -7,10 +7,8 @@ vi.mock('@chief-clancy/dev', async (importOriginal) => ({
   invokeClaudeSession: vi.fn(() => true),
 }));
 
-vi.mock('../prompt-builder/index.js', () => ({
-  buildPrompt: vi.fn(() => 'fresh-prompt'),
-  buildReworkPrompt: vi.fn(() => 'rework-prompt'),
-}));
+const buildPrompt = vi.fn(() => 'fresh-prompt');
+const buildReworkPrompt = vi.fn(() => 'rework-prompt');
 
 function createCtx(overrides: Record<string, unknown> = {}) {
   return {
@@ -38,11 +36,10 @@ describe('makeInvokePhase', () => {
 
   it('builds a fresh prompt and delegates to invokeClaudeSession', async () => {
     const spawn = vi.fn();
-    const invoke = makeInvokePhase(spawn);
+    const invoke = makeInvokePhase({ spawn, buildPrompt, buildReworkPrompt });
 
     const result = await invoke(createCtx());
 
-    const { buildPrompt } = await import('../prompt-builder/index.js');
     expect(buildPrompt).toHaveBeenCalledWith(
       expect.objectContaining({
         provider: 'github',
@@ -62,7 +59,7 @@ describe('makeInvokePhase', () => {
 
   it('builds a rework prompt when ctx.isRework is true', async () => {
     const spawn = vi.fn();
-    const invoke = makeInvokePhase(spawn);
+    const invoke = makeInvokePhase({ spawn, buildPrompt, buildReworkPrompt });
 
     await invoke(
       createCtx({
@@ -71,7 +68,6 @@ describe('makeInvokePhase', () => {
       }),
     );
 
-    const { buildReworkPrompt } = await import('../prompt-builder/index.js');
     expect(buildReworkPrompt).toHaveBeenCalledWith(
       expect.objectContaining({
         provider: 'github',
@@ -86,7 +82,7 @@ describe('makeInvokePhase', () => {
     vi.mocked(invokeClaudeSession).mockReturnValueOnce(false);
 
     const spawn = vi.fn();
-    const invoke = makeInvokePhase(spawn);
+    const invoke = makeInvokePhase({ spawn, buildPrompt, buildReworkPrompt });
 
     const result = await invoke(createCtx());
 
@@ -95,7 +91,7 @@ describe('makeInvokePhase', () => {
 
   it('forwards TDD flag from config', async () => {
     const spawn = vi.fn();
-    const invoke = makeInvokePhase(spawn);
+    const invoke = makeInvokePhase({ spawn, buildPrompt, buildReworkPrompt });
 
     await invoke(
       createCtx({
@@ -106,7 +102,6 @@ describe('makeInvokePhase', () => {
       }),
     );
 
-    const { buildPrompt } = await import('../prompt-builder/index.js');
     expect(buildPrompt).toHaveBeenCalledWith(
       expect.objectContaining({ tdd: true }),
     );
@@ -114,7 +109,7 @@ describe('makeInvokePhase', () => {
 
   it('defaults prFeedback to empty array for rework', async () => {
     const spawn = vi.fn();
-    const invoke = makeInvokePhase(spawn);
+    const invoke = makeInvokePhase({ spawn, buildPrompt, buildReworkPrompt });
 
     await invoke(
       createCtx({
@@ -123,7 +118,6 @@ describe('makeInvokePhase', () => {
       }),
     );
 
-    const { buildReworkPrompt } = await import('../prompt-builder/index.js');
     expect(buildReworkPrompt).toHaveBeenCalledWith(
       expect.objectContaining({ feedbackComments: [] }),
     );
