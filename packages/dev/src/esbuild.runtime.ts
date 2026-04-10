@@ -48,7 +48,7 @@ const stubZodLocales: Plugin = {
   name: 'stub-zod-locales',
   setup(b) {
     b.onResolve({ filter: /locales\/index\.js$/ }, (args) => {
-      const isFromZod = args.resolveDir.includes('/zod/');
+      const isFromZod = /[\\/]zod[\\/]/.test(args.resolveDir);
       return isFromZod
         ? { path: 'zod-locales-stub', namespace: 'zod-stub' }
         : undefined;
