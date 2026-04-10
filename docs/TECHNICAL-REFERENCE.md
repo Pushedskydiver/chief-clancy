@@ -49,7 +49,7 @@ All hook source lives in `packages/terminal/src/hooks/`, built to CJS bundles by
 
 ## Delivery & Git
 
-Delivery modules live in `packages/core/src/dev/lifecycle/`. PR creation lives in `core/dev/lifecycle/pull-request/`.
+Delivery modules live in `packages/dev/src/lifecycle/`. PR creation lives in `dev/src/lifecycle/pull-request/`.
 
 - PR-based flow: all tickets create PRs — parented tickets target the epic branch (`epic/{key}` or `milestone/{slug}`), standalone tickets target the base branch. When all children are done, Clancy auto-creates the epic PR to the base branch
 - Epic context in child PRs: when a child PR targets an epic branch, the PR body includes a banner with the parent epic key, sibling delivery count (derived from `DELIVERED_STATUSES`), and a note about the intermediate branch
@@ -61,8 +61,8 @@ Delivery modules live in `packages/core/src/dev/lifecycle/`. PR creation lives i
 - `CLANCY_GIT_PLATFORM` and `CLANCY_GIT_API_URL` override auto-detection for custom domains
 - `CLANCY_STATUS_REVIEW` is used when creating a PR (falls back to `CLANCY_STATUS_DONE`)
 - GitHub Issues reuse `GITHUB_TOKEN` for PR creation; Jira/Linear users configure a separate git host token
-- Lock file (`.clancy/lock.json`): prevents double-runs, enables crash recovery via PID check + resume detection (`core/dev/lifecycle/lock/`)
-- Cost logging: duration-based token estimate per ticket appended to `.clancy/costs.log` using `CLANCY_TOKEN_RATE` (default 6600 tokens/min) (`core/dev/lifecycle/cost/`)
+- Lock file (`.clancy/lock.json`): prevents double-runs, enables crash recovery via PID check + resume detection (`dev/src/lifecycle/lock/`)
+- Cost logging: duration-based token estimate per ticket appended to `.clancy/costs.log` using `CLANCY_TOKEN_RATE` (default 6600 tokens/min) (`dev/src/lifecycle/cost/`)
 - Session report: `.clancy/session-report.md` generated after `/clancy:autopilot` summarises completed/failed tickets (`terminal/runner/session-report/`)
 
 ## Pipeline Labels

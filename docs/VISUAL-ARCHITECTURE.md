@@ -194,7 +194,7 @@ stateDiagram-v2
 
 ## 4. Implementation Flow
 
-What happens inside `/clancy:implement` (and each iteration of `/clancy:autopilot`). Phase logic lives in `core/dev/pipeline/phases/`; Claude invocation lives in `terminal/runner/`.
+What happens inside `/clancy:implement` (and each iteration of `/clancy:autopilot`). Phase logic lives in `dev/src/pipeline/phases/`; Claude invocation lives in `terminal/runner/`.
 
 ```mermaid
 flowchart TD

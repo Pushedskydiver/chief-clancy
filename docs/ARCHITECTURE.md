@@ -145,7 +145,7 @@ Commands are user-facing (appear in Claude Code's `/` menu). Workflows contain t
 
 ## Phase Pipeline
 
-The pipeline orchestrator (`core/dev/pipeline/run-pipeline.ts`) runs a sequence of composable phases:
+The pipeline orchestrator (`dev/src/pipeline/run-pipeline.ts`) runs a sequence of composable phases:
 
 ```
 RunContext (mutable shared state)
