@@ -36,13 +36,13 @@ git diff --name-only HEAD~10 HEAD 2>/dev/null || git diff --name-only
 
 ## Step 2 — Map changes to agents
 
-| Changed files / areas                                 | Re-run agent |
-| ----------------------------------------------------- | ------------ |
-| `package.json`, `*.lock`, deps, build config, env     | tech         |
-| `src/` structure, API routes, data models, services   | arch         |
-| test files, lint config, `.eslintrc`, `jest.config.*` | quality      |
-| CSS, tokens, Figma, component library, a11y           | design       |
-| Security, performance, infra, known issues            | concerns     |
+| Changed files / areas                                                                                                | Re-run agent |
+| -------------------------------------------------------------------------------------------------------------------- | ------------ |
+| `package.json`, lockfiles (`pnpm-lock.yaml`, `yarn.lock`, `package-lock.json`, `bun.lockb`), deps, build config, env | tech         |
+| `src/` structure, API routes, data models, services                                                                  | arch         |
+| test files, lint config, `.eslintrc`, `jest.config.*`                                                                | quality      |
+| CSS, tokens, Figma, component library, a11y                                                                          | design       |
+| Security, performance, infra, known issues                                                                           | concerns     |
 
 Multiple agents may need to re-run — run them in parallel.
 

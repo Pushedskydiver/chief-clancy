@@ -21,7 +21,7 @@ You are the tech agent for Clancy's `map-codebase` command. Your job is to write
 Start by reading:
 
 - `package.json` — runtime, dependencies, scripts
-- Lock files (`yarn.lock`, `package-lock.json`, `bun.lockb`) — confirm actual versions
+- Lock files (`pnpm-lock.yaml`, `yarn.lock`, `package-lock.json`, `bun.lockb`) — confirm actual versions
 - `tsconfig.json` — TypeScript config if present
 - `vite.config.*`, `next.config.*`, `nuxt.config.*`, `astro.config.*` — build/framework config
 - `.nvmrc`, `.node-version`, `.tool-versions` — runtime version pins
