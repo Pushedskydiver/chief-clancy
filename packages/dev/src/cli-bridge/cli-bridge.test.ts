@@ -140,7 +140,7 @@ describe('invokeClaudeSession', () => {
 
     invokeClaudeSession({ prompt: 'test', spawn });
 
-    const args = spawn.mock.calls[0]![1];
+    const args = spawn.mock.calls[0][1];
     expect(args).not.toContain('-p');
   });
 

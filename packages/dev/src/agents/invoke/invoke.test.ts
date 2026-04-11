@@ -68,7 +68,7 @@ describe('invokeReadinessGrade', () => {
 
     invokeReadinessGrade({ ...BASE_OPTS, spawn });
 
-    const call = vi.mocked(spawn).mock.calls[0]!;
+    const call = vi.mocked(spawn).mock.calls[0];
     const input = call[2].input;
     expect(input).toContain('# Readiness rubric');
     expect(input).toContain('PROJ-42');
@@ -81,7 +81,7 @@ describe('invokeReadinessGrade', () => {
 
     invokeReadinessGrade({ ...BASE_OPTS, spawn });
 
-    const call = vi.mocked(spawn).mock.calls[0]!;
+    const call = vi.mocked(spawn).mock.calls[0];
     expect(call[0]).toBe('claude');
     expect(call[1]).toContain('-p');
     expect(call[1]).toContain('--bare');
@@ -146,7 +146,7 @@ describe('invokeReadinessGrade', () => {
 
     invokeReadinessGrade({ ...BASE_OPTS, spawn, model: 'sonnet' });
 
-    const call = vi.mocked(spawn).mock.calls[0]!;
+    const call = vi.mocked(spawn).mock.calls[0];
     expect(call[1]).toContain('--model');
     expect(call[1]).toContain('sonnet');
   });

@@ -72,8 +72,8 @@ describe('epicCompletion', () => {
 
     expect(deps.deliverEpicToBase).toHaveBeenCalledOnce();
     expect(result.results).toHaveLength(1);
-    expect(result.results[0]!.epicKey).toBe('PROJ-100');
-    expect(result.results[0]!.ok).toBe(true);
+    expect(result.results[0].epicKey).toBe('PROJ-100');
+    expect(result.results[0].ok).toBe(true);
   });
 
   it('handles multiple completed epics', async () => {
@@ -97,7 +97,7 @@ describe('epicCompletion', () => {
 
     const result = await epicCompletion(ctx, deps);
 
-    expect(result.results[0]!.ok).toBe(false);
+    expect(result.results[0].ok).toBe(false);
   });
 
   it('catches sync errors and returns empty results', async () => {

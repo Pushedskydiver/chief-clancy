@@ -160,7 +160,7 @@ function parseLine(line: string): ProgressEntry | undefined {
   const parts = line.split(' | ');
   if (parts.length < 4) return undefined;
 
-  const timestamp = parts[0]!;
+  const timestamp = parts[0];
 
   // Safe cast: SLUG_STATUSES.has() returns false for non-matching strings
   const isSlugEntry = SLUG_STATUSES.has(parts[1] as ProgressStatus);
@@ -176,7 +176,7 @@ function parseSlugEntry(
 ): ProgressEntry {
   return {
     timestamp,
-    key: parts[2]!,
+    key: parts[2],
     summary: parts.slice(3).join(' | '),
     // Safe cast: caller already verified parts[1] is in SLUG_STATUSES
     status: parts[1] as ProgressStatus,
@@ -188,7 +188,7 @@ function parseStandardEntry(
   timestamp: string,
   parts: readonly string[],
 ): ProgressEntry | undefined {
-  const key = parts[1]!;
+  const key = parts[1];
   const tail = parts.slice(2);
 
   const { status, summary, prNumber, parent, ticketType } =

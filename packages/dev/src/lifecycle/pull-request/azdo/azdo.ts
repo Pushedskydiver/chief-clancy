@@ -174,7 +174,7 @@ export async function checkPrReviewState(
     const parsed = azdoPrListSchema.parse(await prRes.json());
     if (parsed.value.length === 0) return undefined;
 
-    const pr = parsed.value[0]!;
+    const pr = parsed.value[0];
     const threads = await fetchThreads({
       fetchFn,
       auth,
@@ -191,7 +191,7 @@ export async function checkPrReviewState(
       (t) =>
         t.threadContext == null &&
         t.comments.length > 0 &&
-        isReworkComment(t.comments[0]!.content ?? ''),
+        isReworkComment(t.comments[0].content ?? ''),
     );
 
     return {
@@ -281,8 +281,8 @@ function activeThreads(threads: readonly AzdoThread[]): readonly AzdoThread[] {
     (t) =>
       t.isDeleted !== true &&
       t.comments.length > 0 &&
-      t.comments[0]!.commentType !== 'system' &&
-      !isClancyComment(t.comments[0]!.content ?? ''),
+      t.comments[0].commentType !== 'system' &&
+      !isClancyComment(t.comments[0].content ?? ''),
   );
 }
 

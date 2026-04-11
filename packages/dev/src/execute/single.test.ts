@@ -78,7 +78,7 @@ describe('runSingleTicketByKey', () => {
     await runSingleTicketByKey('PROJ-42', deps);
 
     // The RunContext passed to runPipeline should have ticket pre-set
-    const ctx = vi.mocked(deps.runPipeline).mock.calls[0]![0] as {
+    const ctx = vi.mocked(deps.runPipeline).mock.calls[0][0] as {
       readonly ticket: FetchedTicket | undefined;
     };
     expect(ctx.ticket).toEqual(TICKET);
@@ -89,7 +89,7 @@ describe('runSingleTicketByKey', () => {
 
     await runSingleTicketByKey('PROJ-42', deps);
 
-    const passedDeps = vi.mocked(deps.runPipeline).mock.calls[0]![1];
+    const passedDeps = vi.mocked(deps.runPipeline).mock.calls[0][1];
     expect(passedDeps).toBe(deps.pipelineDeps);
   });
 
@@ -98,7 +98,7 @@ describe('runSingleTicketByKey', () => {
 
     await runSingleTicketByKey('PROJ-42', deps);
 
-    const ctx = vi.mocked(deps.runPipeline).mock.calls[0]![0] as {
+    const ctx = vi.mocked(deps.runPipeline).mock.calls[0][0] as {
       readonly projectRoot: string;
     };
     expect(ctx.projectRoot).toBe('/tmp/test-project');
@@ -112,7 +112,7 @@ describe('runSingleTicketByKey', () => {
 
     await runSingleTicketByKey('PROJ-42', depsWithArgv);
 
-    const ctx = vi.mocked(depsWithArgv.runPipeline).mock.calls[0]![0] as {
+    const ctx = vi.mocked(depsWithArgv.runPipeline).mock.calls[0][0] as {
       readonly argv: readonly string[];
     };
     expect(ctx.argv).toEqual(['--dry-run']);
@@ -123,7 +123,7 @@ describe('runSingleTicketByKey', () => {
 
     await runSingleTicketByKey('PROJ-42', deps);
 
-    const ctx = vi.mocked(deps.runPipeline).mock.calls[0]![0] as {
+    const ctx = vi.mocked(deps.runPipeline).mock.calls[0][0] as {
       readonly isAfk: boolean;
     };
     expect(ctx.isAfk).toBe(true);

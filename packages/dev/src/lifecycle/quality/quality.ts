@@ -82,7 +82,7 @@ function round2(value: number): number {
 
 /** Sum a numeric property across an array of items (recursive — safe for bounded ticket counts). */
 function sumBy<T>(items: readonly T[], fn: (item: T) => number, i = 0): number {
-  return i >= items.length ? 0 : fn(items[i]!) + sumBy(items, fn, i + 1);
+  return i >= items.length ? 0 : fn(items[i]) + sumBy(items, fn, i + 1);
 }
 
 /** Whether an entry has valid numeric reworkCycles and verificationRetries. */

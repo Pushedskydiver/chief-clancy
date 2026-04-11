@@ -65,16 +65,16 @@ function parseAzdoPath(
   const httpsMatch = path.match(/^([^/]+)\/([^/]+)\/_git\/(.+)$/);
   if (httpsMatch) {
     return {
-      org: httpsMatch[1]!,
-      project: httpsMatch[2]!,
-      repo: httpsMatch[3]!,
+      org: httpsMatch[1],
+      project: httpsMatch[2],
+      repo: httpsMatch[3],
     };
   }
 
   // SSH format: v3/org/project/repo
   const sshMatch = path.match(/^v3\/([^/]+)\/([^/]+)\/(.+)$/);
   if (sshMatch) {
-    return { org: sshMatch[1]!, project: sshMatch[2]!, repo: sshMatch[3]! };
+    return { org: sshMatch[1], project: sshMatch[2], repo: sshMatch[3] };
   }
 
   return undefined;

@@ -43,7 +43,7 @@ async function linearGraphql<T>(
   };
 
   if (json.errors?.length) {
-    throw new Error(`Linear GraphQL error: ${json.errors[0]!.message}`);
+    throw new Error(`Linear GraphQL error: ${json.errors[0].message}`);
   }
 
   if (json.data == null) {

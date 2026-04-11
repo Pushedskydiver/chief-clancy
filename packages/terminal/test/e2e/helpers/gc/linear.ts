@@ -63,7 +63,7 @@ export async function cleanupLinearOrphans(): Promise<number> {
   };
 
   if (json.errors?.length) {
-    console.log(`  Linear GraphQL error: ${json.errors[0]!.message}`);
+    console.log(`  Linear GraphQL error: ${json.errors[0].message}`);
     return 0;
   }
 
@@ -96,7 +96,7 @@ export async function cleanupLinearOrphans(): Promise<number> {
     };
 
     if (delJson.errors?.length) {
-      console.log(`    Linear delete error: ${delJson.errors[0]!.message}`);
+      console.log(`    Linear delete error: ${delJson.errors[0].message}`);
       continue;
     }
 

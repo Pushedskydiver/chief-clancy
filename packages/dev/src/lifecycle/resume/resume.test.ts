@@ -353,7 +353,7 @@ describe('executeResume', () => {
   it('commits then pushes when hasUncommitted', async () => {
     const calls: string[] = [];
     const exec = (args: readonly string[]): string => {
-      calls.push(args[0]!);
+      calls.push(args[0]);
       return makeExec()(args);
     };
 

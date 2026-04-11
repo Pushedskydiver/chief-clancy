@@ -46,8 +46,8 @@ export function parseTime(
   const match = value.trim().match(/^(\d{1,2}):(\d{2})$/);
   if (!match) return undefined;
 
-  const hours = parseInt(match[1]!, 10);
-  const minutes = parseInt(match[2]!, 10);
+  const hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
   const isValidHour = hours >= 0 && hours <= 23;
   const isValidMinute = minutes >= 0 && minutes <= 59;
 

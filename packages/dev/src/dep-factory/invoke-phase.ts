@@ -51,7 +51,7 @@ export type InvokePhaseDeps = {
 export function makeInvokePhase(
   deps: InvokePhaseDeps,
 ): (ctx: RunContext) => Promise<{ readonly ok: boolean }> {
-  return async (ctx) => {
+  return (ctx) => {
     // Safe: invoke runs after preflight (config) and ticketFetch (ticket)
     const config = ctx.config!;
     const ticket = ctx.ticket!;
@@ -76,12 +76,12 @@ export function makeInvokePhase(
           tdd,
         });
 
-    return {
+    return Promise.resolve().then(() => ({
       ok: invokeClaudeSession({
         prompt,
         model: config.env.CLANCY_MODEL,
         spawn: deps.spawn,
       }),
-    };
+    }));
   };
 }

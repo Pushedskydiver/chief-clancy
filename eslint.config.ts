@@ -12,12 +12,22 @@ const boundaries = _boundaries as Record<string, unknown>;
 export default defineConfig(
   // ── Base configs ──────────────────────────────────────────────
   eslint.configs.recommended,
-  tseslint.configs.recommended,
+  tseslint.configs.recommendedTypeChecked,
   prettier,
 
   // ── Global ignores ────────────────────────────────────────────
   {
     ignores: ['**/dist/', 'node_modules/', '.claude/hooks/', '**/bin/'],
+  },
+
+  // ── Type-checked linting ──────────────────────────────────────
+  {
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
   },
 
   // ── All TypeScript files ──────────────────────────────────────
@@ -137,6 +147,15 @@ export default defineConfig(
       'max-lines': 'off',
       'max-lines-per-function': 'off',
       'sonarjs/no-duplicate-string': 'off',
+      // Vitest matchers (expect.objectContaining, expect.any) return `any`.
+      // Mocks are inherently loosely typed — relax the full no-unsafe family.
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      // Mock stubs commonly use `async () => value` to satisfy async
+      // interfaces without needing an actual await expression.
+      '@typescript-eslint/require-await': 'off',
     },
   },
 );

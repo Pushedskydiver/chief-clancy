@@ -168,7 +168,7 @@ export async function checkServerPrReviewState(
     const parsed = bitbucketServerPrListSchema.parse(await prRes.json());
     if (parsed.values.length === 0) return undefined;
 
-    const pr = parsed.values[0]!;
+    const pr = parsed.values[0];
     const activities = await fetchActivities({
       fetchFn,
       auth,

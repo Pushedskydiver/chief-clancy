@@ -164,7 +164,7 @@ export async function checkPrReviewState(
     const parsed = bitbucketPrListSchema.parse(await prRes.json());
     if (parsed.values.length === 0) return undefined;
 
-    const pr = parsed.values[0]!;
+    const pr = parsed.values[0];
     const comments = await fetchCloudComments({
       fetchFn,
       auth,

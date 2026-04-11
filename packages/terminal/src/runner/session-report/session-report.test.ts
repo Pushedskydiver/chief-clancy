@@ -23,9 +23,9 @@ describe('parseCostsLog', () => {
     const entries = parseCostsLog(content, now);
 
     expect(entries).toHaveLength(1);
-    expect(entries[0]!.key).toBe('NEW-1');
-    expect(entries[0]!.duration).toBe('10min');
-    expect(entries[0]!.tokens).toBe('~66000 tokens (estimated)');
+    expect(entries[0].key).toBe('NEW-1');
+    expect(entries[0].duration).toBe('10min');
+    expect(entries[0].tokens).toBe('~66000 tokens (estimated)');
   });
 
   it('returns empty array for empty content', () => {
@@ -39,7 +39,7 @@ describe('parseCostsLog', () => {
     const entries = parseCostsLog(content, 0);
 
     expect(entries).toHaveLength(1);
-    expect(entries[0]!.key).toBe('KEY-1');
+    expect(entries[0].key).toBe('KEY-1');
   });
 
   it('skips lines with invalid timestamps', () => {
@@ -66,8 +66,8 @@ describe('parseCostsLog', () => {
     const entries = parseCostsLog(content, 0);
 
     expect(entries).toHaveLength(2);
-    expect(entries[0]!.key).toBe('KEY-1');
-    expect(entries[1]!.key).toBe('KEY-2');
+    expect(entries[0].key).toBe('KEY-1');
+    expect(entries[1].key).toBe('KEY-2');
   });
 
   it('parses comma-formatted token counts correctly', () => {
@@ -77,7 +77,7 @@ describe('parseCostsLog', () => {
     const entries = parseCostsLog(content, 0);
 
     expect(entries).toHaveLength(1);
-    expect(entries[0]!.tokens).toBe('~1,200,000 tokens (estimated)');
+    expect(entries[0].tokens).toBe('~1,200,000 tokens (estimated)');
   });
 });
 

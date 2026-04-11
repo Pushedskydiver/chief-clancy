@@ -301,7 +301,7 @@ describe('fetchIssues', () => {
       fetcher: mockFetch,
     });
 
-    const url = mockFetch.mock.calls[0][0] as string;
+    const url = mockFetch.mock.calls[0][0];
     expect(url).toContain('labels=clancy%3Abuild');
   });
 });

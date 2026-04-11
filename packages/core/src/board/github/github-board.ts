@@ -131,7 +131,7 @@ export function createGitHubBoard(env: GitHubEnv, fetcher?: Fetcher): Board {
         : undefined;
     },
 
-    transitionTicket: async () => false,
+    transitionTicket: () => Promise.resolve(false),
 
     ensureLabel: (label) => ensureLabel(ctx, label),
 

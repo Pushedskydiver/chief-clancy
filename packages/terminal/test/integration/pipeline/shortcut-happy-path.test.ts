@@ -72,7 +72,7 @@ const ROUTES: ReadonlyArray<{
     method: 'POST',
     pattern: /\/stories\/search$/,
     respond: (_url, init) => {
-      const body = JSON.parse(String(init?.body ?? '{}')) as {
+      const body = JSON.parse((init?.body as string) ?? '{}') as {
         readonly query?: string;
       };
       // Children status queries use the query field

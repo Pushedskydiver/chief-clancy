@@ -354,7 +354,7 @@ describe('branchSetup', () => {
 
     await branchSetup(ctx, deps);
 
-    const call = vi.mocked(deps.writeLock).mock.calls[0]!;
+    const call = vi.mocked(deps.writeLock).mock.calls[0];
     const desc = (call[0] as Record<string, unknown>).description as string;
     expect(desc).toHaveLength(2000);
   });

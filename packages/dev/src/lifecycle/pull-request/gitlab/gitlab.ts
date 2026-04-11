@@ -286,7 +286,7 @@ async function findOpenMr(opts: FindMrOpts): Promise<OpenMr | undefined> {
   const data = gitlabMrListSchema.parse(await res.json());
   if (data.length === 0) return undefined;
 
-  const mr = data[0]!;
+  const mr = data[0];
   return { iid: mr.iid, url: mr.web_url };
 }
 

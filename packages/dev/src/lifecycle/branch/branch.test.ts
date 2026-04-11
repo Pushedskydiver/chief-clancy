@@ -33,13 +33,7 @@ describe('computeTicketBranch', () => {
   it('always starts with feature/ for non-GitHub providers', () => {
     fc.assert(
       fc.property(
-        fc.constantFrom(
-          'jira',
-          'linear',
-          'shortcut',
-          'notion',
-          'azdo',
-        ) as fc.Arbitrary<'jira' | 'linear' | 'shortcut' | 'notion' | 'azdo'>,
+        fc.constantFrom('jira', 'linear', 'shortcut', 'notion', 'azdo'),
         fc.stringMatching(/^[A-Z]{2,5}-\d{1,4}$/),
         (provider, key) => {
           return computeTicketBranch(provider, key).startsWith('feature/');
@@ -135,9 +129,7 @@ describe('computeTargetBranch', () => {
           'shortcut',
           'notion',
           'azdo',
-        ) as fc.Arbitrary<
-          'jira' | 'github' | 'linear' | 'shortcut' | 'notion' | 'azdo'
-        >,
+        ),
         fc.stringMatching(/^[a-z]{2,10}$/),
         (provider, base) => {
           return computeTargetBranch(provider, base) === base;
@@ -149,13 +141,7 @@ describe('computeTargetBranch', () => {
   it('never returns an empty string when parent is provided', () => {
     fc.assert(
       fc.property(
-        fc.constantFrom(
-          'jira',
-          'linear',
-          'shortcut',
-          'notion',
-          'azdo',
-        ) as fc.Arbitrary<'jira' | 'linear' | 'shortcut' | 'notion' | 'azdo'>,
+        fc.constantFrom('jira', 'linear', 'shortcut', 'notion', 'azdo'),
         fc.stringMatching(/^[a-z]{2,10}$/),
         fc.stringMatching(/^[A-Z]{2,5}-\d{1,4}$/),
         (provider, base, parent) => {

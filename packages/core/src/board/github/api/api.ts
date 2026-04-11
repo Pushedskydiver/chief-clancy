@@ -190,7 +190,7 @@ export async function fetchIssues(
   });
 
   const data = await fetchAndParse(
-    `${GITHUB_API}/repos/${repo}/issues?${params}`,
+    `${GITHUB_API}/repos/${repo}/issues?${params.toString()}`,
     { headers: githubHeaders(token) },
     { schema: githubIssuesResponseSchema, label: 'GitHub Issues API', fetcher },
   );
