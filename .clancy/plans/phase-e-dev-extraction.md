@@ -322,8 +322,9 @@ iterations: 4
 - TICKET-101 — PR #231 opened
 - TICKET-104 — PR #232 opened
 
-## Deferred (1)
+## Deferred (2)
 - TICKET-108 — mid-loop discovery (feasibility) — see `.clancy/deferred.json`
+- Extract I/O adapter factories (makeExecGit, makeLockFs, etc.) to dev — currently duplicated in terminal's entrypoint and dev's entrypoint. Natural fit: PR 11a–11c (ExecuteQueue split) or standalone cleanup.
 
 ## Failed (1)
 - TICKET-107 — pipeline error: "git push rejected (branch protected)"
