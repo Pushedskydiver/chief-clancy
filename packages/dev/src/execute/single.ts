@@ -1,6 +1,6 @@
 /**
- * Single-ticket executor — hydrate a ticket by key, pre-seed context,
- * then run the pipeline.
+ * Single-ticket executor — hydrate a ticket by key, optionally run the
+ * readiness gate, then run the pipeline.
  *
  * The ticket-fetch phase becomes a no-op when `ctx.ticket` is already
  * set, so pre-seeding skips the queue-based fetch and runs a specific
@@ -14,8 +14,18 @@ import type {
 import type { FetchedTicket } from '@chief-clancy/core';
 
 import { createContext } from '../pipeline/index.js';
+import { parseReadinessFlags } from './flags/index.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
+
+/** Result from the readiness gate. */
+type GateResult =
+  | { readonly passed: true }
+  | {
+      readonly passed: false;
+      readonly overall?: string;
+      readonly error?: string;
+    };
 
 /** Dependencies injected into the single-ticket executor. */
 export type SingleTicketDeps = {
@@ -36,6 +46,8 @@ export type SingleTicketDeps = {
   readonly argv: readonly string[];
   /** Whether the runner is in AFK (unattended) mode. */
   readonly isAfk: boolean;
+  /** Optional readiness gate. When provided, runs before the pipeline. */
+  readonly readinessGate?: () => GateResult;
 };
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -63,14 +75,39 @@ function isPipelineResult(
   return !('key' in value);
 }
 
+function checkReadiness(deps: SingleTicketDeps): PipelineResult | undefined {
+  if (!deps.readinessGate) return undefined;
+
+  const flags = parseReadinessFlags(deps.argv, deps.isAfk);
+
+  if (!flags.ok) {
+    return { status: 'error', error: flags.error };
+  }
+
+  if (flags.bypass) {
+    // Bypass — skip readiness gate. Caller (entrypoint) handles logging.
+    return undefined;
+  }
+
+  const gate = deps.readinessGate();
+
+  if (!gate.passed) {
+    const reason = gate.error ?? `Readiness gate: ${gate.overall ?? 'failed'}`;
+    return { status: 'aborted', phase: 'readiness', error: reason };
+  }
+
+  return undefined;
+}
+
 // ─── Executor ────────────────────────────────────────────────────────────────
 
 /**
  * Run the pipeline for a single ticket identified by key.
  *
  * 1. Hydrate the ticket via a one-shot board lookup.
- * 2. Create a fresh context with the ticket pre-seeded.
- * 3. Run the pipeline — the ticket-fetch phase skips because `ctx.ticket` is set.
+ * 2. Run the readiness gate (if provided and not bypassed).
+ * 3. Create a fresh context with the ticket pre-seeded.
+ * 4. Run the pipeline — the ticket-fetch phase skips because `ctx.ticket` is set.
  *
  * @param ticketKey - Board-specific ticket identifier (e.g. `'PROJ-42'`, `'#123'`).
  * @param deps - Injected dependencies.
@@ -84,6 +121,12 @@ export async function runSingleTicketByKey(
 
   if (isPipelineResult(result)) {
     return result;
+  }
+
+  const readinessResult = checkReadiness(deps);
+
+  if (readinessResult) {
+    return readinessResult;
   }
 
   const ctx = createContext({
