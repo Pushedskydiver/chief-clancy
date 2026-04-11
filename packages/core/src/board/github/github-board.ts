@@ -78,6 +78,7 @@ async function fetchGitHubTickets(
     label: opts.buildLabel ?? ctx.defaultLabel,
     username,
     excludeHitl: opts.excludeHitl,
+    limit: opts.limit,
     fetcher: ctx.fetcher,
   });
   return tickets.map(toFetchedTicket);

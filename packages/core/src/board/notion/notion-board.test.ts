@@ -162,6 +162,25 @@ describe('createNotionBoard', () => {
       const tickets = await board.fetchTickets({ excludeHitl: true });
       expect(tickets).toEqual([]);
     });
+
+    it('respects limit parameter', async () => {
+      const pages = Array.from({ length: 5 }, (_, i) =>
+        makeFullPage(`id-${i}`, `Issue ${i}`),
+      );
+
+      const mockFetch = vi.fn<Fetcher>().mockResolvedValue(
+        mockResponse({
+          results: pages,
+          has_more: false,
+          next_cursor: null,
+        }),
+      );
+
+      const board = createNotionBoard(baseEnv, mockFetch);
+      const tickets = await board.fetchTickets({ limit: 2 });
+
+      expect(tickets).toHaveLength(2);
+    });
   });
 
   // ─── fetchTicket ────────────────────────────────────────────────────────

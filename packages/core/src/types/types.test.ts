@@ -83,8 +83,10 @@ describe('FetchTicketOpts', () => {
     const opts = {
       excludeHitl: true,
       buildLabel: 'clancy:build',
+      limit: 10,
     } satisfies FetchTicketOpts;
     expect(opts.excludeHitl).toBe(true);
+    expect(opts.limit).toBe(10);
   });
 });
 

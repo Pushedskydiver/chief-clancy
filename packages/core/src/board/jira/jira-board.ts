@@ -77,6 +77,7 @@ async function fetchJiraTickets(
     sprint: env.CLANCY_JQL_SPRINT,
     label: opts.buildLabel ?? env.CLANCY_LABEL,
     excludeHitl: opts.excludeHitl,
+    limit: opts.limit,
     fetcher: ctx.fetcher,
   });
   return tickets.map((t) => toFetchedTicket(t, ctx.statusName));

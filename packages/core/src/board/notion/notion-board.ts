@@ -101,8 +101,9 @@ async function fetchNotionTickets(
       })
     : hitlFiltered;
 
+  const limit = fetchOpts.limit ?? 5;
   return labelFiltered
-    .slice(0, 5)
+    .slice(0, limit)
     .map((page) => pageToFetchedTicket(page, props));
 }
 
