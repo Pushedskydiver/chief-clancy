@@ -59,7 +59,10 @@ Grade this ticket now.`;
  * @returns Parsed verdict or error.
  */
 export function invokeReadinessGrade(opts: InvokeOpts): InvokeResult {
-  const base = ['-p', '--dangerously-skip-permissions'] as const;
+  // --bare skips hooks/skills/plugins/MCP/auto-memory discovery.
+  // --output-format json + --json-schema deferred to PR 10 pending
+  // composability smoke test (plan Q-v3-1).
+  const base = ['-p', '--bare', '--dangerously-skip-permissions'] as const;
   const args = opts.model ? [...base, '--model', opts.model] : [...base];
 
   const result = opts.spawn('claude', args, {

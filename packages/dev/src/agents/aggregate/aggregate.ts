@@ -30,10 +30,10 @@ export function aggregateVerdict(
   checks: readonly CheckResult[],
   yellowThreshold: number = DEFAULT_YELLOW_THRESHOLD,
 ): CheckColour {
-  const worst = checks.reduce(
-    (max, c) => Math.max(max, COLOUR_RANK[c.verdict]),
-    0,
-  );
+  if (checks.length === 0) return 'red';
+
+  const ranks = checks.map((c) => COLOUR_RANK[c.verdict]);
+  const worst = Math.max(...ranks);
 
   const yellowCount = checks.filter((c) => c.verdict === 'yellow').length;
 

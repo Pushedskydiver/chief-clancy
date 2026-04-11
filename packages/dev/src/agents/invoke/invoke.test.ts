@@ -84,6 +84,7 @@ describe('invokeReadinessGrade', () => {
     const call = vi.mocked(spawn).mock.calls[0]!;
     expect(call[0]).toBe('claude');
     expect(call[1]).toContain('-p');
+    expect(call[1]).toContain('--bare');
     expect(call[1]).toContain('--dangerously-skip-permissions');
   });
 

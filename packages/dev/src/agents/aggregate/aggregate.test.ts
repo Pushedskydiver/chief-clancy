@@ -107,7 +107,7 @@ describe('aggregateVerdict', () => {
     expect(aggregateVerdict(checks)).toBe('red');
   });
 
-  it('returns green for empty checks array', () => {
-    expect(aggregateVerdict([])).toBe('green');
+  it('returns red for empty checks array (no grading occurred)', () => {
+    expect(aggregateVerdict([])).toBe('red');
   });
 });

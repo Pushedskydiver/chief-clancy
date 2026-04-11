@@ -2,7 +2,7 @@
  * Readiness gate types — zod/mini schemas + inferred TypeScript types.
  *
  * The `ReadinessCheckId` union is the source of truth for check ids.
- * The schema-pair test (`__tests__/schema-pair.test.ts`) asserts that
+ * The schema-pair test (`schema-pair.test.ts`) asserts that
  * these ids match the `## Checks` headings in `readiness.md`.
  */
 import { z } from 'zod/mini';
@@ -48,7 +48,7 @@ export type CheckResult = z.infer<typeof checkResultSchema>;
 const readinessVerdictSchema = z.object({
   ticketId: z.string().check(z.minLength(1)),
   overall: checkColourSchema,
-  checks: z.array(checkResultSchema),
+  checks: z.array(checkResultSchema).check(z.minLength(5)),
   gradedAt: z.string().check(z.minLength(1)),
   rubricSha: z.string().check(z.minLength(1)),
 });

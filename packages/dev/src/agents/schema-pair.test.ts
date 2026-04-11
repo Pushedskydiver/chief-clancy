@@ -15,11 +15,14 @@ import { READINESS_CHECK_IDS } from './types/index.js';
 const RUBRIC_PATH = join(import.meta.dirname, 'readiness.md');
 
 function extractCheckIds(markdown: string): readonly string[] {
-  const checksSection = markdown.split('## Checks')[1];
+  const afterChecks = markdown.split('## Checks')[1];
 
-  if (!checksSection) {
+  if (!afterChecks) {
     throw new Error('No "## Checks" section found in readiness.md');
   }
+
+  // Stop at the next ## heading so unrelated ### headings aren't included
+  const checksSection = afterChecks.split(/^## /m)[0]!;
 
   const headingRe = /^### (\S+)/gm;
   const ids: string[] = [];
