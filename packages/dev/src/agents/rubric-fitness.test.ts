@@ -16,6 +16,7 @@ import { describe, expect, it } from 'vitest';
 
 import { aggregateVerdict } from './aggregate/index.js';
 import { BAD_TICKETS, GOOD_TICKETS } from './fixtures/tickets.js';
+import { READINESS_CHECK_IDS } from './types/index.js';
 
 // ─── Mock grader (pure functions, one per check) ────────────────────────────
 
@@ -92,15 +93,7 @@ function mockGrade(
   title: string,
   description: string,
 ): { readonly overall: CheckColour; readonly checks: readonly CheckResult[] } {
-  const ids: readonly ReadinessCheckId[] = [
-    'clear',
-    'testable',
-    'small',
-    'locatable',
-    'touch-bounded',
-  ];
-
-  const checks: readonly CheckResult[] = ids.map((id) => ({
+  const checks: readonly CheckResult[] = READINESS_CHECK_IDS.map((id) => ({
     id,
     verdict: GRADERS[id](title, description),
     reason: `Mock grade for ${id}`,

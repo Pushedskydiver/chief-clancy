@@ -71,6 +71,10 @@ export function invokeReadinessGrade(opts: InvokeOpts): InvokeResult {
     encoding: 'utf8',
   });
 
+  if (result.error) {
+    return { ok: false, error: `Claude spawn failed: ${result.error.message}` };
+  }
+
   if (result.status !== 0) {
     const detail = result.stderr?.trim();
     const message = detail

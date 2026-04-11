@@ -88,6 +88,26 @@ describe('invokeReadinessGrade', () => {
     expect(call[1]).toContain('--dangerously-skip-permissions');
   });
 
+  it('returns error when spawn fails (e.g. claude not found)', () => {
+    const spawn = vi.fn().mockReturnValue({
+      stdout: '',
+      stderr: '',
+      status: null,
+      signal: null,
+      pid: 0,
+      output: [],
+      error: new Error('spawn claude ENOENT'),
+    } satisfies SpawnSyncReturns<string>);
+
+    const result = invokeReadinessGrade({ ...BASE_OPTS, spawn });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toContain('Claude spawn failed');
+      expect(result.error).toContain('ENOENT');
+    }
+  });
+
   it('returns error when Claude exits non-zero', () => {
     const spawn = makeSpawn('', 1);
 
