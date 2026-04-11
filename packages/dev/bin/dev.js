@@ -80,8 +80,8 @@ const ask = (label) => new Promise((resolve) => rl.question(label, resolve));
 // File lists (keep in sync with install.ts)
 // ---------------------------------------------------------------------------
 
-const COMMAND_FILES = ['board-setup.md', 'dev.md'];
-const WORKFLOW_FILES = ['board-setup.md', 'dev.md'];
+const COMMAND_FILES = ['board-setup.md', 'dev.md', 'dev-loop.md'];
+const WORKFLOW_FILES = ['board-setup.md', 'dev.md', 'dev-loop.md'];
 const BUNDLE_FILES = ['clancy-dev.js', 'clancy-dev-autopilot.js'];
 const SCAN_AGENT_FILES = [
   'arch-agent.md',
@@ -213,6 +213,9 @@ function printSuccess() {
   console.log('  Commands available:');
   console.log(
     `      ${cyan('/clancy:dev')}            ${dim('Execute a board ticket autonomously')}`,
+  );
+  console.log(
+    `      ${cyan('/clancy:dev-loop')}       ${dim('Process the ticket queue in a loop')}`,
   );
   console.log(
     `      ${cyan('/clancy:board-setup')}    ${dim('Configure board credentials')}`,

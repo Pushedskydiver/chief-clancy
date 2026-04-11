@@ -171,8 +171,12 @@ const buildOptions = (
       '# /clancy:board-setup\n\n@.claude/clancy/workflows/board-setup.md\n\nFollow the board setup workflow.',
     '/pkg/dist/commands/dev.md':
       '# /clancy:dev\n\n@.claude/clancy/workflows/dev.md\n\nFollow the dev workflow above.',
+    '/pkg/dist/commands/dev-loop.md':
+      '# /clancy:dev-loop\n\n@.claude/clancy/workflows/dev-loop.md\n\nFollow the dev loop workflow above.',
     '/pkg/dist/workflows/board-setup.md': '# Board Setup Workflow\n\nStep 1...',
     '/pkg/dist/workflows/dev.md': '# Clancy Dev Workflow\n\nStep 1...',
+    '/pkg/dist/workflows/dev-loop.md':
+      '# Clancy Dev Loop Workflow\n\nStep 1...',
     '/pkg/dist/bundle/clancy-dev.js': '// clancy-dev bundle',
     '/pkg/dist/bundle/clancy-dev-autopilot.js':
       '// clancy-dev-autopilot bundle',
@@ -300,6 +304,10 @@ describe('runDevInstall', () => {
       join(defaultSources.commandsDir, 'dev.md'),
       join(defaultPaths.commandsDest, 'dev.md'),
     );
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.commandsDir, 'dev-loop.md'),
+      join(defaultPaths.commandsDest, 'dev-loop.md'),
+    );
   });
 
   it('copies workflow files to workflows destination', () => {
@@ -313,6 +321,10 @@ describe('runDevInstall', () => {
     expect(opts.fs.copyFile).toHaveBeenCalledWith(
       join(defaultSources.workflowsDir, 'dev.md'),
       join(defaultPaths.workflowsDest, 'dev.md'),
+    );
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.workflowsDir, 'dev-loop.md'),
+      join(defaultPaths.workflowsDest, 'dev-loop.md'),
     );
   });
 
@@ -388,6 +400,22 @@ describe('runDevInstall', () => {
 
     expect(content).toContain('# Clancy Dev Workflow');
     expect(content).not.toContain('@.claude/clancy/workflows/dev.md');
+  });
+
+  it('inlines dev-loop workflow content in global mode', () => {
+    const opts = buildOptions({ mode: 'global' });
+    runDevInstall(opts);
+
+    const writeCall = opts.fs.writeFile.mock.calls.find(
+      ([path]) => path === join(defaultPaths.commandsDest, 'dev-loop.md'),
+    );
+
+    expect(writeCall).toBeDefined();
+
+    const content = writeCall![1];
+
+    expect(content).toContain('# Clancy Dev Loop Workflow');
+    expect(content).not.toContain('@.claude/clancy/workflows/dev-loop.md');
   });
 
   it('rejects symlink on workflow file during global inlining', () => {
