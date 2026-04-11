@@ -66,13 +66,10 @@ export default defineConfig(
 
       // ── Functional rules ────────────────────────────────────
       'functional/no-let': 'error',
-      'functional/immutable-data': [
-        'error',
-        {
-          ignoreImmediateMutation: true,
-          ignoreClasses: true,
-        },
-      ],
+      // Requires type-checked linting (parserOptions.projectService) to
+      // inspect call expressions. Disabled until recommendedTypeChecked is
+      // enabled — without type info the rule crashes on .push()/.entries().
+      'functional/immutable-data': 'off',
       'functional/prefer-readonly-type': ['warn', { allowLocalMutation: true }],
       'functional/no-loop-statements': 'warn',
 
