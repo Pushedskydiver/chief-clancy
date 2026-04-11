@@ -218,4 +218,70 @@ describe('runSingleTicketByKey', () => {
 
     expect(runPipeline).not.toHaveBeenCalled();
   });
+
+  // ── Readiness gate integration ──────────────────────────────────────────
+
+  it('runs pipeline when readiness gate passes', async () => {
+    const deps = {
+      ...makeDeps(),
+      readinessGate: vi.fn().mockReturnValue({ passed: true, verdict: {} }),
+    };
+
+    const result = await runSingleTicketByKey('PROJ-42', deps);
+
+    expect(result).toEqual({ status: 'completed' });
+    expect(deps.readinessGate).toHaveBeenCalledOnce();
+    expect(deps.runPipeline).toHaveBeenCalledOnce();
+  });
+
+  it('returns error when readiness gate fails', async () => {
+    const deps = {
+      ...makeDeps(),
+      readinessGate: vi
+        .fn()
+        .mockReturnValue({ passed: false, overall: 'red', error: undefined }),
+    };
+
+    const result = await runSingleTicketByKey('PROJ-42', deps);
+
+    expect(result.status).toBe('aborted');
+    if (result.status === 'aborted') {
+      expect(result.phase).toBe('readiness');
+    }
+    expect(deps.runPipeline).not.toHaveBeenCalled();
+  });
+
+  it('skips readiness gate when not provided', async () => {
+    const deps = makeDeps();
+
+    const result = await runSingleTicketByKey('PROJ-42', deps);
+
+    expect(result).toEqual({ status: 'completed' });
+  });
+
+  it('skips readiness gate when bypass flag is set', async () => {
+    const readinessGate = vi.fn();
+    const deps = {
+      ...makeDeps(),
+      readinessGate,
+      argv: ['--bypass-readiness', '--reason=testing'] as readonly string[],
+    };
+
+    const result = await runSingleTicketByKey('PROJ-42', deps);
+
+    expect(result).toEqual({ status: 'completed' });
+    expect(readinessGate).not.toHaveBeenCalled();
+  });
+
+  it('returns error when bypass flags are invalid', async () => {
+    const deps = {
+      ...makeDeps(),
+      readinessGate: vi.fn(),
+      argv: ['--bypass-readiness'] as readonly string[],
+    };
+
+    const result = await runSingleTicketByKey('PROJ-42', deps);
+
+    expect(result.status).toBe('error');
+  });
 });
