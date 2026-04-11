@@ -78,5 +78,5 @@ export function safeParseVerdict(text: string): ParseResult {
     };
   }
 
-  return { ok: true, verdict: result.data as ReadinessVerdict };
+  return { ok: true, verdict: result.data };
 }

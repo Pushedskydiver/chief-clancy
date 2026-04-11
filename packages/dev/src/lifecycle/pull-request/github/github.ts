@@ -309,7 +309,7 @@ async function findOpenPr(opts: FindOpenPrOpts): Promise<OpenPr | undefined> {
   const prs = githubPrListSchema.parse(await res.json());
   if (prs.length === 0) return undefined;
 
-  const pr = prs[0]!;
+  const pr = prs[0];
   return { number: pr.number, url: pr.html_url };
 }
 

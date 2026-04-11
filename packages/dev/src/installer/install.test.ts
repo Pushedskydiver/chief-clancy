@@ -368,7 +368,7 @@ describe('runDevInstall', () => {
 
     expect(writeCall).toBeDefined();
 
-    const content = writeCall![1] as string;
+    const content = writeCall![1];
 
     expect(content).toContain('# Map Codebase Workflow');
     expect(content).not.toContain('@.claude/clancy/workflows/map-codebase.md');
@@ -384,7 +384,7 @@ describe('runDevInstall', () => {
 
     expect(writeCall).toBeDefined();
 
-    const content = writeCall![1] as string;
+    const content = writeCall![1];
 
     expect(content).toContain('# Clancy Dev Workflow');
     expect(content).not.toContain('@.claude/clancy/workflows/dev.md');

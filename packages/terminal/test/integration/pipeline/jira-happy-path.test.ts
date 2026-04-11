@@ -62,7 +62,7 @@ const ROUTES: ReadonlyArray<{
     method: 'POST',
     pattern: /\/rest\/api\/3\/search\/jql$/,
     respond: (_url, init) => {
-      const body = JSON.parse(String(init?.body ?? '{}')) as {
+      const body = JSON.parse((init?.body as string) ?? '{}') as {
         readonly maxResults?: number;
       };
       // Children status queries use maxResults: 0

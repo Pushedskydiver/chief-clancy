@@ -131,7 +131,7 @@ describe('attemptPrCreation', () => {
     });
 
     expect(result).toBeDefined();
-    const url = mockFetchFn.mock.calls[0]![0];
+    const url = mockFetchFn.mock.calls[0][0];
     expect(url).toContain('gitlab.com/api/v4');
   });
 
@@ -144,7 +144,7 @@ describe('attemptPrCreation', () => {
     });
 
     expect(result).toBeDefined();
-    const url = mockFetchFn.mock.calls[0]![0];
+    const url = mockFetchFn.mock.calls[0][0];
     expect(url).toContain('api.bitbucket.org');
   });
 
@@ -157,7 +157,7 @@ describe('attemptPrCreation', () => {
     });
 
     expect(result).toBeDefined();
-    const url = mockFetchFn.mock.calls[0]![0];
+    const url = mockFetchFn.mock.calls[0][0];
     expect(url).toContain('bitbucket.internal.com');
   });
 
@@ -170,7 +170,7 @@ describe('attemptPrCreation', () => {
     });
 
     expect(result).toBeDefined();
-    const url = mockFetchFn.mock.calls[0]![0];
+    const url = mockFetchFn.mock.calls[0][0];
     expect(url).toContain('dev.azure.com');
   });
 

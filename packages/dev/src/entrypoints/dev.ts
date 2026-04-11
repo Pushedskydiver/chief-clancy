@@ -140,7 +140,7 @@ function loadEnv(projectRoot: string): {
 
   if (typeof boardResult === 'string') {
     console.error(boardResult);
-    return process.exit(1) as never;
+    return process.exit(1);
   }
 
   return { envFs, boardConfig: boardResult };

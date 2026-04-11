@@ -40,8 +40,8 @@ import {
   resolveDiscussions,
 } from '~/d/lifecycle/pull-request/gitlab/index.js';
 
-const noopResolve = async (): Promise<number> => 0;
-const noopReRequest = async (): Promise<boolean> => false;
+const noopResolve = (): Promise<number> => Promise.resolve(0);
+const noopReRequest = (): Promise<boolean> => Promise.resolve(false);
 
 /** Build rework handlers for GitHub. */
 export function githubHandlers(

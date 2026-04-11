@@ -36,7 +36,7 @@ describe('modifyLabelList', () => {
     const write = vi.fn().mockResolvedValue(undefined);
 
     await modifyLabelList({
-      fetchCurrent: async () => ['a', 'b'],
+      fetchCurrent: () => Promise.resolve(['a', 'b']),
       writeUpdated: write,
       target: 'c',
       mode: 'add',
@@ -49,7 +49,7 @@ describe('modifyLabelList', () => {
     const write = vi.fn();
 
     await modifyLabelList({
-      fetchCurrent: async () => ['a', 'b'],
+      fetchCurrent: () => Promise.resolve(['a', 'b']),
       writeUpdated: write,
       target: 'b',
       mode: 'add',
@@ -62,7 +62,7 @@ describe('modifyLabelList', () => {
     const write = vi.fn().mockResolvedValue(undefined);
 
     await modifyLabelList({
-      fetchCurrent: async () => ['a', 'b', 'c'],
+      fetchCurrent: () => Promise.resolve(['a', 'b', 'c']),
       writeUpdated: write,
       target: 'b',
       mode: 'remove',
@@ -75,7 +75,7 @@ describe('modifyLabelList', () => {
     const write = vi.fn();
 
     await modifyLabelList({
-      fetchCurrent: async () => ['a', 'b'],
+      fetchCurrent: () => Promise.resolve(['a', 'b']),
       writeUpdated: write,
       target: 'z',
       mode: 'remove',
@@ -88,7 +88,7 @@ describe('modifyLabelList', () => {
     const write = vi.fn();
 
     await modifyLabelList({
-      fetchCurrent: async () => undefined,
+      fetchCurrent: () => Promise.resolve(undefined),
       writeUpdated: write,
       target: 'x',
       mode: 'add',
@@ -101,7 +101,7 @@ describe('modifyLabelList', () => {
     const write = vi.fn().mockResolvedValue(undefined);
 
     await modifyLabelList({
-      fetchCurrent: async () => [1, 2, 3],
+      fetchCurrent: () => Promise.resolve([1, 2, 3]),
       writeUpdated: write,
       target: 4,
       mode: 'add',
@@ -114,7 +114,7 @@ describe('modifyLabelList', () => {
     const write = vi.fn().mockResolvedValue(undefined);
 
     await modifyLabelList({
-      fetchCurrent: async () => [1, 2, 3],
+      fetchCurrent: () => Promise.resolve([1, 2, 3]),
       writeUpdated: write,
       target: 2,
       mode: 'remove',
@@ -127,7 +127,7 @@ describe('modifyLabelList', () => {
     const write = vi.fn().mockResolvedValue(undefined);
 
     await modifyLabelList({
-      fetchCurrent: async () => [],
+      fetchCurrent: () => Promise.resolve([] as readonly string[]),
       writeUpdated: write,
       target: 'first',
       mode: 'add',
@@ -140,7 +140,7 @@ describe('modifyLabelList', () => {
     const write = vi.fn();
 
     await modifyLabelList({
-      fetchCurrent: async () => [],
+      fetchCurrent: () => Promise.resolve([] as readonly string[]),
       writeUpdated: write,
       target: 'x',
       mode: 'remove',
@@ -154,7 +154,7 @@ describe('modifyLabelList', () => {
 
     await expect(
       modifyLabelList({
-        fetchCurrent: async () => ['a'],
+        fetchCurrent: () => Promise.resolve(['a']),
         writeUpdated: write,
         target: 'b',
         mode: 'add',

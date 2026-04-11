@@ -205,7 +205,7 @@ async function fetchChildrenByBodyRef(
   const allQuery = `"${bodyRef}" repo:${repo} is:issue`;
   const allParams = new URLSearchParams({ q: allQuery, per_page: '1' });
   const allResponse = await doFetch(
-    `${GITHUB_API}/search/issues?${allParams}`,
+    `${GITHUB_API}/search/issues?${allParams.toString()}`,
     {
       headers,
     },
@@ -224,7 +224,7 @@ async function fetchChildrenByBodyRef(
     per_page: '1',
   });
   const openResponse = await doFetch(
-    `${GITHUB_API}/search/issues?${openParams}`,
+    `${GITHUB_API}/search/issues?${openParams.toString()}`,
     { headers },
   );
 

@@ -94,7 +94,7 @@ describe('githubHandlers', () => {
     await handlers.checkReviewState('feature/test');
 
     expect(mockFetchFn).toHaveBeenCalled();
-    const url = mockFetchFn.mock.calls[0]![0];
+    const url = mockFetchFn.mock.calls[0][0];
     expect(url).toContain('api.example.com');
     expect(url).toContain('acme/app');
   });
@@ -105,7 +105,7 @@ describe('githubHandlers', () => {
     await handlers.fetchComments(42);
 
     expect(mockFetchFn).toHaveBeenCalled();
-    const url = mockFetchFn.mock.calls[0]![0];
+    const url = mockFetchFn.mock.calls[0][0];
     expect(url).toContain('api.example.com');
     expect(url).toContain('/42/');
   });
@@ -116,7 +116,7 @@ describe('githubHandlers', () => {
     await handlers.postComment(42, 'rework comment');
 
     expect(mockFetchFn).toHaveBeenCalled();
-    const url = mockFetchFn.mock.calls[0]![0];
+    const url = mockFetchFn.mock.calls[0][0];
     expect(url).toContain('/42/');
   });
 
@@ -126,7 +126,7 @@ describe('githubHandlers', () => {
     await handlers.reRequestReview(42, ['reviewer1']);
 
     expect(mockFetchFn).toHaveBeenCalled();
-    const url = mockFetchFn.mock.calls[0]![0];
+    const url = mockFetchFn.mock.calls[0][0];
     expect(url).toContain('api.example.com');
     expect(url).toContain('acme/app');
     expect(url).toContain('/42/');
@@ -158,7 +158,7 @@ describe('gitlabHandlers', () => {
     await handlers.postComment(10, 'note body');
 
     expect(mockFetchFn).toHaveBeenCalled();
-    const url = mockFetchFn.mock.calls[0]![0];
+    const url = mockFetchFn.mock.calls[0][0];
     expect(url).toContain('api.example.com');
     expect(url).toContain('acme%2Fapp');
   });
@@ -169,7 +169,7 @@ describe('gitlabHandlers', () => {
     await handlers.resolveThreads(10, ['disc-1', 'disc-2']);
 
     expect(mockFetchFn).toHaveBeenCalled();
-    const url = mockFetchFn.mock.calls[0]![0];
+    const url = mockFetchFn.mock.calls[0][0];
     expect(url).toContain('api.example.com');
     expect(url).toContain('acme%2Fapp');
     expect(url).toContain('disc-1');
@@ -215,7 +215,7 @@ describe('bbCloudHandlers', () => {
     await handlers.postComment(5, 'cloud comment');
 
     expect(mockFetchFn).toHaveBeenCalled();
-    const url = mockFetchFn.mock.calls[0]![0];
+    const url = mockFetchFn.mock.calls[0][0];
     expect(url).toContain('bitbucket.org');
     expect(url).toContain('acme');
     expect(url).toContain('app');
@@ -253,7 +253,7 @@ describe('bbServerHandlers', () => {
     await handlers.postComment(7, 'server comment');
 
     expect(mockFetchFn).toHaveBeenCalled();
-    const url = mockFetchFn.mock.calls[0]![0];
+    const url = mockFetchFn.mock.calls[0][0];
     expect(url).toContain('api.example.com');
     expect(url).toContain('ACME');
     expect(url).toContain('app');
@@ -291,7 +291,7 @@ describe('azdoHandlers', () => {
     await handlers.postComment(3, 'azdo comment');
 
     expect(mockFetchFn).toHaveBeenCalled();
-    const url = mockFetchFn.mock.calls[0]![0];
+    const url = mockFetchFn.mock.calls[0][0];
     expect(url).toContain('acme');
     expect(url).toContain('platform');
     expect(url).toContain('app');

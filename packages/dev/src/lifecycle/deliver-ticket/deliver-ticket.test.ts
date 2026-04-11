@@ -127,7 +127,7 @@ describe('deliverViaPullRequest', () => {
     await deliverViaPullRequest(opts);
 
     expect(opts.progressFs.appendFile).toHaveBeenCalled();
-    const content = opts.progressFs.appendFile.mock.calls[0]![1] as string;
+    const content = opts.progressFs.appendFile.mock.calls[0][1] as string;
     expect(content).toContain('PR_CREATED');
     expect(content).toContain('PROJ-42');
   });
@@ -143,7 +143,7 @@ describe('deliverViaPullRequest', () => {
     const opts = makeOpts({ pushSucceeds: false });
     await deliverViaPullRequest(opts);
 
-    const content = opts.progressFs.appendFile.mock.calls[0]![1] as string;
+    const content = opts.progressFs.appendFile.mock.calls[0][1] as string;
     expect(content).toContain('PUSH_FAILED');
   });
 
@@ -165,7 +165,7 @@ describe('deliverViaPullRequest', () => {
     const opts = makeOpts({ parent: 'PROJ-100' });
     await deliverViaPullRequest(opts);
 
-    const content = opts.progressFs.appendFile.mock.calls[0]![1] as string;
+    const content = opts.progressFs.appendFile.mock.calls[0][1] as string;
     expect(content).toContain('parent:PROJ-100');
   });
 
@@ -174,7 +174,7 @@ describe('deliverViaPullRequest', () => {
     await deliverViaPullRequest(opts);
 
     const fetchCall = mockFetchFn.mock.calls;
-    const lastBody = fetchCall[fetchCall.length - 1]![1]?.body as string;
+    const lastBody = fetchCall[fetchCall.length - 1][1]?.body as string;
     expect(lastBody).toContain('Verification');
   });
 
@@ -182,7 +182,7 @@ describe('deliverViaPullRequest', () => {
     const opts = makeOpts({ ticketType: 'Bug' });
     await deliverViaPullRequest(opts);
 
-    const fetchBody = mockFetchFn.mock.calls[0]![1]?.body as string;
+    const fetchBody = mockFetchFn.mock.calls[0][1]?.body as string;
     expect(fetchBody).toContain('fix(PROJ-42)');
   });
 
@@ -190,7 +190,7 @@ describe('deliverViaPullRequest', () => {
     const opts = makeOpts();
     await deliverViaPullRequest(opts);
 
-    const fetchBody = mockFetchFn.mock.calls[0]![1]?.body as string;
+    const fetchBody = mockFetchFn.mock.calls[0][1]?.body as string;
     expect(fetchBody).toContain('feat(PROJ-42)');
   });
 
@@ -216,7 +216,7 @@ describe('deliverViaPullRequest', () => {
     };
     await deliverViaPullRequest(opts);
 
-    const fetchBody = mockFetchFn.mock.calls[0]![1]?.body as string;
+    const fetchBody = mockFetchFn.mock.calls[0][1]?.body as string;
     expect(fetchBody).toContain('EPIC-100');
   });
 

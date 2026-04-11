@@ -54,7 +54,7 @@ describe('runImplement — context creation', () => {
 
     await runImplement(opts);
 
-    const ctx = pipeline.mock.calls[0]![0];
+    const ctx = pipeline.mock.calls[0][0];
     expect(ctx.projectRoot).toBe('/my/project');
     expect(ctx.dryRun).toBe(true);
   });
@@ -68,7 +68,7 @@ describe('runImplement — context creation', () => {
 
     await runImplement(opts);
 
-    const ctx = pipeline.mock.calls[0]![0];
+    const ctx = pipeline.mock.calls[0][0];
     expect(ctx.isAfk).toBe(true);
   });
 
@@ -81,7 +81,7 @@ describe('runImplement — context creation', () => {
 
     await runImplement(opts);
 
-    const ctx = pipeline.mock.calls[0]![0];
+    const ctx = pipeline.mock.calls[0][0];
     expect(ctx.startTime).toBe(5000);
   });
 });
@@ -95,7 +95,7 @@ describe('runImplement — dep wiring', () => {
 
     await runImplement(opts);
 
-    const deps = pipeline.mock.calls[0]![1];
+    const deps = pipeline.mock.calls[0][1];
     expect(typeof deps.lockCheck).toBe('function');
     expect(typeof deps.preflight).toBe('function');
     expect(typeof deps.invoke).toBe('function');

@@ -78,11 +78,11 @@ describe('buildPipelineDeps', () => {
     const deps = buildPipelineDeps(mockOpts);
 
     deps.deleteLock();
-    const lockPath = mockOpts.lockFs.deleteFile.mock.calls[0]![0] as string;
+    const lockPath = mockOpts.lockFs.deleteFile.mock.calls[0][0] as string;
 
     mockOpts.lockFs.deleteFile.mockClear();
     deps.deleteVerifyAttempt();
-    const verifyPath = mockOpts.lockFs.deleteFile.mock.calls[0]![0] as string;
+    const verifyPath = mockOpts.lockFs.deleteFile.mock.calls[0][0] as string;
 
     expect(lockPath).not.toBe(verifyPath);
   });
@@ -143,7 +143,7 @@ describe('buildPipelineDeps', () => {
     );
 
     const callBody = JSON.parse(
-      (mockOpts.fetch.mock.calls[0]![1] as RequestInit).body as string,
+      (mockOpts.fetch.mock.calls[0][1] as RequestInit).body as string,
     );
     expect(callBody.title).toBe('feat(PROJ-1): Fix login');
     expect(callBody.head).toContain('PROJ-1');

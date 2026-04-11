@@ -125,7 +125,7 @@ describe('createClaudeSimulator', () => {
       encoding: 'utf8',
     });
 
-    const call: SimulatorCall = sim.calls[0]!;
+    const call: SimulatorCall = sim.calls[0];
     expect(call.stdio).toEqual(['pipe', 'pipe', 'pipe']);
   });
 });

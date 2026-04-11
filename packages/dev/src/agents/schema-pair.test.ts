@@ -22,7 +22,7 @@ function extractCheckIds(markdown: string): readonly string[] {
   }
 
   // Stop at the next ## heading so unrelated ### headings aren't included
-  const checksSection = afterChecks.split(/^## /m)[0]!;
+  const checksSection = afterChecks.split(/^## /m)[0];
 
   const headingRe = /^### (\S+)/gm;
   const ids: string[] = [];

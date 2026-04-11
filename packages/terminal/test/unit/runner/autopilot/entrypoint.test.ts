@@ -82,7 +82,7 @@ describe('buildRunIteration', () => {
     expect(result).toBe(expectedResult);
     expect(runPipeline).toHaveBeenCalledOnce();
 
-    const ctx = runPipeline.mock.calls[0]![0] as { readonly isAfk: boolean };
+    const ctx = runPipeline.mock.calls[0][0] as { readonly isAfk: boolean };
     expect(ctx.isAfk).toBe(true);
   });
 });

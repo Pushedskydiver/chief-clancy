@@ -103,7 +103,7 @@ async function runLoopStep<TResult>(
 
   await handleQuietHours(opts);
 
-  const id = opts.indices[state.index]!;
+  const id = opts.indices[state.index];
   const result = await opts.iterate(id);
   const updated = [...state.results, { id, result }];
 

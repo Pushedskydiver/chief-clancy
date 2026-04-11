@@ -102,8 +102,8 @@ describe('prRetry', () => {
 
     expect(deps.retryEntry).toHaveBeenCalledTimes(2);
     expect(result.results).toHaveLength(2);
-    expect(result.results[0]!.key).toBe('PROJ-1');
-    expect(result.results[0]!.status).toBe('created');
+    expect(result.results[0].key).toBe('PROJ-1');
+    expect(result.results[0].status).toBe('created');
   });
 
   it('records exists status when PR already exists', async () => {
@@ -117,7 +117,7 @@ describe('prRetry', () => {
 
     const result = await prRetry(makeCtx(), deps);
 
-    expect(result.results[0]!.status).toBe('exists');
+    expect(result.results[0].status).toBe('exists');
   });
 
   it('records failed status when PR creation fails', async () => {
@@ -127,7 +127,7 @@ describe('prRetry', () => {
 
     const result = await prRetry(makeCtx(), deps);
 
-    expect(result.results[0]!.status).toBe('failed');
+    expect(result.results[0].status).toBe('failed');
   });
 
   it('records skipped status when no credentials', async () => {
@@ -136,7 +136,7 @@ describe('prRetry', () => {
 
     const result = await prRetry(makeCtx(), deps);
 
-    expect(result.results[0]!.status).toBe('skipped');
+    expect(result.results[0].status).toBe('skipped');
   });
 
   it('marks all entries as unsupported for none/unknown remotes', async () => {
@@ -150,7 +150,7 @@ describe('prRetry', () => {
 
     expect(deps.retryEntry).not.toHaveBeenCalled();
     expect(result.results).toHaveLength(2);
-    expect(result.results[0]!.status).toBe('unsupported');
+    expect(result.results[0].status).toBe('unsupported');
     expect(deps.appendProgress).toHaveBeenCalledTimes(2);
   });
 
@@ -237,7 +237,7 @@ describe('prRetry', () => {
 
     const result = await prRetry(makeCtx(), deps);
 
-    expect(result.results[0]!.status).toBe('unsupported');
+    expect(result.results[0].status).toBe('unsupported');
   });
 
   it('normalises parent "none" to undefined', async () => {

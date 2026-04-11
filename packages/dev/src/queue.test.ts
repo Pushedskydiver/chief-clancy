@@ -210,7 +210,7 @@ describe('executeQueue', () => {
       makeQueueOpts({ queue: ['A'], run, shouldHalt }),
     );
 
-    expect(outcome.iterations[0]!.result).toEqual({ status: 'completed' });
+    expect(outcome.iterations[0].result).toEqual({ status: 'completed' });
   });
 
   it('passes ticket id to run()', async () => {
@@ -281,8 +281,8 @@ describe('executeFixedCount', () => {
     );
 
     expect(outcome.iterations).toHaveLength(1);
-    expect(outcome.iterations[0]!.id).toBe('iter-1');
-    expect(outcome.iterations[0]!.result).toBe('ok');
+    expect(outcome.iterations[0].id).toBe('iter-1');
+    expect(outcome.iterations[0].result).toBe('ok');
   });
 
   it('runs exactly 10 iterations', async () => {
@@ -293,7 +293,7 @@ describe('executeFixedCount', () => {
     );
 
     expect(outcome.iterations).toHaveLength(10);
-    expect(outcome.iterations[9]!.id).toBe('iter-10');
+    expect(outcome.iterations[9].id).toBe('iter-10');
   });
 
   it('caps at 100 when iterations > 100', async () => {
@@ -357,7 +357,7 @@ describe('quiet hours', () => {
     // First call to sleep is the quiet-hours sleep, second would be inter-iteration
     // With 1 item, only the quiet-hours sleep happens
     expect(sleep).toHaveBeenCalledTimes(1);
-    const sleepMs = sleep.mock.calls[0]![0]!;
+    const sleepMs = sleep.mock.calls[0][0];
     // 23:00 → 06:00 = 7 hours = 25,200,000ms
     expect(sleepMs).toBe(7 * 60 * 60 * 1000);
   });
@@ -413,7 +413,7 @@ describe('quiet hours', () => {
     );
 
     expect(sleep).toHaveBeenCalledTimes(1);
-    const sleepMs = sleep.mock.calls[0]![0]!;
+    const sleepMs = sleep.mock.calls[0][0];
     // 02:00 → 06:00 = 4 hours = 14,400,000ms
     expect(sleepMs).toBe(4 * 60 * 60 * 1000);
   });

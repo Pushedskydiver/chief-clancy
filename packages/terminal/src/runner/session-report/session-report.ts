@@ -108,16 +108,16 @@ function parseCostLine(line: string, sinceMs: number): CostEntry | undefined {
   const parts = line.split(' | ');
   if (parts.length < 4) return undefined;
 
-  const timestamp = parts[0]!;
+  const timestamp = parts[0];
   const entryTime = new Date(timestamp).getTime();
   const isRecentAndValid = !Number.isNaN(entryTime) && entryTime >= sinceMs;
   if (!isRecentAndValid) return undefined;
 
   return {
     timestamp,
-    key: parts[1]!,
-    duration: parts[2]!,
-    tokens: parts[3]!,
+    key: parts[1],
+    duration: parts[2],
+    tokens: parts[3],
   };
 }
 
@@ -126,7 +126,7 @@ function parseTokenCount(tokens: string): number {
   const match = tokens.match(/~(\d[\d,]*)/);
   if (!match) return 0;
 
-  const parsed = parseInt(match[1]!.replace(/,/g, ''), 10);
+  const parsed = parseInt(match[1].replace(/,/g, ''), 10);
   return Number.isNaN(parsed) ? 0 : parsed;
 }
 
@@ -134,7 +134,7 @@ function parseTokenCount(tokens: string): number {
 function sumTokens(costs: readonly CostEntry[], i = 0): number {
   return i >= costs.length
     ? 0
-    : parseTokenCount(costs[i]!.tokens) + sumTokens(costs, i + 1);
+    : parseTokenCount(costs[i].tokens) + sumTokens(costs, i + 1);
 }
 
 /** Format a UTC date as `YYYY-MM-DD`. */

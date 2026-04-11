@@ -34,7 +34,9 @@ describe('addLabel', () => {
 
     expect(mockFetch).toHaveBeenCalledTimes(2);
     const putCall = mockFetch.mock.calls[1] as [string, RequestInit];
-    const putBody = JSON.parse(putCall[1].body as string);
+    const putBody = JSON.parse(putCall[1].body as string) as {
+      readonly fields: { readonly labels: readonly string[] };
+    };
     expect(putBody.fields.labels).toEqual(['existing', 'clancy:build']);
   });
 
@@ -86,7 +88,9 @@ describe('removeLabel', () => {
 
     expect(mockFetch).toHaveBeenCalledTimes(2);
     const putCall = mockFetch.mock.calls[1] as [string, RequestInit];
-    const putBody = JSON.parse(putCall[1].body as string);
+    const putBody = JSON.parse(putCall[1].body as string) as {
+      readonly fields: { readonly labels: readonly string[] };
+    };
     expect(putBody.fields.labels).toEqual(['bug']);
   });
 

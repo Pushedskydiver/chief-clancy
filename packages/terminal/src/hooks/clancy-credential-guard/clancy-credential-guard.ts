@@ -22,7 +22,7 @@ try {
   const event = readPreToolUseInput({ argv: process.argv, readFileSync });
   const toolName = event.tool_name ?? '';
   // Safe: tool_input is untyped on HookEvent — fields validated individually below
-  const toolInput = (event.tool_input ?? {}) as Record<string, unknown>;
+  const toolInput = event.tool_input ?? {};
   const filePath =
     typeof toolInput.file_path === 'string' ? toolInput.file_path : '';
 

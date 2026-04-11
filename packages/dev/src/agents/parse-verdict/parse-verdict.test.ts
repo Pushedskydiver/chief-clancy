@@ -118,10 +118,10 @@ describe('safeParseVerdict', () => {
 
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.verdict.checks[0]!.question).toBe(
+      expect(result.verdict.checks[0].question).toBe(
         'What does this ticket do?',
       );
-      expect(result.verdict.checks[0]!.evidence).toEqual({
+      expect(result.verdict.checks[0].evidence).toEqual({
         grepTerm: 'auth',
         hits: 3,
       });

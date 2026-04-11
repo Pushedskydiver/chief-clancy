@@ -318,10 +318,10 @@ describe('checkPrReviewState', () => {
       since: '2026-03-14T10:00:00Z',
     });
 
-    expect(mockFetch.mock.calls[1]![0]).toContain(
+    expect(mockFetch.mock.calls[1][0]).toContain(
       `&since=${encodeURIComponent('2026-03-14T10:00:00Z')}`,
     );
-    expect(mockFetch.mock.calls[2]![0]).toContain(
+    expect(mockFetch.mock.calls[2][0]).toContain(
       `&since=${encodeURIComponent('2026-03-14T10:00:00Z')}`,
     );
   });
@@ -343,7 +343,7 @@ describe('checkPrReviewState', () => {
     });
 
     expect(result?.changesRequested).toBe(true);
-    expect(mockFetch.mock.calls[1]![0]).not.toContain('&since=');
+    expect(mockFetch.mock.calls[1][0]).not.toContain('&since=');
   });
 
   it('CHANGES_REQUESTED review triggers rework', async () => {

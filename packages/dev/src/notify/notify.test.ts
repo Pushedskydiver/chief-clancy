@@ -120,9 +120,7 @@ describe('sendNotification', () => {
       fetch,
     });
 
-    const callBody = JSON.parse(
-      (fetch.mock.calls[0]![1] as RequestInit).body as string,
-    );
+    const callBody = JSON.parse(fetch.mock.calls[0][1].body as string);
     expect(callBody.type).toBe('message');
     expect(callBody.attachments[0].contentType).toBe(
       'application/vnd.microsoft.card.adaptive',

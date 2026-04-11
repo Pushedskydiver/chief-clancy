@@ -102,7 +102,7 @@ function createLinearFetcher() {
       return new Response('Not Found', { status: 404 });
     }
 
-    const body = JSON.parse(String(init?.body ?? '{}')) as {
+    const body = JSON.parse((init?.body as string) ?? '{}') as {
       readonly query?: string;
     };
     const query = body.query ?? '';
@@ -265,7 +265,7 @@ describe('Linear pipeline — happy path', { timeout: 30_000 }, () => {
   it('aborts at ticket-fetch when board returns no issues', async () => {
     const baseFetcher = createLinearFetcher();
     const emptyFetcher = async (url: string, init?: RequestInit) => {
-      const body = JSON.parse(String(init?.body ?? '{}')) as {
+      const body = JSON.parse((init?.body as string) ?? '{}') as {
         readonly query?: string;
       };
       if (body.query?.includes('assignedIssues')) {

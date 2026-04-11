@@ -256,7 +256,7 @@ describe('handler method invocation', () => {
     await handlers!.checkReviewState('feature/test');
 
     expect(mockFetchFn).toHaveBeenCalled();
-    expect(mockFetchFn.mock.calls[0]![0]).toContain('api.github.com');
+    expect(mockFetchFn.mock.calls[0][0]).toContain('api.github.com');
   });
 
   it('GitHub fetchComments calls fetch with comments endpoint', async () => {
@@ -271,8 +271,8 @@ describe('handler method invocation', () => {
     await handlers!.fetchComments(42);
 
     expect(mockFetchFn).toHaveBeenCalled();
-    expect(mockFetchFn.mock.calls[0]![0]).toContain('api.github.com');
-    expect(mockFetchFn.mock.calls[0]![0]).toContain('42');
+    expect(mockFetchFn.mock.calls[0][0]).toContain('api.github.com');
+    expect(mockFetchFn.mock.calls[0][0]).toContain('42');
   });
 
   it('GitHub postComment calls fetch with POST method', async () => {
@@ -287,8 +287,8 @@ describe('handler method invocation', () => {
     await handlers!.postComment(42, 'rework needed');
 
     expect(mockFetchFn).toHaveBeenCalled();
-    expect(mockFetchFn.mock.calls[0]![0]).toContain('api.github.com');
-    expect(mockFetchFn.mock.calls[0]![1]).toHaveProperty('method', 'POST');
+    expect(mockFetchFn.mock.calls[0][0]).toContain('api.github.com');
+    expect(mockFetchFn.mock.calls[0][1]).toHaveProperty('method', 'POST');
   });
 
   it('GitLab postComment calls fetch with notes endpoint', async () => {
@@ -303,8 +303,8 @@ describe('handler method invocation', () => {
     await handlers!.postComment(10, 'rework needed');
 
     expect(mockFetchFn).toHaveBeenCalled();
-    expect(mockFetchFn.mock.calls[0]![0]).toContain('gitlab.com/api/v4');
-    expect(mockFetchFn.mock.calls[0]![0]).toContain('notes');
+    expect(mockFetchFn.mock.calls[0][0]).toContain('gitlab.com/api/v4');
+    expect(mockFetchFn.mock.calls[0][0]).toContain('notes');
   });
 
   it('Bitbucket Cloud postComment calls fetch with comments endpoint', async () => {
@@ -319,8 +319,8 @@ describe('handler method invocation', () => {
     await handlers!.postComment(5, 'rework needed');
 
     expect(mockFetchFn).toHaveBeenCalled();
-    expect(mockFetchFn.mock.calls[0]![0]).toContain('api.bitbucket.org');
-    expect(mockFetchFn.mock.calls[0]![1]).toHaveProperty('method', 'POST');
+    expect(mockFetchFn.mock.calls[0][0]).toContain('api.bitbucket.org');
+    expect(mockFetchFn.mock.calls[0][1]).toHaveProperty('method', 'POST');
   });
 
   it('Bitbucket Server postComment calls fetch with comments endpoint', async () => {
@@ -335,8 +335,8 @@ describe('handler method invocation', () => {
     await handlers!.postComment(7, 'rework needed');
 
     expect(mockFetchFn).toHaveBeenCalled();
-    expect(mockFetchFn.mock.calls[0]![0]).toContain('bitbucket.internal.com');
-    expect(mockFetchFn.mock.calls[0]![1]).toHaveProperty('method', 'POST');
+    expect(mockFetchFn.mock.calls[0][0]).toContain('bitbucket.internal.com');
+    expect(mockFetchFn.mock.calls[0][1]).toHaveProperty('method', 'POST');
   });
 
   it('Azure DevOps postComment calls fetch with threads endpoint', async () => {
@@ -351,8 +351,8 @@ describe('handler method invocation', () => {
     await handlers!.postComment(3, 'rework needed');
 
     expect(mockFetchFn).toHaveBeenCalled();
-    expect(mockFetchFn.mock.calls[0]![0]).toContain('dev.azure.com');
-    expect(mockFetchFn.mock.calls[0]![1]).toHaveProperty('method', 'POST');
+    expect(mockFetchFn.mock.calls[0][0]).toContain('dev.azure.com');
+    expect(mockFetchFn.mock.calls[0][1]).toHaveProperty('method', 'POST');
   });
 });
 
@@ -378,7 +378,7 @@ describe('CLANCY_GIT_API_URL override', () => {
 
     await handlers!.checkReviewState('feature/test');
 
-    expect(mockFetchFn.mock.calls[0]![0]).toContain('ghe.internal.com');
+    expect(mockFetchFn.mock.calls[0][0]).toContain('ghe.internal.com');
   });
 
   it('uses custom API URL for GitLab when set', async () => {
@@ -396,7 +396,7 @@ describe('CLANCY_GIT_API_URL override', () => {
 
     await handlers!.postComment(1, 'test');
 
-    expect(mockFetchFn.mock.calls[0]![0]).toContain('gl.internal.com');
+    expect(mockFetchFn.mock.calls[0][0]).toContain('gl.internal.com');
   });
 });
 
