@@ -105,8 +105,10 @@ describe('runSingleTicketByKey', () => {
   });
 
   it('passes argv to context', async () => {
-    const deps = makeDeps({ ...makeDeps() });
-    const depsWithArgv = { ...deps, argv: ['--dry-run'] as readonly string[] };
+    const depsWithArgv = {
+      ...makeDeps(),
+      argv: ['--dry-run'] as readonly string[],
+    };
 
     await runSingleTicketByKey('PROJ-42', depsWithArgv);
 

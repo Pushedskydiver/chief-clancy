@@ -42,6 +42,8 @@ type GitSpawnFn = (
 ) => SpawnSyncReturns<string>;
 
 // ─── Adapter factories ──────────────────────────────────────────────────────
+// Duplicated from terminal's entrypoint — dev cannot import from terminal.
+// A future PR can extract these to a shared module in dev.
 
 function makeExecGit(cwd: string, spawn: GitSpawnFn = spawnSync): ExecGit {
   return (args) => {
@@ -195,6 +197,9 @@ async function main(): Promise<void> {
   const startTime = Date.now();
 
   const result = await runSingleTicketByKey(ticketKey, {
+    // Single-ticket mode intentionally bypasses queue filters (excludeHitl,
+    // buildLabel) — the user explicitly chose this ticket by key. Cut F/G
+    // can add a dedicated Board.fetchTicketByKey() method if needed.
     fetchTicketByKeyOnce: async (key) => {
       const tickets = await board.fetchTickets({});
       return tickets.find((t) => t.key === key);
@@ -202,7 +207,7 @@ async function main(): Promise<void> {
     pipelineDeps,
     runPipeline,
     projectRoot,
-    argv: process.argv,
+    argv: process.argv.slice(3),
     isAfk: false,
   });
 
