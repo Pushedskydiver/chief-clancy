@@ -89,6 +89,22 @@ export { invokeClaudePrint, invokeClaudeSession } from './cli-bridge/index.js';
 
 export { sendNotification } from './notify/index.js';
 
+// ─── Agent re-exports ──────────────────────────────────────────────────────
+
+export { aggregateVerdict } from './agents/aggregate/index.js';
+export { invokeReadinessGrade } from './agents/invoke/index.js';
+export { safeParseVerdict } from './agents/parse-verdict/index.js';
+export {
+  READINESS_CHECK_IDS,
+  readinessVerdictSchema,
+} from './agents/types/index.js';
+export type {
+  CheckColour,
+  CheckResult,
+  ReadinessCheckId,
+  ReadinessVerdict,
+} from './agents/types/index.js';
+
 // ─── Execute re-exports ────────────────────────────────────────────────────
 
 export { runSingleTicketByKey } from './execute/index.js';
