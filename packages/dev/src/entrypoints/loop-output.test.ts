@@ -3,7 +3,12 @@ import type { PipelineResult } from '../pipeline/index.js';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { sendNotification } from '../notify/index.js';
 import { displayOutcome, notifyIfConfigured } from './loop-output.js';
+
+vi.mock('../notify/index.js', () => ({
+  sendNotification: vi.fn().mockResolvedValue(undefined),
+}));
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -88,8 +93,44 @@ describe('displayOutcome', () => {
 // ─── notifyIfConfigured ─────────────────────────────────────────────────────
 
 describe('notifyIfConfigured', () => {
+  afterEach(() => {
+    vi.mocked(sendNotification).mockClear();
+  });
+
   it('does nothing when webhookUrl is undefined', async () => {
-    // Should not throw or make any fetch calls
     await notifyIfConfigured(undefined, makeOutcome(), 1);
+
+    expect(sendNotification).not.toHaveBeenCalled();
+  });
+
+  it('sends notification with completion message', async () => {
+    await notifyIfConfigured(
+      'https://hooks.example.com/test',
+      makeOutcome({
+        iterations: [{ id: 'PROJ-1', result: makeResult('completed') }],
+      }),
+      3,
+    );
+
+    expect(sendNotification).toHaveBeenCalledOnce();
+    const call = vi.mocked(sendNotification).mock.calls[0][0];
+    expect(call.webhookUrl).toBe('https://hooks.example.com/test');
+    expect(call.message).toContain('Loop complete: 1/3 tickets processed');
+  });
+
+  it('sends notification with halt message when halted', async () => {
+    await notifyIfConfigured(
+      'https://hooks.example.com/test',
+      makeOutcome({
+        iterations: [{ id: 'PROJ-1', result: makeResult('error') }],
+        haltedAt: { id: 'PROJ-1', reason: 'Unknown error' },
+      }),
+      5,
+    );
+
+    expect(sendNotification).toHaveBeenCalledOnce();
+    const call = vi.mocked(sendNotification).mock.calls[0][0];
+    expect(call.message).toContain('Loop halted after 1/5 tickets');
+    expect(call.message).toContain('Unknown error');
   });
 });

@@ -29,6 +29,7 @@ type GitSpawnFn = (
 
 // ─── Adapter factories ──────────────────────────────────────────────────────
 
+/** Create a synchronous git executor bound to the given working directory. Throws on non-zero exit. */
 export function makeExecGit(
   cwd: string,
   spawn: GitSpawnFn = spawnSync,
@@ -51,6 +52,7 @@ export function makeExecGit(
   };
 }
 
+/** Create a synchronous lock-file adapter backed by `node:fs`. */
 export function makeLockFs(): LockFs {
   return {
     readFile: (path) => readFileSync(path, 'utf8'),
@@ -60,6 +62,7 @@ export function makeLockFs(): LockFs {
   };
 }
 
+/** Create a synchronous progress-file adapter backed by `node:fs`. */
 export function makeProgressFs(): ProgressFs {
   return {
     readFile: (path) => readFileSync(path, 'utf8'),
@@ -68,6 +71,7 @@ export function makeProgressFs(): ProgressFs {
   };
 }
 
+/** Create a synchronous cost-file adapter backed by `node:fs`. */
 export function makeCostFs(): CostFs {
   return {
     appendFile: (path, content) => appendFileSync(path, content, 'utf8'),
@@ -75,6 +79,7 @@ export function makeCostFs(): CostFs {
   };
 }
 
+/** Create a synchronous quality-file adapter backed by `node:fs`. */
 export function makeQualityFs(): QualityFs {
   return {
     readFile: (path) => readFileSync(path, 'utf8'),
@@ -84,6 +89,7 @@ export function makeQualityFs(): QualityFs {
   };
 }
 
+/** Create a read-only env-file adapter backed by `node:fs`. */
 export function makeEnvFs(): EnvFileSystem {
   return {
     readFile: (path) => readFileSync(path, 'utf8'),

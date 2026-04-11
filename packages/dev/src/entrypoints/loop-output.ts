@@ -17,6 +17,7 @@ const STATUS_ICONS: Record<PipelineResult['status'], string> = {
   error: '❌',
 };
 
+/** Log a human-readable summary of the loop outcome to the console. */
 export function displayOutcome(
   outcome: LoopOutcome<PipelineResult>,
   totalTickets: number,
@@ -41,6 +42,7 @@ export function displayOutcome(
 
 // ─── Webhook notification ───────────────────────────────────────────────────
 
+/** Send a webhook notification with the loop summary. No-op when `webhookUrl` is undefined. */
 export async function notifyIfConfigured(
   webhookUrl: string | undefined,
   outcome: LoopOutcome<PipelineResult>,

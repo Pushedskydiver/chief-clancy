@@ -203,26 +203,32 @@ function buildRunTicket(
   };
 }
 
+// ─── Env merging ────────────────────────────────────────────────────────────
+
+/** Merge .clancy/.env with shell env — shell overrides file settings. */
+function mergeEnv(
+  boardEnv: Record<string, string | undefined>,
+): Record<string, string | undefined> {
+  return { ...boardEnv, ...process.env };
+}
+
 // ─── Main ───────────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
   const loopArgs = parseLoopArgs(process.argv);
   const projectRoot = process.cwd();
-  const env = process.env;
   const { envFs, boardConfig } = loadEnv(projectRoot);
+  const env = mergeEnv(boardConfig.env);
 
   const board = createBoard(boardConfig, (url, init) =>
     globalThis.fetch(url, init),
   );
-
   const buildLabel = resolveBuildLabelFromEnv(boardConfig.env);
   const tickets = await fetchTicketQueue(board, buildLabel);
-
   if (tickets.length === 0) {
     console.log('No tickets in the build queue. Nothing to do.');
     return;
   }
-
   console.log(`Found ${tickets.length} ticket(s) in the build queue.`);
 
   const ticketMap = new Map(tickets.map((t) => [t.key, t]));
