@@ -110,12 +110,6 @@ function writePartialCheckpoint(
 
 // ─── Main ──────────────────────────────────────────────────────────────────
 
-/**
- * Run the pre-flight batch grading.
- *
- * @param opts - Tickets, grader, filesystem, and config.
- * @returns Verdicts and any warnings generated.
- */
 function dedupeTickets(ids: readonly string[]): {
   readonly deduped: readonly string[];
   readonly warnings: readonly string[];
@@ -139,6 +133,12 @@ function dedupeTickets(ids: readonly string[]): {
   return { deduped, warnings };
 }
 
+/**
+ * Run the pre-flight batch grading.
+ *
+ * @param opts - Tickets, grader, filesystem, and config.
+ * @returns Verdicts and any warnings generated.
+ */
 function runPreflightBatch(opts: BatchGradeOpts): BatchGradeResult {
   const { grade, fs, dir, maxBatch, timestamp, console: con } = opts;
 

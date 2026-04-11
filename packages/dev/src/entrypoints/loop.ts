@@ -224,7 +224,7 @@ function runPreflightIfNeeded(opts: {
   });
 
   if (!preflight.canProceed) {
-    console.log('Pre-flight found non-green tickets. Halting.');
+    console.log('Pre-flight did not produce all-green verdicts. Halting.');
     console.log(`Report: ${devDir}/readiness-report.md`);
     return 'halt';
   }
