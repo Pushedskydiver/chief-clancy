@@ -1,7 +1,7 @@
 /**
  * Tests for pipeline stop-condition logic.
  *
- * Migrated from terminal's autopilot.test.ts (PR 11c).
+ * Migrated from terminal's autopilot.test.ts.
  */
 import { describe, expect, it } from 'vitest';
 
