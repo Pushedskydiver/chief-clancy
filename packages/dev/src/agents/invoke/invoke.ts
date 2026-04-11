@@ -75,11 +75,19 @@ export function invokeReadinessGrade(opts: InvokeOpts): InvokeResult {
     return { ok: false, error: `Claude spawn failed: ${result.error.message}` };
   }
 
+  if (result.signal) {
+    return {
+      ok: false,
+      error: `Claude process killed by signal ${result.signal}`,
+    };
+  }
+
   if (result.status !== 0) {
     const detail = result.stderr?.trim();
+    const exitInfo = `exit ${result.status ?? 'unknown'}`;
     const message = detail
-      ? `Claude process failed (exit ${result.status}): ${detail}`
-      : `Claude process failed (exit ${result.status})`;
+      ? `Claude process failed (${exitInfo}): ${detail}`
+      : `Claude process failed (${exitInfo})`;
     return { ok: false, error: message };
   }
 
