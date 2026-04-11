@@ -105,6 +105,17 @@ export type {
   ReadinessVerdict,
 } from './agents/types/index.js';
 
+// ─── Queue re-exports ─────────────────────────────────────────────────────
+
+export { executeFixedCount, executeQueue } from './queue.js';
+export type {
+  ExecuteFixedCountOpts,
+  ExecuteQueueOpts,
+  IterationResult,
+  LoopOutcome,
+  QueueStopCondition,
+} from './queue.js';
+
 // ─── Execute re-exports ────────────────────────────────────────────────────
 
 export { runSingleTicketByKey } from './execute/index.js';
