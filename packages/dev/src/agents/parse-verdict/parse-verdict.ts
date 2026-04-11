@@ -20,9 +20,26 @@ type ParseFailure = {
 
 type ParseResult = ParseSuccess | ParseFailure;
 
-// ─── Parser ─────────────────────────────────────────────────────────────────
+// ─── Helpers ────────────────────────────────────────────────────────────────
 
-const JSON_FENCE_RE = /```json\s*\n([\s\S]*?)```/;
+/** Extract content from the first ```json fence. O(n) with no backtracking. */
+function extractFencedJson(text: string): string | undefined {
+  const openTag = '```json';
+  const closeTag = '```';
+
+  const openIdx = text.indexOf(openTag);
+  if (openIdx === -1) return undefined;
+
+  const contentStart = text.indexOf('\n', openIdx + openTag.length);
+  if (contentStart === -1) return undefined;
+
+  const closeIdx = text.indexOf(closeTag, contentStart + 1);
+  if (closeIdx === -1) return undefined;
+
+  return text.slice(contentStart + 1, closeIdx);
+}
+
+// ─── Parser ─────────────────────────────────────────────────────────────────
 
 /**
  * Extract and validate a ReadinessVerdict from Claude's text output.
@@ -34,15 +51,15 @@ const JSON_FENCE_RE = /```json\s*\n([\s\S]*?)```/;
  * @returns A discriminated union: `{ ok: true, verdict }` or `{ ok: false, error }`.
  */
 export function safeParseVerdict(text: string): ParseResult {
-  const match = JSON_FENCE_RE.exec(text);
+  const jsonContent = extractFencedJson(text);
 
-  if (!match?.[1]) {
+  if (jsonContent === undefined) {
     return { ok: false, error: 'No fenced JSON block found in output' };
   }
 
   const parsed = (() => {
     try {
-      return { ok: true as const, data: JSON.parse(match[1]) as unknown };
+      return { ok: true as const, data: JSON.parse(jsonContent) as unknown };
     } catch {
       return { ok: false as const };
     }
