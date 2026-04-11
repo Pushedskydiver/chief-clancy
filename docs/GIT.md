@@ -42,9 +42,9 @@ Docs in `docs/` are informational — Claude reads them for context but doesn't 
 type/short-description
 ```
 
-Types: `feature`, `fix`, `chore`
+Types: `feature`, `fix`, `chore`, `refactor`, `docs`
 
-Each type has a matching GitHub PR label — use `--label {type}` when creating PRs.
+Each type has a matching GitHub PR label — `refactor/` and `docs/` branches use the `chore` label.
 
 Examples:
 
@@ -103,7 +103,7 @@ Always create a new commit instead of amending an existing one, even for small f
 
 ### PR labels (required — one per PR)
 
-Every PR must have exactly one type label matching its branch prefix:
+Every PR must have exactly one type label. `refactor/` and `docs/` branches use the `chore` label:
 
 | Label     | Branch prefix | When to use                          |
 | --------- | ------------- | ------------------------------------ |
@@ -123,8 +123,12 @@ Add when the PR touches package-specific code:
 | ---------- | ------------------------------- |
 | `core`     | Changes to `packages/core/`     |
 | `terminal` | Changes to `packages/terminal/` |
+| `brief`    | Changes to `packages/brief/`    |
+| `plan`     | Changes to `packages/plan/`     |
+| `dev`      | Changes to `packages/dev/`      |
+| `scan`     | Changes to `packages/scan/`     |
 
-PRs touching both packages get both labels. Root-only changes (CI, docs, config) get no scope label.
+PRs touching multiple packages get multiple labels. Root-only changes (CI, docs, config) get no scope label.
 
 ### Issue labels
 

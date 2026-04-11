@@ -9,7 +9,7 @@ import type { PipelineResult } from './pipeline/index.js';
 import type { QueueStopCondition } from './queue.js';
 
 /** Phases where an abort should stop the entire autopilot loop. */
-const FATAL_ABORT_PHASES = new Set([
+const FATAL_ABORT_PHASES: ReadonlySet<string> = new Set([
   'lock-check',
   'preflight',
   'ticket-fetch',
