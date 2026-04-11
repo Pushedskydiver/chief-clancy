@@ -47,6 +47,8 @@ type LoopArgs = {
   readonly isAfk: boolean;
   readonly maxIterations: number | undefined;
   readonly bypassReadiness: boolean;
+  /** Non-loop flags to forward to each ticket run (e.g. --dry-run). */
+  readonly passthroughArgv: readonly string[];
 };
 
 // ─── Argument parsing ──────────────────────────────────────────────────────
@@ -65,6 +67,9 @@ function parseMaxFlag(flag: string | undefined): number | undefined {
  * @param argv - Raw process.argv (including node and script path).
  * @returns Parsed loop arguments.
  */
+const LOOP_FLAGS = new Set(['--afk', '--bypass-readiness']);
+const isLoopFlag = (a: string) => LOOP_FLAGS.has(a) || a.startsWith('--max=');
+
 export function parseLoopArgs(argv: readonly string[]): LoopArgs {
   const args = argv.slice(2);
 
@@ -72,6 +77,7 @@ export function parseLoopArgs(argv: readonly string[]): LoopArgs {
     isAfk: args.includes('--afk'),
     maxIterations: parseMaxFlag(args.find((a) => a.startsWith('--max='))),
     bypassReadiness: args.includes('--bypass-readiness'),
+    passthroughArgv: args.filter((a) => !isLoopFlag(a)),
   };
 }
 
@@ -209,9 +215,11 @@ function buildRunTicket(
       pipelineDeps,
       runPipeline,
       projectRoot: opts.projectRoot,
-      // Belt-and-suspenders: readinessGate is already undefined when bypassed,
-      // but argv carries the flag in case SingleTicketDeps checks it directly.
-      argv: opts.loopArgs.bypassReadiness ? ['--bypass-readiness'] : [],
+      // Forward non-loop flags (--dry-run, --skip-feasibility, etc.) plus
+      // --bypass-readiness when set (belt-and-suspenders with undefined gate).
+      argv: opts.loopArgs.bypassReadiness
+        ? ['--bypass-readiness', ...opts.loopArgs.passthroughArgv]
+        : opts.loopArgs.passthroughArgv,
       isAfk: opts.loopArgs.isAfk,
       readinessGate: opts.readinessGate,
     });

@@ -14,6 +14,7 @@ describe('parseLoopArgs', () => {
       isAfk: false,
       maxIterations: undefined,
       bypassReadiness: false,
+      passthroughArgv: [],
     });
   });
 
@@ -71,7 +72,25 @@ describe('parseLoopArgs', () => {
       isAfk: true,
       maxIterations: 10,
       bypassReadiness: true,
+      passthroughArgv: [],
     });
+  });
+
+  it('passes through non-loop flags like --dry-run', () => {
+    const args = parseLoopArgs([...base, '--afk', '--dry-run', '--max=3']);
+
+    expect(args.passthroughArgv).toEqual(['--dry-run']);
+  });
+
+  it('passes through multiple non-loop flags', () => {
+    const args = parseLoopArgs([
+      ...base,
+      '--dry-run',
+      '--skip-feasibility',
+      '--afk',
+    ]);
+
+    expect(args.passthroughArgv).toEqual(['--dry-run', '--skip-feasibility']);
   });
 });
 
