@@ -68,18 +68,20 @@ function gradeRound(
 
   const { verdict } = result;
   const computed = aggregateVerdict(verdict.checks);
+  // Override subagent's overall with our recomputed value
+  const correctedVerdict = { ...verdict, overall: computed };
 
   if (computed === 'green') {
-    return { passed: true, verdict };
+    return { passed: true, verdict: correctedVerdict };
   }
 
   if (computed === 'red') {
-    return { passed: false, overall: 'red', verdict };
+    return { passed: false, overall: 'red', verdict: correctedVerdict };
   }
 
   // Yellow — retry if rounds remain, otherwise fail
   if (round + 1 >= maxRounds) {
-    return { passed: false, overall: 'yellow', verdict };
+    return { passed: false, overall: 'yellow', verdict: correctedVerdict };
   }
 
   return gradeRound(grade, round + 1, maxRounds);

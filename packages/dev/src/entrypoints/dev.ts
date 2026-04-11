@@ -156,6 +156,9 @@ function displayResult(result: PipelineResult, elapsed: string): void {
       console.log(
         `⏹ Pipeline aborted at ${result.phase ?? 'unknown'} (${elapsed})`,
       );
+      if (result.error) {
+        console.log(`   ${result.error}`);
+      }
       break;
 
     case 'resumed':

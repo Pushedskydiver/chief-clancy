@@ -1,9 +1,9 @@
 /**
  * Load the readiness rubric markdown at runtime.
  *
- * Reads readiness.md from the same directory as this module.
- * Works in both tsc output (reads from dist/agents/) and esbuild
- * bundle (inlined by esbuild's file resolution).
+ * Reads readiness.md from the same directory as the running script.
+ * In the esbuild bundle, readiness.md is copied alongside clancy-dev.js
+ * by the esbuild.runtime.ts build step.
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';

@@ -69,7 +69,7 @@ export function parseReadinessFlags(
 
   const reason = extractReason(argv);
 
-  if (!reason) {
+  if (!reason?.trim()) {
     return {
       ok: false,
       error: '--bypass-readiness requires --reason="<reason>"',
