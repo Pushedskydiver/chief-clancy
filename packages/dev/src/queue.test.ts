@@ -191,6 +191,19 @@ describe('executeQueue', () => {
     expect(run).toHaveBeenCalledTimes(100);
   });
 
+  it('treats negative maxIterations as zero', async () => {
+    const run = vi
+      .fn<(id: string) => Promise<string>>()
+      .mockResolvedValue('ok');
+
+    const outcome = await executeQueue(
+      makeQueueOpts({ queue: ['A', 'B'], run, maxIterations: -5 }),
+    );
+
+    expect(outcome.iterations).toEqual([]);
+    expect(run).not.toHaveBeenCalled();
+  });
+
   it('works with opaque PipelineResult-shaped generic', async () => {
     type MockResult = {
       readonly status: string;

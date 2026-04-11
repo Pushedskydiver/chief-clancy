@@ -76,12 +76,12 @@ export function makeInvokePhase(
           tdd,
         });
 
-    return Promise.resolve({
+    return Promise.resolve().then(() => ({
       ok: invokeClaudeSession({
         prompt,
         model: config.env.CLANCY_MODEL,
         spawn: deps.spawn,
       }),
-    });
+    }));
   };
 }

@@ -233,7 +233,7 @@ async function executeQueue<TResult>(
   opts: ExecuteQueueOpts<TResult>,
 ): Promise<LoopOutcome<TResult>> {
   const cap = Math.min(
-    opts.maxIterations ?? opts.queue.length,
+    Math.max(0, opts.maxIterations ?? opts.queue.length),
     MAX_ITERATIONS_CAP,
   );
   const indices = opts.queue.slice(0, cap);
