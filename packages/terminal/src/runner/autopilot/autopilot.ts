@@ -1,21 +1,23 @@
 /**
- * Autopilot runner — loop orchestration for unattended ticket processing.
+ * Autopilot runner — thin wrapper around {@link executeFixedCount}.
  *
- * Runs the implement pipeline repeatedly, checking for quiet hours and
- * stop conditions between iterations. Generates a session report and
- * optionally sends a webhook notification when the loop ends.
+ * Delegates loop orchestration (quiet hours, halt conditions, iteration
+ * capping) to `@chief-clancy/dev`. This module owns the banner, session
+ * report, webhook notification, and stop-condition logic (planned for
+ * migration to dev).
  */
-import type { ConsoleLike, PipelineResult } from '@chief-clancy/dev';
+import type {
+  ConsoleLike,
+  LoopOutcome,
+  PipelineResult,
+  QueueStopCondition,
+} from '@chief-clancy/dev';
 
-import { formatDuration } from '@chief-clancy/dev';
+import { executeFixedCount, formatDuration } from '@chief-clancy/dev';
 
-import { bold, dim, green, yellow } from '../../shared/ansi/index.js';
+import { bold, dim, green } from '../../shared/ansi/index.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-
-type StopCondition =
-  | { readonly stop: false }
-  | { readonly stop: true; readonly reason: string };
 
 /** Options for the autopilot runner. */
 type AutopilotOpts = {
@@ -32,87 +34,7 @@ type AutopilotOpts = {
   readonly webhookUrl?: string;
 };
 
-// ─── Pure helpers ────────────────────────────────────────────────────────────
-
-/**
- * Parse a time string in HH:MM format.
- *
- * @param value - Time string like `"22:00"` or `"6:00"`.
- * @returns Parsed hours and minutes, or `undefined` if invalid.
- */
-export function parseTime(
-  value: string,
-): { readonly hours: number; readonly minutes: number } | undefined {
-  const match = value.trim().match(/^(\d{1,2}):(\d{2})$/);
-  if (!match) return undefined;
-
-  const hours = parseInt(match[1], 10);
-  const minutes = parseInt(match[2], 10);
-  const isValidHour = hours >= 0 && hours <= 23;
-  const isValidMinute = minutes >= 0 && minutes <= 59;
-
-  return isValidHour && isValidMinute ? { hours, minutes } : undefined;
-}
-
-/**
- * Check if the current time falls within a quiet hours window.
- *
- * Handles overnight windows (e.g. 22:00–06:00). Returns the number
- * of milliseconds to sleep, or 0 if not in quiet hours.
- *
- * @param startStr - Start time in HH:MM format.
- * @param endStr - End time in HH:MM format.
- * @param now - Current date for testing.
- * @returns Milliseconds to sleep, or 0 if outside quiet hours.
- */
-export function getQuietSleepMs(
-  startStr: string,
-  endStr: string,
-  now: Date,
-): number {
-  const start = parseTime(startStr);
-  const end = parseTime(endStr);
-  if (!start || !end) return 0;
-
-  const nowMin = now.getHours() * 60 + now.getMinutes();
-  const startMin = start.hours * 60 + start.minutes;
-  const endMin = end.hours * 60 + end.minutes;
-
-  const isInQuiet = computeQuietStatus(nowMin, startMin, endMin);
-  if (!isInQuiet) return 0;
-
-  const minutesUntilEnd = computeMinutesUntilEnd(nowMin, endMin);
-  const msIntoMinute = now.getSeconds() * 1000 + now.getMilliseconds();
-
-  return Math.max(0, minutesUntilEnd * 60_000 - msIntoMinute);
-}
-
-/** Check if current minute falls inside the quiet window. */
-function computeQuietStatus(
-  nowMin: number,
-  startMin: number,
-  endMin: number,
-): boolean {
-  if (startMin === endMin) return false;
-
-  const isSameDayWindow = startMin < endMin;
-  const isAfterStart = nowMin >= startMin;
-  const isBeforeEnd = nowMin < endMin;
-
-  // Same-day window (e.g. 09:00–17:00): must be between start and end
-  if (isSameDayWindow) return isAfterStart && isBeforeEnd;
-
-  // Overnight window (e.g. 22:00–06:00): after start OR before end
-  return isAfterStart || isBeforeEnd;
-}
-
-/** Calculate minutes remaining until end of quiet window. */
-function computeMinutesUntilEnd(nowMin: number, endMin: number): number {
-  const diff = endMin - nowMin;
-  const wrappedToNextDay = diff + 24 * 60;
-
-  return diff <= 0 ? wrappedToNextDay : diff;
-}
+// ─── Stop condition ─────────────────────────────────────────────────────────
 
 /** Phases where an abort should stop the entire autopilot loop. */
 const FATAL_ABORT_PHASES = new Set([
@@ -132,7 +54,7 @@ const FATAL_ABORT_PHASES = new Set([
  * @param result - The pipeline result to check.
  * @returns Stop flag and optional reason.
  */
-export function checkStopCondition(result: PipelineResult): StopCondition {
+export function checkStopCondition(result: PipelineResult): QueueStopCondition {
   switch (result.status) {
     case 'completed':
     case 'resumed':
@@ -161,21 +83,30 @@ export function checkStopCondition(result: PipelineResult): StopCondition {
 // ─── Loop orchestrator ───────────────────────────────────────────────────────
 
 /**
- * Run the autopilot loop — iterate implement, check stop conditions.
+ * Run the autopilot loop — delegates iteration to {@link executeFixedCount}.
  *
  * @param opts - Injected I/O resources and configuration.
  * @returns Resolves when the loop ends.
  */
 export async function runAutopilot(opts: AutopilotOpts): Promise<void> {
-  const { console: out, clock } = opts;
-  const loopStart = clock();
+  printBanner(opts.console);
 
-  printBanner(out);
+  const outcome = await executeFixedCount<PipelineResult>({
+    iterations: opts.maxIterations,
+    run: () => opts.runIteration(),
+    shouldHalt: checkStopCondition,
+    quietStart: opts.quietStart,
+    quietEnd: opts.quietEnd,
+    sleep: opts.sleep,
+    clock: opts.clock,
+    now: opts.now,
+    console: opts.console,
+  });
 
-  const iterationCount = await runIterations(opts, loopStart);
-
-  await finalize(opts, loopStart, iterationCount);
+  await finalize(opts, outcome);
 }
+
+// ─── Private helpers ────────────────────────────────────────────────────────
 
 function printBanner(out: ConsoleLike): void {
   out.log(dim('┌──────────────────────────────────────────────────────────┐'));
@@ -192,82 +123,13 @@ function printBanner(out: ConsoleLike): void {
   out.log(dim('└──────────────────────────────────────────────────────────┘'));
 }
 
-async function runIterations(
-  opts: AutopilotOpts,
-  loopStart: number,
-): Promise<number> {
-  const { console: out, clock } = opts;
-  const iterIndices = iterations(opts.maxIterations);
-  const totalIterations = iterIndices.length;
-
-  // eslint-disable-next-line functional/no-loop-statements -- sequential async loop with early return on stop conditions; map/flatMap can't express this
-  for (const i of iterIndices) {
-    await handleQuietHours(opts);
-
-    const iterStart = clock();
-    out.log('');
-    out.log(bold(`🔁 Iteration ${i}/${totalIterations}`));
-
-    const result = await opts.runIteration();
-    const iterElapsed = formatDuration(clock() - iterStart);
-    out.log(dim(`  Iteration ${i} took ${iterElapsed}`));
-
-    const condition = checkStopCondition(result);
-
-    if (condition.stop) {
-      const totalElapsed = formatDuration(clock() - loopStart);
-      out.log('');
-      out.log(`${condition.reason}`);
-      out.log(
-        dim(`  Total: ${i} iteration${i > 1 ? 's' : ''} in ${totalElapsed}`),
-      );
-      return i;
-    }
-
-    const isLastIteration = i === totalIterations;
-    if (!isLastIteration) await opts.sleep(2000);
-  }
-
-  return totalIterations;
-}
-
-const MAX_ITERATIONS_CAP = 100;
-
-/** Generate 1-based iteration indices, capped at {@link MAX_ITERATIONS_CAP}. */
-function iterations(max: number): readonly number[] {
-  const capped = Math.min(Math.max(0, max), MAX_ITERATIONS_CAP);
-  return Array.from({ length: capped }, (_, idx) => idx + 1);
-}
-
-async function handleQuietHours(opts: AutopilotOpts): Promise<void> {
-  const { quietStart, quietEnd, console: out } = opts;
-  if (!quietStart || !quietEnd) return;
-
-  const now = opts.now ? opts.now() : new Date();
-  const sleepMs = getQuietSleepMs(quietStart, quietEnd, now);
-
-  if (sleepMs <= 0) return;
-
-  const sleepMin = Math.ceil(sleepMs / 60_000);
-  out.log('');
-  out.log(
-    yellow(
-      `⏸ Quiet hours active (${quietStart}–${quietEnd}). Sleeping ${sleepMin} minutes.`,
-    ),
-  );
-
-  await opts.sleep(sleepMs);
-  out.log(dim('  Quiet hours ended. Resuming.'));
-}
-
 async function finalize(
   opts: AutopilotOpts,
-  loopStart: number,
-  iterationCount: number,
+  outcome: LoopOutcome<PipelineResult>,
 ): Promise<void> {
-  const { console: out, clock } = opts;
-  const loopEnd = clock();
-  const totalElapsed = formatDuration(loopEnd - loopStart);
+  const { console: out } = opts;
+  const totalElapsed = formatDuration(outcome.endedAt - outcome.startedAt);
+  const iterationCount = outcome.iterations.length;
 
   out.log('');
   out.log(
@@ -276,7 +138,7 @@ async function finalize(
   );
 
   // Generate session report
-  const report = opts.buildReport(loopStart, loopEnd);
+  const report = opts.buildReport(outcome.startedAt, outcome.endedAt);
   out.log('');
   out.log(dim('─── Session Report ───'));
   out.log(report);

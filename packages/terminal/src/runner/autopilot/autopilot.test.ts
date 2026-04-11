@@ -1,112 +1,6 @@
-import fc from 'fast-check';
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-  checkStopCondition,
-  getQuietSleepMs,
-  parseTime,
-  runAutopilot,
-} from './autopilot.js';
-
-// ─── parseTime ───────────────────────────────────────────────────────────────
-
-describe('parseTime', () => {
-  it('parses valid HH:MM', () => {
-    expect(parseTime('22:00')).toEqual({ hours: 22, minutes: 0 });
-  });
-
-  it('parses single-digit hour', () => {
-    expect(parseTime('6:00')).toEqual({ hours: 6, minutes: 0 });
-  });
-
-  it('returns undefined for invalid format', () => {
-    expect(parseTime('abc')).toBeUndefined();
-    expect(parseTime('25:00')).toBeUndefined();
-    expect(parseTime('12:60')).toBeUndefined();
-    expect(parseTime('')).toBeUndefined();
-  });
-
-  it('trims whitespace', () => {
-    expect(parseTime('  08:30  ')).toEqual({ hours: 8, minutes: 30 });
-  });
-
-  it('returns a result for all valid hour/minute combinations', () => {
-    fc.assert(
-      fc.property(
-        fc.integer({ min: 0, max: 23 }),
-        fc.integer({ min: 0, max: 59 }),
-        (h, m) => {
-          const input = `${h}:${String(m).padStart(2, '0')}`;
-          const result = parseTime(input);
-          return (
-            result !== undefined && result.hours === h && result.minutes === m
-          );
-        },
-      ),
-    );
-  });
-
-  it('returns undefined for out-of-range hours', () => {
-    fc.assert(
-      fc.property(fc.integer({ min: 24, max: 99 }), (h) => {
-        return parseTime(`${h}:00`) === undefined;
-      }),
-    );
-  });
-});
-
-// ─── getQuietSleepMs ─────────────────────────────────────────────────────────
-
-describe('getQuietSleepMs', () => {
-  it('returns 0 when outside same-day quiet window', () => {
-    const now = new Date(2026, 2, 20, 20, 0, 0);
-    expect(getQuietSleepMs('09:00', '17:00', now)).toBe(0);
-  });
-
-  it('returns sleep ms when inside same-day quiet window', () => {
-    const now = new Date(2026, 2, 20, 12, 0, 0);
-    const ms = getQuietSleepMs('09:00', '17:00', now);
-    expect(ms).toBe(300 * 60_000); // 5 hours
-  });
-
-  it('handles overnight window — current time after start', () => {
-    const now = new Date(2026, 2, 20, 23, 0, 0);
-    const ms = getQuietSleepMs('22:00', '06:00', now);
-    expect(ms).toBe(420 * 60_000); // 7 hours
-  });
-
-  it('handles overnight window — current time before end', () => {
-    const now = new Date(2026, 2, 20, 3, 0, 0);
-    const ms = getQuietSleepMs('22:00', '06:00', now);
-    expect(ms).toBe(180 * 60_000); // 3 hours
-  });
-
-  it('returns 0 when outside overnight window', () => {
-    const now = new Date(2026, 2, 20, 12, 0, 0);
-    expect(getQuietSleepMs('22:00', '06:00', now)).toBe(0);
-  });
-
-  it('returns 0 for invalid time strings', () => {
-    const now = new Date(2026, 2, 20, 12, 0, 0);
-    expect(getQuietSleepMs('invalid', '06:00', now)).toBe(0);
-    expect(getQuietSleepMs('22:00', 'invalid', now)).toBe(0);
-  });
-
-  it('returns 0 when start equals end', () => {
-    const now = new Date(2026, 2, 20, 12, 0, 0);
-    expect(getQuietSleepMs('12:00', '12:00', now)).toBe(0);
-  });
-
-  it('accounts for sub-minute precision (seconds + milliseconds)', () => {
-    // 12:30:45.500 inside quiet window 09:00–17:00, end at 17:00
-    const now = new Date(2026, 2, 20, 12, 30, 45, 500);
-    const ms = getQuietSleepMs('09:00', '17:00', now);
-    const expectedMinutes = (17 - 12) * 60 - 30; // 270 minutes
-    const expectedMs = expectedMinutes * 60_000 - (45 * 1000 + 500);
-
-    expect(ms).toBe(expectedMs);
-  });
-});
+import { checkStopCondition, runAutopilot } from './autopilot.js';
 
 // ─── checkStopCondition ──────────────────────────────────────────────────────
 
@@ -186,7 +80,7 @@ describe('checkStopCondition', () => {
     expect(checkStopCondition({ status: 'dry-run' }).stop).toBe(true);
   });
 
-  // ── Edge cases (M9) ──────────────────────────────────────────────────
+  // ── Edge cases ──────────────────────────────────────────────────────
 
   it('continues on aborted with phase undefined', () => {
     const result = checkStopCondition({ status: 'aborted' });
@@ -204,7 +98,6 @@ describe('checkStopCondition', () => {
 
 type AutopilotOpts = Parameters<typeof runAutopilot>[0];
 
-// Mock shape — vi.fn() doesn't satisfy exact function signatures
 function createMockOpts(overrides?: Partial<AutopilotOpts>): AutopilotOpts {
   return {
     maxIterations: 3,
@@ -273,7 +166,7 @@ describe('runAutopilot', () => {
 
     await runAutopilot(opts);
 
-    expect(buildReport).toHaveBeenCalled();
+    expect(buildReport).toHaveBeenCalledWith(1000, 1000);
   });
 
   it('sends webhook with summary data', async () => {
@@ -385,25 +278,5 @@ describe('runAutopilot', () => {
     await runAutopilot(opts);
 
     expect(sleepFn).not.toHaveBeenCalledWith(2000);
-  });
-
-  it('sleeps during quiet hours', async () => {
-    const sleepFn = vi.fn().mockResolvedValue(undefined);
-    const now = new Date(2026, 2, 20, 23, 0, 0);
-    const opts = createMockOpts({
-      maxIterations: 1,
-      quietStart: '22:00',
-      quietEnd: '06:00',
-      sleep: sleepFn,
-      clock: () => now.getTime(),
-      now: () => now,
-    });
-
-    await runAutopilot(opts);
-
-    const quietSleepCall = sleepFn.mock.calls.find(
-      (c: number[]) => c[0] > 60_000,
-    );
-    expect(quietSleepCall).toBeDefined();
   });
 });
