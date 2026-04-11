@@ -10,7 +10,6 @@
 import type { CostFs, LockFs, ProgressFs, QualityFs } from '../index.js';
 import type { PipelineResult } from '../pipeline/index.js';
 import type {
-  Board,
   BoardConfig,
   EnvFileSystem,
   FetchedTicket,
@@ -115,11 +114,21 @@ export function resolveBuildLabelFromEnv(
   return env.CLANCY_LABEL_BUILD ?? env.CLANCY_LABEL ?? 'clancy:build';
 }
 
+/** Default queue fetch limit when no `--max` flag is provided. */
+const DEFAULT_QUEUE_LIMIT = 50;
+
 async function fetchTicketQueue(
-  board: Board,
-  buildLabel: string,
+  boardConfig: BoardConfig,
+  limit: number | undefined,
 ): Promise<readonly FetchedTicket[]> {
-  return board.fetchTickets({ excludeHitl: true, buildLabel });
+  const board = createBoard(boardConfig, (url, init) =>
+    globalThis.fetch(url, init),
+  );
+  return board.fetchTickets({
+    excludeHitl: true,
+    buildLabel: resolveBuildLabelFromEnv(boardConfig.env),
+    limit: limit ?? DEFAULT_QUEUE_LIMIT,
+  });
 }
 
 // ─── Readiness wiring ───────────────────────────────────────────────────────
@@ -220,11 +229,7 @@ async function main(): Promise<void> {
   const { envFs, boardConfig } = loadEnv(projectRoot);
   const env = mergeEnv(boardConfig.env);
 
-  const board = createBoard(boardConfig, (url, init) =>
-    globalThis.fetch(url, init),
-  );
-  const buildLabel = resolveBuildLabelFromEnv(boardConfig.env);
-  const tickets = await fetchTicketQueue(board, buildLabel);
+  const tickets = await fetchTicketQueue(boardConfig, loopArgs.maxIterations);
   if (tickets.length === 0) {
     console.log('No tickets in the build queue. Nothing to do.');
     return;
