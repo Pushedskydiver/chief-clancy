@@ -132,11 +132,21 @@ async function runLoopStep<TResult>(
 function parseTime(
   value: string,
 ): { readonly hours: number; readonly minutes: number } | undefined {
-  const colonIdx = value.indexOf(':');
+  const trimmed = value.trim();
+  const colonIdx = trimmed.indexOf(':');
   if (colonIdx === -1) return undefined;
 
-  const hours = parseInt(value.slice(0, colonIdx), 10);
-  const minutes = parseInt(value.slice(colonIdx + 1), 10);
+  // Reject multiple colons (e.g. "10:00:00") or missing minutes digits
+  if (trimmed.indexOf(':', colonIdx + 1) !== -1) return undefined;
+
+  const hourStr = trimmed.slice(0, colonIdx);
+  const minStr = trimmed.slice(colonIdx + 1);
+
+  // Require exactly 2-digit minutes (e.g. "6:0" → rejected, "6:00" → ok)
+  if (minStr.length !== 2) return undefined;
+
+  const hours = parseInt(hourStr, 10);
+  const minutes = parseInt(minStr, 10);
 
   if (Number.isNaN(hours) || Number.isNaN(minutes)) return undefined;
   if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return undefined;
