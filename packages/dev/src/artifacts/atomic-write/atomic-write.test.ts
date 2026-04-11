@@ -1,6 +1,8 @@
 /**
  * Tests for atomic-write — write-temp-rename with mkdir.
  */
+import type { AtomicFs } from './atomic-write.js';
+
 import { describe, expect, it, vi } from 'vitest';
 
 import { atomicWrite, rotateFile } from './atomic-write.js';
@@ -9,21 +11,12 @@ import { atomicWrite, rotateFile } from './atomic-write.js';
 
 type FsCall = readonly [method: string, ...args: readonly unknown[]];
 
-type MutableFs = {
-  readonly mkdir: (path: string) => void;
-  readonly writeFile: (path: string, content: string) => void;
-  readonly rename: (from: string, to: string) => void;
-  readonly readdir: (path: string) => readonly string[];
-  readonly unlink: (path: string) => void;
-  readonly stat: (path: string) => { readonly mtimeMs: number } | undefined;
-};
-
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
-function makeFsCalls(): {
-  readonly fs: MutableFs;
-  readonly calls: readonly FsCall[];
-} {
+function makeFsCalls(overrides?: {
+  readonly stat?: AtomicFs['stat'];
+  readonly readdir?: AtomicFs['readdir'];
+}): { readonly fs: AtomicFs; readonly calls: readonly FsCall[] } {
   const calls: FsCall[] = [];
   return {
     calls,
@@ -37,14 +30,19 @@ function makeFsCalls(): {
       rename: vi.fn((from: string, to: string) => {
         calls.push(['rename', from, to]);
       }),
-      readdir: vi.fn((): readonly string[] => []),
+      readdir: overrides?.readdir ?? vi.fn((): readonly string[] => []),
       unlink: vi.fn((p: string) => {
         calls.push(['unlink', p]);
       }),
-      stat: vi.fn((): { readonly mtimeMs: number } | undefined => undefined),
+      stat:
+        overrides?.stat ??
+        vi.fn((): { readonly mtimeMs: number } | undefined => undefined),
     },
   };
 }
+
+const EXISTS = vi.fn(() => ({ mtimeMs: Date.now() }));
+const NOT_EXISTS = vi.fn(() => undefined);
 
 // ─── atomicWrite ───────────────────────────────────────────────────────────
 
@@ -87,9 +85,7 @@ describe('atomicWrite', () => {
 
 describe('rotateFile', () => {
   it('renames existing file with ISO timestamp suffix', () => {
-    const { fs } = makeFsCalls();
-    fs.stat = vi.fn(() => ({ mtimeMs: Date.now() }));
-    fs.readdir = vi.fn(() => []);
+    const { fs } = makeFsCalls({ stat: EXISTS });
 
     rotateFile({
       fs,
@@ -105,8 +101,7 @@ describe('rotateFile', () => {
   });
 
   it('is a no-op when file does not exist (stat returns undefined)', () => {
-    const { fs } = makeFsCalls();
-    fs.stat = vi.fn(() => undefined);
+    const { fs } = makeFsCalls({ stat: NOT_EXISTS });
 
     rotateFile({
       fs,
@@ -120,16 +115,17 @@ describe('rotateFile', () => {
   });
 
   it('deletes oldest rotated files when exceeding keep count', () => {
-    const { fs } = makeFsCalls();
-    fs.stat = vi.fn(() => ({ mtimeMs: Date.now() }));
-    // readdir is called AFTER the rename, so the new rotated file is visible
-    fs.readdir = vi.fn(() => [
-      'report.2026-04-08T10-00-00.md',
-      'report.2026-04-09T10-00-00.md',
-      'report.2026-04-10T10-00-00.md',
-      'report.2026-04-11T10-00-00.md',
-      'other-file.md',
-    ]);
+    const { fs } = makeFsCalls({
+      stat: EXISTS,
+      // readdir is called AFTER the rename, so the new rotated file is visible
+      readdir: vi.fn(() => [
+        'report.2026-04-08T10-00-00.md',
+        'report.2026-04-09T10-00-00.md',
+        'report.2026-04-10T10-00-00.md',
+        'report.2026-04-11T10-00-00.md',
+        'other-file.md',
+      ]),
+    });
 
     rotateFile({
       fs,
@@ -144,14 +140,15 @@ describe('rotateFile', () => {
   });
 
   it('does not delete when within keep count', () => {
-    const { fs } = makeFsCalls();
-    fs.stat = vi.fn(() => ({ mtimeMs: Date.now() }));
-    // readdir returns files AFTER rename — includes the new rotated file
-    fs.readdir = vi.fn(() => [
-      'report.2026-04-09T10-00-00.md',
-      'report.2026-04-10T10-00-00.md',
-      'report.2026-04-11T10-00-00.md',
-    ]);
+    const { fs } = makeFsCalls({
+      stat: EXISTS,
+      // readdir returns files AFTER rename — includes the new rotated file
+      readdir: vi.fn(() => [
+        'report.2026-04-09T10-00-00.md',
+        'report.2026-04-10T10-00-00.md',
+        'report.2026-04-11T10-00-00.md',
+      ]),
+    });
 
     rotateFile({
       fs,
@@ -165,9 +162,7 @@ describe('rotateFile', () => {
   });
 
   it('handles .json extensions correctly', () => {
-    const { fs } = makeFsCalls();
-    fs.stat = vi.fn(() => ({ mtimeMs: Date.now() }));
-    fs.readdir = vi.fn(() => []);
+    const { fs } = makeFsCalls({ stat: EXISTS });
 
     rotateFile({
       fs,

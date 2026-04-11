@@ -29,17 +29,9 @@ function makeVerdict(
   };
 }
 
-type TestFs = {
-  readonly mkdir: AtomicFs['mkdir'];
-  readonly writeFile: AtomicFs['writeFile'];
-  readonly rename: AtomicFs['rename'];
-  readonly readdir: AtomicFs['readdir'];
-  readonly unlink: AtomicFs['unlink'];
-  readonly stat: AtomicFs['stat'];
-  readonly written: ReadonlyMap<string, string>;
-};
+type TestFs = AtomicFs & { readonly written: ReadonlyMap<string, string> };
 
-function makeFs(): TestFs {
+function makeFs(overrides?: { readonly stat?: AtomicFs['stat'] }): TestFs {
   const written = new Map<string, string>();
   return {
     written,
@@ -50,7 +42,7 @@ function makeFs(): TestFs {
     rename: vi.fn(),
     readdir: vi.fn(() => []),
     unlink: vi.fn(),
-    stat: vi.fn(() => undefined),
+    stat: overrides?.stat ?? vi.fn(() => undefined),
   };
 }
 
@@ -183,9 +175,7 @@ describe('writeReadinessReport', () => {
   });
 
   it('rotates existing report before writing new one', () => {
-    const fs = makeFs();
-    // Simulate existing report
-    fs.stat = vi.fn(() => ({ mtimeMs: Date.now() }));
+    const fs = makeFs({ stat: vi.fn(() => ({ mtimeMs: Date.now() })) });
 
     writeReadinessReport({
       fs,
