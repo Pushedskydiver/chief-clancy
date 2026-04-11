@@ -10,7 +10,7 @@
  */
 import type { CostFs, LockFs, ProgressFs, QualityFs } from '../index.js';
 import type { PipelineResult } from '../pipeline/index.js';
-import type { EnvFileSystem, ExecGit } from '@chief-clancy/core';
+import type { BoardConfig, EnvFileSystem, ExecGit } from '@chief-clancy/core';
 import type { SpawnSyncReturns } from 'node:child_process';
 
 import { spawnSync } from 'node:child_process';
@@ -27,8 +27,11 @@ import { fileURLToPath } from 'node:url';
 
 import { createBoard, detectBoard, loadClancyEnv } from '@chief-clancy/core';
 
+import { invokeReadinessGrade } from '../agents/invoke/index.js';
+import { loadRubric } from '../agents/rubric-loader.js';
 import { buildPipelineDeps } from '../dep-factory/dep-factory.js';
 import { runSingleTicketByKey } from '../execute/index.js';
+import { runReadinessGate } from '../execute/readiness/index.js';
 import { formatDuration } from '../lifecycle/format/format.js';
 import { runPipeline } from '../pipeline/index.js';
 import { buildPrompt, buildReworkPrompt } from '../prompt-builder/index.js';
@@ -116,7 +119,10 @@ function parseTicketKey(): string {
   return key;
 }
 
-function loadEnv(projectRoot: string) {
+function loadEnv(projectRoot: string): {
+  readonly envFs: EnvFileSystem;
+  readonly boardConfig: BoardConfig;
+} {
   const envFs = makeEnvFs();
   const env = loadClancyEnv(projectRoot, envFs);
 
@@ -129,7 +135,7 @@ function loadEnv(projectRoot: string) {
 
   if (typeof boardResult === 'string') {
     console.error(boardResult);
-    process.exit(1);
+    return process.exit(1) as never;
   }
 
   return { envFs, boardConfig: boardResult };
@@ -166,6 +172,34 @@ function displayResult(result: PipelineResult, elapsed: string): void {
       return _exhaustive;
     }
   }
+}
+
+// ─── Readiness wiring ───────────────────────────────────────────────────────
+
+function makeReadinessGate(opts: {
+  readonly rubric: string;
+  readonly ticketKey: string;
+  readonly projectRoot: string;
+  readonly model?: string;
+}) {
+  return () =>
+    runReadinessGate({
+      grade: () =>
+        invokeReadinessGrade({
+          rubric: opts.rubric,
+          ticketId: opts.ticketKey,
+          ticketTitle: opts.ticketKey,
+          ticketDescription: '',
+          projectRoot: opts.projectRoot,
+          spawn: (cmd, args, spawnOpts) =>
+            spawnSync(cmd, [...args], {
+              ...spawnOpts,
+              stdio: [...spawnOpts.stdio],
+            }),
+          model: opts.model,
+        }),
+      maxRounds: 3,
+    });
 }
 
 // ─── Main ───────────────────────────────────────────────────────────────────
@@ -209,6 +243,12 @@ async function main(): Promise<void> {
     projectRoot,
     argv: process.argv.slice(3),
     isAfk: false,
+    readinessGate: makeReadinessGate({
+      rubric: loadRubric(),
+      ticketKey,
+      projectRoot,
+      model: boardConfig.env.CLANCY_MODEL,
+    }),
   });
 
   displayResult(result, formatDuration(Date.now() - startTime));

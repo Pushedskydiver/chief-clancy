@@ -13,13 +13,14 @@
  */
 import type { Plugin } from 'esbuild';
 
-import { mkdirSync } from 'node:fs';
+import { copyFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { build } from 'esbuild';
 
 const DIST = dirname(fileURLToPath(import.meta.url));
+const SRC = join(DIST, '..', 'src');
 const DIST_BUNDLE = join(DIST, 'bundle');
 
 const BUNDLES = [
@@ -77,4 +78,11 @@ await Promise.all(
   BUNDLES.map(({ entryPoint, outfile }) =>
     build({ ...SHARED_OPTIONS, entryPoints: [entryPoint], outfile }),
   ),
+);
+
+// Copy readiness.md alongside the bundle for runtime loading.
+// readiness.md is a source file (not compiled by tsc), so read from src/.
+copyFileSync(
+  join(SRC, 'agents', 'readiness.md'),
+  join(DIST_BUNDLE, 'readiness.md'),
 );
