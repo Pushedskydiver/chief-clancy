@@ -2,7 +2,7 @@
 
 ## Overview
 
-Autonomous queue-based ticket execution. Fetches all ready tickets from the board, then processes them sequentially through the implementation pipeline. Each ticket runs the full cycle: fetch, readiness check, implementation, quality gates, PR creation, and delivery.
+Autonomous queue-based ticket execution. Fetches ready tickets from the board (up to 50 by default, configurable via `--max=N`, hard cap 100), then processes them sequentially through the implementation pipeline. Each ticket runs the full cycle: fetch, readiness check, implementation, quality gates, PR creation, and delivery.
 
 The dev loop workflow delegates to the `clancy-dev-autopilot.js` bundle:
 

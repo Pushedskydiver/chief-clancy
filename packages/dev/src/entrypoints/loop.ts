@@ -80,23 +80,24 @@ export function parseLoopArgs(argv: readonly string[]): LoopArgs {
 function loadEnv(projectRoot: string): {
   readonly envFs: EnvFileSystem;
   readonly boardConfig: BoardConfig;
+  readonly rawEnv: Record<string, string>;
 } {
   const envFs = makeEnvFs();
-  const env = loadClancyEnv(projectRoot, envFs);
+  const rawEnv = loadClancyEnv(projectRoot, envFs);
 
-  if (!env) {
+  if (!rawEnv) {
     console.error('✗ No .clancy/.env found — run the installer first');
-    process.exit(1);
+    return process.exit(1);
   }
 
-  const boardResult = detectBoard(env);
+  const boardResult = detectBoard(rawEnv);
 
   if (typeof boardResult === 'string') {
     console.error(boardResult);
     return process.exit(1);
   }
 
-  return { envFs, boardConfig: boardResult };
+  return { envFs, boardConfig: boardResult, rawEnv };
 }
 
 /**
@@ -117,6 +118,9 @@ export function resolveBuildLabelFromEnv(
 /** Default queue fetch limit when no `--max` flag is provided. */
 const DEFAULT_QUEUE_LIMIT = 50;
 
+/** Hard cap matching executeQueue's MAX_ITERATIONS_CAP (100). */
+const MAX_FETCH_LIMIT = 100;
+
 async function fetchTicketQueue(
   boardConfig: BoardConfig,
   limit: number | undefined,
@@ -127,7 +131,7 @@ async function fetchTicketQueue(
   return board.fetchTickets({
     excludeHitl: true,
     buildLabel: resolveBuildLabelFromEnv(boardConfig.env),
-    limit: limit ?? DEFAULT_QUEUE_LIMIT,
+    limit: Math.min(limit ?? DEFAULT_QUEUE_LIMIT, MAX_FETCH_LIMIT),
   });
 }
 
@@ -214,11 +218,16 @@ function buildRunTicket(
 
 // ─── Env merging ────────────────────────────────────────────────────────────
 
-/** Merge .clancy/.env with shell env — shell overrides file settings. */
+/**
+ * Merge raw .clancy/.env with shell env — shell overrides file settings.
+ *
+ * Uses the raw (pre-validation) env record so non-schema keys like
+ * CLANCY_QUIET_START/END survive the board detection step.
+ */
 function mergeEnv(
-  boardEnv: Record<string, string | undefined>,
+  rawEnv: Record<string, string>,
 ): Record<string, string | undefined> {
-  return { ...boardEnv, ...process.env };
+  return { ...rawEnv, ...process.env };
 }
 
 // ─── Main ───────────────────────────────────────────────────────────────────
@@ -226,8 +235,8 @@ function mergeEnv(
 async function main(): Promise<void> {
   const loopArgs = parseLoopArgs(process.argv);
   const projectRoot = process.cwd();
-  const { envFs, boardConfig } = loadEnv(projectRoot);
-  const env = mergeEnv(boardConfig.env);
+  const { envFs, boardConfig, rawEnv } = loadEnv(projectRoot);
+  const env = mergeEnv(rawEnv);
 
   const tickets = await fetchTicketQueue(boardConfig, loopArgs.maxIterations);
   if (tickets.length === 0) {

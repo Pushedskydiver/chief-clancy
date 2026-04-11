@@ -5,7 +5,7 @@ Run the autonomous development loop. Fetches tickets from the board queue and pr
 Accepts arguments:
 
 - **AFK mode:** `--afk` — non-interactive mode (no human prompts, autonomous execution)
-- **Max iterations:** `--max=N` — limit the number of tickets to process (default: all queued)
+- **Max iterations:** `--max=N` — limit the number of tickets to process (default: up to 50, hard cap: 100)
 - **Bypass readiness:** `--bypass-readiness` — skip the readiness gate for all tickets
 
 Environment variables (set in `.clancy/.env` or shell):
@@ -15,8 +15,8 @@ Environment variables (set in `.clancy/.env` or shell):
 
 Examples:
 
-- `/clancy:dev-loop` — process all queued tickets interactively
-- `/clancy:dev-loop --afk` — process all queued tickets autonomously
+- `/clancy:dev-loop` — process queued tickets interactively (up to 50)
+- `/clancy:dev-loop --afk` — process queued tickets autonomously (up to 50)
 - `/clancy:dev-loop --afk --max=3` — process up to 3 tickets autonomously
 
 @.claude/clancy/workflows/dev-loop.md
