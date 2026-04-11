@@ -27,7 +27,7 @@ function makeVerdict(
   return {
     ticketId: 'PROJ-42',
     overall,
-    checks: checks ?? defaultChecks,
+    checks: [...(checks ?? defaultChecks)],
     gradedAt: '2026-04-11T00:00:00Z',
     rubricSha: 'abc123',
   };
