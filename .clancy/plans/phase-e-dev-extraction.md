@@ -1286,9 +1286,11 @@ v1 only had the happy-path pre-flight. **v2 adds the full error matrix from §4 
   - 9 cases + 3 special cases (empty queue, `--max` override, `--resume` after Ctrl-C simulation)
   - Each case asserts: exit code, which artifacts are written, artifact contents
 
-### PR 13 — Docs sweep
+### PR 13 — Docs sweep + entrypoints convention
 
-Unchanged from v1. Handles `PROGRESS.md` update, `package-evolution.md` build-order row update (dev is now live, remove "in progress" marker), package READMEs.
+Unchanged from v1 for docs: `PROGRESS.md` update, `package-evolution.md` build-order row update (dev is now live, remove "in progress" marker), package READMEs.
+
+**Added in Session 71:** Standardise entrypoint directory convention across terminal. Move `terminal/src/runner/{implement,autopilot}/entrypoint.ts` to `terminal/src/entrypoints/`. Update terminal's esbuild config paths. Document the convention in `docs/CONVENTIONS.md` ("entrypoints live in `src/entrypoints/`, library modules everywhere else"). Delete the terminal re-export stub from `shared/types.ts` (already planned). Small mechanical commits — no logic changes.
 
 ### PR 13.5 (NEW) — Private → public flip + publish
 

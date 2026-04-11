@@ -2,9 +2,9 @@
 
 Living state document for the Clancy monorepo. Records the current state, the phase ledger, and the next decision. Session-by-session detail lives in git history (each phase's PRs are tagged + commit messages reference them).
 
-## Current state (2026-04-11)
+## Current state (2026-04-12)
 
-**PR 12a shipped (Cut D in progress).** `/clancy:dev-loop` slash command + `loop.ts` entrypoint activated with real `executeQueue` wiring. Shared adapter factories extracted to `adapters.ts`. `FetchTicketOpts.limit` added to core and wired through all 6 board implementations. GitHub `per_page` now scales with limit. Next: PR 12c (pre-flight batch grading + readiness-report.md writer).
+**PR 12c shipped (Cut D in progress).** Pre-flight batch grading + readiness-report.md writer + error matrix + atomic-write.ts. AFK loop now grades all tickets before execution, writes colour-bucketed report, halts on non-green. Next: PR 12d (AFK behaviour matrix + run-summary.md + deferred.json + Cut D acceptance test).
 
 **Published versions:**
 
@@ -17,11 +17,15 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 | `@chief-clancy/scan`     | 0.2.0   |
 | `chief-clancy` (wrapper) | 0.9.16  |
 
-**Test counts:** 879 core, 731 terminal, 992 dev, 77 brief, 270 plan = **2949 total**.
+**Test counts:** 879 core, 731 terminal, 1025 dev, 77 brief, 270 plan = **2982 total**.
 
-**Last shipped:** PR 12a (#256) in Session 70.
+**Last shipped:** PR 12c (#257) in Session 71.
 
-## Phase E — completed PRs (Sessions 60–70)
+## Phase E — completed PRs (Sessions 60–71)
+
+### PR 12c (#257) — Pre-flight batch grading + readiness-report writer (Session 71)
+
+Pre-flight batch grades all queued tickets before execution in AFK mode. Writes `readiness-report.md` + `.json` with colour-bucketed verdicts and rotation (keep last 3). Error matrix: synthetic red on grading failure, dedupe, batch cap (`--max-batch=N`), partial checkpoint for `--resume`, cost estimate logging. Atomic write helper (write-temp-rename + mkdir) shared across all artifact writers. New modules: `artifacts/atomic-write/`, `artifacts/readiness-report/`, `artifacts/preflight-batch/`, `entrypoints/loop-execute.ts`, `entrypoints/loop-preflight.ts`. loop.ts refactored into thin orchestrator. Execution queue coupled to pre-flighted tickets (Copilot caught the mismatch). 6 rounds of Copilot findings (19 total), all addressed — partial checkpoint validation via zod schema, ENOENT-only error handling, visible warnings section, empty-state copy, Set-based filtering, timestamp consistency. 8 commits, 33 new tests (879 core, 1025 dev).
 
 ### PR 12a (#256) — Loop slash command + entrypoint + limit API (Session 70)
 
