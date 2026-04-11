@@ -3,19 +3,21 @@
 ## Branch Strategy
 
 ```
-main ← feature/ | fix/ | chore/
+main ← feature/ | fix/ | chore/ | refactor/ | docs/
 ```
 
 All work branches from `main` and merges back to `main` via PR.
 
 ### Branches
 
-| Branch           | Purpose                          | Branched from | Merges into |
-| ---------------- | -------------------------------- | ------------- | ----------- |
-| `main`           | Production code, tagged releases | —             | —           |
-| `feature/<name>` | New features                     | `main`        | `main`      |
-| `fix/<name>`     | Bug fixes                        | `main`        | `main`      |
-| `chore/<name>`   | Maintenance, deps, config        | `main`        | `main`      |
+| Branch            | Purpose                              | Branched from | Merges into |
+| ----------------- | ------------------------------------ | ------------- | ----------- |
+| `main`            | Production code, tagged releases     | —             | —           |
+| `feature/<name>`  | New features                         | `main`        | `main`      |
+| `fix/<name>`      | Bug fixes                            | `main`        | `main`      |
+| `chore/<name>`    | Maintenance, deps, config            | `main`        | `main`      |
+| `refactor/<name>` | Code restructuring, no new behaviour | `main`        | `main`      |
+| `docs/<name>`     | Documentation only                   | `main`        | `main`      |
 
 ### Rules
 
@@ -50,6 +52,8 @@ Examples:
 feature/context-monitor
 fix/push-protection-test-values
 chore/update-dependencies
+refactor/terminal-autopilot-use-dev-queue
+docs/session-67-summary
 ```
 
 Keep names short and descriptive. No ticket numbers (Clancy doesn't use an external board for its own development).
@@ -101,11 +105,13 @@ Always create a new commit instead of amending an existing one, even for small f
 
 Every PR must have exactly one type label matching its branch prefix:
 
-| Label     | Branch prefix | When to use                                |
-| --------- | ------------- | ------------------------------------------ |
-| `feature` | `feature/`    | New user-facing capability                 |
-| `fix`     | `fix/`        | Bug fix                                    |
-| `chore`   | `chore/`      | Maintenance, deps, config, refactors, docs |
+| Label     | Branch prefix | When to use                          |
+| --------- | ------------- | ------------------------------------ |
+| `feature` | `feature/`    | New user-facing capability           |
+| `fix`     | `fix/`        | Bug fix                              |
+| `chore`   | `chore/`      | Maintenance, deps, config            |
+| `chore`   | `refactor/`   | Code restructuring, no new behaviour |
+| `chore`   | `docs/`       | Documentation only                   |
 
 Apply with `--label {type}` when creating the PR.
 
