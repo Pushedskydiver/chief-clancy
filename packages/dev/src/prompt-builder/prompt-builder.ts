@@ -133,13 +133,18 @@ type ReworkPromptInput = {
  * @param input - The rework ticket data and feedback.
  * @returns The complete rework prompt string.
  */
+function formatFeedback(comments: readonly string[]): string {
+  if (comments.length === 0) {
+    return 'No reviewer comments found. Review the existing implementation and fix any issues.';
+  }
+
+  return comments
+    .map((comment, index) => `${index + 1}. ${comment}`)
+    .join('\n');
+}
+
 export function buildReworkPrompt(input: ReworkPromptInput): string {
-  const feedbackSection =
-    input.feedbackComments.length > 0
-      ? input.feedbackComments
-          .map((comment, index) => `${index + 1}. ${comment}`)
-          .join('\n')
-      : 'No reviewer comments found. Review the existing implementation and fix any issues.';
+  const feedbackSection = formatFeedback(input.feedbackComments);
 
   const previousSection = input.previousContext
     ? `\n\n## Previous Implementation\n\n\`\`\`\n${input.previousContext}\n\`\`\``
