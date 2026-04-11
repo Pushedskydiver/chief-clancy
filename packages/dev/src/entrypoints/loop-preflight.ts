@@ -8,6 +8,7 @@ import type { ConsoleLike } from '../types/index.js';
 
 import { join } from 'node:path';
 
+import { readinessVerdictSchema } from '../agents/types/index.js';
 import { runPreflightBatch } from '../artifacts/preflight-batch/index.js';
 import { writeReadinessReport } from '../artifacts/readiness-report/index.js';
 
@@ -42,18 +43,10 @@ function loadPartialCheckpoint(
     const raw = readFile(join(dir, 'readiness-report.partial.json'));
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return undefined;
-    const COLOURS = new Set(['green', 'yellow', 'red']);
-    // Discard malformed entries — require ticketId, overall colour, and checks array
-    const valid = parsed.filter((v): v is ReadinessVerdict => {
-      if (typeof v !== 'object' || v === null) return false;
-      const r = v as Record<string, unknown>;
-      return (
-        typeof r.ticketId === 'string' &&
-        typeof r.overall === 'string' &&
-        COLOURS.has(r.overall) &&
-        Array.isArray(r.checks)
-      );
-    });
+    // Validate each entry against the zod schema — discard malformed entries
+    const valid = parsed.filter(
+      (v): v is ReadinessVerdict => readinessVerdictSchema.safeParse(v).success,
+    );
     return valid.length > 0 ? valid : undefined;
   } catch {
     return undefined;

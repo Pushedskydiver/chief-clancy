@@ -83,14 +83,20 @@ function renderBucket(
   return `${header}\n\n${body}`;
 }
 
+function renderWarnings(warnings: readonly string[]): string {
+  if (warnings.length === 0) return '';
+  const items = warnings.map((w) => `- ${w}`).join('\n');
+  return `## Warnings\n\n${items}\n\n`;
+}
+
 function renderMarkdown(data: ReportData): string {
   const header = [
     '# Readiness Report',
     '',
     `<!-- generated: ${data.generatedAt} -->`,
     `<!-- total: ${data.total} -->`,
-    ...data.warnings.map((w) => `<!-- warning: ${w} -->`),
     '',
+    renderWarnings(data.warnings),
   ].join('\n');
 
   if (data.total === 0) {

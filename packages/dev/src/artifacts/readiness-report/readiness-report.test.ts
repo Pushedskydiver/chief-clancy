@@ -170,8 +170,9 @@ describe('writeReadinessReport', () => {
     });
 
     const md = fs.written.get(`${BASE_DIR}/readiness-report.md.tmp`)!;
-    expect(md).toContain('<!-- warning: Batch truncated');
-    expect(md).toContain('<!-- warning: Duplicate ticket');
+    expect(md).toContain('## Warnings');
+    expect(md).toContain('- Batch truncated');
+    expect(md).toContain('- Duplicate ticket');
   });
 
   it('rotates existing report before writing new one', () => {
