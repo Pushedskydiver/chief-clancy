@@ -3,19 +3,21 @@
 ## Branch Strategy
 
 ```
-main ← feature/ | fix/ | chore/
+main ← feature/ | fix/ | chore/ | refactor/ | docs/
 ```
 
 All work branches from `main` and merges back to `main` via PR.
 
 ### Branches
 
-| Branch           | Purpose                          | Branched from | Merges into |
-| ---------------- | -------------------------------- | ------------- | ----------- |
-| `main`           | Production code, tagged releases | —             | —           |
-| `feature/<name>` | New features                     | `main`        | `main`      |
-| `fix/<name>`     | Bug fixes                        | `main`        | `main`      |
-| `chore/<name>`   | Maintenance, deps, config        | `main`        | `main`      |
+| Branch            | Purpose                              | Branched from | Merges into |
+| ----------------- | ------------------------------------ | ------------- | ----------- |
+| `main`            | Production code, tagged releases     | —             | —           |
+| `feature/<name>`  | New features                         | `main`        | `main`      |
+| `fix/<name>`      | Bug fixes                            | `main`        | `main`      |
+| `chore/<name>`    | Maintenance, deps, config            | `main`        | `main`      |
+| `refactor/<name>` | Code restructuring, no new behaviour | `main`        | `main`      |
+| `docs/<name>`     | Documentation only                   | `main`        | `main`      |
 
 ### Rules
 
@@ -40,9 +42,9 @@ Docs in `docs/` are informational — Claude reads them for context but doesn't 
 type/short-description
 ```
 
-Types: `feature`, `fix`, `chore`
+Types: `feature`, `fix`, `chore`, `refactor`, `docs`
 
-Each type has a matching GitHub PR label — use `--label {type}` when creating PRs.
+Each type has a matching GitHub PR label — `refactor/` and `docs/` branches use the `chore` label.
 
 Examples:
 
@@ -50,6 +52,8 @@ Examples:
 feature/context-monitor
 fix/push-protection-test-values
 chore/update-dependencies
+refactor/terminal-autopilot-use-dev-queue
+docs/session-67-summary
 ```
 
 Keep names short and descriptive. No ticket numbers (Clancy doesn't use an external board for its own development).
@@ -99,13 +103,15 @@ Always create a new commit instead of amending an existing one, even for small f
 
 ### PR labels (required — one per PR)
 
-Every PR must have exactly one type label matching its branch prefix:
+Every PR must have exactly one type label. `refactor/` and `docs/` branches use the `chore` label:
 
-| Label     | Branch prefix | When to use                                |
-| --------- | ------------- | ------------------------------------------ |
-| `feature` | `feature/`    | New user-facing capability                 |
-| `fix`     | `fix/`        | Bug fix                                    |
-| `chore`   | `chore/`      | Maintenance, deps, config, refactors, docs |
+| Label     | Branch prefix | When to use                          |
+| --------- | ------------- | ------------------------------------ |
+| `feature` | `feature/`    | New user-facing capability           |
+| `fix`     | `fix/`        | Bug fix                              |
+| `chore`   | `chore/`      | Maintenance, deps, config            |
+| `chore`   | `refactor/`   | Code restructuring, no new behaviour |
+| `chore`   | `docs/`       | Documentation only                   |
 
 Apply with `--label {type}` when creating the PR.
 
@@ -117,8 +123,12 @@ Add when the PR touches package-specific code:
 | ---------- | ------------------------------- |
 | `core`     | Changes to `packages/core/`     |
 | `terminal` | Changes to `packages/terminal/` |
+| `brief`    | Changes to `packages/brief/`    |
+| `plan`     | Changes to `packages/plan/`     |
+| `dev`      | Changes to `packages/dev/`      |
+| `scan`     | Changes to `packages/scan/`     |
 
-PRs touching both packages get both labels. Root-only changes (CI, docs, config) get no scope label.
+PRs touching multiple packages get multiple labels. Root-only changes (CI, docs, config) get no scope label.
 
 ### Issue labels
 

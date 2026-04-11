@@ -46,8 +46,8 @@ See `docs/GIT.md` for the full type/gitmoji table (10 types).
 
 ```bash
 gh pr create --assignee Pushedskydiver --label "feature" --label "core"
-# Type labels: feature, fix, chore (must match branch prefix)
-# Package labels: core, terminal, brief
+# Type labels: feature, fix, chore (chore also covers refactor/ and docs/ branches)
+# Package labels: core, terminal, brief, plan, dev, scan
 ```
 
 Merge policy: for **cleanup PRs** (C-prefixed audit fixes), watch CI and merge once all checks pass. For **regular phase PRs** (new features/modules), create the PR but leave merging to Alex.

@@ -3,17 +3,19 @@
  *
  * Delegates loop orchestration (quiet hours, halt conditions, iteration
  * capping) to `@chief-clancy/dev`. This module owns the banner, session
- * report, webhook notification, and stop-condition logic (planned for
- * migration to dev).
+ * report, and webhook notification.
  */
 import type {
   ConsoleLike,
   LoopOutcome,
   PipelineResult,
-  QueueStopCondition,
 } from '@chief-clancy/dev';
 
-import { executeFixedCount, formatDuration } from '@chief-clancy/dev';
+import {
+  checkStopCondition,
+  executeFixedCount,
+  formatDuration,
+} from '@chief-clancy/dev';
 
 import { bold, dim, green } from '../../shared/ansi/index.js';
 
@@ -33,52 +35,6 @@ type AutopilotOpts = {
   readonly quietEnd?: string;
   readonly webhookUrl?: string;
 };
-
-// ─── Stop condition ─────────────────────────────────────────────────────────
-
-/** Phases where an abort should stop the entire autopilot loop. */
-const FATAL_ABORT_PHASES = new Set([
-  'lock-check',
-  'preflight',
-  'ticket-fetch',
-  'branch-setup',
-]);
-
-/**
- * Check whether a pipeline result should stop the autopilot loop.
- *
- * Completed and resumed results continue. Errors and dry-runs stop.
- * Aborts stop only for fatal phases (preflight, ticket-fetch, etc.);
- * non-fatal aborts (feasibility, invoke) allow the next ticket.
- *
- * @param result - The pipeline result to check.
- * @returns Stop flag and optional reason.
- */
-export function checkStopCondition(result: PipelineResult): QueueStopCondition {
-  switch (result.status) {
-    case 'completed':
-    case 'resumed':
-      return { stop: false };
-
-    case 'error':
-      return { stop: true, reason: result.error ?? 'Unknown error' };
-
-    case 'dry-run':
-      return { stop: true, reason: 'Dry run — loop not applicable' };
-
-    case 'aborted': {
-      const isFatal = FATAL_ABORT_PHASES.has(result.phase ?? '');
-      return isFatal
-        ? { stop: true, reason: `Aborted at ${result.phase}` }
-        : { stop: false };
-    }
-
-    default: {
-      const _exhaustive: never = result.status;
-      return _exhaustive;
-    }
-  }
-}
 
 // ─── Loop orchestrator ───────────────────────────────────────────────────────
 
