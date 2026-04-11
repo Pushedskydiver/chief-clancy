@@ -89,6 +89,19 @@ export { invokeClaudePrint, invokeClaudeSession } from './cli-bridge/index.js';
 
 export { sendNotification } from './notify/index.js';
 
+// ─── Execute re-exports ────────────────────────────────────────────────────
+
+export { runSingleTicketByKey } from './execute/index.js';
+export type { SingleTicketDeps } from './execute/index.js';
+
+// ─── Prompt builder re-exports ─────────────────────────────────────────────
+
+export {
+  buildPrompt,
+  buildReworkPrompt,
+  ticketLabel,
+} from './prompt-builder/index.js';
+
 // ─── Dep-factory re-exports ────────────────────────────────────────────────
 
 export type { InvokePhaseDeps } from './dep-factory/invoke-phase.js';

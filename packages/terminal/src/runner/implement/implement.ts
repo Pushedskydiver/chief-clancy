@@ -20,11 +20,15 @@ import type {
   SpawnSyncFn,
 } from '@chief-clancy/dev';
 
-import { createContext, formatDuration } from '@chief-clancy/dev';
+import {
+  buildPrompt,
+  buildReworkPrompt,
+  createContext,
+  formatDuration,
+} from '@chief-clancy/dev';
 
 import { dim, green, red } from '../../shared/ansi/index.js';
 import { buildPipelineDeps } from '../dep-factory/index.js';
-import { buildPrompt, buildReworkPrompt } from '../prompt-builder/index.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
