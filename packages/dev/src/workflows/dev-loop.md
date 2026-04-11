@@ -18,13 +18,7 @@ node .clancy/clancy-dev-autopilot.js
 
 Check for `.clancy/.env`:
 
-- **Absent** → **standalone mode**. No board credentials configured. Stop with:
-
-  ```
-  No board credentials found. Run /clancy:board-setup first to configure your board, then re-run /clancy:dev-loop.
-  ```
-
-  Stop.
+- **Absent** → **standalone mode**. No board credentials configured. Stop and instruct the user to run `/clancy:board-setup` to configure their board, then re-run `/clancy:dev-loop`.
 
 - **Present** → continue to `.clancy/clancy-dev-autopilot.js` check below.
 
