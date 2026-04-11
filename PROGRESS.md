@@ -4,7 +4,7 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 
 ## Current state (2026-04-11)
 
-**ExecuteQueue split complete (Cut C → 11c).** Queue loop primitives (`executeFixedCount`, `executeQueue`) live in dev. Terminal's autopilot is a 133-line thin wrapper. Stop-condition logic (`checkStopCondition`, `FATAL_ABORT_PHASES`) moved to dev. Type-checked linting enabled repo-wide. Next: PR 12a (loop slash command + entrypoint).
+**PR 12a shipped (Cut D in progress).** `/clancy:dev-loop` slash command + `loop.ts` entrypoint activated with real `executeQueue` wiring. Shared adapter factories extracted to `adapters.ts`. `FetchTicketOpts.limit` added to core and wired through all 6 board implementations. GitHub `per_page` now scales with limit. Next: PR 12c (pre-flight batch grading + readiness-report.md writer).
 
 **Published versions:**
 
@@ -17,11 +17,15 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 | `@chief-clancy/scan`     | 0.2.0   |
 | `chief-clancy` (wrapper) | 0.9.16  |
 
-**Test counts:** 872 core, 731 terminal, 969 dev, 77 brief, 270 plan = **2919 total**.
+**Test counts:** 879 core, 731 terminal, 992 dev, 77 brief, 270 plan = **2949 total**.
 
-**Last shipped:** PR 11a–11c (#253–#255) in Session 69.
+**Last shipped:** PR 12a (#256) in Session 70.
 
-## Phase E — completed PRs (Sessions 60–69)
+## Phase E — completed PRs (Sessions 60–70)
+
+### PR 12a (#256) — Loop slash command + entrypoint + limit API (Session 70)
+
+Added `/clancy:dev-loop` slash command and workflow for queue-based autonomous ticket execution. Replaced `loop.ts` no-op stub with real `executeQueue` wiring: CLI arg parsing (`--afk`, `--max=N`, `--bypass-readiness`), board queue fetch, sequential pipeline execution per ticket, halt conditions via `checkStopCondition`, quiet hours, and webhook notifications. Extracted shared Node.js I/O adapter factories (`makeExecGit`, `makeLockFs`, etc.) into `adapters.ts` — both `dev.ts` and `loop.ts` import from the shared module. Added `limit?: number` to `FetchTicketOpts` in core and wired through all 6 board implementations (5 already had it internally, Notion was hardcoded). GitHub's `per_page` now scales with limit (2x for PR filtering, min 10, max 100) instead of hardcoded 10. Loop fetch defaults to 50, clamped at 100 (matching `executeQueue`'s hard cap). Raw `.clancy/.env` (pre-validation) used for env merging so non-schema keys like `CLANCY_QUIET_START/END` survive. Non-loop flags (`--dry-run`, `--skip-feasibility`) forwarded via `passthroughArgv`. Copilot caught 4 rounds of findings — all addressed. 11 commits, 30 new tests (879 core, 992 dev).
 
 ### PR 11a–11c (#253–#255) — ExecuteQueue split (Session 69)
 
