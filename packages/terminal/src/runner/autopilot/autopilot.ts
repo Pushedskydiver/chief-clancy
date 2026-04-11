@@ -132,10 +132,19 @@ async function finalize(
   const iterationCount = outcome.iterations.length;
 
   out.log('');
-  out.log(
-    green(`🏁 Completed ${iterationCount} iterations`) +
-      dim(` (${totalElapsed})`),
-  );
+  if (outcome.haltedAt) {
+    out.log(outcome.haltedAt.reason);
+    out.log(
+      dim(
+        `  Total: ${iterationCount} iteration${iterationCount !== 1 ? 's' : ''} in ${totalElapsed}`,
+      ),
+    );
+  } else {
+    out.log(
+      green(`🏁 Completed ${iterationCount} iterations`) +
+        dim(` (${totalElapsed})`),
+    );
+  }
 
   // Generate session report
   const report = opts.buildReport(outcome.startedAt, outcome.endedAt);

@@ -136,6 +136,25 @@ describe('runAutopilot', () => {
     expect(runIteration).toHaveBeenCalledTimes(2);
   });
 
+  it('logs halt reason on early stop', async () => {
+    const consoleMock = { log: vi.fn(), error: vi.fn() };
+    const runIteration = vi
+      .fn()
+      .mockResolvedValue({ status: 'error', error: 'Something broke' });
+    const opts = createMockOpts({
+      maxIterations: 3,
+      runIteration,
+      console: consoleMock,
+    });
+
+    await runAutopilot(opts);
+
+    const logCalls = (consoleMock.log as ReturnType<typeof vi.fn>).mock.calls
+      .map((c: readonly unknown[]) => c[0])
+      .filter((m): m is string => typeof m === 'string');
+    expect(logCalls.some((m) => m.includes('Something broke'))).toBe(true);
+  });
+
   it('stops on preflight abort', async () => {
     const runIteration = vi
       .fn()
