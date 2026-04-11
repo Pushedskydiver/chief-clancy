@@ -10,11 +10,11 @@ import type {
   CheckColour,
   CheckResult,
   ReadinessCheckId,
-} from '../types/index.js';
+} from './types/index.js';
 
 import { describe, expect, it } from 'vitest';
 
-import { aggregateVerdict } from '../aggregate/index.js';
+import { aggregateVerdict } from './aggregate/index.js';
 import { BAD_TICKETS, GOOD_TICKETS } from './fixtures/tickets.js';
 
 // ─── Mock grader (pure functions, one per check) ────────────────────────────

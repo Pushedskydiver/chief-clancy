@@ -180,4 +180,3 @@ const BAD_TICKETS: readonly TicketFixture[] = [
 ];
 
 export { BAD_TICKETS, GOOD_TICKETS };
-export type { TicketFixture };
