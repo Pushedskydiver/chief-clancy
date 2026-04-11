@@ -77,7 +77,10 @@ function runLoopPreflight(opts: PreflightOpts): PreflightResult {
     timestamp: opts.timestamp,
   });
 
-  const canProceed = batchResult.verdicts.every((v) => v.overall === 'green');
+  const hasTickets = opts.ticketIds.length > 0;
+  const hasVerdicts = batchResult.verdicts.length > 0;
+  const allGreen = batchResult.verdicts.every((v) => v.overall === 'green');
+  const canProceed = hasTickets ? hasVerdicts && allGreen : true;
 
   return { canProceed, verdicts: batchResult.verdicts };
 }

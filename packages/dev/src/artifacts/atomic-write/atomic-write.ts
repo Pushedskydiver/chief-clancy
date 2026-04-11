@@ -48,6 +48,7 @@ function escapeRegex(s: string): string {
 function rotateFile(opts: RotateOpts): void {
   const { fs, filePath, keep, timestamp } = opts;
 
+  if (keep <= 0) return;
   if (!fs.stat(filePath)) return;
 
   const dir = dirname(filePath);
@@ -58,9 +59,9 @@ function rotateFile(opts: RotateOpts): void {
   fs.rename(filePath, join(dir, rotatedName));
 
   const rotatedPattern = new RegExp(
-    `^${escapeRegex(stem)}\\.\\d{4}-\\d{2}-\\d{2}T[\\d-]+${escapeRegex(ext)}$`,
+    `^${escapeRegex(stem)}\\.\\d{4}-\\d{2}-\\d{2}T[\\d.-]+${escapeRegex(ext)}$`,
   );
-  // Invariant: ISO-like timestamps (YYYY-MM-DDTHH-MM-SS) sort lexicographically
+  // Invariant: ISO-like timestamps (YYYY-MM-DDTHH-MM-SS.mmm) sort lexicographically
   // in chronological order, so .sort() gives oldest-first for deletion.
   const existing = fs
     .readdir(dir)

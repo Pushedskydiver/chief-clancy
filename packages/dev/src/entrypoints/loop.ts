@@ -189,10 +189,7 @@ function mergeEnv(
 }
 
 function makeTimestamp(): string {
-  return new Date()
-    .toISOString()
-    .replace(/:/g, '-')
-    .replace(/\.\d+Z$/, '');
+  return new Date().toISOString().replace(/:/g, '-').replace(/Z$/, '');
 }
 
 // ─── Pre-flight orchestration ──────────────────────────────────────────────

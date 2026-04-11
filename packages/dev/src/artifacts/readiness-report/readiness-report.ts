@@ -127,12 +127,19 @@ function writeReadinessReport(opts: WriteReportOpts): void {
     warnings,
   };
 
-  // Rotate existing reports before writing new ones
+  // Compute timestamp once so rotation + report header stay consistent
   const mdPath = join(dir, MD_FILE);
   const jsonPath = join(dir, JSON_FILE);
+  const fixedTs = ts;
+  const tsOnce = () => fixedTs;
 
-  rotateFile({ fs, filePath: mdPath, keep: ROTATION_KEEP, timestamp });
-  rotateFile({ fs, filePath: jsonPath, keep: ROTATION_KEEP, timestamp });
+  rotateFile({ fs, filePath: mdPath, keep: ROTATION_KEEP, timestamp: tsOnce });
+  rotateFile({
+    fs,
+    filePath: jsonPath,
+    keep: ROTATION_KEEP,
+    timestamp: tsOnce,
+  });
 
   // Write new reports atomically
   atomicWrite(fs, mdPath, renderMarkdown(data));
