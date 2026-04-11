@@ -58,7 +58,9 @@ async function fetchTicket(
 function isPipelineResult(
   value: PipelineResult | FetchedTicket,
 ): value is PipelineResult {
-  return 'status' in value;
+  // Cannot use 'status' — FetchedTicket has an optional status field.
+  // FetchedTicket always has 'key'; PipelineResult never does.
+  return !('key' in value);
 }
 
 // ─── Executor ────────────────────────────────────────────────────────────────

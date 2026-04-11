@@ -192,6 +192,21 @@ describe('runSingleTicketByKey', () => {
     });
   });
 
+  it('runs pipeline when ticket has an optional status field', async () => {
+    const ticketWithStatus: FetchedTicket = {
+      ...TICKET,
+      status: 'In Progress',
+    };
+    const deps = makeDeps({
+      fetchTicketByKeyOnce: vi.fn().mockResolvedValue(ticketWithStatus),
+    });
+
+    const result = await runSingleTicketByKey('PROJ-42', deps);
+
+    expect(result).toEqual({ status: 'completed' });
+    expect(deps.runPipeline).toHaveBeenCalledOnce();
+  });
+
   it('does not call runPipeline when ticket lookup throws', async () => {
     const runPipeline = vi.fn();
     const deps = makeDeps({
