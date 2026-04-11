@@ -46,8 +46,8 @@ export type SingleTicketDeps = {
   readonly argv: readonly string[];
   /** Whether the runner is in AFK (unattended) mode. */
   readonly isAfk: boolean;
-  /** Optional readiness gate. When provided, runs before the pipeline. */
-  readonly readinessGate?: () => GateResult;
+  /** Optional readiness gate. Receives the fetched ticket for grading. */
+  readonly readinessGate?: (ticket: FetchedTicket) => GateResult;
 };
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -75,7 +75,10 @@ function isPipelineResult(
   return !('key' in value);
 }
 
-function checkReadiness(deps: SingleTicketDeps): PipelineResult | undefined {
+function checkReadiness(
+  deps: SingleTicketDeps,
+  ticket: FetchedTicket,
+): PipelineResult | undefined {
   if (!deps.readinessGate) return undefined;
 
   const flags = parseReadinessFlags(deps.argv, deps.isAfk);
@@ -89,7 +92,7 @@ function checkReadiness(deps: SingleTicketDeps): PipelineResult | undefined {
     return undefined;
   }
 
-  const gate = deps.readinessGate();
+  const gate = deps.readinessGate(ticket);
 
   if (!gate.passed) {
     const reason = gate.error ?? `Readiness gate: ${gate.overall ?? 'failed'}`;
@@ -123,7 +126,7 @@ export async function runSingleTicketByKey(
     return result;
   }
 
-  const readinessResult = checkReadiness(deps);
+  const readinessResult = checkReadiness(deps, result);
 
   if (readinessResult) {
     return readinessResult;

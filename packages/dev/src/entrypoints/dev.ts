@@ -10,7 +10,12 @@
  */
 import type { CostFs, LockFs, ProgressFs, QualityFs } from '../index.js';
 import type { PipelineResult } from '../pipeline/index.js';
-import type { BoardConfig, EnvFileSystem, ExecGit } from '@chief-clancy/core';
+import type {
+  BoardConfig,
+  EnvFileSystem,
+  ExecGit,
+  FetchedTicket,
+} from '@chief-clancy/core';
 import type { SpawnSyncReturns } from 'node:child_process';
 
 import { spawnSync } from 'node:child_process';
@@ -178,18 +183,17 @@ function displayResult(result: PipelineResult, elapsed: string): void {
 
 function makeReadinessGate(opts: {
   readonly rubric: string;
-  readonly ticketKey: string;
   readonly projectRoot: string;
   readonly model?: string;
 }) {
-  return () =>
+  return (ticket: FetchedTicket) =>
     runReadinessGate({
       grade: () =>
         invokeReadinessGrade({
           rubric: opts.rubric,
-          ticketId: opts.ticketKey,
-          ticketTitle: opts.ticketKey,
-          ticketDescription: '',
+          ticketId: ticket.key,
+          ticketTitle: ticket.title,
+          ticketDescription: ticket.description,
           projectRoot: opts.projectRoot,
           spawn: (cmd, args, spawnOpts) =>
             spawnSync(cmd, [...args], {
@@ -245,7 +249,6 @@ async function main(): Promise<void> {
     isAfk: false,
     readinessGate: makeReadinessGate({
       rubric: loadRubric(),
-      ticketKey,
       projectRoot,
       model: boardConfig.env.CLANCY_MODEL,
     }),
