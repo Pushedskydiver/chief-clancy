@@ -31,12 +31,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import {
+  buildPipelineDeps,
   buildPrompt,
   buildReworkPrompt,
-} from '~/t/runner/prompt-builder/index.js';
-
-import {
-  buildPipelineDeps,
   createContext,
   runPipeline,
 } from '@chief-clancy/dev';

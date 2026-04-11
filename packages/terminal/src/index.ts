@@ -42,15 +42,13 @@ export {
 export { runAutopilot } from './runner/autopilot/index.js';
 export {
   buildPipelineDeps,
+  buildPrompt,
+  buildReworkPrompt,
   invokeClaudePrint,
   invokeClaudeSession,
   sendNotification,
 } from '@chief-clancy/dev';
 export { runImplement } from './runner/implement/index.js';
-export {
-  buildPrompt,
-  buildReworkPrompt,
-} from './runner/prompt-builder/index.js';
 export {
   buildSessionReport,
   generateSessionReport,

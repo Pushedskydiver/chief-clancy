@@ -136,7 +136,9 @@ type ReworkPromptInput = {
 export function buildReworkPrompt(input: ReworkPromptInput): string {
   const feedbackSection =
     input.feedbackComments.length > 0
-      ? input.feedbackComments.map((c, i) => `${i + 1}. ${c}`).join('\n')
+      ? input.feedbackComments
+          .map((comment, index) => `${index + 1}. ${comment}`)
+          .join('\n')
       : 'No reviewer comments found. Review the existing implementation and fix any issues.';
 
   const previousSection = input.previousContext

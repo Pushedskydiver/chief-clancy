@@ -29,6 +29,8 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 
 import {
+  buildPrompt,
+  buildReworkPrompt,
   createContext,
   runPipeline,
   sendNotification,
@@ -43,7 +45,6 @@ import {
   makeProgressFs,
   makeQualityFs,
 } from '../implement/entrypoint.js';
-import { buildPrompt, buildReworkPrompt } from '../prompt-builder/index.js';
 import { buildSessionReport } from '../session-report/index.js';
 import { runAutopilot } from './autopilot.js';
 
