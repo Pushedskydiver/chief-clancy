@@ -210,6 +210,29 @@ describe('createAzdoBoard', () => {
       const body = JSON.parse(options.body as string) as { query: string };
       expect(body.query).toContain("System.State] = 'Active'");
     });
+
+    it('respects limit parameter', async () => {
+      const ids = Array.from({ length: 5 }, (_, i) => ({ id: i + 1 }));
+      const items = Array.from({ length: 5 }, (_, i) => ({
+        id: i + 1,
+        fields: { 'System.Title': `Item ${i + 1}` },
+        relations: null,
+      }));
+
+      const mockFetch = vi
+        .fn<Fetcher>()
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ workItems: ids }), { status: 200 }),
+        )
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ value: items }), { status: 200 }),
+        );
+
+      const board = createAzdoBoard(baseEnv, mockFetch);
+      const tickets = await board.fetchTickets({ limit: 2 });
+
+      expect(tickets).toHaveLength(2);
+    });
   });
 
   // ─── fetchTicket ────────────────────────────────────────────────────────

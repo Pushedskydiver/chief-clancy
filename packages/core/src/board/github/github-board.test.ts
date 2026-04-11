@@ -149,6 +149,30 @@ describe('createGitHubBoard', () => {
     expect(tickets[0].parentInfo).toBe('Sprint 1');
   });
 
+  it('fetchTickets respects limit parameter', async () => {
+    const issues = Array.from({ length: 5 }, (_, i) => ({
+      number: i + 1,
+      title: `Issue ${i + 1}`,
+      body: '',
+      milestone: null,
+      labels: [],
+    }));
+
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ login: 'user' }), { status: 200 }),
+      )
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify(issues), { status: 200 }),
+      );
+
+    const board = createGitHubBoard(baseEnv, mockFetch);
+    const tickets = await board.fetchTickets({ limit: 2 });
+
+    expect(tickets).toHaveLength(2);
+  });
+
   it('fetchTicket returns the first ticket', async () => {
     const issues = [
       { number: 1, title: 'First', body: '', labels: [] },

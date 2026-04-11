@@ -99,6 +99,23 @@ describe('createJiraBoard', () => {
     });
   });
 
+  it('fetchTickets forwards limit as maxResults in JQL request', async () => {
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ issues: [] }), { status: 200 }),
+      );
+
+    const board = createJiraBoard(baseEnv, mockFetch);
+    await board.fetchTickets({ limit: 2 });
+
+    const [, options] = mockFetch.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(options.body as string) as {
+      maxResults: number;
+    };
+    expect(body.maxResults).toBe(2);
+  });
+
   it('fetchTicket returns the first ticket', async () => {
     const response = {
       issues: [

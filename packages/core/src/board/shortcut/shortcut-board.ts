@@ -85,6 +85,7 @@ async function fetchShortcutTickets(
     workflowStateIds: stateIds,
     label: opts.buildLabel ?? ctx.defaultLabel,
     excludeHitl: opts.excludeHitl,
+    limit: opts.limit,
     fetcher: ctx.fetcher,
   });
 

@@ -104,6 +104,29 @@ describe('createLinearBoard', () => {
     });
   });
 
+  it('fetchTickets respects limit parameter', async () => {
+    const nodes = Array.from({ length: 5 }, (_, i) => ({
+      id: `uuid-${i}`,
+      identifier: `ENG-${i + 1}`,
+      title: `Issue ${i + 1}`,
+      description: '',
+      labels: { nodes: [] },
+    }));
+
+    const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          data: { viewer: { assignedIssues: { nodes } } },
+        }),
+    } as Response);
+
+    const board = createLinearBoard(makeEnv(), mockFetch);
+    const tickets = await board.fetchTickets({ limit: 2 });
+
+    expect(tickets).toHaveLength(2);
+  });
+
   it('fetchTicket returns first ticket', async () => {
     const mockFetch = vi.fn<Fetcher>().mockResolvedValue({
       ok: true,

@@ -72,6 +72,7 @@ async function fetchAzdoTickets(
     wit: env.CLANCY_AZDO_WIT,
     excludeHitl: opts.excludeHitl,
     label: opts.buildLabel ?? env.CLANCY_LABEL,
+    limit: opts.limit,
   });
 
   return tickets.map((t) => toFetchedTicket(t, status));

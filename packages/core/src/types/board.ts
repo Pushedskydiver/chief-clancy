@@ -44,6 +44,8 @@ export type FetchTicketOpts = {
   readonly excludeHitl?: boolean;
   /** The resolved build queue label to filter by (e.g. `clancy:build`). */
   readonly buildLabel?: string;
+  /** Maximum number of tickets to return. Defaults to 5 per provider. */
+  readonly limit?: number;
 };
 
 /** Result of a board connectivity check. */
