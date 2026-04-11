@@ -16,7 +16,7 @@ function makeVerdict(
   overall: 'green' | 'yellow' | 'red',
   checks?: readonly CheckResult[],
 ): ReadinessVerdict {
-  const defaultChecks: readonly CheckResult[] = [
+  const defaultChecks: CheckResult[] = [
     { id: 'clear', verdict: overall, reason: `${overall} clear` },
     { id: 'testable', verdict: 'green', reason: 'testable' },
     { id: 'small', verdict: 'green', reason: 'small' },
@@ -123,7 +123,7 @@ describe('runReadinessGate', () => {
   });
 
   it('includes questions from yellow checks in fail result', () => {
-    const checks: readonly CheckResult[] = [
+    const checks: CheckResult[] = [
       {
         id: 'clear',
         verdict: 'yellow',

@@ -22,10 +22,10 @@ describe('parseReadinessFlags', () => {
     );
 
     expect(result.ok).toBe(true);
-    if (result.ok) {
-      expect(result.bypass).toBe(true);
+    if (result.ok && result.bypass) {
       expect(result.reason).toBe('testing this');
     }
+    expect(result.ok && result.bypass).toBe(true);
   });
 
   it('returns error when --bypass-readiness without --reason', () => {
@@ -56,9 +56,10 @@ describe('parseReadinessFlags', () => {
     );
 
     expect(result.ok).toBe(true);
-    if (result.ok) {
+    if (result.ok && result.bypass) {
       expect(result.reason).toBe('my reason here');
     }
+    expect(result.ok && result.bypass).toBe(true);
   });
 
   it('parses --reason as separate arg', () => {
@@ -68,9 +69,10 @@ describe('parseReadinessFlags', () => {
     );
 
     expect(result.ok).toBe(true);
-    if (result.ok) {
+    if (result.ok && result.bypass) {
       expect(result.reason).toBe('my reason here');
     }
+    expect(result.ok && result.bypass).toBe(true);
   });
 
   it('returns error when --reason is empty', () => {

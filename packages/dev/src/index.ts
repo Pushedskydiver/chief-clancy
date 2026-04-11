@@ -108,6 +108,8 @@ export type {
 // ─── Execute re-exports ────────────────────────────────────────────────────
 
 export { runSingleTicketByKey } from './execute/index.js';
+export { parseReadinessFlags } from './execute/flags/index.js';
+export { runReadinessGate } from './execute/readiness/index.js';
 export type { SingleTicketDeps } from './execute/index.js';
 
 // ─── Prompt builder re-exports ─────────────────────────────────────────────
