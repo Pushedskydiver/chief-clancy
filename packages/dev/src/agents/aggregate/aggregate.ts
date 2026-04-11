@@ -6,7 +6,7 @@
  * 2. If the number of yellow checks meets or exceeds the threshold,
  *    the overall colour escalates to red.
  */
-import type { CheckColour, CheckResult } from './types.js';
+import type { CheckColour, CheckResult } from '../types/index.js';
 
 /** Default yellow-count threshold before escalation to red. */
 const DEFAULT_YELLOW_THRESHOLD = 3;

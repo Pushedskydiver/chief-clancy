@@ -2,9 +2,9 @@
  * Verdict parser — extract a fenced JSON block from Claude output
  * and validate it against the ReadinessVerdict schema.
  */
-import type { ReadinessVerdict } from './types.js';
+import type { ReadinessVerdict } from '../types/index.js';
 
-import { readinessVerdictSchema } from './types.js';
+import { readinessVerdictSchema } from '../types/index.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
