@@ -276,6 +276,28 @@ describe('fetchIssues', () => {
     expect(result).toHaveLength(2);
   });
 
+  it('sizes per_page based on limit for large queues', async () => {
+    const items = Array.from({ length: 30 }, (_, i) => ({
+      number: i + 1,
+      title: `Issue ${i + 1}`,
+      body: '',
+      labels: [],
+    }));
+    const mockFetch = vi
+      .fn<Fetcher>()
+      .mockResolvedValue(new Response(JSON.stringify(items), { status: 200 }));
+
+    await fetchIssues({
+      token: 'tok',
+      repo: 'owner/repo',
+      limit: 20,
+      fetcher: mockFetch,
+    });
+
+    const url = mockFetch.mock.calls[0][0];
+    expect(url).toContain('per_page=40');
+  });
+
   it('returns empty array on fetch failure', async () => {
     const mockFetch = vi.fn<Fetcher>().mockRejectedValue(new Error('network'));
     vi.spyOn(console, 'warn').mockImplementation(() => {});

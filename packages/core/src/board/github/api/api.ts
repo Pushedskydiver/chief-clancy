@@ -182,10 +182,13 @@ export async function fetchIssues(
   } = opts;
   if (!isValidRepo(repo)) return [];
 
+  // Overfetch (2x limit, min 10) because PRs are filtered client-side.
+  // GitHub's max per_page is 100.
+  const perPage = Math.min(Math.max(limit * 2, 10), 100);
   const params = new URLSearchParams({
     state: 'open',
     assignee: username ?? '@me',
-    per_page: '10',
+    per_page: String(perPage),
     ...(label ? { labels: label } : {}),
   });
 
