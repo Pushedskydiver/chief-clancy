@@ -150,7 +150,7 @@ describe('writeReadinessReport', () => {
 
     const md = fs.written.get(`${BASE_DIR}/readiness-report.md.tmp`)!;
     expect(md).toContain('total: 0');
-    expect(md).toContain('No tickets to grade. Queue is empty.');
+    expect(md).toContain('No verdicts to report.');
   });
 
   it('includes warnings in the report header', () => {

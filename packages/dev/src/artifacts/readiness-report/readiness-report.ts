@@ -100,7 +100,7 @@ function renderMarkdown(data: ReportData): string {
   ].join('\n');
 
   if (data.total === 0) {
-    return `${header}No tickets to grade. Queue is empty.\n`;
+    return `${header}No verdicts to report.\n`;
   }
 
   const sections = (
