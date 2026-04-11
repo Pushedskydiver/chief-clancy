@@ -116,6 +116,10 @@ export type {
   QueueStopCondition,
 } from './queue.js';
 
+// ─── Stop condition re-exports ────────────────────────────────────────────
+
+export { checkStopCondition, FATAL_ABORT_PHASES } from './stop-condition.js';
+
 // ─── Execute re-exports ────────────────────────────────────────────────────
 
 export { runSingleTicketByKey } from './execute/index.js';
