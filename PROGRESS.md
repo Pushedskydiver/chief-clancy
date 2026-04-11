@@ -4,24 +4,32 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 
 ## Current state (2026-04-11)
 
-**Scan extraction complete.** New `@chief-clancy/scan` package extracted and consumed by all four packages (dev, brief, plan, terminal). Single source of truth for 5 scanning agents + map-codebase/update-docs commands/workflows. Next: PR 8c (single-ticket executor).
+**ExecuteQueue split complete (Cut C → 11c).** Queue loop primitives (`executeFixedCount`, `executeQueue`) live in dev. Terminal's autopilot is a 133-line thin wrapper. Stop-condition logic (`checkStopCondition`, `FATAL_ABORT_PHASES`) moved to dev. Type-checked linting enabled repo-wide. Next: PR 12a (loop slash command + entrypoint).
 
 **Published versions:**
 
 | Package                  | Version |
 | ------------------------ | ------- |
 | `@chief-clancy/core`     | 0.1.0   |
-| `@chief-clancy/terminal` | 0.1.8   |
-| `@chief-clancy/brief`    | 0.3.1   |
-| `@chief-clancy/plan`     | 0.5.1   |
+| `@chief-clancy/terminal` | 0.1.9   |
+| `@chief-clancy/brief`    | 0.3.2   |
+| `@chief-clancy/plan`     | 0.5.2   |
 | `@chief-clancy/scan`     | 0.2.0   |
 | `chief-clancy` (wrapper) | 0.9.16  |
 
-**Test counts:** 872 core, 791 terminal, 826 dev, 77 brief, 270 plan = **2836 total**.
+**Test counts:** 872 core, 731 terminal, 969 dev, 77 brief, 270 plan = **2919 total**.
 
-**Last shipped:** Scan extraction (S0–S5, #240–#245) + publish readiness (#246) + README (#248) in Session 67.
+**Last shipped:** PR 11a–11c (#253–#255) in Session 69.
 
-## Phase E — completed PRs (Sessions 60–67)
+## Phase E — completed PRs (Sessions 60–69)
+
+### PR 11a–11c (#253–#255) — ExecuteQueue split (Session 69)
+
+PR 11a: Added `executeFixedCount` and `executeQueue` loop primitives to dev (`queue.ts`), sharing a private `runLoopCore` with quiet hours, halt conditions, inter-iteration sleep, and 100-iteration hard cap. 24 tests. Also upgraded eslint from `recommended` to `recommendedTypeChecked` with `projectService` — re-enabled `functional/immutable-data`, fixed 158 pre-existing type-checked lint errors across core/dev/terminal. PR 11b: Migrated terminal's autopilot to use `executeFixedCount` from dev (307→133 lines). Deleted duplicate loop logic (parseTime, getQuietSleepMs, quiet hours, iteration helpers). Copilot caught halt-reason regression — fixed in same PR. PR 11c: Moved `FATAL_ABORT_PHASES` + `checkStopCondition` from terminal to `dev/src/stop-condition.ts` (locked-decision #6 realisation). Typed `FATAL_ABORT_PHASES` as `ReadonlySet<string>`. Updated branch/label conventions to include `refactor/` and `docs/` prefixes + all 6 package labels.
+
+### PR 8c–10 (#250–#252) — Single-ticket executor + readiness gate (Session 68)
+
+PR 8c: Single-ticket executor (`runSingleTicketByKey`) with pre-seed pattern, moved prompt-builder from terminal to dev. PR 9: Readiness rubric library — 5 checks, zod/mini verdict schemas, safeParseVerdict parser, aggregateVerdict, invokeReadinessGrade. PR 10: Wired readiness gate into executor — flag parser, 3-round re-grade loop, rubric loaded at runtime.
 
 ### Scan extraction S0–S5 (#240–#245) + publish (#246) + README (#248) (Session 67)
 
