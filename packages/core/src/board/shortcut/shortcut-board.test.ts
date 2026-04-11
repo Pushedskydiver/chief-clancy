@@ -105,6 +105,20 @@ describe('createShortcutBoard', () => {
     });
   });
 
+  it('fetchTickets respects limit parameter', async () => {
+    const stories = Array.from({ length: 5 }, (_, i) => ({
+      id: i + 1,
+      name: `Story ${i + 1}`,
+      workflow_state_id: 100,
+    }));
+
+    const mockFetch = stubWorkflowsAndStories(stories);
+    const board = createShortcutBoard(makeEnv(), mockFetch);
+    const tickets = await board.fetchTickets({ limit: 2 });
+
+    expect(tickets).toHaveLength(2);
+  });
+
   it('fetchTicket returns first ticket', async () => {
     const mockFetch = stubWorkflowsAndStories([
       { id: 1, name: 'First', workflow_state_id: 100 },

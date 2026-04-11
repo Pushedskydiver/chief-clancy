@@ -86,7 +86,9 @@ function loadEnv(projectRoot: string): {
   const rawEnv = loadClancyEnv(projectRoot, envFs);
 
   if (!rawEnv) {
-    console.error('✗ No .clancy/.env found — run the installer first');
+    console.error(
+      '✗ No .clancy/.env found — run /clancy:board-setup to configure your board',
+    );
     return process.exit(1);
   }
 
