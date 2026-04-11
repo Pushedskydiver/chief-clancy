@@ -132,14 +132,14 @@ describe('rubric fitness (mock grader)', () => {
     ).toBeGreaterThanOrEqual(16);
   });
 
-  it('classifies all 10 good tickets as green', () => {
+  it('classifies ≥8 of 10 good tickets as green', () => {
     const goodResults = results.filter((r) => r.ticket.expected === 'green');
     const correctGood = goodResults.filter((r) => r.correct).length;
 
     expect(correctGood).toBeGreaterThanOrEqual(8);
   });
 
-  it('classifies all 10 bad tickets as not-green', () => {
+  it('classifies ≥8 of 10 bad tickets as not-green', () => {
     const badResults = results.filter((r) => r.ticket.expected === 'not-green');
     const correctBad = badResults.filter((r) => r.correct).length;
 
