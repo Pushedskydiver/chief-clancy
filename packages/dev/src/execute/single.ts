@@ -18,7 +18,7 @@ import { createContext } from '../pipeline/index.js';
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 /** Dependencies injected into the single-ticket executor. */
-type SingleTicketDeps = {
+export type SingleTicketDeps = {
   /** Fetch a ticket by its key (e.g. `'PROJ-42'`). Returns `undefined` if not found. */
   readonly fetchTicketByKeyOnce: (
     key: string,
@@ -38,6 +38,29 @@ type SingleTicketDeps = {
   readonly isAfk: boolean;
 };
 
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+async function fetchTicket(
+  key: string,
+  lookup: SingleTicketDeps['fetchTicketByKeyOnce'],
+): Promise<PipelineResult | FetchedTicket> {
+  try {
+    const ticket = await lookup(key);
+    return (
+      ticket ?? { status: 'error', error: `Ticket ${key} not found on board` }
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return { status: 'error', error: `Ticket lookup failed: ${message}` };
+  }
+}
+
+function isPipelineResult(
+  value: PipelineResult | FetchedTicket,
+): value is PipelineResult {
+  return 'status' in value;
+}
+
 // ─── Executor ────────────────────────────────────────────────────────────────
 
 /**
@@ -49,16 +72,16 @@ type SingleTicketDeps = {
  *
  * @param ticketKey - Board-specific ticket identifier (e.g. `'PROJ-42'`, `'#123'`).
  * @param deps - Injected dependencies.
- * @returns Structured pipeline result.
+ * @returns Structured pipeline result (never throws).
  */
-async function runSingleTicketByKey(
+export async function runSingleTicketByKey(
   ticketKey: string,
   deps: SingleTicketDeps,
 ): Promise<PipelineResult> {
-  const ticket = await deps.fetchTicketByKeyOnce(ticketKey);
+  const result = await fetchTicket(ticketKey, deps.fetchTicketByKeyOnce);
 
-  if (!ticket) {
-    return { status: 'error', error: `Ticket ${ticketKey} not found on board` };
+  if (isPipelineResult(result)) {
+    return result;
   }
 
   const ctx = createContext({
@@ -67,10 +90,7 @@ async function runSingleTicketByKey(
     isAfk: deps.isAfk,
   });
 
-  ctx.setTicket(ticket);
+  ctx.setTicket(result);
 
   return deps.runPipeline(ctx, deps.pipelineDeps);
 }
-
-export { runSingleTicketByKey };
-export type { SingleTicketDeps };

@@ -176,4 +176,31 @@ describe('runSingleTicketByKey', () => {
 
     expect(fetchTicketByKeyOnce).toHaveBeenCalledWith('ENG-777');
   });
+
+  it('returns structured error when ticket lookup throws', async () => {
+    const deps = makeDeps({
+      fetchTicketByKeyOnce: vi
+        .fn()
+        .mockRejectedValue(new Error('Network timeout')),
+    });
+
+    const result = await runSingleTicketByKey('PROJ-42', deps);
+
+    expect(result).toEqual({
+      status: 'error',
+      error: 'Ticket lookup failed: Network timeout',
+    });
+  });
+
+  it('does not call runPipeline when ticket lookup throws', async () => {
+    const runPipeline = vi.fn();
+    const deps = makeDeps({
+      fetchTicketByKeyOnce: vi.fn().mockRejectedValue(new Error('Auth failed')),
+      runPipeline,
+    });
+
+    await runSingleTicketByKey('PROJ-42', deps);
+
+    expect(runPipeline).not.toHaveBeenCalled();
+  });
 });
