@@ -105,6 +105,24 @@ export type {
   ReadinessVerdict,
 } from './agents/types/index.js';
 
+// ─── Artifact re-exports ──────────────────────────────────────────────────
+
+export { atomicWrite, rotateFile } from './artifacts/atomic-write/index.js';
+export type { AtomicFs } from './artifacts/atomic-write/index.js';
+
+export { runPreflightBatch } from './artifacts/preflight-batch/index.js';
+export type {
+  BatchGradeOpts,
+  BatchGradeResult,
+  GradeOneFn,
+} from './artifacts/preflight-batch/index.js';
+
+export { writeReadinessReport } from './artifacts/readiness-report/index.js';
+export type {
+  ReportData,
+  WriteReportOpts,
+} from './artifacts/readiness-report/index.js';
+
 // ─── Queue re-exports ─────────────────────────────────────────────────────
 
 export { executeFixedCount, executeQueue } from './queue.js';

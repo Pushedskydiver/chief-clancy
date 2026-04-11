@@ -5,6 +5,7 @@
  * entrypoints. Both are bundled by esbuild into self-contained ESM
  * files, so this module is inlined at build time — no runtime dep.
  */
+import type { AtomicFs } from '../artifacts/atomic-write/index.js';
 import type { CostFs, LockFs, ProgressFs, QualityFs } from '../index.js';
 import type { EnvFileSystem, ExecGit } from '@chief-clancy/core';
 import type { SpawnSyncReturns } from 'node:child_process';
@@ -13,8 +14,10 @@ import { spawnSync } from 'node:child_process';
 import {
   appendFileSync,
   mkdirSync,
+  readdirSync,
   readFileSync,
   renameSync,
+  statSync,
   unlinkSync,
   writeFileSync,
 } from 'node:fs';
@@ -93,5 +96,30 @@ export function makeQualityFs(): QualityFs {
 export function makeEnvFs(): EnvFileSystem {
   return {
     readFile: (path) => readFileSync(path, 'utf8'),
+  };
+}
+
+/** Create a synchronous atomic-write adapter backed by `node:fs`. */
+export function makeAtomicFs(): AtomicFs {
+  return {
+    mkdir: (path) => mkdirSync(path, { recursive: true }),
+    writeFile: (path, content) => writeFileSync(path, content, 'utf8'),
+    rename: (from, to) => renameSync(from, to),
+    readdir: (path) => {
+      try {
+        return readdirSync(path, 'utf8');
+      } catch {
+        return [];
+      }
+    },
+    unlink: (path) => unlinkSync(path),
+    stat: (path) => {
+      try {
+        const s = statSync(path);
+        return { mtimeMs: s.mtimeMs };
+      } catch {
+        return undefined;
+      }
+    },
   };
 }

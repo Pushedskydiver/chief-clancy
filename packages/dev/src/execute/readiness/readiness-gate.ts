@@ -47,6 +47,8 @@ type GateOpts = {
  * @param opts - Grade function and max rounds.
  * @returns Whether the ticket passed the gate.
  */
+export type { GateResult };
+
 export function runReadinessGate(opts: GateOpts): GateResult {
   return gradeRound(opts.grade, 0, opts.maxRounds);
 }
