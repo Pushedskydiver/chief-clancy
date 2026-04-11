@@ -99,6 +99,10 @@ export function makeEnvFs(): EnvFileSystem {
   };
 }
 
+function isEnoent(err: unknown): boolean {
+  return err instanceof Error && 'code' in err && err.code === 'ENOENT';
+}
+
 /** Create a synchronous atomic-write adapter backed by `node:fs`. */
 export function makeAtomicFs(): AtomicFs {
   return {
@@ -108,8 +112,9 @@ export function makeAtomicFs(): AtomicFs {
     readdir: (path) => {
       try {
         return readdirSync(path, 'utf8');
-      } catch {
-        return [];
+      } catch (err) {
+        if (isEnoent(err)) return [];
+        throw err;
       }
     },
     unlink: (path) => unlinkSync(path),
@@ -117,8 +122,9 @@ export function makeAtomicFs(): AtomicFs {
       try {
         const s = statSync(path);
         return { mtimeMs: s.mtimeMs };
-      } catch {
-        return undefined;
+      } catch (err) {
+        if (isEnoent(err)) return undefined;
+        throw err;
       }
     },
   };

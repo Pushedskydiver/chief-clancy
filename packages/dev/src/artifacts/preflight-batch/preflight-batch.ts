@@ -120,35 +120,34 @@ function dedupeTickets(ids: readonly string[]): {
   readonly deduped: readonly string[];
   readonly warnings: readonly string[];
 } {
-  type Acc = {
-    readonly seen: ReadonlySet<string>;
-    readonly deduped: readonly string[];
-    readonly warnings: readonly string[];
-  };
-  const initial: Acc = { seen: new Set(), deduped: [], warnings: [] };
+  const seen = new Set<string>();
+  const deduped: string[] = [];
+  const warnings: string[] = [];
 
-  const { deduped, warnings } = ids.reduce<Acc>((acc, id) => {
-    if (acc.seen.has(id)) {
-      return {
-        ...acc,
-        warnings: [
-          ...acc.warnings,
-          `Duplicate ticket ${id} removed (kept first occurrence)`,
-        ],
-      };
+  ids.forEach((id) => {
+    if (seen.has(id)) {
+      // eslint-disable-next-line functional/immutable-data
+      warnings.push(`Duplicate ticket ${id} removed (kept first occurrence)`);
+      return;
     }
-    return {
-      seen: new Set([...acc.seen, id]),
-      deduped: [...acc.deduped, id],
-      warnings: acc.warnings,
-    };
-  }, initial);
+    // eslint-disable-next-line functional/immutable-data
+    seen.add(id);
+    // eslint-disable-next-line functional/immutable-data
+    deduped.push(id);
+  });
 
   return { deduped, warnings };
 }
 
 function runPreflightBatch(opts: BatchGradeOpts): BatchGradeResult {
   const { grade, fs, dir, maxBatch, timestamp, console: con } = opts;
+
+  if (maxBatch <= 0) {
+    return {
+      verdicts: [],
+      warnings: ['maxBatch must be a positive integer; no tickets graded'],
+    };
+  }
 
   // 1. Dedupe
   const { deduped, warnings: dupeWarnings } = dedupeTickets(opts.ticketIds);
@@ -181,20 +180,20 @@ function runPreflightBatch(opts: BatchGradeOpts): BatchGradeResult {
     logCostEstimate(con, toGrade.length);
   }
 
-  // 6. Grade each ticket — accumulate via reduce
-  const partialVerdicts = ticketIds
+  // 6. Grade each ticket, checkpoint after each
+  const graded: ReadinessVerdict[] = ticketIds
     .filter((id) => partialMap.has(id))
     .map((id) => partialMap.get(id)!);
 
-  const graded = toGrade.reduce<readonly ReadinessVerdict[]>((acc, id) => {
+  toGrade.forEach((id) => {
     const result = grade(id);
     const verdict = result.ok
       ? result.verdict
       : syntheticRedVerdict(id, result.error, timestamp());
-    const next = [...acc, verdict];
-    writePartialCheckpoint(fs, dir, next);
-    return next;
-  }, partialVerdicts);
+    // eslint-disable-next-line functional/immutable-data
+    graded.push(verdict);
+    writePartialCheckpoint(fs, dir, graded);
+  });
 
   // Reorder to match original ticketIds order
   const orderMap = new Map(ticketIds.map((id, i) => [id, i] as const));

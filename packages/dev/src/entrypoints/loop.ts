@@ -115,7 +115,6 @@ export function resolveBuildLabelFromEnv(
 const DEFAULT_QUEUE_LIMIT = 50;
 const DEFAULT_BATCH_CAP = 50;
 const MAX_FETCH_LIMIT = 100;
-
 async function fetchTicketQueue(
   boardConfig: BoardConfig,
   limit: number | undefined,
@@ -196,6 +195,46 @@ function makeTimestamp(): string {
     .replace(/\.\d+Z$/, '');
 }
 
+// ─── Pre-flight orchestration ──────────────────────────────────────────────
+
+function runPreflightIfNeeded(opts: {
+  readonly shouldRun: boolean;
+  readonly tickets: readonly FetchedTicket[];
+  readonly ticketMap: ReadonlyMap<string, FetchedTicket>;
+  readonly rubric: string;
+  readonly projectRoot: string;
+  readonly model?: string;
+  readonly loopArgs: LoopArgs;
+}): readonly string[] | 'skip' | 'halt' {
+  if (!opts.shouldRun) return 'skip';
+
+  const devDir = join(opts.projectRoot, '.clancy', 'dev');
+  const preflight = runLoopPreflight({
+    ticketIds: opts.tickets.map((t) => t.key),
+    grade: makeGradeOneFn({
+      ticketMap: opts.ticketMap,
+      rubric: opts.rubric,
+      projectRoot: opts.projectRoot,
+      model: opts.model,
+    }),
+    fs: makeAtomicFs(),
+    dir: devDir,
+    maxBatch: opts.loopArgs.maxBatch ?? DEFAULT_BATCH_CAP,
+    resume: opts.loopArgs.resume,
+    timestamp: makeTimestamp,
+    console,
+    readFile: (p) => readFileSync(p, 'utf8'),
+  });
+
+  if (!preflight.canProceed) {
+    console.log('Pre-flight found non-green tickets. Halting.');
+    console.log(`Report: ${devDir}/readiness-report.md`);
+    return 'halt';
+  }
+
+  return preflight.verdicts.map((v) => v.ticketId);
+}
+
 // ─── Main ───────────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
@@ -219,28 +258,26 @@ async function main(): Promise<void> {
       ? makeReadinessGate({ rubric, projectRoot, model })
       : undefined;
 
-  if (loopArgs.isAfk && rubric && !loopArgs.bypassReadiness) {
-    const devDir = join(projectRoot, '.clancy', 'dev');
-    const preflight = runLoopPreflight({
-      ticketIds: tickets.map((t) => t.key),
-      grade: makeGradeOneFn({ ticketMap, rubric, projectRoot, model }),
-      fs: makeAtomicFs(),
-      dir: devDir,
-      maxBatch: loopArgs.maxBatch ?? DEFAULT_BATCH_CAP,
-      resume: loopArgs.resume,
-      timestamp: makeTimestamp,
-      console,
-      readFile: (p) => readFileSync(p, 'utf8'),
-    });
-    if (!preflight.canProceed) {
-      console.log('Pre-flight found non-green tickets. Halting.');
-      console.log(`Report: ${devDir}/readiness-report.md`);
-      return;
-    }
-  }
+  // Pre-flight returns graded ticket ids — only these run in the queue.
+  // When preflight is skipped (non-AFK or bypass), all fetched tickets run.
+  const preflightedIds = runPreflightIfNeeded({
+    shouldRun: loopArgs.isAfk && !!rubric && !loopArgs.bypassReadiness,
+    tickets,
+    ticketMap,
+    rubric: rubric ?? '',
+    projectRoot,
+    model,
+    loopArgs,
+  });
+  if (preflightedIds === 'halt') return;
+
+  const queueTickets =
+    preflightedIds === 'skip'
+      ? tickets
+      : tickets.filter((t) => preflightedIds.includes(t.key));
 
   await runAndReport({
-    tickets,
+    tickets: queueTickets,
     ticketMap,
     projectRoot,
     envFs,

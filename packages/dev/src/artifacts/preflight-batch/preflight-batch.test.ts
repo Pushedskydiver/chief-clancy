@@ -117,6 +117,20 @@ describe('runPreflightBatch', () => {
 
   // ─── Batch cap (--max-batch) ───────────────────────────────────────────
 
+  it('returns warning and no verdicts when maxBatch is 0', () => {
+    const result = runPreflightBatch(
+      makeOpts({
+        ticketIds: ['PROJ-1'],
+        maxBatch: 0,
+      }),
+    );
+
+    expect(result.verdicts).toHaveLength(0);
+    expect(result.warnings).toContainEqual(
+      expect.stringContaining('maxBatch must be a positive integer'),
+    );
+  });
+
   it('truncates to maxBatch with a warning', () => {
     const ids = Array.from({ length: 10 }, (_, i) => `PROJ-${i + 1}`);
     const results = new Map(ids.map((id) => [id, makeVerdict(id, 'green')]));
