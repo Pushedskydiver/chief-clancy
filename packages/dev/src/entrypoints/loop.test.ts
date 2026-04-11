@@ -14,6 +14,9 @@ describe('parseLoopArgs', () => {
       isAfk: false,
       maxIterations: undefined,
       bypassReadiness: false,
+      maxBatch: undefined,
+      resume: false,
+      yes: false,
       passthroughArgv: [],
     });
   });
@@ -72,12 +75,53 @@ describe('parseLoopArgs', () => {
       isAfk: true,
       maxIterations: 10,
       bypassReadiness: true,
+      maxBatch: undefined,
+      resume: false,
+      yes: false,
       passthroughArgv: [],
     });
   });
 
   it('passes through non-loop flags like --dry-run', () => {
     const args = parseLoopArgs([...base, '--afk', '--dry-run', '--max=3']);
+
+    expect(args.passthroughArgv).toEqual(['--dry-run']);
+  });
+
+  it('parses --max-batch=N as a positive integer', () => {
+    const args = parseLoopArgs([...base, '--max-batch=25']);
+
+    expect(args.maxBatch).toBe(25);
+  });
+
+  it('ignores --max-batch=0', () => {
+    const args = parseLoopArgs([...base, '--max-batch=0']);
+
+    expect(args.maxBatch).toBeUndefined();
+  });
+
+  it('parses --resume flag', () => {
+    const args = parseLoopArgs([...base, '--resume']);
+
+    expect(args.resume).toBe(true);
+  });
+
+  it('parses --yes flag', () => {
+    const args = parseLoopArgs([...base, '--yes']);
+
+    expect(args.yes).toBe(true);
+  });
+
+  it('does not pass loop flags through to passthroughArgv', () => {
+    const args = parseLoopArgs([
+      ...base,
+      '--afk',
+      '--max=5',
+      '--max-batch=10',
+      '--resume',
+      '--yes',
+      '--dry-run',
+    ]);
 
     expect(args.passthroughArgv).toEqual(['--dry-run']);
   });
