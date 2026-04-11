@@ -26,6 +26,7 @@ type RotateOpts = {
 
 // ─── Atomic write ──────────────────────────────────────────────────────────
 
+/** Write content atomically: mkdir parent, write to `.tmp`, rename into place. Overwrites existing files. */
 function atomicWrite(fs: AtomicFs, filePath: string, content: string): void {
   const dir = dirname(filePath);
   const tmp = `${filePath}.tmp`;

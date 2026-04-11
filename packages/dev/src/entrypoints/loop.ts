@@ -271,7 +271,10 @@ async function main(): Promise<void> {
   const queueTickets =
     preflightedIds === 'skip'
       ? tickets
-      : tickets.filter((t) => preflightedIds.includes(t.key));
+      : (() => {
+          const allowed = new Set(preflightedIds);
+          return tickets.filter((t) => allowed.has(t.key));
+        })();
 
   await runAndReport({
     tickets: queueTickets,

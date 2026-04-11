@@ -42,14 +42,18 @@ function loadPartialCheckpoint(
     const raw = readFile(join(dir, 'readiness-report.partial.json'));
     const parsed: unknown = JSON.parse(raw);
     if (!Array.isArray(parsed)) return undefined;
-    // Discard malformed entries — keep only objects with a string ticketId
-    const valid = parsed.filter(
-      (v): v is ReadinessVerdict =>
-        typeof v === 'object' &&
-        v !== null &&
-        'ticketId' in v &&
-        typeof (v as Record<string, unknown>).ticketId === 'string',
-    );
+    const COLOURS = new Set(['green', 'yellow', 'red']);
+    // Discard malformed entries — require ticketId, overall colour, and checks array
+    const valid = parsed.filter((v): v is ReadinessVerdict => {
+      if (typeof v !== 'object' || v === null) return false;
+      const r = v as Record<string, unknown>;
+      return (
+        typeof r.ticketId === 'string' &&
+        typeof r.overall === 'string' &&
+        COLOURS.has(r.overall) &&
+        Array.isArray(r.checks)
+      );
+    });
     return valid.length > 0 ? valid : undefined;
   } catch {
     return undefined;
