@@ -1,4 +1,4 @@
-# Clancy Uninstall Workflow
+# Clancy Uninstall Terminal Workflow
 
 ## Overview
 

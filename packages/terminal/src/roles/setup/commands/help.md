@@ -50,16 +50,16 @@ integration (6 boards), structured codebase docs, and a git workflow built for t
 
 ### Setup & Maintenance
 
-| Command                | Description                                                                    |
-| ---------------------- | ------------------------------------------------------------------------------ |
-| `/clancy:init`         | Wizard — choose board, collect config, scaffold everything, offer map-codebase |
-| `/clancy:settings`     | View and change configuration — model, iterations, board, and more             |
-| `/clancy:doctor`       | Diagnose your setup — test every integration and report what's broken          |
-| `/clancy:map-codebase` | Full 5-agent parallel codebase scan, writes all 10 docs                        |
-| `/clancy:update-docs`  | Incremental refresh — re-runs agents for changed areas only                    |
-| `/clancy:update`       | Update Clancy to latest version via npx                                        |
-| `/clancy:uninstall`    | Remove Clancy commands — optionally remove `.clancy/` too                      |
-| `/clancy:help`         | This screen                                                                    |
+| Command                      | Description                                                                        |
+| ---------------------------- | ---------------------------------------------------------------------------------- |
+| `/clancy:init`               | Wizard — choose board, collect config, scaffold everything, offer map-codebase     |
+| `/clancy:settings`           | View and change configuration — model, iterations, board, and more                 |
+| `/clancy:doctor`             | Diagnose your setup — test every integration and report what's broken              |
+| `/clancy:map-codebase`       | Full 5-agent parallel codebase scan, writes all 10 docs                            |
+| `/clancy:update-docs`        | Incremental refresh — re-runs agents for changed areas only                        |
+| `/clancy:update`             | Update Clancy to latest version via npx                                            |
+| `/clancy:uninstall-terminal` | Remove the full Clancy pipeline — commands, hooks, settings, optionally `.clancy/` |
+| `/clancy:help`               | This screen                                                                        |
 
 ### How it works
 

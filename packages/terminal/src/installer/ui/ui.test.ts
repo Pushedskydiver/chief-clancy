@@ -130,7 +130,7 @@ describe('printSuccess', () => {
     expect(output).toContain('/clancy:doctor');
     expect(output).toContain('/clancy:settings');
     expect(output).toContain('/clancy:update');
-    expect(output).toContain('/clancy:uninstall');
+    expect(output).toContain('/clancy:uninstall-terminal');
     expect(output).toContain('/clancy:help');
   });
 });

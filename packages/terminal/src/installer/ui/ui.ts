@@ -60,7 +60,7 @@ const COMMAND_GROUPS: readonly CommandGroup[] = [
       ['/clancy:doctor', 'Diagnose your setup'],
       ['/clancy:update-docs', 'Refresh codebase documentation'],
       ['/clancy:update', 'Update Clancy to latest version'],
-      ['/clancy:uninstall', 'Remove Clancy from your project'],
+      ['/clancy:uninstall-terminal', 'Remove the full Clancy pipeline'],
       ['/clancy:help', 'Show all commands'],
     ],
   },
@@ -106,7 +106,7 @@ function isGroupVisible(
 }
 
 /** Column width for command names — keeps descriptions aligned. */
-const CMD_COL_WIDTH = 22;
+const CMD_COL_WIDTH = 27;
 
 /** Format a single command line for display. */
 function formatCommand([cmd, desc]: Command): string {
