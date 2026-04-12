@@ -24,9 +24,35 @@ Check both locations silently. Each install has two parts — commands and workf
 
 ---
 
+## Step 1b — Detect standalone packages
+
+For each location detected in Step 1, check for standalone package VERSION markers:
+
+| Marker file                            | Package               |
+| -------------------------------------- | --------------------- |
+| `<base>/commands/clancy/VERSION.brief` | `@chief-clancy/brief` |
+| `<base>/commands/clancy/VERSION.plan`  | `@chief-clancy/plan`  |
+| `.clancy/VERSION.dev`                  | `@chief-clancy/dev`   |
+
+Where `<base>` is `.claude` (local) or `~/.claude` (global). Note: `VERSION.dev` uses `.clancy/` (project root) instead of `<base>/commands/clancy/` — this is by design since dev bundles live at project level.
+
+Record which standalone packages are installed. This information is used in Step 2 (advisory) and Step 7 (reinstall guidance).
+
+---
+
 ## Step 2 — Confirm before removing commands
 
-Show exactly this message, filling in the detected location:
+If any standalone packages were detected in Step 1b, show this advisory before the confirmation prompt:
+
+```
+⚠️  Standalone packages detected: [comma-separated list, e.g. brief, plan, dev]
+    The full uninstall will also remove their commands and workflows.
+    To remove only the terminal pipeline, cancel and use the per-package
+    uninstallers instead (/clancy:uninstall-brief, /clancy:uninstall-plan,
+    /clancy:uninstall-dev).
+```
+
+Then show the confirmation:
 
 ```
 🚨 Clancy — Uninstall
@@ -160,6 +186,18 @@ If `.clancy/` does not exist, skip this step entirely.
 
 "You have the right to remain silent... goodbye, Clancy." — To reinstall: npx chief-clancy
 ```
+
+If any standalone packages were detected in Step 1b, append:
+
+```
+Note: the following standalone packages were also removed:
+  [list each package with its reinstall command, e.g.]
+  • @chief-clancy/brief  → npx @chief-clancy/brief
+  • @chief-clancy/plan   → npx @chief-clancy/plan
+  • @chief-clancy/dev    → npx @chief-clancy/dev
+```
+
+Only list packages that were actually detected — do not list packages that were not installed.
 
 ---
 
