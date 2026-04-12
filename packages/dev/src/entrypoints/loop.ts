@@ -192,8 +192,14 @@ function writePostExecutionArtifacts(opts: {
   });
 
   if (opts.decision.action === 'proceed') {
+    // Filter to executed tickets only — deferred yellows should not
+    // appear in drift predictions since they were intentionally skipped.
+    const executedIds = new Set(opts.outcome.iterations.map((i) => i.id));
+    const executedVerdicts = opts.decision.allVerdicts.filter((v) =>
+      executedIds.has(v.ticketId),
+    );
     writeDriftIfPossible({
-      verdicts: opts.decision.allVerdicts,
+      verdicts: executedVerdicts,
       exec: opts.deps.exec,
       fs: opts.deps.fs,
       dir: opts.devDir,

@@ -65,8 +65,11 @@ function resolveBuildLabelFromEnv(
   return env.CLANCY_LABEL_BUILD ?? env.CLANCY_LABEL ?? 'clancy:build';
 }
 
-function makeFetchQueue(boardConfig: BoardConfig) {
-  return async (limit: number | undefined) => {
+/** Create a queue-fetcher bound to the given board configuration. */
+function makeFetchQueue(
+  boardConfig: BoardConfig,
+): (limit: number | undefined) => Promise<readonly FetchedTicket[]> {
+  return async (limit) => {
     const board = createBoard(boardConfig, (url, init) =>
       globalThis.fetch(url, init),
     );

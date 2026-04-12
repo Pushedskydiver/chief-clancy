@@ -31,7 +31,7 @@ type WriteRunSummaryOpts = {
 
 type RunSummaryData = {
   readonly generatedAt: string;
-  readonly mode: string;
+  readonly mode: WriteRunSummaryOpts['mode'];
   readonly startedAt: number;
   readonly endedAt: number;
   readonly durationMs: number;
@@ -40,7 +40,7 @@ type RunSummaryData = {
   readonly haltReason?: string;
   readonly tickets: readonly {
     readonly ticketId: string;
-    readonly status: string;
+    readonly status: PipelineResult['status'];
   }[];
 };
 
@@ -72,7 +72,7 @@ function renderMarkdown(data: RunSummaryData): string {
   if (data.tickets.length === 0) return header.join('\n');
 
   const rows = data.tickets.map((t) => {
-    const icon = STATUS_ICONS[t.status as PipelineResult['status']] ?? '';
+    const icon = STATUS_ICONS[t.status] ?? '';
     return `| ${t.ticketId} | ${icon} ${t.status} |`;
   });
 
