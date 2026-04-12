@@ -44,7 +44,8 @@ describe('uninstall-terminal workflow', () => {
   });
 
   it('explains VERSION.dev uses .clancy/ not commands/clancy/', () => {
-    expect(content).toContain('VERSION.dev` uses `.clancy/` (project root)');
+    expect(content).toContain('.clancy/VERSION.dev');
+    expect(content).toContain('dev.md');
   });
 
   it('provides reinstall guidance in the final message', () => {
