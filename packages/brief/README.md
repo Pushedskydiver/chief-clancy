@@ -2,7 +2,7 @@
 
 **Strategic brief generator for Claude Code.**
 
-[![npm](https://img.shields.io/npm/v/@chief-clancy/brief?style=for-the-badge&color=cb3837)](https://www.npmjs.com/package/@chief-clancy/brief) [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](../../LICENSE)
+[![npm](https://img.shields.io/npm/v/@chief-clancy/brief?style=for-the-badge&color=cb3837)](https://www.npmjs.com/package/@chief-clancy/brief) [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](https://github.com/Pushedskydiver/chief-clancy/blob/main/LICENSE)
 
 ```bash
 npx @chief-clancy/brief
@@ -102,6 +102,7 @@ Running `/clancy:map-codebase` before briefing enriches the devil's advocate ana
 ## Part of the Clancy monorepo
 
 - [`chief-clancy`](https://www.npmjs.com/package/chief-clancy) — full pipeline (install, configure, implement, autopilot)
+- [`@chief-clancy/dev`](https://www.npmjs.com/package/@chief-clancy/dev) — standalone ticket executor
 - [`@chief-clancy/scan`](https://www.npmjs.com/package/@chief-clancy/scan) — codebase scanning agents and workflows
 - [`@chief-clancy/plan`](https://www.npmjs.com/package/@chief-clancy/plan) — implementation planner
 - [`@chief-clancy/terminal`](https://www.npmjs.com/package/@chief-clancy/terminal) — installer, slash commands, hooks, runners

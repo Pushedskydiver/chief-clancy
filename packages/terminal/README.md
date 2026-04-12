@@ -2,7 +2,7 @@
 
 Installer, slash commands, hooks, runners, agents, and Claude CLI bridge for [Clancy](https://github.com/Pushedskydiver/chief-clancy).
 
-[![npm](https://img.shields.io/npm/v/@chief-clancy/terminal?style=for-the-badge&color=cb3837)](https://www.npmjs.com/package/@chief-clancy/terminal) [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](../../LICENSE)
+[![npm](https://img.shields.io/npm/v/@chief-clancy/terminal?style=for-the-badge&color=cb3837)](https://www.npmjs.com/package/@chief-clancy/terminal) [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](https://github.com/Pushedskydiver/chief-clancy/blob/main/LICENSE)
 
 > This package is part of the [Clancy monorepo](https://github.com/Pushedskydiver/chief-clancy). You don't install it directly — run `npx chief-clancy` to install Clancy into your project.
 
@@ -41,7 +41,7 @@ CJS bundles built by esbuild — best-effort, fail-open, never block the user:
 
 ### Runners
 
-Two execution modes powered by the `@chief-clancy/core` pipeline:
+Two execution modes powered by the [`@chief-clancy/dev`](https://www.npmjs.com/package/@chief-clancy/dev) pipeline:
 
 - **`runImplement`** — single ticket: fetch, implement, deliver, exit
 - **`runAutopilot`** — loop: repeat implement until queue is empty, generate session report
@@ -57,6 +57,19 @@ Specialist agent prompts (`.md` files) for devil's advocate grilling and verific
 - [Configuration](../../docs/guides/CONFIGURATION.md) — all env vars and settings
 - [Testing](../../docs/TESTING.md) — test patterns, E2E setup, CI schedule
 
+## Part of the Clancy monorepo
+
+- [`chief-clancy`](https://www.npmjs.com/package/chief-clancy) — full pipeline (install, configure, implement, autopilot)
+- [`@chief-clancy/dev`](https://www.npmjs.com/package/@chief-clancy/dev) — standalone ticket executor
+- [`@chief-clancy/scan`](https://www.npmjs.com/package/@chief-clancy/scan) — codebase scanning agents and workflows
+- [`@chief-clancy/brief`](https://www.npmjs.com/package/@chief-clancy/brief) — strategic brief generator
+- [`@chief-clancy/plan`](https://www.npmjs.com/package/@chief-clancy/plan) — implementation planner
+- [`@chief-clancy/core`](https://www.npmjs.com/package/@chief-clancy/core) — board integrations, pipeline phases, schemas
+
+## Credits
+
+Built on the [Ralph technique](https://ghuntley.com/ralph/) by Geoffrey Huntley. See [CREDITS.md](https://github.com/Pushedskydiver/chief-clancy/blob/main/CREDITS.md).
+
 ## License
 
-MIT — see [LICENSE](../../LICENSE).
+MIT — see [LICENSE](https://github.com/Pushedskydiver/chief-clancy/blob/main/LICENSE).
