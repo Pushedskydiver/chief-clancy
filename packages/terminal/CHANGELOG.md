@@ -1,5 +1,18 @@
 # @chief-clancy/terminal
 
+## 0.1.12
+
+### Patch Changes
+
+- [#273](https://github.com/Pushedskydiver/chief-clancy/pull/273) [`951f908`](https://github.com/Pushedskydiver/chief-clancy/commit/951f90877bc1fc1ac20b9da1c8a4201950adcc3d) Thanks [@Pushedskydiver](https://github.com/Pushedskydiver)! - Add per-package update commands (`/clancy:update-brief`, `/clancy:update-plan`, `/clancy:update-dev`) and rename terminal's `/clancy:update` to `/clancy:update-terminal` with a thin redirect at the old location.
+
+  Each standalone update workflow: version detection via VERSION marker, npm latest check with 5s timeout, changelog from GitHub releases API (URL-encoded tags), terminal coexistence + standalone package advisories, install mode detection (local/global/both), `--afk` confirmation skip, `npx @latest` cache bypass, post-update verification.
+
+  Uninstall workflows updated to list update files for deletion. Installer file lists and printSuccess output updated across all packages.
+
+- Updated dependencies [[`951f908`](https://github.com/Pushedskydiver/chief-clancy/commit/951f90877bc1fc1ac20b9da1c8a4201950adcc3d)]:
+  - @chief-clancy/dev@0.2.0
+
 ## 0.1.11
 
 ### Patch Changes
