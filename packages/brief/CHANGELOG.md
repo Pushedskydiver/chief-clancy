@@ -1,5 +1,11 @@
 # @chief-clancy/brief
 
+## 0.4.1
+
+### Patch Changes
+
+- [#275](https://github.com/Pushedskydiver/chief-clancy/pull/275) [`b3eb148`](https://github.com/Pushedskydiver/chief-clancy/commit/b3eb148d95217593c3d19e471b3bb2884dfda076) Thanks [@Pushedskydiver](https://github.com/Pushedskydiver)! - Add "Updating" sections to READMEs for per-package update commands and rename `/clancy:update` to `/clancy:update-terminal` in terminal's Setup commands table.
+
 ## 0.4.0
 
 ### Minor Changes

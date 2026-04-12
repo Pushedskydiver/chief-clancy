@@ -1,5 +1,14 @@
 # @chief-clancy/terminal
 
+## 0.1.13
+
+### Patch Changes
+
+- [#275](https://github.com/Pushedskydiver/chief-clancy/pull/275) [`b3eb148`](https://github.com/Pushedskydiver/chief-clancy/commit/b3eb148d95217593c3d19e471b3bb2884dfda076) Thanks [@Pushedskydiver](https://github.com/Pushedskydiver)! - Add "Updating" sections to READMEs for per-package update commands and rename `/clancy:update` to `/clancy:update-terminal` in terminal's Setup commands table.
+
+- Updated dependencies [[`b3eb148`](https://github.com/Pushedskydiver/chief-clancy/commit/b3eb148d95217593c3d19e471b3bb2884dfda076)]:
+  - @chief-clancy/dev@0.2.1
+
 ## 0.1.12
 
 ### Patch Changes
