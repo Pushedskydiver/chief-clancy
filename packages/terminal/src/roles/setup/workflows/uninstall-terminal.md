@@ -24,9 +24,42 @@ Check both locations silently. Each install has two parts — commands and workf
 
 ---
 
+## Step 1b — Detect standalone packages (scoped to selected location)
+
+After the user selects which location to uninstall (project, global, or both), check for standalone package markers **only in the location(s) being uninstalled**:
+
+| Marker file / check                    | Package               |
+| -------------------------------------- | --------------------- |
+| `<base>/commands/clancy/VERSION.brief` | `@chief-clancy/brief` |
+| `<base>/commands/clancy/VERSION.plan`  | `@chief-clancy/plan`  |
+| `.clancy/VERSION.dev`                  | `@chief-clancy/dev`   |
+| `~/.claude/commands/clancy/dev.md`     | `@chief-clancy/dev`   |
+
+Where `<base>` is `.claude` (local) or `~/.claude` (global), matching the selected scope.
+
+Use these scope rules:
+
+- **Project only:** check `.claude/commands/clancy/VERSION.brief`, `.claude/commands/clancy/VERSION.plan`, and `.clancy/VERSION.dev`.
+- **Global only:** check `~/.claude/commands/clancy/VERSION.brief`, `~/.claude/commands/clancy/VERSION.plan`, and `~/.claude/commands/clancy/dev.md`.
+- **Both:** check both local and global brief/plan markers, and also check `.clancy/VERSION.dev`.
+
+Record which standalone packages are present **in the scope being removed**. For `@chief-clancy/dev`, treat the package as present during a global-only uninstall when `~/.claude/commands/clancy/dev.md` exists, because that uninstall will remove dev's global commands/workflows. This determines the Step 2 advisory and Step 7 reinstall guidance. Do not warn about packages in a location that is not being touched.
+
+---
+
 ## Step 2 — Confirm before removing commands
 
-Show exactly this message, filling in the detected location:
+If any standalone packages were detected in Step 1b, show this advisory before the confirmation prompt:
+
+```
+⚠️  Standalone packages detected: [comma-separated list, e.g. brief, plan, dev]
+    The full uninstall will also remove their commands and workflows.
+    If you only meant to remove a standalone package (not the terminal
+    pipeline), cancel and use the per-package uninstallers instead
+    (/clancy:uninstall-brief, /clancy:uninstall-plan, /clancy:uninstall-dev).
+```
+
+Then show the confirmation:
 
 ```
 🚨 Clancy — Uninstall
@@ -160,6 +193,18 @@ If `.clancy/` does not exist, skip this step entirely.
 
 "You have the right to remain silent... goodbye, Clancy." — To reinstall: npx chief-clancy
 ```
+
+If any standalone packages were detected in Step 1b, append:
+
+```
+Note: the following standalone packages were also removed:
+  [list each package with its reinstall command, e.g.]
+  • @chief-clancy/brief  → npx @chief-clancy/brief
+  • @chief-clancy/plan   → npx @chief-clancy/plan
+  • @chief-clancy/dev    → npx @chief-clancy/dev
+```
+
+Only list packages that were actually detected — do not list packages that were not installed.
 
 ---
 
