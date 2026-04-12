@@ -12,6 +12,7 @@ describe('parseLoopArgs', () => {
 
     expect(args).toEqual({
       isAfk: false,
+      isAfkStrict: false,
       maxIterations: undefined,
       bypassReadiness: false,
       maxBatch: undefined,
@@ -73,6 +74,7 @@ describe('parseLoopArgs', () => {
 
     expect(args).toEqual({
       isAfk: true,
+      isAfkStrict: false,
       maxIterations: 10,
       bypassReadiness: true,
       maxBatch: undefined,
@@ -112,6 +114,26 @@ describe('parseLoopArgs', () => {
     expect(args.yes).toBe(true);
   });
 
+  it('parses --afk-strict flag', () => {
+    const args = parseLoopArgs([...base, '--afk-strict']);
+
+    expect(args.isAfkStrict).toBe(true);
+  });
+
+  it('--afk-strict implies --afk', () => {
+    const args = parseLoopArgs([...base, '--afk-strict']);
+
+    expect(args.isAfk).toBe(true);
+  });
+
+  it('--afk-strict without --afk still sets isAfk true', () => {
+    const args = parseLoopArgs([...base, '--afk-strict', '--max=5']);
+
+    expect(args.isAfkStrict).toBe(true);
+    expect(args.isAfk).toBe(true);
+    expect(args.maxIterations).toBe(5);
+  });
+
   it('does not pass loop flags through to passthroughArgv', () => {
     const args = parseLoopArgs([
       ...base,
@@ -120,6 +142,7 @@ describe('parseLoopArgs', () => {
       '--max-batch=10',
       '--resume',
       '--yes',
+      '--afk-strict',
       '--dry-run',
     ]);
 
