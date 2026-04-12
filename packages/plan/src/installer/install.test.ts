@@ -158,12 +158,16 @@ const buildOptions = (
       '# /clancy:board-setup\n\n@.claude/clancy/workflows/board-setup.md\n',
     '/pkg/src/commands/plan.md':
       '# /clancy:plan\n\n@.claude/clancy/workflows/plan.md\n',
+    '/pkg/src/commands/uninstall-plan.md':
+      '# /clancy:uninstall-plan\n\n@.claude/clancy/workflows/uninstall-plan.md\n',
     '/pkg/src/workflows/approve-plan.md':
       '# Clancy Approve Plan Workflow\n\nApprove plan content here.',
     '/pkg/src/workflows/board-setup.md':
       '# Board Setup Workflow\n\nSetup content here.',
     '/pkg/src/workflows/plan.md':
       '# Clancy Plan Workflow\n\nWorkflow content here.',
+    '/pkg/src/workflows/uninstall-plan.md':
+      '# Clancy Uninstall Plan Workflow\n\nUninstall content here.',
     '/scan/src/agents/arch-agent.md': '# Architecture Agent',
     '/scan/src/agents/concerns-agent.md': '# Concerns Agent',
     '/scan/src/agents/design-agent.md': '# Design Agent',
@@ -308,6 +312,42 @@ describe('runPlanInstall', () => {
     expect(opts.fs.copyFile).toHaveBeenCalledWith(
       join(defaultSources.scanWorkflowsDir, 'update-docs.md'),
       join(defaultPaths.workflowsDest, 'update-docs.md'),
+    );
+  });
+
+  it('copies the uninstall-plan command file', () => {
+    const opts = buildOptions();
+    runPlanInstall(opts);
+
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.commandsDir, 'uninstall-plan.md'),
+      join(defaultPaths.commandsDest, 'uninstall-plan.md'),
+    );
+  });
+
+  it('copies the uninstall-plan workflow file', () => {
+    const opts = buildOptions();
+    runPlanInstall(opts);
+
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.workflowsDir, 'uninstall-plan.md'),
+      join(defaultPaths.workflowsDest, 'uninstall-plan.md'),
+    );
+  });
+
+  it('inlines uninstall-plan workflow in global mode', () => {
+    const opts = buildOptions({ mode: 'global' });
+    runPlanInstall(opts);
+
+    const writeCalls = opts.fs.writeFile.mock.calls;
+    const cmdWrite = writeCalls.find(
+      ([path]) => path === join(defaultPaths.commandsDest, 'uninstall-plan.md'),
+    );
+
+    expect(cmdWrite).toBeDefined();
+    expect(cmdWrite?.[1]).toContain('Uninstall content here.');
+    expect(cmdWrite?.[1]).not.toContain(
+      '@.claude/clancy/workflows/uninstall-plan.md',
     );
   });
 

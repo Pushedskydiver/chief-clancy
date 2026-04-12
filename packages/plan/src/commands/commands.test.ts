@@ -11,7 +11,12 @@ import { describe, expect, it } from 'vitest';
 
 const COMMANDS_DIR = fileURLToPath(new URL('.', import.meta.url));
 
-const EXPECTED_COMMANDS = ['approve-plan.md', 'board-setup.md', 'plan.md'];
+const EXPECTED_COMMANDS = [
+  'approve-plan.md',
+  'board-setup.md',
+  'plan.md',
+  'uninstall-plan.md',
+];
 
 describe('commands directory structure', () => {
   it('contains exactly the expected command files', () => {
@@ -35,6 +40,24 @@ describe('commands directory structure', () => {
     });
 
     expect(issues).toEqual([]);
+  });
+
+  it('uninstall-plan command starts with the uninstall-plan heading', () => {
+    const content = readFileSync(
+      new URL('uninstall-plan.md', import.meta.url),
+      'utf8',
+    );
+
+    expect(content.split('\n')[0]?.trim()).toBe('# /clancy:uninstall-plan');
+  });
+
+  it('uninstall-plan command references the uninstall-plan workflow', () => {
+    const content = readFileSync(
+      new URL('uninstall-plan.md', import.meta.url),
+      'utf8',
+    );
+
+    expect(content).toContain('@.claude/clancy/workflows/uninstall-plan.md');
   });
 });
 

@@ -59,13 +59,19 @@ export type RunPlanInstallOptions = {
 // ---------------------------------------------------------------------------
 
 /** Command files shipped with the plan package. */
-const COMMAND_FILES = ['approve-plan.md', 'board-setup.md', 'plan.md'] as const;
+const COMMAND_FILES = [
+  'approve-plan.md',
+  'board-setup.md',
+  'plan.md',
+  'uninstall-plan.md',
+] as const;
 
 /** Workflow files shipped with the plan package. */
 const WORKFLOW_FILES = [
   'approve-plan.md',
   'board-setup.md',
   'plan.md',
+  'uninstall-plan.md',
 ] as const;
 
 /** Scan agent files from @chief-clancy/scan. */
