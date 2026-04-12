@@ -16,6 +16,7 @@ const EXPECTED_COMMANDS = [
   'dev.md',
   'dev-loop.md',
   'uninstall-dev.md',
+  'update-dev.md',
 ];
 
 describe('commands directory structure', () => {
@@ -58,5 +59,23 @@ describe('commands directory structure', () => {
     );
 
     expect(content).toContain('@.claude/clancy/workflows/uninstall-dev.md');
+  });
+
+  it('update-dev command starts with the update-dev heading', () => {
+    const content = readFileSync(
+      new URL('update-dev.md', import.meta.url),
+      'utf8',
+    );
+
+    expect(content.split('\n')[0]?.trim()).toBe('# /clancy:update-dev');
+  });
+
+  it('update-dev command references the update-dev workflow', () => {
+    const content = readFileSync(
+      new URL('update-dev.md', import.meta.url),
+      'utf8',
+    );
+
+    expect(content).toContain('@.claude/clancy/workflows/update-dev.md');
   });
 });

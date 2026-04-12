@@ -175,12 +175,16 @@ const buildOptions = (
       '# /clancy:dev-loop\n\n@.claude/clancy/workflows/dev-loop.md\n\nFollow the dev loop workflow above.',
     '/pkg/dist/commands/uninstall-dev.md':
       '# /clancy:uninstall-dev\n\n@.claude/clancy/workflows/uninstall-dev.md\n',
+    '/pkg/dist/commands/update-dev.md':
+      '# /clancy:update-dev\n\n@.claude/clancy/workflows/update-dev.md\n',
     '/pkg/dist/workflows/board-setup.md': '# Board Setup Workflow\n\nStep 1...',
     '/pkg/dist/workflows/dev.md': '# Clancy Dev Workflow\n\nStep 1...',
     '/pkg/dist/workflows/dev-loop.md':
       '# Clancy Dev Loop Workflow\n\nStep 1...',
     '/pkg/dist/workflows/uninstall-dev.md':
       '# Clancy Uninstall Dev Workflow\n\nUninstall content here.',
+    '/pkg/dist/workflows/update-dev.md':
+      '# Clancy Update Dev Workflow\n\nUpdate content here.',
     '/pkg/dist/bundle/clancy-dev.js': '// clancy-dev bundle',
     '/pkg/dist/bundle/clancy-dev-autopilot.js':
       '// clancy-dev-autopilot bundle',
@@ -407,6 +411,42 @@ describe('runDevInstall', () => {
     expect(cmdWrite?.[1]).toContain('Uninstall content here.');
     expect(cmdWrite?.[1]).not.toContain(
       '@.claude/clancy/workflows/uninstall-dev.md',
+    );
+  });
+
+  it('copies the update-dev command file', () => {
+    const opts = buildOptions();
+    runDevInstall(opts);
+
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.commandsDir, 'update-dev.md'),
+      join(defaultPaths.commandsDest, 'update-dev.md'),
+    );
+  });
+
+  it('copies the update-dev workflow file', () => {
+    const opts = buildOptions();
+    runDevInstall(opts);
+
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.workflowsDir, 'update-dev.md'),
+      join(defaultPaths.workflowsDest, 'update-dev.md'),
+    );
+  });
+
+  it('inlines update-dev workflow in global mode', () => {
+    const opts = buildOptions({ mode: 'global' });
+    runDevInstall(opts);
+
+    const writeCalls = opts.fs.writeFile.mock.calls;
+    const cmdWrite = writeCalls.find(
+      ([path]) => path === join(defaultPaths.commandsDest, 'update-dev.md'),
+    );
+
+    expect(cmdWrite).toBeDefined();
+    expect(cmdWrite?.[1]).toContain('Update content here.');
+    expect(cmdWrite?.[1]).not.toContain(
+      '@.claude/clancy/workflows/update-dev.md',
     );
   });
 

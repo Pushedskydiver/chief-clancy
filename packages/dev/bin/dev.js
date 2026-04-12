@@ -85,12 +85,14 @@ const COMMAND_FILES = [
   'dev.md',
   'dev-loop.md',
   'uninstall-dev.md',
+  'update-dev.md',
 ];
 const WORKFLOW_FILES = [
   'board-setup.md',
   'dev.md',
   'dev-loop.md',
   'uninstall-dev.md',
+  'update-dev.md',
 ];
 const BUNDLE_FILES = ['clancy-dev.js', 'clancy-dev-autopilot.js'];
 const SCAN_AGENT_FILES = [
@@ -235,6 +237,9 @@ function printSuccess() {
   );
   console.log(
     `      ${cyan('/clancy:update-docs')}    ${dim('Refresh .clancy/docs/ incrementally')}`,
+  );
+  console.log(
+    `      ${cyan('/clancy:update-dev')}     ${dim('Check for updates to Clancy Dev')}`,
   );
   console.log(
     `      ${cyan('/clancy:uninstall-dev')}  ${dim('Remove Clancy Dev')}`,
