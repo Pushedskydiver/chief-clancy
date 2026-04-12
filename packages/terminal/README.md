@@ -2,7 +2,7 @@
 
 Installer, slash commands, hooks, runners, agents, and Claude CLI bridge for [Clancy](https://github.com/Pushedskydiver/chief-clancy).
 
-[![npm](https://img.shields.io/npm/v/@chief-clancy/terminal?style=for-the-badge&color=cb3837)](https://www.npmjs.com/package/@chief-clancy/terminal) [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](../../LICENSE)
+[![npm](https://img.shields.io/npm/v/@chief-clancy/terminal?style=for-the-badge&color=cb3837)](https://www.npmjs.com/package/@chief-clancy/terminal) [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](https://github.com/Pushedskydiver/chief-clancy/blob/main/LICENSE)
 
 > This package is part of the [Clancy monorepo](https://github.com/Pushedskydiver/chief-clancy). You don't install it directly — run `npx chief-clancy` to install Clancy into your project.
 
@@ -72,4 +72,4 @@ Built on the [Ralph technique](https://ghuntley.com/ralph/) by Geoffrey Huntley.
 
 ## License
 
-MIT — see [LICENSE](../../LICENSE).
+MIT — see [LICENSE](https://github.com/Pushedskydiver/chief-clancy/blob/main/LICENSE).

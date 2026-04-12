@@ -2,7 +2,7 @@
 
 **Autonomous ticket executor for Claude Code.**
 
-[![npm](https://img.shields.io/npm/v/@chief-clancy/dev?style=for-the-badge&color=cb3837)](https://www.npmjs.com/package/@chief-clancy/dev) [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](../../LICENSE)
+[![npm](https://img.shields.io/npm/v/@chief-clancy/dev?style=for-the-badge&color=cb3837)](https://www.npmjs.com/package/@chief-clancy/dev) [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](https://github.com/Pushedskydiver/chief-clancy/blob/main/LICENSE)
 
 ```bash
 npx @chief-clancy/dev
@@ -31,15 +31,15 @@ The `/clancy:dev` slash command fetches a ticket from your board, grades it thro
 
 ## Flags
 
-| Flag                 | Description                                      |
-| -------------------- | ------------------------------------------------ |
-| `--afk`              | Enable AFK mode (pre-flight grading, no prompts) |
-| `--afk-strict`       | Execute only green tickets, defer yellows        |
-| `--max=N`            | Cap the number of tickets to process             |
-| `--max-batch=N`      | Cap the pre-flight batch size                    |
-| `--bypass-readiness` | Skip the readiness gate                          |
-| `--resume`           | Resume from a partial pre-flight checkpoint      |
-| `--yes`              | Skip interactive cost confirmation               |
+| Flag                 | Description                                                               |
+| -------------------- | ------------------------------------------------------------------------- |
+| `--afk`              | Enable AFK mode (pre-flight grading, no prompts)                          |
+| `--afk-strict`       | Execute only green tickets, defer yellows                                 |
+| `--max=N`            | Cap the number of tickets to process                                      |
+| `--max-batch=N`      | Cap the pre-flight batch size                                             |
+| `--bypass-readiness` | Skip the readiness gate (requires `--reason="..."`, rejected in AFK mode) |
+| `--resume`           | Resume from a partial pre-flight checkpoint                               |
+| `--yes`              | Skip interactive cost confirmation                                        |
 
 ## Readiness gate
 
