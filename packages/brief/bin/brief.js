@@ -87,8 +87,18 @@ const ask = (label) => new Promise((resolve) => rl.question(label, resolve));
 // File lists (keep in sync with install.ts)
 // ---------------------------------------------------------------------------
 
-const COMMAND_FILES = ['approve-brief.md', 'board-setup.md', 'brief.md'];
-const WORKFLOW_FILES = ['approve-brief.md', 'board-setup.md', 'brief.md'];
+const COMMAND_FILES = [
+  'approve-brief.md',
+  'board-setup.md',
+  'brief.md',
+  'uninstall-brief.md',
+];
+const WORKFLOW_FILES = [
+  'approve-brief.md',
+  'board-setup.md',
+  'brief.md',
+  'uninstall-brief.md',
+];
 const AGENT_FILES = ['devils-advocate.md'];
 const SCAN_AGENT_FILES = [
   'arch-agent.md',
@@ -225,6 +235,9 @@ function printSuccess() {
   );
   console.log(
     `      ${cyan('/clancy:update-docs')}    ${dim('Refresh .clancy/docs/ incrementally')}`,
+  );
+  console.log(
+    `      ${cyan('/clancy:uninstall-brief')}${dim(' Remove Clancy Brief')}`,
   );
   console.log('');
   console.log('  Next steps:');

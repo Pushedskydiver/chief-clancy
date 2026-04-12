@@ -11,7 +11,12 @@ import { describe, expect, it } from 'vitest';
 
 const WORKFLOWS_DIR = fileURLToPath(new URL('.', import.meta.url));
 
-const EXPECTED_WORKFLOWS = ['approve-brief.md', 'board-setup.md', 'brief.md'];
+const EXPECTED_WORKFLOWS = [
+  'approve-brief.md',
+  'board-setup.md',
+  'brief.md',
+  'uninstall-brief.md',
+];
 
 describe('workflows directory structure', () => {
   it('contains exactly the expected workflow files', () => {
@@ -52,6 +57,17 @@ describe('workflows directory structure', () => {
 
     expect(content).toContain('## Step 1');
     expect(content).toContain('.clancy/briefs/');
+  });
+
+  it('uninstall-brief workflow starts with the correct heading', () => {
+    const content = readFileSync(
+      new URL('uninstall-brief.md', import.meta.url),
+      'utf8',
+    );
+
+    expect(content.split('\n')[0]?.trim()).toBe(
+      '# Clancy Uninstall Brief Workflow',
+    );
   });
 });
 
@@ -378,5 +394,90 @@ describe('three-state mode detection', () => {
   it('approve-brief references include standalone guidance', () => {
     expect(content).not.toMatch(/that is `\/clancy:approve-brief`\./);
     expect(content).toContain('npx chief-clancy');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// uninstall-brief.md content assertions
+// ---------------------------------------------------------------------------
+
+describe('uninstall-brief workflow', () => {
+  const content = readFileSync(
+    new URL('uninstall-brief.md', import.meta.url),
+    'utf8',
+  );
+
+  it('detects install location via VERSION.brief marker', () => {
+    expect(content).toContain('VERSION.brief');
+  });
+
+  it('checks both local and global locations', () => {
+    expect(content).toContain('.claude/commands/clancy/VERSION.brief');
+    expect(content).toContain('~/.claude/commands/clancy/VERSION.brief');
+  });
+
+  it('lists brief-exclusive files to remove', () => {
+    expect(content).toContain('approve-brief.md');
+    expect(content).toContain('brief.md');
+    expect(content).toContain('devils-advocate.md');
+  });
+
+  it('lists shared files that require version-marker checks', () => {
+    expect(content).toContain('board-setup.md');
+    expect(content).toContain('map-codebase.md');
+    expect(content).toContain('update-docs.md');
+    expect(content).toContain('arch-agent.md');
+    expect(content).toContain('concerns-agent.md');
+    expect(content).toContain('design-agent.md');
+    expect(content).toContain('quality-agent.md');
+    expect(content).toContain('tech-agent.md');
+  });
+
+  it('checks VERSION markers for all other packages', () => {
+    expect(content).toContain('VERSION.plan');
+    expect(content).toContain('VERSION.dev');
+    expect(content).toContain('VERSION`');
+  });
+
+  it('notes VERSION.dev lives at .clancy/ not commands/clancy/', () => {
+    expect(content).toContain('.clancy/VERSION.dev');
+  });
+
+  it('defaults to keeping shared files when VERSION.dev cannot be confirmed absent', () => {
+    expect(content).toContain('assume dev may be installed elsewhere');
+  });
+
+  it('deletes VERSION.brief last for crash recovery', () => {
+    expect(content).toContain('VERSION marker (always last)');
+    expect(content).toContain(
+      'deleted **last** so that a crash during removal leaves the marker in place',
+    );
+  });
+
+  it('does not touch hooks, settings, or CLAUDE.md', () => {
+    expect(content).toContain('Never touch hooks');
+    expect(content).toContain('settings.json');
+    expect(content).toContain('CLAUDE.md');
+  });
+
+  it('removes the uninstall command itself', () => {
+    expect(content).toContain('uninstall-brief.md');
+    expect(content).toContain('Uninstall command itself');
+  });
+
+  it('cleans up empty directories', () => {
+    expect(content).toContain('Clean up empty directories');
+    expect(content).toContain('only if it is completely empty');
+  });
+
+  it('provides reinstall instructions in the final message', () => {
+    expect(content).toContain('npx @chief-clancy/brief');
+  });
+
+  it('scopes out .clancy/ folder removal', () => {
+    expect(content).not.toContain('Remove .clancy/');
+    expect(content).toContain(
+      'Never touch hooks, `settings.json`, `CLAUDE.md`, `.gitignore`, `.prettierignore`, or `.clancy/`',
+    );
   });
 });
