@@ -25,11 +25,11 @@ const DIST_BUNDLE = join(DIST, 'bundle');
 
 const BUNDLES = [
   {
-    entryPoint: join(DIST, 'runner', 'implement', 'entrypoint.js'),
+    entryPoint: join(DIST, 'entrypoints', 'implement.js'),
     outfile: join(DIST_BUNDLE, 'clancy-implement.js'),
   },
   {
-    entryPoint: join(DIST, 'runner', 'autopilot', 'entrypoint.js'),
+    entryPoint: join(DIST, 'entrypoints', 'autopilot.js'),
     outfile: join(DIST_BUNDLE, 'clancy-autopilot.js'),
   },
 ] as const;

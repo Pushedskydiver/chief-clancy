@@ -13,7 +13,7 @@ import {
   makeLockFs,
   makeProgressFs,
   makeQualityFs,
-} from '~/t/runner/implement/entrypoint.js';
+} from '~/t/entrypoints/implement.js';
 import { describe, expect, it, vi } from 'vitest';
 
 // ─── makeExecGit ────────────────────────────────────────────────────────────

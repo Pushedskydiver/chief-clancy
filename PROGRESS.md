@@ -4,7 +4,7 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 
 ## Current state (2026-04-12)
 
-**PR 12c shipped (Cut D in progress).** Pre-flight batch grading + readiness-report.md writer + error matrix + atomic-write.ts. AFK loop now grades all tickets before execution, writes colour-bucketed report, halts on non-green. Next: PR 12d (AFK behaviour matrix + run-summary.md + deferred.json + Cut D acceptance test).
+**Cut D complete. Phase E wrapping up.** PR 12d (#258) shipped the AFK behaviour matrix (`--afk-strict`), run-summary.md, deferred.json, drift.json, and the Cut D acceptance test. PR 13 (this PR) standardises entrypoints convention across terminal and updates docs. Next: PR 13.5 (flip `@chief-clancy/dev` to public + changeset).
 
 **Published versions:**
 
@@ -17,11 +17,15 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 | `@chief-clancy/scan`     | 0.2.0   |
 | `chief-clancy` (wrapper) | 0.9.16  |
 
-**Test counts:** 879 core, 731 terminal, 1025 dev, 77 brief, 270 plan = **2982 total**.
+**Test counts:** 879 core, 731 terminal, 1058 dev, 77 brief, 270 plan = **3015 total**.
 
-**Last shipped:** PR 12c (#257) in Session 71.
+**Last shipped:** PR 12d (#258) in Session 72.
 
-## Phase E — completed PRs (Sessions 60–71)
+## Phase E — completed PRs (Sessions 60–72)
+
+### PR 12d (#258) — AFK behaviour matrix + run-summary + deferred + drift (Session 72)
+
+Three-mode AFK behaviour matrix: interactive (no preflight), `--afk` (halt on non-green), `--afk-strict` (execute greens, defer yellows, halt on reds). New artifact modules: `artifacts/deferred/` (writes `deferred.json` for afk-strict yellow tickets), `artifacts/run-summary/` (writes `run-summary.md` + `.json` with rotation after every execution), `artifacts/drift/` (best-effort predicted vs actual file change comparison using pre-execution `baseSha`). Orchestrator refactored: extracted `runLoop(deps)` with full DI for testability, `PreflightDecision` discriminated union in loop-preflight.ts, I/O wiring extracted to `loop-setup.ts`. Cut D acceptance test: 11 cases covering 3 modes × verdict mixes + special cases. DA review caught 10 findings (0 CRITICAL, 3 MEDIUM, 7 LOW) — all addressed; most impactful was drift baseline using `rev-parse HEAD` instead of `HEAD~1`. 2 rounds of Copilot findings (6 total): cross-platform `join()` for paths, drift verdict filtering to executed tickets only, `RunSummaryData` type tightening, `makeFetchQueue` JSDoc. Also fixed pre-existing lint warning in `schema-pair.test.ts`. 3 commits, 33 new tests (879 core, 1058 dev).
 
 ### PR 12c (#257) — Pre-flight batch grading + readiness-report writer (Session 71)
 
