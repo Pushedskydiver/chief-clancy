@@ -106,7 +106,7 @@ function isGroupVisible(
 }
 
 /** Column width for command names — keeps descriptions aligned. */
-const CMD_COL_WIDTH = 22;
+const CMD_COL_WIDTH = 27;
 
 /** Format a single command line for display. */
 function formatCommand([cmd, desc]: Command): string {
