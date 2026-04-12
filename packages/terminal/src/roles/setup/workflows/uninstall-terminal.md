@@ -26,17 +26,24 @@ Check both locations silently. Each install has two parts — commands and workf
 
 ## Step 1b — Detect standalone packages (scoped to selected location)
 
-After the user selects which location to uninstall (project, global, or both), check for standalone package VERSION markers **only in the location(s) being uninstalled**:
+After the user selects which location to uninstall (project, global, or both), check for standalone package markers **only in the location(s) being uninstalled**:
 
-| Marker file                            | Package               |
+| Marker file / check                    | Package               |
 | -------------------------------------- | --------------------- |
 | `<base>/commands/clancy/VERSION.brief` | `@chief-clancy/brief` |
 | `<base>/commands/clancy/VERSION.plan`  | `@chief-clancy/plan`  |
 | `.clancy/VERSION.dev`                  | `@chief-clancy/dev`   |
+| `~/.claude/commands/clancy/dev.md`     | `@chief-clancy/dev`   |
 
-Where `<base>` is `.claude` (local) or `~/.claude` (global), matching the selected scope. Note: `VERSION.dev` uses `.clancy/` (project root) — always check this when uninstalling locally or both, skip when uninstalling globally only.
+Where `<base>` is `.claude` (local) or `~/.claude` (global), matching the selected scope.
 
-Record which standalone packages are present **in the scope being removed**. This determines the Step 2 advisory and Step 7 reinstall guidance. Do not warn about packages in a location that is not being touched.
+Use these scope rules:
+
+- **Project only:** check `.claude/commands/clancy/VERSION.brief`, `.claude/commands/clancy/VERSION.plan`, and `.clancy/VERSION.dev`.
+- **Global only:** check `~/.claude/commands/clancy/VERSION.brief`, `~/.claude/commands/clancy/VERSION.plan`, and `~/.claude/commands/clancy/dev.md`.
+- **Both:** check both local and global brief/plan markers, and also check `.clancy/VERSION.dev`.
+
+Record which standalone packages are present **in the scope being removed**. For `@chief-clancy/dev`, treat the package as present during a global-only uninstall when `~/.claude/commands/clancy/dev.md` exists, because that uninstall will remove dev's global commands/workflows. This determines the Step 2 advisory and Step 7 reinstall guidance. Do not warn about packages in a location that is not being touched.
 
 ---
 
