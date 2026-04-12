@@ -16,13 +16,13 @@ The install orchestrator that powers `npx chief-clancy`. Copies slash commands, 
 
 18 slash commands across 5 roles, each backed by a detailed workflow file:
 
-| Role            | Commands                                                                                                                                                            |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Implementer** | `/clancy:implement`, `/clancy:autopilot`, `/clancy:dry-run`                                                                                                         |
-| **Reviewer**    | `/clancy:review`, `/clancy:status`, `/clancy:logs`                                                                                                                  |
-| **Setup**       | `/clancy:init`, `/clancy:settings`, `/clancy:doctor`, `/clancy:map-codebase`, `/clancy:update-docs`, `/clancy:update`, `/clancy:uninstall-terminal`, `/clancy:help` |
-| **Planner**     | `/clancy:plan`, `/clancy:approve-plan`                                                                                                                              |
-| **Strategist**  | `/clancy:brief`, `/clancy:approve-brief`                                                                                                                            |
+| Role            | Commands                                                                                                                                                                     |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Implementer** | `/clancy:implement`, `/clancy:autopilot`, `/clancy:dry-run`                                                                                                                  |
+| **Reviewer**    | `/clancy:review`, `/clancy:status`, `/clancy:logs`                                                                                                                           |
+| **Setup**       | `/clancy:init`, `/clancy:settings`, `/clancy:doctor`, `/clancy:map-codebase`, `/clancy:update-docs`, `/clancy:update-terminal`, `/clancy:uninstall-terminal`, `/clancy:help` |
+| **Planner**     | `/clancy:plan`, `/clancy:approve-plan`                                                                                                                                       |
+| **Strategist**  | `/clancy:brief`, `/clancy:approve-brief`                                                                                                                                     |
 
 ### Hooks
 
