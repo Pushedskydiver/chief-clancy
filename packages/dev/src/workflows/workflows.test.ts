@@ -96,11 +96,17 @@ describe('uninstall-dev workflow', () => {
   it('checks VERSION markers for all other packages', () => {
     expect(content).toContain('VERSION.brief');
     expect(content).toContain('VERSION.plan');
-    expect(content).toContain('commands/clancy/VERSION`');
+    expect(content).toContain('.claude/commands/clancy/VERSION');
+    expect(content).toContain('~/.claude/commands/clancy/VERSION');
+  });
+
+  it('scopes .clancy/ removals to project uninstall only', () => {
+    expect(content).toContain('Global only');
+    expect(content).toContain('do **not** remove anything from `.clancy/`');
   });
 
   it('deletes VERSION.dev last for crash recovery', () => {
-    expect(content).toContain('VERSION marker (always last)');
+    expect(content).toContain('VERSION marker (always last');
     expect(content).toContain(
       'deleted **last** so that a crash during removal leaves the marker in place',
     );

@@ -64,28 +64,30 @@ Record whether **any** other package is installed. This determines shared-file h
 
 ## Step 4 — Remove files
 
-Delete files in this order:
+Delete files in this order, limited to the uninstall scope selected in Step 1:
 
-### 4a — Dev-exclusive files (always remove)
+### 4a — Dev-exclusive files
 
-**Commands** (from `<base>/commands/clancy/` where `<base>` is `.claude` for local or `~/.claude` for global):
-
-- `dev.md`
-- `dev-loop.md`
-
-**Workflows** (from `<base>/clancy/workflows/`):
+**Commands** (from `<base>/commands/clancy/` where `<base>` is `.claude` for local or `~/.claude` for global — remove from each selected command location):
 
 - `dev.md`
 - `dev-loop.md`
 
-**Bundles** (from `.clancy/`):
+**Workflows** (from `<base>/clancy/workflows/` — remove from each selected workflow location):
+
+- `dev.md`
+- `dev-loop.md`
+
+**Bundles** (from `.clancy/`) — remove only when the uninstall scope includes the project (`Project only` or `Both`):
 
 - `clancy-dev.js`
 - `clancy-dev-autopilot.js`
 
-**Project metadata** (from `.clancy/`):
+**Project metadata** (from `.clancy/`) — remove only when the uninstall scope includes the project (`Project only` or `Both`):
 
 - `package.json` — only if no other Clancy package wrote it (check: if `.clancy/clancy-implement.js` exists, terminal owns `package.json` — leave it)
+
+For a **Global only** uninstall, do **not** remove anything from `.clancy/` — leave project-local bundles, metadata, and `VERSION.dev` untouched.
 
 Delete each file. If a file does not exist, skip it silently.
 
@@ -124,9 +126,9 @@ Remove the uninstall command and workflow:
 - `<base>/commands/clancy/uninstall-dev.md`
 - `<base>/clancy/workflows/uninstall-dev.md`
 
-### 4d — VERSION marker (always last)
+### 4d — VERSION marker (always last, project scope only)
 
-Delete `.clancy/VERSION.dev`.
+Delete `.clancy/VERSION.dev` — only when the uninstall scope includes the project (`Project only` or `Both`). For a **Global only** uninstall, leave `VERSION.dev` in place.
 
 This file is deleted **last** so that a crash during removal leaves the marker in place, allowing the user to re-run the uninstall.
 
