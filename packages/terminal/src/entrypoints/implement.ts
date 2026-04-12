@@ -25,7 +25,7 @@ import { fileURLToPath } from 'node:url';
 
 import { runPipeline } from '@chief-clancy/dev';
 
-import { runImplement } from './implement.js';
+import { runImplement } from '../runner/implement/implement.js';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 

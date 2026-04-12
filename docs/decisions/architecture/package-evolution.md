@@ -112,7 +112,7 @@ Revised 2026-04-10: dev moves from "extract when chat arrives" to Phase E (in pr
 
 1. ~~`@chief-clancy/brief`~~ — done (Phase A)
 2. ~~`@chief-clancy/plan`~~ — done (Phase B + C)
-3. **`@chief-clancy/dev`** — **Phase E (in progress)** — standalone-first extraction with Ralph Wiggum executor surface
+3. ~~**`@chief-clancy/dev`**~~ — **done (Phase E, Cut D)** — standalone-first extraction with Ralph Wiggum executor surface
 4. **`@chief-clancy/design`** — Phase F or later (Stitch integration work)
 5. **`@chief-clancy/cli`** — interactive wizard, built after standalone packages exist
 6. **`@chief-clancy/chat`** — conversational interface, the big new capability

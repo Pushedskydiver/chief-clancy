@@ -11,7 +11,7 @@ import {
   buildReportFactory,
   buildRunIteration,
   parseMaxIterations,
-} from '~/t/runner/autopilot/entrypoint.js';
+} from '~/t/entrypoints/autopilot.js';
 import { describe, expect, it, vi } from 'vitest';
 
 // ─── parseMaxIterations ─────────────────────────────────────────────────────

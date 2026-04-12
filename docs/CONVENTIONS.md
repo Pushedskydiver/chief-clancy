@@ -90,6 +90,17 @@ Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 
 ---
 
+## Entrypoints
+
+Runtime entry points (esbuild bundles) live in `src/entrypoints/`, not alongside the library modules they wire. Both `terminal` and `dev` follow this convention.
+
+- **`src/entrypoints/`** — esbuild entry points that assemble DI adapters from real Node.js APIs and call into library code. These are bundled into self-contained `.js` files copied to the user's `.clancy/` directory.
+- **Library modules everywhere else** — `src/runner/`, `src/lifecycle/`, `src/pipeline/`, etc. are imported by entrypoints but never executed directly.
+- **Shared adapters** in `src/entrypoints/adapters.ts` (or exported from one entrypoint and imported by another) are inlined at build time — no runtime dependency.
+- **Main guard pattern** — every entrypoint ends with a `fileURLToPath(import.meta.url) === resolve(process.argv[1])` check for self-execution.
+
+---
+
 ## Board Implementation Patterns
 
 These patterns apply to all board adapters (`board/{provider}/`):

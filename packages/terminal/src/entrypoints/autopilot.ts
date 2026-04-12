@@ -36,7 +36,9 @@ import {
   sendNotification,
 } from '@chief-clancy/dev';
 
-import { buildPipelineDeps } from '../dep-factory/index.js';
+import { runAutopilot } from '../runner/autopilot/autopilot.js';
+import { buildPipelineDeps } from '../runner/dep-factory/index.js';
+import { buildSessionReport } from '../runner/session-report/index.js';
 import {
   makeCostFs,
   makeEnvFs,
@@ -44,9 +46,7 @@ import {
   makeLockFs,
   makeProgressFs,
   makeQualityFs,
-} from '../implement/entrypoint.js';
-import { buildSessionReport } from '../session-report/index.js';
-import { runAutopilot } from './autopilot.js';
+} from './implement.js';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
