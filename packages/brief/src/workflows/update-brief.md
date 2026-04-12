@@ -41,8 +41,10 @@ Use a 5-second timeout. If the command fails (network error, timeout, npm unavai
 ```
 Couldn't check for updates (offline or npm unavailable).
 
-To update manually: npx -y @chief-clancy/brief@latest --local
+To update manually: npx -y @chief-clancy/brief@latest [--local/--global]
 ```
+
+Use the flag matching the install location detected in Step 1 (`--local` for project-local, `--global` for global-only). If both locations were found, show both commands.
 
 Stop.
 
@@ -201,9 +203,15 @@ Re-read the `VERSION.brief` marker from the same location(s) as Step 1.
 ⚠️  Update may not have taken effect. Try again in a minute (npm CDN cache).
 ```
 
+Print only the warning above and **stop** — do not show the Step 9 success message.
+
+**If the version changed**, proceed to Step 9.
+
 ---
 
 ## Step 9 — Final message
+
+Only shown when Step 8 confirms the version actually changed:
 
 ```
 ✅ @chief-clancy/brief updated: v{old} → v{new}
