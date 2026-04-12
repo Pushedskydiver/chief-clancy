@@ -11,7 +11,12 @@ import { describe, expect, it } from 'vitest';
 
 const WORKFLOWS_DIR = fileURLToPath(new URL('.', import.meta.url));
 
-const EXPECTED_WORKFLOWS = ['approve-plan.md', 'board-setup.md', 'plan.md'];
+const EXPECTED_WORKFLOWS = [
+  'approve-plan.md',
+  'board-setup.md',
+  'plan.md',
+  'uninstall-plan.md',
+];
 
 describe('workflows directory structure', () => {
   it('contains exactly the expected workflow files', () => {
@@ -1660,5 +1665,95 @@ describe('approve-plan command file flag surface (PR 9 Slice 9)', () => {
 
   it('command file preserves --afk from PR 7b', () => {
     expect(content).toContain('`--afk`');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// uninstall-plan.md content assertions
+// ---------------------------------------------------------------------------
+
+describe('uninstall-plan workflow', () => {
+  const content = readFileSync(
+    new URL('uninstall-plan.md', import.meta.url),
+    'utf8',
+  );
+
+  it('starts with the correct heading', () => {
+    expect(content.split('\n')[0]?.trim()).toBe(
+      '# Clancy Uninstall Plan Workflow',
+    );
+  });
+
+  it('detects install location via VERSION.plan marker', () => {
+    expect(content).toContain('VERSION.plan');
+  });
+
+  it('checks both local and global locations', () => {
+    expect(content).toContain('.claude/commands/clancy/VERSION.plan');
+    expect(content).toContain('~/.claude/commands/clancy/VERSION.plan');
+  });
+
+  it('lists plan-exclusive files to remove', () => {
+    expect(content).toContain('approve-plan.md');
+    expect(content).toContain('plan.md');
+  });
+
+  it('lists shared files that require version-marker checks', () => {
+    expect(content).toContain('board-setup.md');
+    expect(content).toContain('map-codebase.md');
+    expect(content).toContain('update-docs.md');
+    expect(content).toContain('arch-agent.md');
+    expect(content).toContain('concerns-agent.md');
+    expect(content).toContain('design-agent.md');
+    expect(content).toContain('quality-agent.md');
+    expect(content).toContain('tech-agent.md');
+  });
+
+  it('checks VERSION markers for all other packages', () => {
+    expect(content).toContain('VERSION.brief');
+    expect(content).toContain('VERSION.dev');
+    expect(content).toContain('<base>/commands/clancy/VERSION`');
+  });
+
+  it('notes VERSION.dev lives at .clancy/ not commands/clancy/', () => {
+    expect(content).toContain('.clancy/VERSION.dev');
+  });
+
+  it('defaults to keeping shared files when VERSION.dev cannot be confirmed absent', () => {
+    expect(content).toContain('assume dev may be installed elsewhere');
+  });
+
+  it('deletes VERSION.plan last for crash recovery', () => {
+    expect(content).toContain('VERSION marker (always last)');
+    expect(content).toContain(
+      'deleted **last** so that a crash during removal leaves the marker in place',
+    );
+  });
+
+  it('does not touch hooks, settings, or CLAUDE.md', () => {
+    expect(content).toContain('Never touch hooks');
+    expect(content).toContain('settings.json');
+    expect(content).toContain('CLAUDE.md');
+  });
+
+  it('removes the uninstall command itself', () => {
+    expect(content).toContain('uninstall-plan.md');
+    expect(content).toContain('Uninstall command itself');
+  });
+
+  it('cleans up empty directories', () => {
+    expect(content).toContain('Clean up empty directories');
+    expect(content).toContain('only if it is completely empty');
+  });
+
+  it('provides reinstall instructions in the final message', () => {
+    expect(content).toContain('npx @chief-clancy/plan');
+  });
+
+  it('scopes out .clancy/ folder removal', () => {
+    expect(content).not.toContain('Remove .clancy/');
+    expect(content).toContain(
+      'Never touch hooks, `settings.json`, `CLAUDE.md`, `.gitignore`, `.prettierignore`, or `.clancy/`',
+    );
   });
 });
