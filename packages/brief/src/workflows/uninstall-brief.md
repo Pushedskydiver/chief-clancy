@@ -2,7 +2,7 @@
 
 ## Overview
 
-Remove the `@chief-clancy/brief` slash commands, workflows, and agents from the local project, globally, or both. Does **not** touch hooks, `settings.json`, `CLAUDE.md`, `.gitignore`, `.prettierignore`, or the `.clancy/` folder — those are the responsibility of `/clancy:uninstall` (full pipeline) or `/clancy:uninstall-terminal`.
+Remove the `@chief-clancy/brief` slash commands, workflows, and agents from the local project, globally, or both. Does **not** touch hooks, `settings.json`, `CLAUDE.md`, `.gitignore`, `.prettierignore`, or the `.clancy/` folder — those are the responsibility of `/clancy:uninstall` (full pipeline).
 
 ---
 

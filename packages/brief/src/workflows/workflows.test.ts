@@ -436,7 +436,7 @@ describe('uninstall-brief workflow', () => {
   it('checks VERSION markers for all other packages', () => {
     expect(content).toContain('VERSION.plan');
     expect(content).toContain('VERSION.dev');
-    expect(content).toContain('VERSION`');
+    expect(content).toContain('<base>/commands/clancy/VERSION`');
   });
 
   it('notes VERSION.dev lives at .clancy/ not commands/clancy/', () => {
