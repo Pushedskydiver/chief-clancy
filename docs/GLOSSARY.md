@@ -22,13 +22,13 @@ Ubiquitous language for the Clancy project. Use these terms consistently in code
 
 ## Roles
 
-| Term            | Definition                                                                                                                                                                                                      |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Implementer** | Core role. Picks up tickets from the board, implements them, delivers via PR. Commands: `/clancy:implement`, `/clancy:autopilot`, `/clancy:dry-run`.                                                            |
-| **Reviewer**    | Core role. Reviews completed work, checks quality, manages logs. Commands: `/clancy:review`, `/clancy:status`, `/clancy:logs`.                                                                                  |
-| **Setup**       | Core role. Configuration and maintenance. Commands: `/clancy:init`, `/clancy:settings`, `/clancy:doctor`, `/clancy:update`, `/clancy:map-codebase`, `/clancy:update-docs`, `/clancy:uninstall`, `/clancy:help`. |
-| **Planner**     | Optional role. Generates implementation plans for tickets before coding begins. Commands: `/clancy:plan`, `/clancy:approve-plan`.                                                                               |
-| **Strategist**  | Optional role. Decomposes vague ideas into actionable tickets via research and stakeholder grilling. Commands: `/clancy:brief`, `/clancy:approve-brief`.                                                        |
+| Term            | Definition                                                                                                                                                                                                                        |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Implementer** | Core role. Picks up tickets from the board, implements them, delivers via PR. Commands: `/clancy:implement`, `/clancy:autopilot`, `/clancy:dry-run`.                                                                              |
+| **Reviewer**    | Core role. Reviews completed work, checks quality, manages logs. Commands: `/clancy:review`, `/clancy:status`, `/clancy:logs`.                                                                                                    |
+| **Setup**       | Core role. Configuration and maintenance. Commands: `/clancy:init`, `/clancy:settings`, `/clancy:doctor`, `/clancy:update-terminal`, `/clancy:map-codebase`, `/clancy:update-docs`, `/clancy:uninstall-terminal`, `/clancy:help`. |
+| **Planner**     | Optional role. Generates implementation plans for tickets before coding begins. Commands: `/clancy:plan`, `/clancy:approve-plan`.                                                                                                 |
+| **Strategist**  | Optional role. Decomposes vague ideas into actionable tickets via research and stakeholder grilling. Commands: `/clancy:brief`, `/clancy:approve-brief`.                                                                          |
 
 ## Delivery
 

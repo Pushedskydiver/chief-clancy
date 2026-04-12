@@ -105,12 +105,14 @@ lsof -ti:5173 | xargs kill -9   # replace 5173 with your PLAYWRIGHT_DEV_PORT
 ## Updating Clancy?
 
 ```bash
-/clancy:update
+/clancy:update-terminal
 ```
 
 Or directly: `npx chief-clancy@latest`
 
 The update workflow shows what's changed (changelog diff) and asks for confirmation before overwriting. If you've customised any command or workflow files, they're automatically backed up to `.claude/clancy/local-patches/` before the update — check there to reapply your changes afterwards.
+
+For standalone packages: `/clancy:update-brief`, `/clancy:update-plan`, `/clancy:update-dev`.
 
 ---
 

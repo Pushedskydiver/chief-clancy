@@ -86,8 +86,8 @@ graph TB
         doctor["/clancy:doctor"]
         mapcb["/clancy:map-codebase"]
         updatedocs["/clancy:update-docs"]
-        update["/clancy:update"]
-        uninstall["/clancy:uninstall"]
+        update["/clancy:update-terminal"]
+        uninstall["/clancy:uninstall-terminal"]
         help["/clancy:help"]
     end
 

@@ -77,7 +77,7 @@ Delivery modules live in `packages/dev/src/lifecycle/`. PR creation lives in `de
 Runner modules live in `packages/terminal/src/runner/`.
 
 - `CLANCY_MODE` env var (`interactive` | `afk`) controls grill mode and confirmation prompts — human grill + prompts in interactive, AI-grill + auto-confirm in AFK
-- Per-invocation override: `--afk` flag (supported on `/clancy:brief`, `/clancy:approve-brief`, `/clancy:plan`, `/clancy:approve-plan`, `/clancy:update`)
+- Per-invocation override: `--afk` flag (supported on `/clancy:brief`, `/clancy:approve-brief`, `/clancy:plan`, `/clancy:approve-plan`, `/clancy:update-terminal`, `/clancy:update-brief`, `/clancy:update-plan`, `/clancy:update-dev`)
 - HITL/AFK queue filtering: tickets labelled `clancy:hitl` are skipped in AFK mode, ensuring human-in-the-loop tickets only run interactively
 - AFK auto-pull: all workflows with branch freshness checks auto-pull in AFK mode instead of prompting
 - Quiet hours: `CLANCY_QUIET_START` and `CLANCY_QUIET_END` (HH:MM 24h format) pause AFK runs during the configured window. Handles overnight windows

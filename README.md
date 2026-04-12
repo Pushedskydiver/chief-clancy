@@ -175,7 +175,10 @@ npx chief-clancy
 | `/clancy:update-docs`        | Incremental refresh — re-runs agents for changed areas                                  |
 | `/clancy:settings`           | View and change configuration — model, iterations, board, and more                      |
 | `/clancy:doctor`             | Diagnose your setup — test every integration, report what's broken                      |
-| `/clancy:update`             | Update Clancy to latest version                                                         |
+| `/clancy:update-terminal`    | Update the full Clancy pipeline to latest version                                       |
+| `/clancy:update-brief` ³     | Update brief commands only (`--afk` skips confirmation)                                 |
+| `/clancy:update-plan` ³      | Update plan commands only (`--afk` skips confirmation)                                  |
+| `/clancy:update-dev` ³       | Update dev commands and bundles (`--afk` skips confirmation)                            |
 | `/clancy:uninstall-terminal` | Remove the full Clancy pipeline — detects standalone packages and warns before removing |
 | `/clancy:uninstall-brief` ³  | Remove brief commands only (installed via `npx @chief-clancy/brief`)                    |
 | `/clancy:uninstall-plan` ³   | Remove plan commands only (installed via `npx @chief-clancy/plan`)                      |
