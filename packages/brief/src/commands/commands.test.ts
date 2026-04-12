@@ -16,6 +16,7 @@ const EXPECTED_COMMANDS = [
   'board-setup.md',
   'brief.md',
   'uninstall-brief.md',
+  'update-brief.md',
 ];
 
 describe('commands directory structure', () => {
@@ -67,5 +68,23 @@ describe('commands directory structure', () => {
     );
 
     expect(content).toContain('@.claude/clancy/workflows/uninstall-brief.md');
+  });
+
+  it('update-brief command starts with the update-brief heading', () => {
+    const content = readFileSync(
+      new URL('update-brief.md', import.meta.url),
+      'utf8',
+    );
+
+    expect(content.split('\n')[0]?.trim()).toBe('# /clancy:update-brief');
+  });
+
+  it('update-brief command references the update-brief workflow', () => {
+    const content = readFileSync(
+      new URL('update-brief.md', import.meta.url),
+      'utf8',
+    );
+
+    expect(content).toContain('@.claude/clancy/workflows/update-brief.md');
   });
 });

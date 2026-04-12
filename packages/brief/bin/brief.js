@@ -92,12 +92,14 @@ const COMMAND_FILES = [
   'board-setup.md',
   'brief.md',
   'uninstall-brief.md',
+  'update-brief.md',
 ];
 const WORKFLOW_FILES = [
   'approve-brief.md',
   'board-setup.md',
   'brief.md',
   'uninstall-brief.md',
+  'update-brief.md',
 ];
 const AGENT_FILES = ['devils-advocate.md'];
 const SCAN_AGENT_FILES = [
@@ -235,6 +237,9 @@ function printSuccess() {
   );
   console.log(
     `      ${cyan('/clancy:update-docs')}    ${dim('Refresh .clancy/docs/ incrementally')}`,
+  );
+  console.log(
+    `      ${cyan('/clancy:update-brief')}   ${dim('Check for updates to Clancy Brief')}`,
   );
   console.log(
     `      ${cyan('/clancy:uninstall-brief')}${dim(' Remove Clancy Brief')}`,

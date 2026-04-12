@@ -161,6 +161,8 @@ const buildOptions = (
       '# /clancy:brief\n\n@.claude/clancy/workflows/brief.md\n',
     '/pkg/src/commands/uninstall-brief.md':
       '# /clancy:uninstall-brief\n\n@.claude/clancy/workflows/uninstall-brief.md\n',
+    '/pkg/src/commands/update-brief.md':
+      '# /clancy:update-brief\n\n@.claude/clancy/workflows/update-brief.md\n',
     '/pkg/src/workflows/approve-brief.md':
       '# Clancy Approve Brief Workflow\n\nApprove content here.',
     '/pkg/src/workflows/board-setup.md':
@@ -169,6 +171,8 @@ const buildOptions = (
       '# Clancy Brief Workflow\n\nWorkflow content here.',
     '/pkg/src/workflows/uninstall-brief.md':
       '# Clancy Uninstall Brief Workflow\n\nUninstall content here.',
+    '/pkg/src/workflows/update-brief.md':
+      '# Clancy Update Brief Workflow\n\nUpdate content here.',
     '/pkg/src/agents/devils-advocate.md':
       "# Devil's Advocate Agent\n\nAgent content here.",
     '/scan/src/agents/arch-agent.md': '# Architecture Agent',
@@ -361,6 +365,26 @@ describe('runBriefInstall', () => {
     );
   });
 
+  it('copies the update-brief command file', () => {
+    const opts = buildOptions();
+    runBriefInstall(opts);
+
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.commandsDir, 'update-brief.md'),
+      join(defaultPaths.commandsDest, 'update-brief.md'),
+    );
+  });
+
+  it('copies the update-brief workflow file', () => {
+    const opts = buildOptions();
+    runBriefInstall(opts);
+
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.workflowsDir, 'update-brief.md'),
+      join(defaultPaths.workflowsDest, 'update-brief.md'),
+    );
+  });
+
   it('inlines uninstall-brief workflow in global mode', () => {
     const opts = buildOptions({ mode: 'global' });
     runBriefInstall(opts);
@@ -375,6 +399,22 @@ describe('runBriefInstall', () => {
     expect(cmdWrite?.[1]).toContain('Uninstall content here.');
     expect(cmdWrite?.[1]).not.toContain(
       '@.claude/clancy/workflows/uninstall-brief.md',
+    );
+  });
+
+  it('inlines update-brief workflow in global mode', () => {
+    const opts = buildOptions({ mode: 'global' });
+    runBriefInstall(opts);
+
+    const writeCalls = opts.fs.writeFile.mock.calls;
+    const cmdWrite = writeCalls.find(
+      ([path]) => path === join(defaultPaths.commandsDest, 'update-brief.md'),
+    );
+
+    expect(cmdWrite).toBeDefined();
+    expect(cmdWrite?.[1]).toContain('Update content here.');
+    expect(cmdWrite?.[1]).not.toContain(
+      '@.claude/clancy/workflows/update-brief.md',
     );
   });
 

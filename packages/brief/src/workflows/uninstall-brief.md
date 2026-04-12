@@ -69,11 +69,13 @@ For each location being removed, delete files in this order:
 
 - `approve-brief.md`
 - `brief.md`
+- `update-brief.md`
 
 **Workflows** (from `<base>/clancy/workflows/`):
 
 - `approve-brief.md`
 - `brief.md`
+- `update-brief.md`
 
 **Agents** (from `<base>/clancy/agents/`):
 
