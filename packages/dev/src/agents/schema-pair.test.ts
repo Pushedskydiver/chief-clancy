@@ -25,15 +25,10 @@ function extractCheckIds(markdown: string): readonly string[] {
   const checksSection = afterChecks.split(/^## /m)[0];
 
   const headingRe = /^### (\S+)/gm;
-  const ids: string[] = [];
 
-  for (const match of checksSection.matchAll(headingRe)) {
-    if (match[1]) {
-      ids.push(match[1]);
-    }
-  }
-
-  return ids;
+  return [...checksSection.matchAll(headingRe)]
+    .map((m) => m[1])
+    .filter((id): id is string => id !== undefined);
 }
 
 describe('readiness.md ↔ ReadinessCheckId schema pair', () => {

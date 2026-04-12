@@ -4,6 +4,7 @@
  */
 import type { GateResult } from '../execute/readiness/index.js';
 import type { PipelineResult } from '../pipeline/index.js';
+import type { LoopOutcome } from '../queue.js';
 import type { EnvFileSystem, FetchedTicket } from '@chief-clancy/core';
 
 import { spawnSync } from 'node:child_process';
@@ -28,6 +29,7 @@ import { displayOutcome, notifyIfConfigured } from './loop-output.js';
 
 type LoopArgs = {
   readonly isAfk: boolean;
+  readonly isAfkStrict: boolean;
   readonly bypassReadiness: boolean;
   readonly maxIterations: number | undefined;
   readonly passthroughArgv: readonly string[];
@@ -86,7 +88,9 @@ function buildRunTicket(
 // ─── Execute + report ──────────────────────────────────────────────────────
 
 /** Execute the queue, display results, and send webhook notification. */
-async function runAndReport(opts: RunAndReportOpts): Promise<void> {
+async function runAndReport(
+  opts: RunAndReportOpts,
+): Promise<LoopOutcome<PipelineResult>> {
   const run = buildRunTicket(opts);
 
   const outcome = await executeQueue({
@@ -107,6 +111,8 @@ async function runAndReport(opts: RunAndReportOpts): Promise<void> {
     outcome,
     opts.tickets.length,
   );
+
+  return outcome;
 }
 
 // ─── Exports ───────────────────────────────────────────────────────────────
