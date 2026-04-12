@@ -179,7 +179,7 @@ npx chief-clancy
 | `/clancy:uninstall-terminal` | Remove the full Clancy pipeline — detects standalone packages and warns before removing |
 | `/clancy:uninstall-brief` ³  | Remove brief commands only (installed via `npx @chief-clancy/brief`)                    |
 | `/clancy:uninstall-plan` ³   | Remove plan commands only (installed via `npx @chief-clancy/plan`)                      |
-| `/clancy:uninstall-dev` ³    | Remove dev commands and runtime bundles (installed via `npx @chief-clancy/dev`)         |
+| `/clancy:uninstall-dev` ³    | Remove dev commands; project-scoped also removes runtime bundles                        |
 | `/clancy:help`               | Command reference                                                                       |
 
 ¹ Planner is an optional role — see [Roles](#roles) below.
