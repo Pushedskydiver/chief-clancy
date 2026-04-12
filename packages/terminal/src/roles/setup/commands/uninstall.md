@@ -1,5 +1,11 @@
 # /clancy:uninstall
 
-Remove Clancy's slash commands from this project or your global Claude Code installation.
+This command has been renamed to `/clancy:uninstall-terminal`.
 
-@.claude/clancy/workflows/uninstall.md
+Please run `/clancy:uninstall-terminal` instead.
+
+For removing individual packages without affecting the full pipeline:
+
+- `/clancy:uninstall-brief` — remove `@chief-clancy/brief` only
+- `/clancy:uninstall-plan` — remove `@chief-clancy/plan` only
+- `/clancy:uninstall-dev` — remove `@chief-clancy/dev` only
