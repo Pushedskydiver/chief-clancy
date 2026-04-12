@@ -108,7 +108,7 @@ When extracting:
 
 ## Build order
 
-Revised 2026-04-10: dev moves from "extract when chat arrives" to Phase E (in progress). The original framing (chat as the trigger) has been retired — dev is being extracted now as a real standalone-first package because it serves a real audience (automators running unattended ticket execution) and ships its own user-facing surface. design moves to Phase F or later. See "Phase E — `@chief-clancy/dev` extraction decisions" below for the full rationale.
+Revised 2026-04-10: dev moves from "extract when chat arrives" to Phase E. Completed 2026-04-12 (Cut D shipped, published as 0.1.x). The original framing (chat as the trigger) has been retired — dev is being extracted now as a real standalone-first package because it serves a real audience (automators running unattended ticket execution) and ships its own user-facing surface. design moves to Phase F or later. See "Phase E — `@chief-clancy/dev` extraction decisions" below for the full rationale.
 
 1. ~~`@chief-clancy/brief`~~ — done (Phase A)
 2. ~~`@chief-clancy/plan`~~ — done (Phase B + C)

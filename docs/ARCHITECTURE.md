@@ -51,21 +51,16 @@ chief-clancy               — CLI wrapper (npx chief-clancy)
 │   │       │   ├── http/            — fetchAndParse, retryFetch, ping
 │   │       │   ├── label-helpers/   — modifyLabelList, safeLabel
 │   │       │   └── remote/          — parseRemote, detectRemote
-│   │       └── dev/                 — development pipeline + lifecycle
-│   │           ├── pipeline/        — phase orchestrator + 13 phase directories
-│   │           │   ├── context.ts   — RunContext type
-│   │           │   ├── run-pipeline.ts
-│   │           │   └── phases/      — lock-check → cleanup
-│   │           └── lifecycle/       — ticket-lifecycle modules
-│   │               ├── branch/      — branch naming + computation
-│   │               ├── lock/        — lock file management
-│   │               ├── deliver-ticket/ — PR delivery
-│   │               ├── deliver-epic/   — epic PR delivery
-│   │               ├── rework/      — PR review → rework cycle
-│   │               ├── fetch-ticket/— ticket fetch + blocker filtering
-│   │               └── ...          — cost, epic, feasibility, format, outcome,
-│   │                                  pr-creation, preflight, progress,
-│   │                                  pull-request, quality, resume, commit-type
+│   ├── dev/                         — @chief-clancy/dev
+│   │   └── src/
+│   │       ├── pipeline/            — phase orchestrator + 13 phase directories
+│   │       ├── lifecycle/           — 19 ticket-lifecycle modules
+│   │       ├── artifacts/           — readiness-report, run-summary, deferred, drift, atomic-write
+│   │       ├── queue.ts             — executeQueue + executeFixedCount loop primitives
+│   │       ├── agents/              — readiness rubric + verdict parser
+│   │       ├── execute/             — single-ticket executor + readiness gate
+│   │       ├── entrypoints/         — dev.ts, loop.ts (esbuild entry points)
+│   │       └── installer/           — standalone installer (bin/dev.js)
 │   ├── terminal/                    — @chief-clancy/terminal
 │   │   └── src/
 │   │       ├── installer/           — install orchestrator

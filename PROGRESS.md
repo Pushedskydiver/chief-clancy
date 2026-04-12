@@ -4,22 +4,23 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 
 ## Current state (2026-04-12)
 
-**Cut D complete. Phase E wrapping up.** PR 12d (#258) shipped the AFK behaviour matrix (`--afk-strict`), run-summary.md, deferred.json, drift.json, and the Cut D acceptance test. PR 13 (this PR) standardises entrypoints convention across terminal and updates docs. Next: PR 13.5 (flip `@chief-clancy/dev` to public + changeset).
+**Phase E complete. Cross-package uninstall system shipped.** All packages published with per-package uninstall commands (`/clancy:uninstall-brief`, `/clancy:uninstall-plan`, `/clancy:uninstall-dev`, `/clancy:uninstall-terminal`). Next: per-package update commands.
 
 **Published versions:**
 
 | Package                  | Version |
 | ------------------------ | ------- |
-| `@chief-clancy/core`     | 0.1.0   |
-| `@chief-clancy/terminal` | 0.1.9   |
-| `@chief-clancy/brief`    | 0.3.2   |
-| `@chief-clancy/plan`     | 0.5.2   |
-| `@chief-clancy/scan`     | 0.2.0   |
-| `chief-clancy` (wrapper) | 0.9.16  |
+| `@chief-clancy/core`     | 0.1.1   |
+| `@chief-clancy/terminal` | 0.1.11  |
+| `@chief-clancy/dev`      | 0.1.1   |
+| `@chief-clancy/brief`    | 0.3.4   |
+| `@chief-clancy/plan`     | 0.5.4   |
+| `@chief-clancy/scan`     | 0.2.2   |
+| `chief-clancy` (wrapper) | 0.9.19  |
 
 **Test counts:** 879 core, 731 terminal, 1058 dev, 77 brief, 270 plan = **3015 total**.
 
-**Last shipped:** PR 12d (#258) in Session 72.
+**Last shipped:** Cross-package uninstall changeset (#267) in Session 72.
 
 ## Phase E — completed PRs (Sessions 60–72)
 
@@ -106,9 +107,9 @@ Entire pipeline directory (46 files) moved from `core/src/dev/pipeline/` to `dev
 
 `/clancy:map-codebase` lives only in terminal but brief, plan, and dev all consume `.clancy/docs/`. New `@chief-clancy/scan` package (markdown only, no installer) will be consumed as a dependency by all four packages. Their installers copy scan's agents/commands/workflows automatically — users never see scan as a separate step. Also fixes pre-existing bug where terminal's installer never copies the 5 agent files. See `.clancy/plans/phase-e-dev-extraction.md` Section 9 for full plan (PRs S1–S7).
 
-### Remaining PR sequence
+### Phase E complete
 
-PRs 2b/2c/3a/3b all absorbed. PRs 3.5 through 8b shipped. Next: scan extraction (S1–S7), then PR 8c onwards — see `.clancy/plans/phase-e-dev-extraction.md`.
+All PRs shipped. `@chief-clancy/dev` published at 0.1.x. Cross-package uninstall system added in Session 72 (PRs #262-#267).
 
 ## Phase ledger
 
@@ -120,7 +121,7 @@ PRs 2b/2c/3a/3b all absorbed. PRs 3.5 through 8b shipped. Next: scan extraction 
 | **D** — Brief absorbs approve-brief      | ✅ done | 2026-04-09    | Strategist directory deleted, virtual-role transition, install-mode preflight, Step 6 label-decision preamble                                                     |
 | **Docs lifecycle update**                | ✅ done | 2026-04-09    | RATIONALIZATIONS.md + DA-REVIEW Required disciplines + Severity Labels + Prove-It Pattern + Stop-the-Line + CLAUDE.md                                             |
 | **Post-research trim**                   | ✅ done | 2026-04-09    | CLAUDE.md trimmed 10 → 4 bullets per AGENTS.md paper, CONVENTIONS.md "Output style" added per Brevity Constraints paper, GIT.md No --amend, memory pruned 8 files |
-| **E** — `dev` OR `design` extraction     | 🔜 next | —             | See "Next: Phase E" above                                                                                                                                         |
+| **E** — `dev` extraction + AFK executor  | ✅ done | 2026-04-12    | Standalone dev package (0.1.x) with readiness gate, AFK loop, artifact writers, cross-package uninstall system                                                    |
 
 ### Phase C summary
 
@@ -199,12 +200,12 @@ The disciplines previously scattered across memory `feedback_*.md` files now hav
 
 1. ~~`@chief-clancy/brief`~~ — done (Phase A)
 2. ~~`@chief-clancy/plan`~~ — done (Phase B + C)
-3. **`@chief-clancy/dev` OR `@chief-clancy/design`** — Phase E, see "Next" above
-4. The other one — Phase F
+3. ~~`@chief-clancy/dev`~~ — done (Phase E)
+4. `@chief-clancy/design` — Phase F (Stitch integration)
 5. `@chief-clancy/cli` — interactive wizard
 6. `@chief-clancy/chat` — conversational interface (Slack/Teams)
 
-The locked build order in [`docs/decisions/architecture/package-evolution.md`](docs/decisions/architecture/package-evolution.md) has design before dev, but the Phase E decision is open — see "Next: Phase E" above for the trade-off.
+See [`docs/decisions/architecture/package-evolution.md`](docs/decisions/architecture/package-evolution.md) for the full rationale.
 
 ## Repo
 
