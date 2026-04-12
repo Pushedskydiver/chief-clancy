@@ -24,9 +24,9 @@ Check both locations silently. Each install has two parts — commands and workf
 
 ---
 
-## Step 1b — Detect standalone packages
+## Step 1b — Detect standalone packages (scoped to selected location)
 
-For each location detected in Step 1, check for standalone package VERSION markers:
+After the user selects which location to uninstall (project, global, or both), check for standalone package VERSION markers **only in the location(s) being uninstalled**:
 
 | Marker file                            | Package               |
 | -------------------------------------- | --------------------- |
@@ -34,9 +34,9 @@ For each location detected in Step 1, check for standalone package VERSION marke
 | `<base>/commands/clancy/VERSION.plan`  | `@chief-clancy/plan`  |
 | `.clancy/VERSION.dev`                  | `@chief-clancy/dev`   |
 
-Where `<base>` is `.claude` (local) or `~/.claude` (global). Note: `VERSION.dev` uses `.clancy/` (project root) instead of `<base>/commands/clancy/` — this is by design since dev bundles live at project level.
+Where `<base>` is `.claude` (local) or `~/.claude` (global), matching the selected scope. Note: `VERSION.dev` uses `.clancy/` (project root) — always check this when uninstalling locally or both, skip when uninstalling globally only.
 
-Record which standalone packages are installed. This information is used in Step 2 (advisory) and Step 7 (reinstall guidance).
+Record which standalone packages are present **in the scope being removed**. This determines the Step 2 advisory and Step 7 reinstall guidance. Do not warn about packages in a location that is not being touched.
 
 ---
 
@@ -47,9 +47,9 @@ If any standalone packages were detected in Step 1b, show this advisory before t
 ```
 ⚠️  Standalone packages detected: [comma-separated list, e.g. brief, plan, dev]
     The full uninstall will also remove their commands and workflows.
-    To remove only the terminal pipeline, cancel and use the per-package
-    uninstallers instead (/clancy:uninstall-brief, /clancy:uninstall-plan,
-    /clancy:uninstall-dev).
+    If you only meant to remove a standalone package (not the terminal
+    pipeline), cancel and use the per-package uninstallers instead
+    (/clancy:uninstall-brief, /clancy:uninstall-plan, /clancy:uninstall-dev).
 ```
 
 Then show the confirmation:
