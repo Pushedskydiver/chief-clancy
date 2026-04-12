@@ -59,7 +59,7 @@ const COMMAND_GROUPS: readonly CommandGroup[] = [
       ['/clancy:settings', 'View and change configuration'],
       ['/clancy:doctor', 'Diagnose your setup'],
       ['/clancy:update-docs', 'Refresh codebase documentation'],
-      ['/clancy:update', 'Update Clancy to latest version'],
+      ['/clancy:update-terminal', 'Update Clancy to latest version'],
       ['/clancy:uninstall-terminal', 'Remove the full Clancy pipeline'],
       ['/clancy:help', 'Show all commands'],
     ],
