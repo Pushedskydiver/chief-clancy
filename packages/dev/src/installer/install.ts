@@ -71,6 +71,7 @@ const COMMAND_FILES = [
   'dev.md',
   'dev-loop.md',
   'uninstall-dev.md',
+  'update-dev.md',
 ] as const;
 
 /** Workflow files shipped with the dev package. */
@@ -79,6 +80,7 @@ const WORKFLOW_FILES = [
   'dev.md',
   'dev-loop.md',
   'uninstall-dev.md',
+  'update-dev.md',
 ] as const;
 
 /** Bundle files copied into `.clancy/`. */

@@ -72,11 +72,13 @@ Delete files in this order, limited to the uninstall scope selected in Step 1:
 
 - `dev.md`
 - `dev-loop.md`
+- `update-dev.md`
 
 **Workflows** (from `<base>/clancy/workflows/` — remove from each selected workflow location):
 
 - `dev.md`
 - `dev-loop.md`
+- `update-dev.md`
 
 **Bundles** (from `.clancy/`) — remove only when the uninstall scope includes the project (`Project only` or `Both`):
 
