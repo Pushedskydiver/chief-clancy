@@ -9,7 +9,7 @@
  * `zod/v4/core/index.js` but never used at runtime.
  *
  * Build order: tsc → tsc-alias → esbuild hooks → this script.
- * Entry points are the tsc-compiled JS in `dist/runner/`.
+ * Entry points are the tsc-compiled JS in `dist/entrypoints/`.
  */
 import type { Plugin } from 'esbuild';
 
