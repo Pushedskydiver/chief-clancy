@@ -16,6 +16,7 @@ const EXPECTED_COMMANDS = [
   'board-setup.md',
   'plan.md',
   'uninstall-plan.md',
+  'update-plan.md',
 ];
 
 describe('commands directory structure', () => {
@@ -58,6 +59,24 @@ describe('commands directory structure', () => {
     );
 
     expect(content).toContain('@.claude/clancy/workflows/uninstall-plan.md');
+  });
+
+  it('update-plan command starts with the update-plan heading', () => {
+    const content = readFileSync(
+      new URL('update-plan.md', import.meta.url),
+      'utf8',
+    );
+
+    expect(content.split('\n')[0]?.trim()).toBe('# /clancy:update-plan');
+  });
+
+  it('update-plan command references the update-plan workflow', () => {
+    const content = readFileSync(
+      new URL('update-plan.md', import.meta.url),
+      'utf8',
+    );
+
+    expect(content).toContain('@.claude/clancy/workflows/update-plan.md');
   });
 });
 

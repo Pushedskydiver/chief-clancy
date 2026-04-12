@@ -16,6 +16,7 @@ const EXPECTED_WORKFLOWS = [
   'board-setup.md',
   'plan.md',
   'uninstall-plan.md',
+  'update-plan.md',
 ];
 
 describe('workflows directory structure', () => {
@@ -1696,6 +1697,7 @@ describe('uninstall-plan workflow', () => {
   it('lists plan-exclusive files to remove', () => {
     expect(content).toContain('approve-plan.md');
     expect(content).toContain('plan.md');
+    expect(content).toContain('update-plan.md');
   });
 
   it('lists shared files that require version-marker checks', () => {
@@ -1755,5 +1757,110 @@ describe('uninstall-plan workflow', () => {
     expect(content).toContain(
       'Never touch hooks, `settings.json`, `CLAUDE.md`, `.gitignore`, `.prettierignore`, or `.clancy/`',
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// update-plan.md content assertions
+// ---------------------------------------------------------------------------
+
+describe('update-plan workflow', () => {
+  const content = readFileSync(
+    new URL('update-plan.md', import.meta.url),
+    'utf8',
+  );
+
+  it('starts with the correct heading', () => {
+    expect(content.split('\n')[0]?.trim()).toBe(
+      '# Clancy Update Plan Workflow',
+    );
+  });
+
+  it('detects installed version via VERSION.plan marker', () => {
+    expect(content).toContain('VERSION.plan');
+  });
+
+  it('checks both local and global locations', () => {
+    expect(content).toContain('.claude/commands/clancy/VERSION.plan');
+    expect(content).toContain('~/.claude/commands/clancy/VERSION.plan');
+  });
+
+  it('checks npm for latest version with timeout', () => {
+    expect(content).toContain('npm view @chief-clancy/plan version');
+    expect(content).toContain('5-second timeout');
+  });
+
+  it('uses npx with @latest suffix to bypass cache', () => {
+    expect(content).toContain('npx -y @chief-clancy/plan@latest');
+  });
+
+  it('supports --afk flag to skip confirmation', () => {
+    expect(content).toContain('--afk');
+  });
+
+  it('shows terminal coexistence advisory', () => {
+    expect(content).toContain('Terminal pipeline detected');
+    expect(content).toContain('/clancy:update-terminal');
+    expect(content).toContain('file manifest will become stale');
+  });
+
+  it('shows other standalone advisory', () => {
+    expect(content).toContain('Other Clancy packages detected');
+    expect(content).toContain('overwritten with this package');
+  });
+
+  it('detects install mode (local, global, both)', () => {
+    expect(content).toContain('Detect install mode');
+    expect(content).toContain('`local`');
+    expect(content).toContain('`global`');
+    expect(content).toContain('`both`');
+  });
+
+  it('verifies update took effect', () => {
+    expect(content).toContain('Re-read the `VERSION.plan` marker');
+    expect(content).toContain('npm CDN cache');
+  });
+
+  it('fetches changelog from GitHub releases API with URL-encoded tag', () => {
+    expect(content).toContain(
+      'api.github.com/repos/Pushedskydiver/chief-clancy/releases/tags/',
+    );
+    expect(content).toContain('%40chief-clancy%2Fplan%40');
+  });
+
+  it('provides fallback URL when changelog fetch fails', () => {
+    expect(content).toContain(
+      'https://github.com/Pushedskydiver/chief-clancy/releases',
+    );
+  });
+
+  it('checks VERSION markers for other packages', () => {
+    expect(content).toContain('VERSION.brief');
+    expect(content).toContain('VERSION.dev');
+    expect(content).toContain('<base>/commands/clancy/VERSION`');
+  });
+
+  it('notes VERSION.dev lives at .clancy/', () => {
+    expect(content).toContain('.clancy/VERSION.dev');
+  });
+
+  it('does not touch hooks, settings, CLAUDE.md, or .clancy/', () => {
+    expect(content).toContain(
+      'Never touch hooks, `settings.json`, `CLAUDE.md`, `.gitignore`, `.prettierignore`, or `.clancy/`',
+    );
+  });
+
+  it('includes the plan-specific Clancy quote in the final message only', () => {
+    expect(content).toContain('Plan upgraded, Chief.');
+  });
+
+  it('instructs to start a new session after update', () => {
+    expect(content).toContain(
+      'Start a new Claude Code session to pick up the updated commands.',
+    );
+  });
+
+  it('does not delete files — only overwrites via installer', () => {
+    expect(content).toContain('does NOT delete files');
   });
 });
