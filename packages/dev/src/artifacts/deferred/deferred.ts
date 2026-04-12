@@ -7,6 +7,8 @@
 import type { CheckColour } from '../../agents/types/index.js';
 import type { AtomicFs } from '../atomic-write/index.js';
 
+import { join } from 'node:path';
+
 import { atomicWrite } from '../atomic-write/index.js';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
@@ -29,7 +31,7 @@ type WriteDeferredOpts = {
 function writeDeferred(opts: WriteDeferredOpts): void {
   if (opts.deferred.length === 0) return;
 
-  const filePath = `${opts.dir}/deferred.json`;
+  const filePath = join(opts.dir, 'deferred.json');
   atomicWrite(opts.fs, filePath, JSON.stringify(opts.deferred, null, 2) + '\n');
 }
 

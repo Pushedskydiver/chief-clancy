@@ -151,12 +151,12 @@ function runPreflightIfNeeded(opts: PreflightIfNeededOpts): PreflightDecision {
   if (opts.isAfkStrict) {
     if (hasReds) {
       opts.console.log('Pre-flight found red verdicts. Halting.');
-      opts.console.log(`Report: ${opts.dir}/readiness-report.md`);
+      opts.console.log(`Report: ${join(opts.dir, 'readiness-report.md')}`);
       return { action: 'halt', verdicts };
     }
     if (greens.length === 0) {
       opts.console.log('No green tickets to execute. Halting.');
-      opts.console.log(`Report: ${opts.dir}/readiness-report.md`);
+      opts.console.log(`Report: ${join(opts.dir, 'readiness-report.md')}`);
       return { action: 'halt', verdicts };
     }
     return {
@@ -170,7 +170,7 @@ function runPreflightIfNeeded(opts: PreflightIfNeededOpts): PreflightDecision {
   // --afk (not strict): halt on any non-green
   if (!preflight.canProceed) {
     opts.console.log('Pre-flight did not produce all-green verdicts. Halting.');
-    opts.console.log(`Report: ${opts.dir}/readiness-report.md`);
+    opts.console.log(`Report: ${join(opts.dir, 'readiness-report.md')}`);
     return { action: 'halt', verdicts };
   }
 

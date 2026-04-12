@@ -8,6 +8,8 @@
 import type { ReadinessVerdict } from '../../agents/types/index.js';
 import type { AtomicFs } from '../atomic-write/index.js';
 
+import { join } from 'node:path';
+
 import { atomicWrite } from '../atomic-write/index.js';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
@@ -89,7 +91,7 @@ function computeDrift(
 // ─── Writer ───────────────────────────────────────────────────────────────
 
 function writeDrift(opts: WriteDriftOpts): void {
-  const filePath = `${opts.dir}/drift.json`;
+  const filePath = join(opts.dir, 'drift.json');
   atomicWrite(opts.fs, filePath, JSON.stringify(opts.drift, null, 2) + '\n');
 }
 
