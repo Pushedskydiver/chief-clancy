@@ -82,6 +82,10 @@ Partial failures stop immediately. The brief file's approve marker tracks which 
 
 Existing behaviour, unchanged. The pipeline label respects `CLANCY_ROLES`: if `planner` is enabled (or `CLANCY_ROLES` is unset, indicating a global install), child tickets get `CLANCY_LABEL_PLAN`; if `planner` is explicitly excluded, child tickets get `CLANCY_LABEL_BUILD` (the terminal user has opted out of the planning queue). The `--skip-plan` flag overrides both and forces the build label.
 
+## Updating
+
+Run `/clancy:update-brief` in Claude Code. It checks npm for the latest version, shows what's new from the GitHub release, and re-runs the installer to overwrite commands, workflows, and agents. Supports `--afk` to skip the confirmation prompt.
+
 ## Uninstalling
 
 Run `/clancy:uninstall-brief` in Claude Code. It removes brief-exclusive files (commands, workflows, devils-advocate agent, VERSION marker), then checks for other installed Clancy packages before removing shared files (board-setup, scan agents, map-codebase, update-docs). Leaves `.clancy/.env` untouched.
