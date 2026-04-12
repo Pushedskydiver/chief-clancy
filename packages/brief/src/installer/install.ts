@@ -64,6 +64,7 @@ const COMMAND_FILES = [
   'approve-brief.md',
   'board-setup.md',
   'brief.md',
+  'uninstall-brief.md',
 ] as const;
 
 /** Workflow files shipped with the brief package. */
@@ -71,6 +72,7 @@ const WORKFLOW_FILES = [
   'approve-brief.md',
   'board-setup.md',
   'brief.md',
+  'uninstall-brief.md',
 ] as const;
 
 /** Agent files shipped with the brief package. */
