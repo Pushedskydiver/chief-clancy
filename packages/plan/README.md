@@ -132,6 +132,10 @@ Credentials are stored in `.clancy/.env` and are per-project (not global).
 
 Supported boards: Jira, GitHub Issues, Linear, Shortcut, Notion, Azure DevOps.
 
+## Uninstalling
+
+Run `/clancy:uninstall-plan` in Claude Code. It removes plan's commands and workflows, checks for other installed Clancy packages before removing shared files (board-setup, scan agents), and leaves `.clancy/.env` untouched.
+
 ## Full pipeline
 
 For the complete development pipeline (brief, plan, implement, deliver), install the full Clancy package:

@@ -80,6 +80,10 @@ Credentials are stored in `.clancy/.env` and are per-project (not global).
 
 Supported boards: Jira, GitHub Issues, Linear, Shortcut, Notion, Azure DevOps.
 
+## Uninstalling
+
+Run `/clancy:uninstall-dev` in Claude Code. It removes dev's commands, workflows, and runtime bundles (`.clancy/clancy-dev.js`, `.clancy/clancy-dev-autopilot.js`), checks for other installed Clancy packages before removing shared files (board-setup, scan agents), and leaves `.clancy/.env` untouched.
+
 ## Full pipeline
 
 `@chief-clancy/dev` covers autonomous ticket execution. For strategic briefing, planning, and the full development lifecycle, install the complete Clancy package:
