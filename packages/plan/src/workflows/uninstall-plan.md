@@ -69,11 +69,13 @@ For each location being removed, delete files in this order:
 
 - `approve-plan.md`
 - `plan.md`
+- `update-plan.md`
 
 **Workflows** (from `<base>/clancy/workflows/`):
 
 - `approve-plan.md`
 - `plan.md`
+- `update-plan.md`
 
 Delete each file. If a file does not exist, skip it silently.
 

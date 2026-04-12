@@ -91,12 +91,14 @@ const COMMAND_FILES = [
   'board-setup.md',
   'plan.md',
   'uninstall-plan.md',
+  'update-plan.md',
 ];
 const WORKFLOW_FILES = [
   'approve-plan.md',
   'board-setup.md',
   'plan.md',
   'uninstall-plan.md',
+  'update-plan.md',
 ];
 const SCAN_AGENT_FILES = [
   'arch-agent.md',
@@ -230,6 +232,9 @@ function printSuccess() {
   );
   console.log(
     `      ${cyan('/clancy:update-docs')}    ${dim('Refresh .clancy/docs/ incrementally')}`,
+  );
+  console.log(
+    `      ${cyan('/clancy:update-plan')}    ${dim('Check for updates to Clancy Plan')}`,
   );
   console.log(
     `      ${cyan('/clancy:uninstall-plan')} ${dim('Remove Clancy Plan')}`,

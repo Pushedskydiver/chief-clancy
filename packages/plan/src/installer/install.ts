@@ -64,6 +64,7 @@ const COMMAND_FILES = [
   'board-setup.md',
   'plan.md',
   'uninstall-plan.md',
+  'update-plan.md',
 ] as const;
 
 /** Workflow files shipped with the plan package. */
@@ -72,6 +73,7 @@ const WORKFLOW_FILES = [
   'board-setup.md',
   'plan.md',
   'uninstall-plan.md',
+  'update-plan.md',
 ] as const;
 
 /** Scan agent files from @chief-clancy/scan. */
