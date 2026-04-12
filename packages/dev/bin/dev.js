@@ -80,8 +80,18 @@ const ask = (label) => new Promise((resolve) => rl.question(label, resolve));
 // File lists (keep in sync with install.ts)
 // ---------------------------------------------------------------------------
 
-const COMMAND_FILES = ['board-setup.md', 'dev.md', 'dev-loop.md'];
-const WORKFLOW_FILES = ['board-setup.md', 'dev.md', 'dev-loop.md'];
+const COMMAND_FILES = [
+  'board-setup.md',
+  'dev.md',
+  'dev-loop.md',
+  'uninstall-dev.md',
+];
+const WORKFLOW_FILES = [
+  'board-setup.md',
+  'dev.md',
+  'dev-loop.md',
+  'uninstall-dev.md',
+];
 const BUNDLE_FILES = ['clancy-dev.js', 'clancy-dev-autopilot.js'];
 const SCAN_AGENT_FILES = [
   'arch-agent.md',
@@ -225,6 +235,9 @@ function printSuccess() {
   );
   console.log(
     `      ${cyan('/clancy:update-docs')}    ${dim('Refresh .clancy/docs/ incrementally')}`,
+  );
+  console.log(
+    `      ${cyan('/clancy:uninstall-dev')}  ${dim('Remove Clancy Dev')}`,
   );
   console.log('');
   console.log('  Next steps:');

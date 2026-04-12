@@ -173,10 +173,14 @@ const buildOptions = (
       '# /clancy:dev\n\n@.claude/clancy/workflows/dev.md\n\nFollow the dev workflow above.',
     '/pkg/dist/commands/dev-loop.md':
       '# /clancy:dev-loop\n\n@.claude/clancy/workflows/dev-loop.md\n\nFollow the dev loop workflow above.',
+    '/pkg/dist/commands/uninstall-dev.md':
+      '# /clancy:uninstall-dev\n\n@.claude/clancy/workflows/uninstall-dev.md\n',
     '/pkg/dist/workflows/board-setup.md': '# Board Setup Workflow\n\nStep 1...',
     '/pkg/dist/workflows/dev.md': '# Clancy Dev Workflow\n\nStep 1...',
     '/pkg/dist/workflows/dev-loop.md':
       '# Clancy Dev Loop Workflow\n\nStep 1...',
+    '/pkg/dist/workflows/uninstall-dev.md':
+      '# Clancy Uninstall Dev Workflow\n\nUninstall content here.',
     '/pkg/dist/bundle/clancy-dev.js': '// clancy-dev bundle',
     '/pkg/dist/bundle/clancy-dev-autopilot.js':
       '// clancy-dev-autopilot bundle',
@@ -367,6 +371,42 @@ describe('runDevInstall', () => {
     expect(opts.fs.copyFile).toHaveBeenCalledWith(
       join(defaultSources.scanWorkflowsDir, 'update-docs.md'),
       join(defaultPaths.workflowsDest, 'update-docs.md'),
+    );
+  });
+
+  it('copies the uninstall-dev command file', () => {
+    const opts = buildOptions();
+    runDevInstall(opts);
+
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.commandsDir, 'uninstall-dev.md'),
+      join(defaultPaths.commandsDest, 'uninstall-dev.md'),
+    );
+  });
+
+  it('copies the uninstall-dev workflow file', () => {
+    const opts = buildOptions();
+    runDevInstall(opts);
+
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.workflowsDir, 'uninstall-dev.md'),
+      join(defaultPaths.workflowsDest, 'uninstall-dev.md'),
+    );
+  });
+
+  it('inlines uninstall-dev workflow in global mode', () => {
+    const opts = buildOptions({ mode: 'global' });
+    runDevInstall(opts);
+
+    const writeCalls = opts.fs.writeFile.mock.calls;
+    const cmdWrite = writeCalls.find(
+      ([path]) => path === join(defaultPaths.commandsDest, 'uninstall-dev.md'),
+    );
+
+    expect(cmdWrite).toBeDefined();
+    expect(cmdWrite?.[1]).toContain('Uninstall content here.');
+    expect(cmdWrite?.[1]).not.toContain(
+      '@.claude/clancy/workflows/uninstall-dev.md',
     );
   });
 
