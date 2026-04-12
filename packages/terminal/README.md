@@ -41,7 +41,7 @@ CJS bundles built by esbuild — best-effort, fail-open, never block the user:
 
 ### Runners
 
-Two execution modes powered by the `@chief-clancy/core` pipeline:
+Two execution modes powered by the [`@chief-clancy/dev`](https://www.npmjs.com/package/@chief-clancy/dev) pipeline:
 
 - **`runImplement`** — single ticket: fetch, implement, deliver, exit
 - **`runAutopilot`** — loop: repeat implement until queue is empty, generate session report
@@ -56,6 +56,19 @@ Specialist agent prompts (`.md` files) for devil's advocate grilling and verific
 - [Role documentation](../../docs/roles/) — detailed docs for each role
 - [Configuration](../../docs/guides/CONFIGURATION.md) — all env vars and settings
 - [Testing](../../docs/TESTING.md) — test patterns, E2E setup, CI schedule
+
+## Part of the Clancy monorepo
+
+- [`chief-clancy`](https://www.npmjs.com/package/chief-clancy) — full pipeline (install, configure, implement, autopilot)
+- [`@chief-clancy/dev`](https://www.npmjs.com/package/@chief-clancy/dev) — standalone ticket executor
+- [`@chief-clancy/scan`](https://www.npmjs.com/package/@chief-clancy/scan) — codebase scanning agents and workflows
+- [`@chief-clancy/brief`](https://www.npmjs.com/package/@chief-clancy/brief) — strategic brief generator
+- [`@chief-clancy/plan`](https://www.npmjs.com/package/@chief-clancy/plan) — implementation planner
+- [`@chief-clancy/core`](https://www.npmjs.com/package/@chief-clancy/core) — board integrations, pipeline phases, schemas
+
+## Credits
+
+Built on the [Ralph technique](https://ghuntley.com/ralph/) by Geoffrey Huntley. See [CREDITS.md](https://github.com/Pushedskydiver/chief-clancy/blob/main/CREDITS.md).
 
 ## License
 
