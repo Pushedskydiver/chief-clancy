@@ -22,94 +22,9 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 
 **Last shipped:** Cross-package uninstall changeset (#267) in Session 72.
 
-## Phase E — completed PRs (Sessions 60–72)
+## Phase E summary
 
-### PR 12d (#258) — AFK behaviour matrix + run-summary + deferred + drift (Session 72)
-
-Three-mode AFK behaviour matrix: interactive (no preflight), `--afk` (halt on non-green), `--afk-strict` (execute greens, defer yellows, halt on reds). New artifact modules: `artifacts/deferred/` (writes `deferred.json` for afk-strict yellow tickets), `artifacts/run-summary/` (writes `run-summary.md` + `.json` with rotation after every execution), `artifacts/drift/` (best-effort predicted vs actual file change comparison using pre-execution `baseSha`). Orchestrator refactored: extracted `runLoop(deps)` with full DI for testability, `PreflightDecision` discriminated union in loop-preflight.ts, I/O wiring extracted to `loop-setup.ts`. Cut D acceptance test: 11 cases covering 3 modes × verdict mixes + special cases. DA review caught 10 findings (0 CRITICAL, 3 MEDIUM, 7 LOW) — all addressed; most impactful was drift baseline using `rev-parse HEAD` instead of `HEAD~1`. 2 rounds of Copilot findings (6 total): cross-platform `join()` for paths, drift verdict filtering to executed tickets only, `RunSummaryData` type tightening, `makeFetchQueue` JSDoc. Also fixed pre-existing lint warning in `schema-pair.test.ts`. 3 commits, 33 new tests (879 core, 1058 dev).
-
-### PR 12c (#257) — Pre-flight batch grading + readiness-report writer (Session 71)
-
-Pre-flight batch grades all queued tickets before execution in AFK mode. Writes `readiness-report.md` + `.json` with colour-bucketed verdicts and rotation (keep last 3). Error matrix: synthetic red on grading failure, dedupe, batch cap (`--max-batch=N`), partial checkpoint for `--resume`, cost estimate logging. Atomic write helper (write-temp-rename + mkdir) shared across all artifact writers. New modules: `artifacts/atomic-write/`, `artifacts/readiness-report/`, `artifacts/preflight-batch/`, `entrypoints/loop-execute.ts`, `entrypoints/loop-preflight.ts`. loop.ts refactored into thin orchestrator. Execution queue coupled to pre-flighted tickets (Copilot caught the mismatch). 6 rounds of Copilot findings (19 total), all addressed — partial checkpoint validation via zod schema, ENOENT-only error handling, visible warnings section, empty-state copy, Set-based filtering, timestamp consistency. 8 commits, 33 new tests (879 core, 1025 dev).
-
-### PR 12a (#256) — Loop slash command + entrypoint + limit API (Session 70)
-
-Added `/clancy:dev-loop` slash command and workflow for queue-based autonomous ticket execution. Replaced `loop.ts` no-op stub with real `executeQueue` wiring: CLI arg parsing (`--afk`, `--max=N`, `--bypass-readiness`), board queue fetch, sequential pipeline execution per ticket, halt conditions via `checkStopCondition`, quiet hours, and webhook notifications. Extracted shared Node.js I/O adapter factories (`makeExecGit`, `makeLockFs`, etc.) into `adapters.ts` — both `dev.ts` and `loop.ts` import from the shared module. Added `limit?: number` to `FetchTicketOpts` in core and wired through all 6 board implementations (5 already had it internally, Notion was hardcoded). GitHub's `per_page` now scales with limit (2x for PR filtering, min 10, max 100) instead of hardcoded 10. Loop fetch defaults to 50, clamped at 100 (matching `executeQueue`'s hard cap). Raw `.clancy/.env` (pre-validation) used for env merging so non-schema keys like `CLANCY_QUIET_START/END` survive. Non-loop flags (`--dry-run`, `--skip-feasibility`) forwarded via `passthroughArgv`. Copilot caught 4 rounds of findings — all addressed. 11 commits, 30 new tests (879 core, 992 dev).
-
-### PR 11a–11c (#253–#255) — ExecuteQueue split (Session 69)
-
-PR 11a: Added `executeFixedCount` and `executeQueue` loop primitives to dev (`queue.ts`), sharing a private `runLoopCore` with quiet hours, halt conditions, inter-iteration sleep, and 100-iteration hard cap. 24 tests. Also upgraded eslint from `recommended` to `recommendedTypeChecked` with `projectService` — re-enabled `functional/immutable-data`, fixed 158 pre-existing type-checked lint errors across core/dev/terminal. PR 11b: Migrated terminal's autopilot to use `executeFixedCount` from dev (307→133 lines). Deleted duplicate loop logic (parseTime, getQuietSleepMs, quiet hours, iteration helpers). Copilot caught halt-reason regression — fixed in same PR. PR 11c: Moved `FATAL_ABORT_PHASES` + `checkStopCondition` from terminal to `dev/src/stop-condition.ts` (locked-decision #6 realisation). Typed `FATAL_ABORT_PHASES` as `ReadonlySet<string>`. Updated branch/label conventions to include `refactor/` and `docs/` prefixes + all 6 package labels.
-
-### PR 8c–10 (#250–#252) — Single-ticket executor + readiness gate (Session 68)
-
-PR 8c: Single-ticket executor (`runSingleTicketByKey`) with pre-seed pattern, moved prompt-builder from terminal to dev. PR 9: Readiness rubric library — 5 checks, zod/mini verdict schemas, safeParseVerdict parser, aggregateVerdict, invokeReadinessGrade. PR 10: Wired readiness gate into executor — flag parser, 3-round re-grade loop, rubric loaded at runtime.
-
-### Scan extraction S0–S5 (#240–#245) + publish (#246) + README (#248) (Session 67)
-
-Extracted `@chief-clancy/scan` package — 5 scanning agents (tech, arch, quality, design, concerns) + map-codebase/update-docs commands/workflows. S0: made .clancy/docs/ references conditional. S1: scaffolded scan package. S2–S4: wired scan into dev, brief, plan installers. S5: wired into terminal + removed duplicate files (atomic swap). Publish readiness PR flipped scan to public. README PR added scan references across all package READMEs. DA reviews caught: symlink check gaps (3 packages), missing mkdir(agentsDest), duplicated types/constants — all fixed. Copilot caught: pnpm lockfile coverage, dangling scaffold.md ref, private:true publishing concern, dev dependency direction — all addressed. 9 PRs total.
-
-### PR 8b (#239) — /clancy:dev + /clancy:board-setup + installer overhaul (Session 66)
-
-Added `/clancy:dev` slash command + workflow (preflight → bundle execution) and `/clancy:board-setup` (adapted from brief for standalone self-containment). Installer overhauled: bundles moved from `.claude/clancy/bundles/` to `.clancy/` (matching terminal's `clancy-implement.js` convention), dead hooks scaffolding removed, ESM `package.json` + `VERSION.dev` written to `.clancy/`, global-mode workflow inlining with symlink guard. `.claude/` vs `.clancy/` directory split documented in ARCHITECTURE.md. Install success output lists both commands with "Next steps" guidance. DA review (subagent) caught 3 MEDIUMs + Copilot caught 3 findings — all addressed. 12 commits.
-
-### PR 8a (#238) — three-state install preflight (Session 66)
-
-Added `detectDevInstallState()` classifying standalone / standalone-board / terminal by probing `.clancy/.env` + `.clancy/clancy-implement.js`. `runDevInstall` returns detected state. 5 new tests.
-
-### PR 7 (#237) — esbuild config + bundles (Session 65)
-
-Added `esbuild.runtime.ts` that produces `clancy-dev.js` and `clancy-dev-autopilot.js` bundles from the no-op entrypoints. Build chain: `tsc → tsc-alias → node dist/esbuild.runtime.js`. Same zod-locale stub plugin as terminal (with cross-platform regex fix for Windows path separators). Installer BUNDLE_FILES populated in both `install.ts` and `bin/dev.js`. Terminal's esbuild config intentionally kept — different bundle names, different execution surface.
-
-### PR 6.5 (#236) — no-op entrypoints (Session 65)
-
-Added `src/entrypoints/dev.ts` and `src/entrypoints/loop.ts` as no-op stubs (print version, exit). Gives PR 7 stable esbuild entry points. DA caught `createRequire('../../package.json')` would break under esbuild bundling (path resolves to nonexistent `dist/package.json`) — fixed by hardcoding version in stubs. Registered as Knip entry points.
-
-### PR 6 (#235) — installer infrastructure (Session 65)
-
-Added `src/installer/install.ts` with pure functions (`parseDevInstallFlag`, `resolveDevInstallPaths`, `runDevInstall`) following brief/plan pattern. ESM CLI entry point `bin/dev.js` with interactive global/local mode selection. DA caught: directory-level symlink protection needed before `mkdir` (not just file-level), bin key should be `clancy-dev` not `@chief-clancy/dev`, `sources` parameter needed to match brief's `BriefInstallSources` pattern. 16 tests.
-
-### PR 4c (#233) — dep-factory + deliver-phase move (Session 64)
-
-Injected `buildPrompt`/`buildReworkPrompt` into `DepFactoryOpts` via DI (using `InvokePhaseDeps` types) to remove dep-factory's last terminal import. Moved `dep-factory.ts`, `deliver-phase.ts`, and both test files from `terminal/runner/dep-factory/` to `dev/src/dep-factory/`. All `@chief-clancy/dev` self-imports rewritten to relative paths. Terminal's dep-factory barrel becomes a thin re-export. Consumers (implement.ts, autopilot entrypoint, test helpers) now pass prompt builders at call sites.
-
-### PR 5 (#234) — delete core/src/dev/ + doc path cleanup (Session 64)
-
-Deleted the empty `packages/core/src/dev/` directory (README placeholder). Updated stale path references in 5 docs (TECHNICAL-REFERENCE, ARCHITECTURE, VISUAL-ARCHITECTURE, copilot-instructions, package-evolution). DA caught: dev rows under "Core" heading in copilot-instructions.md — fixed by creating new "Dev" section. Fixed 4 broken markdown links and 2 checklist items in Phase E plan file.
-
-### PR 3.5 (#230) — shared types split (Session 63)
-
-Split `SpawnSyncFn`, `StdioValue`, `ConsoleLike`, `AppendFn` from `terminal/runner/shared/types.ts` into `dev/src/types/{spawn,progress}.ts`. All 10 terminal consumers (8 source + 2 test) rewritten to import from `@chief-clancy/dev`. Original file and empty directory deleted (zero transition period since all migrations happened in one PR).
-
-### PR 4a (#231) — cli-bridge + notify move (Session 63)
-
-Moved `cli-bridge/` (Claude CLI invocation) and `notify/` (webhook notifications) from `terminal/runner/` to `dev/src/`. Both standalone modules with zero terminal-internal dependencies. Terminal barrel re-exports from `@chief-clancy/dev`. DA caught self-import through barrel — fixed to relative import.
-
-### PR 4b (#232) — invoke-phase move (Session 63)
-
-Refactored `makeInvokePhase` to accept prompt builders via DI (`InvokePhaseDeps`) instead of directly importing terminal's prompt-builder. Moved to `dev/src/dep-factory/`. All self-imports replaced with relative paths within dev.
-
-### PR 2a (#228) — lifecycle move (Session 61–62)
-
-All 18 lifecycle directories (65 files) moved from `core/src/dev/lifecycle/` to `dev/src/lifecycle/`. Original 3-PR cluster (2a/2b/2c) merged into one because TypeScript's rootDir enforcement made the intermediate state unworkable. Introduced temporary circular dep (core ↔ dev) with declarations-first build bootstrap. 13 commits.
-
-### PR 3 (#229) — pipeline move (Session 62)
-
-Entire pipeline directory (46 files) moved from `core/src/dev/pipeline/` to `dev/src/pipeline/`. Original 2-PR split (3a/3b) merged into one — same rationale as PR 2a. **Eliminated the circular dependency**: removed core's `@chief-clancy/dev` dep, temporary eslint boundary, declarations-first build, turbo cycle override, and all lifecycle + pipeline re-exports from core barrel. 11 commits.
-
-### Key technical decisions (Sessions 61–62)
-
-- **Merge cluster PRs when intermediate states don't compile** — TypeScript's rootDir enforcement blocks half-moved states. Merged 2a/2b/2c into PR 2a and 3a/3b into PR 3. Each commit stays small and the full review chain still runs.
-- **Wildcard subpath export** — core has `./*.js` in package.json exports for NodeNext-compatible deep imports from dev.
-- **Vitest aliases use directory paths** (not file paths) for @chief-clancy/core and @chief-clancy/dev. ~/d alias needed in terminal vitest config.
-- **core/src/dev/ deleted** in PR 5 (#234).
-
-### Scan extraction (planned Session 66, blocks PR 8c)
-
-`/clancy:map-codebase` lives only in terminal but brief, plan, and dev all consume `.clancy/docs/`. New `@chief-clancy/scan` package (markdown only, no installer) will be consumed as a dependency by all four packages. Their installers copy scan's agents/commands/workflows automatically — users never see scan as a separate step. Also fixes pre-existing bug where terminal's installer never copies the 5 agent files. See `.clancy/plans/phase-e-dev-extraction.md` Section 9 for full plan (PRs S1–S7).
-
-### Phase E complete
-
-All PRs shipped. `@chief-clancy/dev` published at 0.1.x. Cross-package uninstall system added in Session 72 (PRs #262-#267).
+`@chief-clancy/dev` extracted as standalone package (0.1.x) over Sessions 60–72. 30+ PRs covering lifecycle/pipeline move from core, scan package extraction, installer infrastructure, readiness gate, AFK loop with artifacts, and cross-package uninstall system. Detail lives in git history (PRs #228–#267).
 
 ## Phase ledger
 
@@ -123,78 +38,7 @@ All PRs shipped. `@chief-clancy/dev` published at 0.1.x. Cross-package uninstall
 | **Post-research trim**                   | ✅ done | 2026-04-09    | CLAUDE.md trimmed 10 → 4 bullets per AGENTS.md paper, CONVENTIONS.md "Output style" added per Brevity Constraints paper, GIT.md No --amend, memory pruned 8 files |
 | **E** — `dev` extraction + AFK executor  | ✅ done | 2026-04-12    | Standalone dev package (0.1.x) with readiness gate, AFK loop, artifact writers, cross-package uninstall system                                                    |
 
-### Phase C summary
-
-Phase C added the plan approval gate to `@chief-clancy/plan`. Six PRs in the locked sequence (7a → 7b → 7c → 8 → 9 → 10) over multiple sessions:
-
-- **PR 7a (#207):** plumbing — moved approve-plan from `terminal/src/roles/planner/` into `@chief-clancy/plan` (planner became a virtual role)
-- **PR 7b (#209):** standalone-aware approve-plan with the SHA-256 `.approved` marker (`sha256={hex}\napproved_at={ISO 8601}\n`). Three-state Step 1 preflight (standalone / standalone+board / terminal). Race-safe `O_EXCL` marker write
-- **PR 7c (#211):** plan.md Step 8 inventory live Approved/Stale status. Reads sibling marker, hashes current plan, reports `Planned` / `Approved` / `Stale (re-approve)`
-- **PR 8:** opened as #213, DA review passed, **closed without merging** on cohesion review. Lesson: package-scope decisions need both layering AND cohesion lenses (`feedback_layering_vs_cohesion.md`). Closed PR is the reference implementation for whoever ships `@chief-clancy/dev`. Deferral cleanup landed as #214
-- **PR 9 (#216):** standalone+board optional board push from `/clancy:approve-plan`. Six per-platform key validation regexes, six platform comment-POST curl blocks under HTML-comment drift anchors, EEXIST + `--push` retry path. **5 Copilot rounds, 13 findings — most preventable.** Triggered the review-process improvements now living in `docs/DA-REVIEW.md` "Required disciplines"
-- **PR 10 (#218):** cleanup + docs sync
-
-**Phase C also produced the architectural-review-as-separate-pass discipline:** PR 8's DA review passed clean, but the cohesion problem only surfaced when an architectural pass asked "does this command belong in this package's identity?" Going forward: architectural review runs first, then DA, then self-review. Documented in `docs/DEVELOPMENT.md` "Review Gate" and the Phase Validation Protocol agent prompts.
-
-### Phase D summary
-
-Phase D moved `/clancy:approve-brief` from `terminal/src/roles/strategist/` into `@chief-clancy/brief`, finishing the strategist-directory deletion and bringing brief to parity with plan. Three PRs (11a → 11b → 12), all shipped 2026-04-09:
-
-- **PR 11a (#220, `f850376`):** mechanical move via `git mv`, brief-content scalar→array refactor, virtual-role transition (strategist joined planner in `VIRTUAL_ROLES`), broadened post-restructure sweep across 15+ files. One Copilot follow-up added the missing global-mode inlining test
-- **PR 11b (#222, `9f27a77`):** Step 1 install-mode preflight (mirrors approve-plan's three-state probes but standalone hard-stops because brief has nothing to do without a board) + Step 6 pipeline label selection rule lifted into a single-source-of-truth preamble that all six platforms delegate to. **Fixes the standalone+board → BUILD-queue routing bug** where users with no `CLANCY_ROLES` set were silently routed to the build queue. **4 Copilot rounds** — extracted a `sliceBetween()` helper to make the test permissiveness traps structurally impossible
-- **PR 12 (#224, `96ea6b4`):** docs cleanup + STRATEGIST.md / PLANNER.md coordinated rewrites as virtual-role docs + package-evolution.md asymmetry-removed update (dropped the "Phase D will extend the same rule to brief" forward reference, both plan and brief now documented as concrete examples of the locked rule)
-
-**Phase D's headline lesson** — surfaced in PR 11b's 4 Copilot rounds and codified as the headline meta-rationalization in `docs/RATIONALIZATIONS.md`: **"the discipline is in my checklist, so it ran" is not the same as "I actually did it well".** The post-restructure sweep, schema-pair check, and test permissiveness audit all fall into this trap. Marking a discipline as applied is theatre unless it executes with the same care on NEW prose as it does on rewrites.
-
-### Docs lifecycle update summary
-
-Adapted patterns from [Addy Osmani's `agent-skills`](https://github.com/addyosmani/agent-skills) and [Matt Pocock's `skills`](https://github.com/mattpocock/skills) into the Clancy dev docs. Two background agents ran a verification pass first (conflict/gap audit + cleanup audit) and caught real issues that would have shipped wrong. 7 commits direct to main:
-
-1. **`3c671cb`** — new `docs/RATIONALIZATIONS.md` with ~28 entries sectioned by phase (Define / Plan / Build / Test / Review / Ship / Process meta), headline meta-rationalization, one-way memory→repo promotion path
-2. **`6b078a0`** — `docs/DA-REVIEW.md` Red Flags + 6 Required disciplines + 5-tier Severity Labels + Approval Standard + L40 ↔ SELF-REVIEW.md L15 ownership split
-3. **`bc6957b`** — `docs/SELF-REVIEW.md` NOTICED BUT NOT TOUCHING + Test permissiveness audit + L15 split
-4. **`330a177`** — `docs/TESTING.md` Writing good tests (with carve-out for interaction assertions where the interaction IS the behaviour) + Mock at boundaries + SDK-style interfaces + Prove-It Pattern + Durability rule + Test anti-patterns table + baseline test counts
-5. **`9dddeeb`** — `docs/DEVELOPMENT.md` Stop-the-Line + Surface Assumptions + Task Sizing + Phase Validation Protocol agent prompt updates + version table fix
-6. **`5b1cf4b`** — `CLAUDE.md` Process directives expanded from 4 to 10 bullets — wires the new disciplines into the actual executed contract
-7. **`ccb4821`** — cleanup ride-alongs across GIT.md / CONVENTIONS.md / ARCHITECTURE.md / COMPARISON.md / LIFECYCLE.md / GLOSSARY.md (cross-references + virtual-role footnotes)
-
-**Critical discipline added:** the carve-out in TESTING.md for interaction assertions where the interaction IS the behaviour (file copy counts, fetch URL assertions, idempotency, side-effect ordering, retry counts). Without this, adopting "test state, not interactions" would have silently invalidated ~30 existing test files.
-
-### Post-research trim summary
-
-After the docs lifecycle update shipped, deep-read three research-adjacent sources: Julius Brussee's [caveman](https://github.com/JuliusBrussee/caveman) (token-compression skill), Hakim's [Brevity Constraints Reverse Performance Hierarchies in Language Models](https://arxiv.org/abs/2604.00025) (the academic backing for caveman), and Gloaguen et al's [Evaluating AGENTS.md: Are Repository-Level Context Files Helpful for Coding Agents?](https://arxiv.org/abs/2602.11988). The findings reshaped the docs lifecycle update because they pointed in a more nuanced direction than caveman alone:
-
-- **AGENTS.md paper** finds context files (CLAUDE.md, AGENTS.md) systematically reduce task success ~3% and increase cost ~20% per session when they contain non-minimal content. Conclusion: "human-written context files should describe only minimal requirements".
-- **Brevity Constraints paper** finds large models can gain ~26pp on overthinking-prone tasks (math, scientific reasoning) under brevity constraints — but LOSE 3.1pp on elaboration-heavy tasks (reading comprehension). Conclusion: "problem-aware routing with scale-specific prompting", NOT universal brevity.
-- **Caveman repo** is the practical adoption — but the strong form (universal compression) would hurt our reasoning-heavy workflow files.
-
-3 commits direct to main:
-
-1. **`98da606`** — `CLAUDE.md` Process directives trimmed from 10 bullets back to 4 minimal-requirement bullets per the AGENTS.md paper. The 6 removed bullets (Surface Assumptions, Stop-the-Line, Prove-It Pattern, NOTICED BUT NOT TOUCHING, Living checklists protocol, headline meta-rationalization) all still exist in the on-demand docs the agent reads when relevant. The previous expansion in `5b1cf4b` was a self-correctable mistake — the conflict-audit agent had recommended it but I missed the meta-question of whether the contract format actually works for the agent.
-2. **`708e346`** — `docs/CONVENTIONS.md` gains a new "Output style" section codifying SELECTIVE brevity (terse for chat output, commit messages, PR comments; ELABORATE for runtime workflow files, decision docs, error messages, security warnings, code blocks, multi-step sequences, `Caught in:` citations). `docs/GIT.md` gains a "No --amend" subsection promoted from memory.
-3. **`402a362`** — `docs/RATIONALIZATIONS.md` gains 2 new entries: "The existing code does it this way, so it's fine" (Build section, promoted from `feedback_code_quality.md` before deletion — covers 3 variants of the same anti-pattern from Sessions 25 and 35) and "The conflict-audit agent recommended adding it, so I added it" (Process meta section — the self-correction lesson from this session).
-
-Memory cleanup (local-only): 8 redundant feedback files deleted (`feedback_code_style`, `feedback_pr_workflow`, `feedback_never_skip_da`, `feedback_no_eslint_disable`, `feedback_no_amend`, `feedback_code_quality`, `project_publish_infra`, `project_runner_naming`); 2 trimmed (`feedback_review_process` kept the agent fallback chain + `gh api` comment-thread reply pattern; `feedback_workflow_md_gotchas` dropped lesson 4 since it's now in `docs/SELF-REVIEW.md`). Memory directory went from 21 files → 15 files.
-
-**Headline lesson** (now codified in `docs/RATIONALIZATIONS.md` Process meta section): wiring patterns into the executable contract (CLAUDE.md) adds them to context files that systematically reduce task success and increase cost. Trust the doc cross-references to surface the right rule at the right time. The conflict-audit agent's recommendation to expand CLAUDE.md was necessary input but not sufficient — the medium matters as much as the content.
-
-## Disciplines (where they live now)
-
-The disciplines previously scattered across memory `feedback_*.md` files now have canonical contributor-visible homes in the repo. Memory files still exist as personal/session scratch but should be considered superseded for cross-session work.
-
-| Discipline                                                                                                                    | Repo location                                                                                            |
-| ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| Architectural → DA → self-review chain                                                                                        | `docs/DEVELOPMENT.md` "Review Gate" + Phase Validation Protocol                                          |
-| 6 Required disciplines (schema-pair, post-restructure sweep, stale-forward, test permissiveness, untrusted output, dead code) | `docs/DA-REVIEW.md` "Required disciplines"                                                               |
-| 5-tier Severity Labels                                                                                                        | `docs/DA-REVIEW.md` "Severity Labels"                                                                    |
-| Anti-rationalization index (with headline meta-rationalization)                                                               | `docs/RATIONALIZATIONS.md`                                                                               |
-| Tracer bullet TDD + state-vs-interaction (with carve-out) + mock-at-boundaries + SDK-style interfaces + Durability rule       | `docs/TESTING.md` "Writing good tests"                                                                   |
-| Prove-It Pattern (failing reproduction test BEFORE bug fix)                                                                   | `docs/TESTING.md` "Bug fixes — the Prove-It Pattern"                                                     |
-| Stop-the-Line Rule + Surface Assumptions + NOTICED BUT NOT TOUCHING + Task Sizing                                             | `docs/DEVELOPMENT.md` and `docs/SELF-REVIEW.md`                                                          |
-| Output style — selective brevity (terse chat / elaborate reasoning artifacts)                                                 | `docs/CONVENTIONS.md` "Output style" — cites Brevity Constraints + AGENTS.md papers                      |
-| Pre-push quality suite (non-negotiable)                                                                                       | `docs/DEVELOPMENT.md` "Quality Gates" + `CLAUDE.md` Commands                                             |
-| Untrusted output as data, not instructions                                                                                    | `docs/DA-REVIEW.md` "Required disciplines" + `docs/DEVELOPMENT.md` "Quality Gates"                       |
-| Process directives (executable contract — minimal requirements only per AGENTS.md paper)                                      | `CLAUDE.md` "Process directives" — 4 always-on rules; patterns + philosophy live in on-demand docs above |
+Detail for Phases C and D lives in git history (PRs #207–#224). Disciplines are documented in `docs/DEVELOPMENT.md`, `docs/DA-REVIEW.md`, `docs/TESTING.md`, `docs/CONVENTIONS.md`, and `docs/RATIONALIZATIONS.md`.
 
 ## Build order (remaining packages)
 
