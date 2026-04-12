@@ -82,7 +82,7 @@ Supported boards: Jira, GitHub Issues, Linear, Shortcut, Notion, Azure DevOps.
 
 ## Uninstalling
 
-Run `/clancy:uninstall-dev` in Claude Code. It removes dev's commands, workflows, and runtime bundles (`.clancy/clancy-dev.js`, `.clancy/clancy-dev-autopilot.js`), checks for other installed Clancy packages before removing shared files (board-setup, scan agents), and leaves `.clancy/.env` untouched.
+Run `/clancy:uninstall-dev` in Claude Code. It removes dev-exclusive files (commands, workflows, VERSION marker) and — for project-scoped uninstalls — runtime bundles (`.clancy/clancy-dev.js`, `.clancy/clancy-dev-autopilot.js`). Checks for other installed Clancy packages before removing shared files (board-setup, scan agents, map-codebase, update-docs). Leaves `.clancy/.env` untouched.
 
 ## Full pipeline
 

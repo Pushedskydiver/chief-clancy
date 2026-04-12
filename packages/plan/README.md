@@ -134,7 +134,7 @@ Supported boards: Jira, GitHub Issues, Linear, Shortcut, Notion, Azure DevOps.
 
 ## Uninstalling
 
-Run `/clancy:uninstall-plan` in Claude Code. It removes plan's commands and workflows, checks for other installed Clancy packages before removing shared files (board-setup, scan agents), and leaves `.clancy/.env` untouched.
+Run `/clancy:uninstall-plan` in Claude Code. It removes plan-exclusive files (commands, workflows, VERSION marker), then checks for other installed Clancy packages before removing shared files (board-setup, scan agents, map-codebase, update-docs). Leaves `.clancy/.env` untouched.
 
 ## Full pipeline
 

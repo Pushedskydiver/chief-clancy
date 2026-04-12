@@ -84,7 +84,7 @@ Existing behaviour, unchanged. The pipeline label respects `CLANCY_ROLES`: if `p
 
 ## Uninstalling
 
-Run `/clancy:uninstall-brief` in Claude Code. It removes brief's commands and workflows, checks for other installed Clancy packages before removing shared files (board-setup, scan agents), and leaves `.clancy/.env` untouched.
+Run `/clancy:uninstall-brief` in Claude Code. It removes brief-exclusive files (commands, workflows, devils-advocate agent, VERSION marker), then checks for other installed Clancy packages before removing shared files (board-setup, scan agents, map-codebase, update-docs). Leaves `.clancy/.env` untouched.
 
 ## Full pipeline
 

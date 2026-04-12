@@ -156,34 +156,35 @@ npx chief-clancy
 
 ## Commands
 
-| Command                      | Description                                                                    |
-| ---------------------------- | ------------------------------------------------------------------------------ |
-| `/clancy:brief` ²            | Grill phase → strategy brief → vertical slice decomposition → tickets          |
-| `/clancy:approve-brief` ²    | Review and approve a strategy brief, then create board tickets                 |
-| `/clancy:plan` ¹             | Refine backlog tickets into structured implementation plans                    |
-| `/clancy:plan 3` ¹           | Plan up to 3 tickets in batch mode                                             |
-| `/clancy:approve-plan` ¹     | Promote an approved plan to the ticket description                             |
-| `/clancy:init`               | Wizard — choose board, collect config, scaffold everything                     |
-| `/clancy:autopilot`          | Loop mode — processes tickets until queue is empty or MAX_ITERATIONS hit       |
-| `/clancy:autopilot 20`       | Same, override MAX_ITERATIONS to 20 for this session                           |
-| `/clancy:implement`          | Pick up one ticket and stop                                                    |
-| `/clancy:dry-run`            | Preview next ticket without making changes — no git ops, no Claude call        |
-| `/clancy:status`             | Show next tickets without running — read-only                                  |
-| `/clancy:review`             | Score next ticket (0–100%) with actionable recommendations                     |
-| `/clancy:logs`               | Format and display `.clancy/progress.txt`                                      |
-| `/clancy:map-codebase`       | Full 5-agent parallel codebase scan, writes structured docs                    |
-| `/clancy:update-docs`        | Incremental refresh — re-runs agents for changed areas                         |
-| `/clancy:settings`           | View and change configuration — model, iterations, board, and more             |
-| `/clancy:doctor`             | Diagnose your setup — test every integration, report what's broken             |
-| `/clancy:update`             | Update Clancy to latest version                                                |
-| `/clancy:uninstall-terminal` | Remove the full Clancy pipeline — package-aware, preserves standalone installs |
-| `/clancy:uninstall-brief`    | Remove brief commands only (standalone)                                        |
-| `/clancy:uninstall-plan`     | Remove plan commands only (standalone)                                         |
-| `/clancy:uninstall-dev`      | Remove dev commands and runtime bundles (standalone)                           |
-| `/clancy:help`               | Command reference                                                              |
+| Command                      | Description                                                                             |
+| ---------------------------- | --------------------------------------------------------------------------------------- |
+| `/clancy:brief` ²            | Grill phase → strategy brief → vertical slice decomposition → tickets                   |
+| `/clancy:approve-brief` ²    | Review and approve a strategy brief, then create board tickets                          |
+| `/clancy:plan` ¹             | Refine backlog tickets into structured implementation plans                             |
+| `/clancy:plan 3` ¹           | Plan up to 3 tickets in batch mode                                                      |
+| `/clancy:approve-plan` ¹     | Promote an approved plan to the ticket description                                      |
+| `/clancy:init`               | Wizard — choose board, collect config, scaffold everything                              |
+| `/clancy:autopilot`          | Loop mode — processes tickets until queue is empty or MAX_ITERATIONS hit                |
+| `/clancy:autopilot 20`       | Same, override MAX_ITERATIONS to 20 for this session                                    |
+| `/clancy:implement`          | Pick up one ticket and stop                                                             |
+| `/clancy:dry-run`            | Preview next ticket without making changes — no git ops, no Claude call                 |
+| `/clancy:status`             | Show next tickets without running — read-only                                           |
+| `/clancy:review`             | Score next ticket (0–100%) with actionable recommendations                              |
+| `/clancy:logs`               | Format and display `.clancy/progress.txt`                                               |
+| `/clancy:map-codebase`       | Full 5-agent parallel codebase scan, writes structured docs                             |
+| `/clancy:update-docs`        | Incremental refresh — re-runs agents for changed areas                                  |
+| `/clancy:settings`           | View and change configuration — model, iterations, board, and more                      |
+| `/clancy:doctor`             | Diagnose your setup — test every integration, report what's broken                      |
+| `/clancy:update`             | Update Clancy to latest version                                                         |
+| `/clancy:uninstall-terminal` | Remove the full Clancy pipeline — detects standalone packages and warns before removing |
+| `/clancy:uninstall-brief` ³  | Remove brief commands only (installed via `npx @chief-clancy/brief`)                    |
+| `/clancy:uninstall-plan` ³   | Remove plan commands only (installed via `npx @chief-clancy/plan`)                      |
+| `/clancy:uninstall-dev` ³    | Remove dev commands and runtime bundles (installed via `npx @chief-clancy/dev`)         |
+| `/clancy:help`               | Command reference                                                                       |
 
 ¹ Planner is an optional role — see [Roles](#roles) below.
 ² Strategist is an optional role — see [Roles](#roles) below.
+³ Standalone uninstall commands are available when the corresponding package is installed.
 
 ---
 
