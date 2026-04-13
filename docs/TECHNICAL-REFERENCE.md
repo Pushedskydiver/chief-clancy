@@ -17,11 +17,23 @@ All board modules live in `packages/core/src/board/`.
 - Shortcut `/stories/search` uses `workflow_state_id` (singular, not plural) and may return a bare array instead of `{ data: [...] }`
 - Shortcut `/member-info` returns 404 for some API token types — ping falls back to `/workflows`
 - Notion status filter uses `status` type only (not `or(status, select)` — Notion returns 400 for mismatched filter types). `CLANCY_NOTION_TODO` overrides the default `"To-do"` status value
-- `detectBoard` checks `GITHUB_TOKEN + GITHUB_REPO` before other boards — non-GitHub board configs must not include `GITHUB_REPO` (use `GITHUB_TOKEN` alone as git host token)
-- Setup workflows support all board providers: Jira, GitHub Issues, Linear, Shortcut, Notion, Azure DevOps
+- `detectBoard` (in `packages/core/src/board/detect-board.ts`) uses **single-marker detection**: `JIRA_BASE_URL`, `GITHUB_TOKEN + GITHUB_REPO` (pair required to distinguish from git-host-only use), `LINEAR_API_KEY`, `SHORTCUT_API_TOKEN`, `NOTION_DATABASE_ID` alone, `AZDO_ORG` alone. Schema validation runs after detection and enforces the full required var set (e.g. Notion also needs `NOTION_TOKEN`, AzDO also needs `AZDO_PROJECT` + `AZDO_PAT`). A marker present without its supporting vars fails preflight with a credentials error — it does **not** silently fall through to local mode
+- Terminal workflow files (`packages/terminal/src/roles/setup/workflows/*.md`) apply a **stricter pair-required** rule when displaying UI and gating local-mode detection in workflow prompts: `NOTION_TOKEN` + `NOTION_DATABASE_ID`, `AZDO_ORG` + `AZDO_PROJECT`. This intentionally diverges from `detectBoard()` so settings UI doesn't offer board actions for a half-configured `.clancy/.env`. Both rules agree in the fully-configured case; they differ only at the edges of partial config. Documented in `docs/guides/CONFIGURATION.md` "Local mode" section
+- Non-GitHub board configs must not include `GITHUB_REPO` (use `GITHUB_TOKEN` alone as git host token)
+- Setup workflows support all six board providers plus **local mode (no board)**: Jira, GitHub Issues, Linear, Shortcut, Notion, Azure DevOps
 - `fetchChildrenStatus` uses dual-mode: `Epic: {key}` text convention in ticket descriptions + native API fallback (Jira JQL, GitHub body search, Linear relations)
 - `fetchBlockerStatus` checks blockers before ticket pickup — Jira issueLinks, GitHub body parsing (`Blocked by #N`), Linear relations
 - Board label methods: `ensureLabel` (create-if-missing), `addLabel` (add to issue, calls ensureLabel internally), `removeLabel` (best-effort removal) on the `Board` type (`core/types/board.ts`)
+
+## Local Mode & Plan-File Approval
+
+- **Local mode** = `.clancy/.env` has none of the board markers listed above. Preflight skips board pings; `/clancy:autopilot` and `/clancy:review` stop with a redirect to `/clancy:settings`; every other command works against plan files instead of tickets
+- `/clancy:implement --from <plan.md>`: synthesises a ticket from the plan file and runs the pipeline with a no-op board (no API calls). Steps 2a (dry-run) and 2b (feasibility) are skipped — the plan has already been approved. Spec in `packages/terminal/src/roles/implementer/workflows/implement.md`
+- `/clancy:implement --from <dir> --afk`: batch variant. Lists `.md` files in the directory (natural sort), skips any without a matching `.approved` marker (with a warning), implements each approved plan sequentially, stops on first failure and reports a summary. Error if `--from <directory>` is passed without `--afk`
+- **`.approved` marker contract**: `/clancy:approve-plan` (in `@chief-clancy/plan`) computes the SHA-256 of `.clancy/plans/{stem}.md` and writes a sibling `.clancy/plans/{stem}.approved` file via `fs.openSync(path, 'wx')` (`O_EXCL`). Body is plain text: `sha256={hex}\napproved_at={iso-timestamp}\n`. The `.approved` file is **never** re-written — re-running approve-plan on an existing marker either stops (default) or fallthroughs to the `--push` board retry, depending on flags
+- **Marker verification in the consumer**: `packages/dev/src/lifecycle/plan-file/plan-file.ts` (`checkPlanApproval`) reads the marker, re-computes the SHA-256 of the plan file, and compares against the marker's `sha256=` value. Mismatch or malformed marker → refuse to run. This is the gate every local implementation passes through
+- **Re-approving a stale plan**: delete `.clancy/plans/{stem}.approved` and re-run `/clancy:approve-plan {stem}`. There is intentionally no `--force` flag — the delete-then-approve flow makes drift explicit
+- Board detection markers (`GITHUB_TOKEN`, `AZDO_PAT`) have **dual use**: they serve as both board credentials and git-host credentials depending on context. `/clancy:settings` → Disconnect board preserves them when `CLANCY_GIT_PLATFORM` indicates they're still needed for PR creation
 
 ## Hooks
 

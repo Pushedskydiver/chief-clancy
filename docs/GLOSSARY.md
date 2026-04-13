@@ -32,33 +32,36 @@ Ubiquitous language for the Clancy project. Use these terms consistently in code
 
 ## Delivery
 
-| Term                  | Definition                                                                                                                                                                                            |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Board**             | The project management tool (Jira, GitHub Issues, Linear, Shortcut, Notion, Azure DevOps) where tickets live. Clancy reads from and writes to the board via API.                                      |
-| **Ticket**            | A unit of work on the board. Clancy fetches, implements, and transitions tickets.                                                                                                                     |
-| **Parented ticket**   | A ticket that has a parent (epic in Jira, milestone in GitHub, parent issue in Linear). Delivered via PR to the epic branch.                                                                          |
-| **Standalone ticket** | A ticket with no parent. Delivered via PR directly to the base branch.                                                                                                                                |
-| **Epic branch**       | A long-lived branch where child ticket PRs are merged. Named `epic/{key}` for Jira/Linear or `milestone/{slug}` for GitHub. When all children are done, the epic branch gets a PR to the base branch. |
-| **Base branch**       | The branch configured as `CLANCY_BASE_BRANCH` (default: `main`). The target for standalone ticket PRs and epic PRs.                                                                                   |
-| **Feature branch**    | A short-lived branch (e.g. `feature/proj-101`) created for implementing a single ticket. PRs target either the epic branch or base branch.                                                            |
-| **Single-child skip** | Optimisation: if an epic has only one child ticket, skip the epic branch overhead — deliver the child PR directly to the base branch.                                                                 |
-| **Epic completion**   | When all children of an epic are done (PRs merged), Clancy auto-creates a PR from the epic branch to the base branch.                                                                                 |
-| **Migration guard**   | Safety check: if an epic branch exists locally but not on the remote, block and show instructions to push manually.                                                                                   |
+| Term                   | Definition                                                                                                                                                                                                                                                                           |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Board**              | The project management tool (Jira, GitHub Issues, Linear, Shortcut, Notion, Azure DevOps) where tickets live. Clancy reads from and writes to the board via API. **Optional** — Clancy also runs in local mode against plan files when no board is configured.                       |
+| **Local mode**         | No-board operation. `.clancy/.env` has none of the board markers, so Clancy works off local plan files in `.clancy/plans/` instead of a ticket queue. `/clancy:autopilot` and `/clancy:review` require a board; everything else works.                                               |
+| **Ticket**             | A unit of work. In board mode it's a row on the Kanban board. In local mode Clancy synthesises a ticket from a plan file (`--from`) to pass through the same pipeline.                                                                                                               |
+| **Plan file**          | A local `.md` file in `.clancy/plans/` written by `/clancy:plan --from`. Contains the same structured plan that would otherwise be posted as a ticket comment.                                                                                                                       |
+| **`.approved` marker** | Sibling file at `.clancy/plans/{stem}.approved` written by `/clancy:approve-plan`. Plain-text body: `sha256={hex}\napproved_at={iso-timestamp}`. The gate `/clancy:implement --from` checks before running — mismatch means the plan changed since approval and must be re-approved. |
+| **Parented ticket**    | A ticket that has a parent (epic in Jira, milestone in GitHub, parent issue in Linear). Delivered via PR to the epic branch.                                                                                                                                                         |
+| **Standalone ticket**  | A ticket with no parent. Delivered via PR directly to the base branch.                                                                                                                                                                                                               |
+| **Epic branch**        | A long-lived branch where child ticket PRs are merged. Named `epic/{key}` for Jira/Linear or `milestone/{slug}` for GitHub. When all children are done, the epic branch gets a PR to the base branch.                                                                                |
+| **Base branch**        | The branch configured as `CLANCY_BASE_BRANCH` (default: `main`). The target for standalone ticket PRs and epic PRs.                                                                                                                                                                  |
+| **Feature branch**     | A short-lived branch (e.g. `feature/proj-101`) created for implementing a single ticket. PRs target either the epic branch or base branch.                                                                                                                                           |
+| **Single-child skip**  | Optimisation: if an epic has only one child ticket, skip the epic branch overhead — deliver the child PR directly to the base branch.                                                                                                                                                |
+| **Epic completion**    | When all children of an epic are done (PRs merged), Clancy auto-creates a PR from the epic branch to the base branch.                                                                                                                                                                |
+| **Migration guard**    | Safety check: if an epic branch exists locally but not on the remote, block and show instructions to push manually.                                                                                                                                                                  |
 
 ## Once Orchestrator
 
-| Term                  | Definition                                                                                                                                     |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Once**              | A single ticket execution cycle: preflight → fetch ticket → implement → deliver → log. Entry point: `/clancy:implement`.                       |
-| **Run**               | AFK loop that calls once repeatedly until the queue is empty or `MAX_ITERATIONS` is reached. Entry point: `/clancy:autopilot`.                 |
-| **Preflight**         | Startup checks: `.clancy/.env` exists, credentials valid, board reachable. Runs before every ticket.                                           |
-| **Blocker check**     | Before implementing, check blocking dependencies on the board. If any blocker is incomplete, the ticket is skipped.                            |
-| **Board type**        | Unified type abstracting all board operations. Created by `createBoard()` factory — the single switch on `config.provider` in the system.      |
-| **Phase pipeline**    | The once orchestrator is a pipeline of 13 composable phase functions sharing a `RunContext`. Each phase returns continue or exit.              |
-| **Feasibility check** | After fetching a ticket, assess whether the work is achievable in the current codebase context.                                                |
-| **Rework**            | Automatic re-implementation triggered by PR review comments. Inline code comments always trigger; conversation comments need `Rework:` prefix. |
-| **Progress entry**    | A line in `.clancy/progress.txt` recording a completed action.                                                                                 |
-| **TDD mode**          | Test-driven development mode enabled by `CLANCY_TDD=true`.                                                                                     |
+| Term                  | Definition                                                                                                                                                                     |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Once**              | A single ticket execution cycle: preflight → fetch ticket → implement → deliver → log. Entry point: `/clancy:implement`.                                                       |
+| **Run**               | AFK loop that calls once repeatedly until the queue is empty or `MAX_ITERATIONS` is reached. Entry point: `/clancy:autopilot`.                                                 |
+| **Preflight**         | Startup checks: `.clancy/.env` exists, credentials valid, board reachable (board mode), or plan path + `.approved` marker + hash match (local mode). Runs before every ticket. |
+| **Blocker check**     | Before implementing, check blocking dependencies on the board. If any blocker is incomplete, the ticket is skipped. Board mode only — local mode has no blocker graph.         |
+| **Board type**        | Unified type abstracting all board operations. Created by `createBoard()` factory — the single switch on `config.provider` in the system.                                      |
+| **Phase pipeline**    | The once orchestrator is a pipeline of 13 composable phase functions sharing a `RunContext`. Each phase returns continue or exit.                                              |
+| **Feasibility check** | After fetching a ticket, assess whether the work is achievable in the current codebase context.                                                                                |
+| **Rework**            | Automatic re-implementation triggered by PR review comments. Inline code comments always trigger; conversation comments need `Rework:` prefix.                                 |
+| **Progress entry**    | A line in `.clancy/progress.txt` recording a completed action.                                                                                                                 |
+| **TDD mode**          | Test-driven development mode enabled by `CLANCY_TDD=true`.                                                                                                                     |
 
 ## Strategist
 
