@@ -49,14 +49,18 @@ export type PipelineDeps = {
     ctx: RunContext,
   ) => Promise<{ readonly detected: boolean }>;
   /** Ticket fetch — fetch ticket + compute branches. */
-  readonly ticketFetch: (
-    ctx: RunContext,
-  ) => Promise<{ readonly ok: boolean; readonly error?: string }>;
+  readonly ticketFetch: (ctx: RunContext) => Promise<{
+    readonly ok: boolean;
+    readonly error?: string;
+    readonly reason?: string;
+  }>;
   // Dry-run (phase 5) is an inline ctx.dryRun check — no dependency needed.
   /** Feasibility — Claude feasibility check. */
-  readonly feasibility: (
-    ctx: RunContext,
-  ) => Promise<{ readonly ok: boolean; readonly error?: string }>;
+  readonly feasibility: (ctx: RunContext) => Promise<{
+    readonly ok: boolean;
+    readonly error?: string;
+    readonly reason?: string;
+  }>;
   /** Branch setup — git branch operations + lock write. */
   readonly branchSetup: (
     ctx: RunContext,
@@ -146,7 +150,11 @@ async function runPhases(
   // Ticket fetch
   const ticket = await deps.ticketFetch(ctx);
   if (!ticket.ok)
-    return { status: 'aborted', phase: 'ticket-fetch', error: ticket.error };
+    return {
+      status: 'aborted',
+      phase: 'ticket-fetch',
+      error: ticket.error ?? ticket.reason,
+    };
 
   // Dry-run gate
   if (ctx.dryRun) return { status: 'dry-run' };
@@ -157,7 +165,7 @@ async function runPhases(
     return {
       status: 'aborted',
       phase: 'feasibility',
-      error: feasibility.error,
+      error: feasibility.error ?? feasibility.reason,
     };
 
   // Branch setup
