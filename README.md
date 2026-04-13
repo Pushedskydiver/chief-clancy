@@ -160,7 +160,10 @@ npx chief-clancy
 # 1. Install Clancy commands (same as above)
 npx chief-clancy
 
-# 2. Open a project in Claude Code, then answer "No" when asked about a board:
+# 2. Open a project in Claude Code, then answer "No" when asked about a board.
+#    When /clancy:init asks about optional roles, enable BOTH Strategist and
+#    Planner — the local flow uses /clancy:brief (Strategist) and /clancy:plan
+#    (Planner). Without them, those commands won't be installed.
 /clancy:init
 
 # 3. Scan your codebase

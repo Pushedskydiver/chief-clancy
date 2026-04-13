@@ -17,7 +17,7 @@ Board credentials are **optional**. If `.clancy/.env` has none of the board mark
 
 In local mode:
 
-- `/clancy:brief`, `/clancy:plan --from`, `/clancy:approve-plan`, `/clancy:implement --from`, `/clancy:status`, `/clancy:doctor` all work without any board credentials.
+- `/clancy:brief [--from]`, `/clancy:plan --from`, `/clancy:approve-plan`, `/clancy:implement --from`, `/clancy:status`, `/clancy:doctor` all work without any board credentials. The brief and plan commands require their optional roles (Strategist, Planner) to be enabled — set during `/clancy:init` or via `/clancy:settings`.
 - `/clancy:autopilot` and `/clancy:review` require a board and will stop with a redirect to `/clancy:settings`.
 - Status transitions, board filters, labels, and sprint vars (below) have no effect — they gate on board presence.
 - Git-host credentials (`GITHUB_TOKEN`, `GITLAB_TOKEN`, `BITBUCKET_USER`/`BITBUCKET_TOKEN`, or `AZDO_PAT` when `CLANCY_GIT_PLATFORM=azure`) are still used for PR creation.

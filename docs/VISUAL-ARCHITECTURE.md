@@ -22,7 +22,7 @@ Interactive diagrams showing how packages, roles, commands, and flows connect. R
 
 ## 1. Package Boundaries
 
-Four packages with a strict dependency direction. No reverse imports. Brief is standalone.
+Seven packages. Dependency direction is strict: `core ← terminal ← chief-clancy`. `brief`, `plan`, `scan`, and `dev` are standalone — they have no core/terminal dependency and can be installed independently via their own `npx @chief-clancy/<pkg>` entry points. No reverse imports. Enforced by eslint-plugin-boundaries.
 
 ```mermaid
 graph TD
@@ -34,15 +34,13 @@ graph TD
         installer["installer/"]
         runner["runner/"]
         hooks["hooks/"]
-        roles["roles/"]
+        roles["roles/\n(setup, implementer, reviewer)"]
         agents["agents/"]
         templates["templates/"]
     end
 
     subgraph core["@chief-clancy/core"]
         board["board/\n(GitHub, Jira, Linear,\nShortcut, Notion, Azure DevOps)"]
-        pipeline["dev/pipeline/\n(phase orchestrator)"]
-        lifecycle["dev/lifecycle/\n(ticket lifecycle modules)"]
         types["types/"]
         schemas["schemas/\n(Zod/mini validation)"]
         shared["shared/\n(cache, http, git-ops,\nenv-parser, remote)"]
@@ -50,19 +48,38 @@ graph TD
 
     subgraph brief["@chief-clancy/brief (standalone)"]
         briefInstaller["installer/"]
-        briefCommands["commands/\n(brief.md)"]
-        briefWorkflows["workflows/\n(brief.md)"]
+        briefCommands["commands/\n(brief, approve-brief,\nboard-setup)"]
+        briefWorkflows["workflows/"]
         briefAgents["agents/\n(devils-advocate.md)"]
     end
 
+    subgraph plan["@chief-clancy/plan (standalone)"]
+        planInstaller["installer/"]
+        planCommands["commands/\n(plan, approve-plan)"]
+        planWorkflows["workflows/"]
+    end
+
+    subgraph scan["@chief-clancy/scan (standalone)"]
+        scanInstaller["installer/"]
+        scanCommands["commands/\n(map-codebase, update-docs)"]
+        scanAgents["agents/ (5 specialists)"]
+    end
+
+    subgraph dev["@chief-clancy/dev (standalone — executor)"]
+        devInstaller["installer/"]
+        devPipeline["pipeline/\n(phase orchestrator)"]
+        devLifecycle["lifecycle/\n(ticket lifecycle modules)"]
+        devRuntime["runtime/\n(esbuild bundles for .clancy/)"]
+    end
+
     bin --> installer
-    runner --> pipeline
-    runner --> lifecycle
     installer --> hooks
-    pipeline --> lifecycle
-    pipeline --> board
-    lifecycle --> board
-    lifecycle --> shared
+    runner --> devPipeline
+    runner --> devLifecycle
+    devPipeline --> devLifecycle
+    devPipeline --> board
+    devLifecycle --> board
+    devLifecycle --> shared
     board --> schemas
     board --> shared
 
@@ -70,6 +87,9 @@ graph TD
     style terminal stroke:#c62828,stroke-width:2px
     style core stroke:#1565c0,stroke-width:2px
     style brief stroke:#2e7d32,stroke-width:2px
+    style plan stroke:#2e7d32,stroke-width:2px
+    style scan stroke:#2e7d32,stroke-width:2px
+    style dev stroke:#2e7d32,stroke-width:2px
 ```
 
 ---
@@ -132,32 +152,32 @@ graph TB
 
 ---
 
-## 3. Ticket Lifecycle — End to End
+## 3. Lifecycle — End to End
 
-A ticket's complete journey from vague idea to merged code. The strategist and planner are optional — tickets can enter the implementer queue directly.
+A unit of work's complete journey from vague idea to merged code. Runs on two parallel paths — the **board path** (tickets move through the `clancy:brief → clancy:plan → clancy:build` label pipeline) or the **local path** (briefs and plans live as files in `.clancy/briefs/` and `.clancy/plans/`, with a `.approved` marker file gating implementation).
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Idea: Vague idea on board\nor inline text
+    [*] --> Idea: Vague idea
 
     state "Strategist (optional)" as strat {
-        Idea --> Grill: /clancy:brief\n+ clancy:brief label
+        Idea --> Grill: /clancy:brief (board)\nor /clancy:brief --from outline.md (local)
         Grill --> Brief: Generate brief
-        Brief --> ReviewBrief: PO reviews
+        Brief --> ReviewBrief: Human reviews
         ReviewBrief --> Brief: Feedback → revise
-        ReviewBrief --> Tickets: /clancy:approve-brief\n− clancy:brief + clancy:plan
+        ReviewBrief --> Tickets: /clancy:approve-brief\n(board path only —\nlocal path has no approve-brief step)
     }
 
     state "Planner (optional)" as plnr {
         Tickets --> Backlog: Tickets with\nclancy:plan label
-        Backlog --> Planning: /clancy:plan
-        Planning --> ReviewPlan: PO reviews plan
+        Backlog --> Planning: /clancy:plan (board)\nor /clancy:plan --from <brief> (local)
+        Planning --> ReviewPlan: Human reviews plan
         ReviewPlan --> Planning: Feedback → revise
-        ReviewPlan --> Ready: /clancy:approve-plan\n− clancy:plan + clancy:build
+        ReviewPlan --> Ready: /clancy:approve-plan\n(board: − clancy:plan + clancy:build\nlocal: writes .approved marker)
     }
 
     state "Implementer" as impl {
-        Ready --> InProgress: /clancy:implement or /clancy:autopilot\nfilters by clancy:build
+        Ready --> InProgress: /clancy:implement (board, filters clancy:build)\nor /clancy:implement --from <plan.md> (local, checks .approved)
         InProgress --> Claude: Invoke Claude session
         Claude --> Deliver: Code committed
     }
@@ -169,7 +189,7 @@ stateDiagram-v2
         PRCreated --> ChildDone: Approved + merged
     }
 
-    state "Epic Completion" as epic {
+    state "Epic Completion (board path only)" as epic {
         ChildDone --> EpicCheck: Has parent?
         ChildDone --> Done: No parent
         EpicCheck --> EpicPR: All children done?
@@ -198,16 +218,19 @@ What happens inside `/clancy:implement` (and each iteration of `/clancy:autopilo
 
 ```mermaid
 flowchart TD
-    Start(["/clancy:implement"]) --> LockCheck
+    Start(["/clancy:implement\n(or --from <plan.md>)"]) --> LockCheck
 
     LockCheck{"Lock file\nexists?"} -->|No| AcquireLock["Acquire lock\n(.clancy/lock.json)"]
     LockCheck -->|"Yes — PID alive"| Stop0["Another session running ✗"]
     LockCheck -->|"Yes — PID dead"| Resume["Resume crashed session\n(read ticket + branch from lock)"]
 
-    AcquireLock --> Preflight
+    AcquireLock --> FromFlag{"--from\n<plan>?"}
     Resume --> Branch
 
-    subgraph Preflight
+    FromFlag -->|No — board path| Preflight
+    FromFlag -->|Yes — local path| LocalPreflight
+
+    subgraph Preflight["Board Preflight"]
         P1[".clancy/.env exists?"] -->|No| Stop1["Run /clancy:init first ✗"]
         P1 -->|Yes| P2["Parse env, detect board"]
         P2 --> P3["Ping board credentials"]
@@ -216,15 +239,25 @@ flowchart TD
         P4 --> P5["Branch freshness check"]
     end
 
+    subgraph LocalPreflight["Local Preflight (--from)"]
+        L1["Validate plan path"] -->|Missing| Stop1b["Plan file not found ✗"]
+        L1 --> L2["Check sibling .approved marker"]
+        L2 -->|Missing| Stop2b["Plan not approved —\nrun /clancy:approve-plan ✗"]
+        L2 -->|Hash mismatch| Stop2c["Plan changed since approval —\ndelete marker and re-approve ✗"]
+        L2 -->|OK| L3["Git connectivity check"]
+        L3 --> L4["Branch freshness check"]
+    end
+
     P5 --> EpicScan
+    L4 --> FetchTicket
 
-    EpicScan["Epic completion scan\n(check if any epics have\nall children done → create\nepic PR if so)"] --> FetchTicket
+    EpicScan["Epic completion scan\n(check if any epics have\nall children done → create\nepic PR if so — board only)"] --> FetchTicket
 
-    subgraph FetchTicket["Fetch Ticket"]
-        F1["Query board for next ticket"] -->|None found| Stop3["No tickets — all done"]
-        F1 -->|Found| F2["Check for rework\n(scan progress.txt)"]
+    subgraph FetchTicket["Resolve Target"]
+        F1["Board path: query for next ticket\nLocal path: synthesise ticket from plan"] -->|None found| Stop3["No tickets — all done"]
+        F1 -->|Found| F2["Check for rework\n(scan progress.txt — board only;\nlocal path skips)"]
         F2 -->|PR has feedback| Rework["Build rework prompt"]
-        F2 -->|No rework| F3["Fresh ticket"]
+        F2 -->|No rework or local| F3["Fresh target"]
     end
 
     F3 --> DryRun
@@ -422,7 +455,7 @@ Everything Clancy creates and reads in the user's project.
 ```mermaid
 graph TD
     subgraph ".clancy/"
-        env[".env\n(board credentials + config)"]
+        env[".env\n(optional board creds + config —\nabsent board markers = local mode)"]
         oncejs["clancy-implement.js\n(esbuild bundle)"]
         afkjs["clancy-autopilot.js\n(esbuild bundle)"]
         pkg["package.json\n({'type':'module'})"]
@@ -444,9 +477,15 @@ graph TD
 
         subgraph "briefs/"
             brief1["2026-03-18-dark-mode.md"]
-            brief1a[".approved marker"]
             brief2["2026-03-17-auth-rework.md"]
-            feedback["...feedback.md\n(companion file)"]
+            briefFb["...feedback.md\n(companion file)"]
+        end
+
+        subgraph "plans/"
+            plan1["{plan-id}.md"]
+            plan1a["{plan-id}.approved\n(SHA-256 + approved_at —\ngate for /clancy:implement --from)"]
+            plan2["{plan-id}.md"]
+            planFb["...feedback.md\n(companion file)"]
         end
     end
 
@@ -460,11 +499,13 @@ graph TD
     mapcb -->|generates| conv
     mapcb -->|generates| test
 
-    brief(["/clancy:brief"]) -->|writes| brief1
-    approvebrief(["/clancy:approve-brief"]) -->|writes| brief1a
+    brief(["/clancy:brief\n(or --from <outline>)"]) -->|writes| brief1
+    plan(["/clancy:plan\n(or --from <brief>)"]) -->|writes| plan1
+    approveplan(["/clancy:approve-plan"]) -->|writes marker| plan1a
 
-    once(["/clancy:implement"]) -->|reads| env
+    once(["/clancy:implement\n(or --from <plan.md>)"]) -->|reads| env
     once -->|reads| stack
+    once -->|"local path: reads + verifies"| plan1a
     once -->|appends| progress
     once -->|executes| oncejs
 
@@ -474,6 +515,7 @@ graph TD
     style progress stroke:#2e7d32,stroke-width:2px
     style oncejs stroke:#c62828,stroke-width:2px
     style afkjs stroke:#c62828,stroke-width:2px
+    style plan1a stroke:#1565c0,stroke-width:2px
 ```
 
 ---
@@ -562,24 +604,36 @@ The optional planning phase. Runs per-ticket after the strategist creates them.
 
 ```mermaid
 flowchart TD
-    Start(["/clancy:plan"]) --> Preflight["Preflight\n(.clancy/.env, credentials)"]
+    Start(["/clancy:plan\n(or --from <brief>)"]) --> Mode{"--from\n<brief>?"}
+
+    Mode -->|No — board path| Preflight["Preflight\n(.clancy/.env, board credentials)"]
+    Mode -->|Yes — local path| LocalPreflight["Preflight\n(.clancy/.env, brief file exists)"]
+
     Preflight --> Fetch["Fetch next unplanned ticket\nfrom board queue"]
     Fetch -->|None| Done(["No tickets to plan"])
-    Fetch -->|Found| AutoDetect{"Existing plan\nfor this ticket?"}
+    Fetch -->|Found| AutoDetect
 
+    LocalPreflight --> LoadBrief["Read brief file"]
+    LoadBrief --> AutoDetect
+
+    AutoDetect{"Existing plan?"}
     AutoDetect -->|No| Research
     AutoDetect -->|"Yes + feedback"| Revise["Revise plan\nwith feedback"]
     AutoDetect -->|"Yes, no feedback"| AlreadyPlanned["Already planned.\nAdd feedback to revise."]
 
     Research["Research codebase\n(read .clancy/docs/,\nexplore affected areas)"] --> Generate
-
     Revise --> Generate
 
-    Generate["Generate implementation plan\n(steps, file changes,\ntest strategy, size estimate)"] --> Post["Post plan as comment\non ticket"]
+    Generate["Generate implementation plan\n(steps, file changes,\ntest strategy, size estimate)"] --> Output
 
-    Post --> Display["Display plan to user"]
+    Output{"Output target"}
+    Output -->|Board path| PostBoard["Post plan as comment on ticket"]
+    Output -->|Local path| WriteFile["Write .clancy/plans/{plan-id}.md"]
+
+    PostBoard --> Display["Display plan to user"]
+    WriteFile --> Display
     Display --> Log["Log: PLAN entry\nin progress.txt"]
-    Log --> NextSteps(["Review → /clancy:approve-plan\nRevise → comment + re-run\nRestart → /clancy:plan --fresh"])
+    Log --> NextSteps(["Review → /clancy:approve-plan\nRevise → comment/file + re-run\nRestart → /clancy:plan --fresh"])
 
     style AlreadyPlanned stroke:#f9a825,stroke-width:2px
     style Done stroke:#f9a825,stroke-width:2px
@@ -587,16 +641,37 @@ flowchart TD
 
 ### Approve-plan flow
 
-```mermaid
-flowchart LR
-    Approve(["/clancy:approve-plan"]) --> Load["Load plan from\nticket comments"]
-    Load --> Confirm{"User confirms\nplan looks good?"}
-    Confirm -->|"Y"| LogApprove["Log: APPROVE_PLAN\nin progress.txt"]
-    Confirm -->|"N"| Stop(["Aborted"])
-    LogApprove --> Ready(["Ticket ready for\nimplementation"])
+`/clancy:approve-plan` resolves its target in one of two shapes. When given a board ticket key it runs the board-transport flow (label swap, optional status transition). When given a plan-file stem (or path) it writes a sibling `.approved` marker file containing the SHA-256 of the plan file and an `approved_at` timestamp. That marker is the **gate** `/clancy:implement --from` checks before applying any plan.
 
-    style Stop stroke:#c62828,stroke-width:2px
+```mermaid
+flowchart TD
+    Approve(["/clancy:approve-plan &lt;target&gt;"]) --> Resolve{"Target shape?"}
+
+    Resolve -->|Ticket key| BoardPath["Load plan from ticket comments"]
+    Resolve -->|Plan-file stem or path| LocalPath["Read .clancy/plans/{stem}.md"]
+
+    BoardPath --> ConfirmB{"User confirms?"}
+    ConfirmB -->|"Y"| TransitionB["Swap labels: − clancy:plan + clancy:build\nOptional status transition (CLANCY_STATUS_PLANNED)"]
+    ConfirmB -->|"N"| StopB(["Aborted"])
+    TransitionB --> LogB["Log: APPROVE_PLAN\nin progress.txt"]
+    LogB --> ReadyB(["Ticket in build queue"])
+
+    LocalPath --> HashFile["Compute SHA-256 of plan file"]
+    HashFile --> OpenExcl["Open .clancy/plans/{stem}.approved\nwith O_EXCL (exclusive create)"]
+    OpenExcl -->|"Success"| WriteMarker["Write marker body:\nsha256={hash}\napproved_at={iso-timestamp}"]
+    OpenExcl -->|"EEXIST"| Existing{"Re-run\nwith --push?"}
+    Existing -->|"No (default)"| AlreadyApproved["Already approved — stop.\n(Marker preserved byte-for-byte.)"]
+    Existing -->|"Yes"| PushFallthrough["Skip Step 4a/4b,\nrun board push retry"]
+    WriteMarker --> LogL["Log: APPROVE_PLAN\nin progress.txt"]
+    LogL --> ReadyL(["Plan ready for\n/clancy:implement --from\n(consumer verifies hash)"])
+
+    style StopB stroke:#c62828,stroke-width:2px
+    style AlreadyApproved stroke:#f9a825,stroke-width:2px
+    style PushFallthrough stroke:#1565c0,stroke-width:2px
+    style WriteMarker stroke:#1565c0,stroke-width:2px
 ```
+
+Hash comparison happens in the **consumer** (`/clancy:implement --from`), not in `/clancy:approve-plan`. Approve is write-once via `O_EXCL`; implement reads the marker, re-hashes the plan, and refuses to run on mismatch — the user must delete the marker and re-approve.
 
 ---
 

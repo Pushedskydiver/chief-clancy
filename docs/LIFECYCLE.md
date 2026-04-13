@@ -5,9 +5,11 @@ The complete journey of a feature from idea to merged code. Human steps are mark
 Clancy runs either of two parallel paths:
 
 - **Board path** — tickets flow through the `clancy:brief → clancy:plan → clancy:build` label pipeline on your Kanban board.
-- **Local path** — no board. Briefs, plans, and approvals live as files in `.clancy/briefs/` and `.clancy/plans/`. The gate for implementation is a sibling `.approved` marker file (written by `/clancy:approve-plan`).
+- **Local path** — no board. Briefs, plans, and approvals live as files in `.clancy/briefs/` and `.clancy/plans/`. The gate for implementation is a sibling `.approved` marker file (written by `/clancy:approve-plan`, containing the plan's SHA-256 and an approval timestamp).
 
 Commands have the same names in both paths; `--from <file>` flags route to the local variant.
+
+The local path uses `/clancy:brief` (Strategist role) and `/clancy:plan` (Planner role). Both are **optional roles** — enable them during `/clancy:init` or via `/clancy:settings`. Without them, those commands are not installed.
 
 ---
 
@@ -201,10 +203,9 @@ Owned by the **Planner** virtual role (see [docs/roles/PLANNER.md](roles/PLANNER
    ├─ Naturally sorts every .md in the directory
    ├─ Skips plans without a matching .approved marker (warns)
    ├─ Implements each approved plan sequentially
-   ├─ Stops on first failure, reports summary
-   └─ Generates session report when done
+   └─ Stops on first failure, reports a summary when done
 
-👤 Come back later, review session report and merge PRs
+👤 Come back later, review the batch summary and merge PRs
 ```
 
 `/clancy:autopilot` itself requires a board — the local batch equivalent is `/clancy:implement --from <dir> --afk`.

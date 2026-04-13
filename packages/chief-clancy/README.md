@@ -26,9 +26,9 @@ Clancy scaffolds slash commands, hooks, and board integrations into your Claude 
 **Without a board — local plan-driven flow:**
 
 1. **Install:** `npx chief-clancy`
-2. **Configure:** `/clancy:init` — answer "No" when asked about a board
+2. **Configure:** `/clancy:init` — answer "No" when asked about a board. When prompted for optional roles, enable **both Strategist and Planner** — the local flow uses `/clancy:brief` and `/clancy:plan`, which only install when their roles are enabled.
 3. **Scan:** `/clancy:map-codebase`
-4. **Draft:** `/clancy:brief --from outline.md` → `/clancy:plan --from <brief>` → `/clancy:approve-plan <plan>`
+4. **Draft:** `/clancy:brief --from outline.md` → `/clancy:plan --from <brief>` → `/clancy:approve-plan <plan>` (writes a `.approved` marker file gating implementation)
 5. **Run one plan:** `/clancy:implement --from .clancy/plans/<plan>.md`
 6. **Go AFK:** `/clancy:implement --from .clancy/plans/ --afk` — batch-executes every approved plan
 
