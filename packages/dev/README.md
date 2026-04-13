@@ -53,7 +53,7 @@ Execute local plan files without board credentials:
 /clancy:implement --from .clancy/plans/ --afk
 ```
 
-**How it works:** The `--from` flag bypasses the board entirely — no credentials, no ticket fetch. The pipeline parses the plan file for ticket key (slug), title, and implementation details, creates a synthetic ticket, and runs with a no-op board. Approval is advisory: a missing or stale `.approved` marker produces a warning but does not block execution.
+**How it works:** The `--from` flag bypasses the board entirely — no credentials, no ticket fetch. The pipeline parses the plan file for ticket key (slug), title, and implementation details, creates a synthetic ticket, and runs with a no-op board. In single-file mode, no approval check is performed. In batch mode, unapproved plans (no `.approved` marker) are skipped with a warning.
 
 **Batch mode** (`--from {directory} --afk`) lists `.md` plan files in the directory, naturally sorted by filename, skips unapproved plans with a warning, and implements each approved plan sequentially. Stops on first failure and reports an implemented/skipped/remaining summary.
 

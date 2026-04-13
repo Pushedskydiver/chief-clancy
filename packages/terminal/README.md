@@ -41,7 +41,7 @@ CJS bundles built by esbuild — best-effort, fail-open, never block the user:
 
 ### Runners
 
-Two execution modes powered by the [`@chief-clancy/dev`](https://www.npmjs.com/package/@chief-clancy/dev) pipeline:
+Three execution modes powered by the [`@chief-clancy/dev`](https://www.npmjs.com/package/@chief-clancy/dev) pipeline:
 
 - **`runImplement`** — single ticket: fetch, implement, deliver, exit
 - **`runImplementBatch`** — batch `--from`: implement approved local plans sequentially, stop on first failure
