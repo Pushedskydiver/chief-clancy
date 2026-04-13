@@ -104,7 +104,7 @@ sha256=d2c9f3a1b4e6c8f09123456789abcdef0123456789abcdef0123456789abcd
 approved_at=2026-04-08T22:30:00Z
 ```
 
-The full 64-character hex hash is what `.approved` actually stores — any plan-implementing tool reads the marker, hashes the current plan file the same way, and can detect edits after approval. Approval is advisory: a SHA mismatch produces a warning but does not block execution.
+The full 64-character hex hash is what `.approved` actually stores. The `--from` implement flow uses the marker as an advisory approval signal — in single-file mode no approval check is performed, and in batch mode plans without a marker are skipped. SHA comparison is not currently performed at runtime.
 
 **Implementing approved plans:** Install [`chief-clancy`](https://www.npmjs.com/package/chief-clancy) and run `/clancy:implement --from .clancy/plans/add-dark-mode-2.md`. The `--from` flag parses the plan, creates a synthetic ticket, and runs the full pipeline without board credentials. For batch execution, point `--from` at the plans directory with `--afk`: `/clancy:implement --from .clancy/plans/ --afk`.
 
