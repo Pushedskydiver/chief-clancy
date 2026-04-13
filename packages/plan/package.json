@@ -1,6 +1,6 @@
 {
   "name": "@chief-clancy/plan",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "private": false,
   "description": "Implementation planner for Claude Code — decompose briefs into actionable plans",
   "author": "Alex Clapperton",
