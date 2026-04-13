@@ -178,7 +178,7 @@ export function checkApprovalStatus(
  * `ParsedPlan` for callers that need them separately.
  *
  * @param plan - Parsed plan to convert.
- * @returns Synthetic ticket with `parentInfo` and `blockers` set to `'none'`.
+ * @returns Synthetic ticket with `parentInfo` set to `'none'` and `blockers` set to `'None'`.
  */
 export function toSyntheticTicket(plan: ParsedPlan): FetchedTicket {
   return {
