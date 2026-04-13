@@ -505,7 +505,7 @@ No tickets in the planning queue. Check your queue label/status configuration.
 
 Stop.
 
-For batch mode, process each ticket sequentially through Steps 4-10. Skip tickets that already have a brief (check `.clancy/briefs/`). Batch mode always uses AI-grill (no human interaction per ticket).
+For batch mode, process each ticket sequentially through Steps 4-10a (including Step 8a DA health check). Skip tickets that already have a brief (check `.clancy/briefs/`). Batch mode always uses AI-grill (no human interaction per ticket).
 
 ---
 
@@ -854,6 +854,27 @@ If revising from feedback (Step 5):
 {What feedback was addressed and how the brief changed.
 List resolved open questions explicitly.}
 ```
+
+---
+
+## Step 8a — DA health check
+
+After generating the brief (Step 8), run the devil's advocate agent against the **generated brief content**. This step fires for both fresh briefs and revised briefs (the revision flow in Step 5 jumps to Step 8 generation, then falls through here).
+
+Spawn the devil's advocate agent via the Agent tool. The agent file is at:
+`.claude/clancy/agents/devils-advocate.md`
+
+Pass the agent the full generated brief markdown only — do NOT include grill questions or idea text. The agent runs its brief health check preamble (5 mechanical checks against the decomposition table) and then investigates any claims or assumptions in the brief. It produces three sections: Discovery, Challenges, Open Questions.
+
+**Important:** In Step 4 (AI-grill), the DA agent receives _questions about the idea_. Here in Step 8a, it receives the _generated brief itself_. The health check preamble only fires here (in Step 4, the skip clause triggers because no brief exists yet).
+
+Review the DA output:
+
+- **HIGH Challenges or health check failures:** revise the brief to address these before proceeding to Step 9. Re-run Step 8a after revision to verify fixes. Maximum 2 revision cycles — if HIGH challenges remain after 2 revisions, note the unresolved items in the `## Risks` section and proceed to Step 9.
+- **MEDIUM Challenges:** note in the brief's `## Risks` section if not addressed directly.
+- **Open Questions:** merge any new items into the brief's `## Open Questions` section with severity prefixes.
+
+If the DA finds no issues (health check clean, "No challenges identified", no new open questions), proceed directly to Step 9.
 
 ---
 

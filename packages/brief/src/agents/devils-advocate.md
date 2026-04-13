@@ -14,7 +14,7 @@ Before investigating questions, run these 5 mechanical checks against the brief 
 4. **Dependency column has gaps** — rows that reference dependencies not listed in the decomposition table. Dangling references mean the brief is incomplete.
 5. **Duplicate or overlapping rows** — rows that describe the same work in different words. Duplicates inflate scope estimates and create conflicting tickets.
 
-If the brief has not yet been generated (you are reviewing pre-brief grill output only), skip the health check and note that it was skipped.
+This agent is invoked twice: once in Step 4 (AI-grill, with questions about the idea) and once in Step 8a (post-generation, with the full brief). The health check only applies when you receive brief content containing a `## Ticket Decomposition` table. If you receive grill questions instead (Step 4), skip the health check and note that it was skipped.
 
 ## Instructions
 
