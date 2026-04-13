@@ -106,7 +106,7 @@ You have {board} configured. What would you like to do?
 
 - Option **1**: proceed with existing board credentials. Skip Q1 and Q2 (board selection and credentials). For Jira/Linear: continue from Q2c (git host). For GitHub Issues/Shortcut/Notion/Azure DevOps: skip Q2c and continue from Q3e (first universal question).
 - Option **2**: proceed to Q1 (board selection) to pick a new board. Old credentials will be overwritten.
-- Option **3**: remove all board credential vars from `.clancy/.env` (keep universal settings like `CLANCY_BASE_BRANCH`, `CLANCY_MAX_REWORK`, etc.). Set `localMode = true`. Skip to standalone git host question, then Q3e.
+- Option **3**: remove board-identifying vars from `.clancy/.env` for the currently connected provider (e.g. `GITHUB_REPO`, `JIRA_BASE_URL`/`JIRA_USER`/`JIRA_API_TOKEN`/`JIRA_PROJECT_KEY`, `LINEAR_API_KEY`, `SHORTCUT_API_TOKEN`/`SHORTCUT_WORKFLOW`, `NOTION_TOKEN`/`NOTION_DATABASE_ID`, `AZDO_ORG`/`AZDO_PROJECT`). Keep universal settings (`CLANCY_BASE_BRANCH`, `CLANCY_MAX_REWORK`, etc.) and preserve shared git-host tokens (`GITHUB_TOKEN`, `GITLAB_TOKEN`, `BITBUCKET_*`, `AZDO_PAT`) since they may still be needed for local-mode PR creation. Set `localMode = true`. Skip to standalone git host question, then Q3e.
 
 ### Standalone git host question (local mode only)
 
@@ -117,10 +117,12 @@ Do you want Clancy to create PRs automatically? If so, which git host?
 [1] GitHub
 [2] GitLab
 [3] Bitbucket
-[4] Skip — I'll create PRs manually
+[4] Azure DevOps
+[5] Skip — I'll create PRs manually
 
 If [1-3]: collect the appropriate token (same prompts as Q2c for the selected host). Store in `.clancy/.env`.
-If [4]: skip. No git host token is stored.
+If [4]: collect the Azure DevOps personal access token (`AZDO_PAT`) using the same prompt as Q2's Azure DevOps section. Store in `.clancy/.env`.
+If [5]: skip. No git host token is stored.
 
 ---
 
