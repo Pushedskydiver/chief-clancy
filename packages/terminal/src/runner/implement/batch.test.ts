@@ -196,6 +196,24 @@ describe('runImplementBatch — failure handling', () => {
 
     expect(pipelineCallCount(opts)).toBe(3);
   });
+
+  it('uses "previewed" label in dry-run summary', async () => {
+    const pipeline = vi.fn().mockResolvedValue({ status: 'dry-run' });
+
+    const opts = createBatchOpts({
+      runPipeline: pipeline,
+      planFs: {
+        readdir: vi.fn().mockReturnValue(['plan-1.md', 'plan-2.md']),
+        exists: vi.fn().mockReturnValue(true),
+      },
+    });
+
+    await runImplementBatch(opts);
+
+    const output = logOutput(opts);
+    expect(output).toContain('2 previewed');
+    expect(output).not.toContain('implemented');
+  });
 });
 
 // ─── Summary ────────────────────────────────────────────────────────────────

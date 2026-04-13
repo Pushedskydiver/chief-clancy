@@ -61,25 +61,18 @@ type BatchOpts = {
 };
 
 type SummaryCounts = {
-  readonly implemented: number;
+  readonly processed: number;
   readonly skipped: number;
   readonly remaining: number;
+  readonly isDryRun: boolean;
 };
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function replaceFromPath(
-  argv: readonly string[],
-  newPath: string,
-): readonly string[] {
-  const idx = argv.indexOf('--from');
-  if (idx === -1 || idx + 1 >= argv.length) return argv;
-  return argv.map((v, i) => (i === idx + 1 ? newPath : v));
-}
-
 function buildSummaryLine(counts: SummaryCounts, elapsed: string): string {
+  const label = counts.isDryRun ? 'previewed' : 'implemented';
   const parts = [
-    green(`${counts.implemented} implemented`),
+    green(`${counts.processed} ${label}`),
     counts.skipped > 0 ? yellow(`${counts.skipped} skipped`) : undefined,
     counts.remaining > 0 ? red(`${counts.remaining} remaining`) : undefined,
   ].filter((p): p is string => p !== undefined);
@@ -138,7 +131,12 @@ export async function runImplementBatch(opts: BatchOpts): Promise<void> {
     out.log('');
     out.log(
       buildSummaryLine(
-        { implemented: 0, skipped: skippedSlugs.length, remaining: 0 },
+        {
+          processed: 0,
+          skipped: skippedSlugs.length,
+          remaining: 0,
+          isDryRun: false,
+        },
         formatDuration(clock() - startTime),
       ),
     );
@@ -178,8 +176,11 @@ function reportOutcome(
     readonly elapsed: string;
   },
 ): void {
-  const implemented = outcome.iterations.length - (outcome.haltedAt ? 1 : 0);
+  const processed = outcome.iterations.length - (outcome.haltedAt ? 1 : 0);
   const remaining = info.total - outcome.iterations.length;
+  const isDryRun = outcome.iterations.every(
+    (i) => i.result.status === 'dry-run',
+  );
 
   if (outcome.haltedAt) {
     out.error(
@@ -191,7 +192,7 @@ function reportOutcome(
   out.log('');
   out.log(
     buildSummaryLine(
-      { implemented, skipped: info.skipped, remaining },
+      { processed, skipped: info.skipped, remaining, isDryRun },
       info.elapsed,
     ),
   );
@@ -201,13 +202,11 @@ async function runOnePlan(
   opts: BatchOpts,
   planPath: string,
 ): Promise<PipelineResult> {
-  const planArgv = replaceFromPath(opts.argv, planPath);
-
   const ctx = createContext({
     projectRoot: opts.projectRoot,
-    argv: planArgv,
+    argv: opts.argv,
+    fromPath: planPath,
     isAfk: true,
-    now: opts.now,
   });
 
   const deps = buildPipelineDeps({
