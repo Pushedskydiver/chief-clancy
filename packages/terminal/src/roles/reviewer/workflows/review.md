@@ -16,7 +16,23 @@ Fetch the next ticket from the board and score how well-specified it is. Returns
 
    Stop.
 
-2. Source `.clancy/.env` and check board credentials are present (same vars checked by `/clancy:status`).
+2. Source `.clancy/.env` and detect which board is configured (Jira via `JIRA_BASE_URL`, GitHub Issues via `GITHUB_TOKEN` + `GITHUB_REPO`, Linear via `LINEAR_API_KEY`, Shortcut via `SHORTCUT_API_TOKEN`, Notion via `NOTION_TOKEN` + `NOTION_DATABASE_ID`, Azure DevOps via `AZDO_ORG` + `AZDO_PROJECT`).
+
+   If no board markers are present (local mode):
+
+   ```
+   🚨 Clancy — Review
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   /clancy:review scores board tickets — it requires a board connection.
+
+   In local mode, review your plans directly in .clancy/plans/.
+   To connect a board: /clancy:settings
+   ```
+
+   Stop.
+
+   Otherwise, check the required vars for the detected board are present (same vars as `/clancy:status` Step 1). If any are missing, print a specific error and stop.
 
 ---
 
