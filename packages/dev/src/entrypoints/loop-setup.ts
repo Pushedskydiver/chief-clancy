@@ -25,26 +25,41 @@ import { makeEnvFs } from './adapters.js';
 const DEFAULT_QUEUE_LIMIT = 50;
 const MAX_FETCH_LIMIT = 100;
 
+// ─── Types ────────────────────────────────────────────────────────────────
+
+type LoadEnvResult =
+  | {
+      readonly envFs: EnvFileSystem;
+      readonly boardConfig: BoardConfig;
+      readonly rawEnv: Record<string, string>;
+    }
+  | undefined;
+
 // ─── Env loading ──────────────────────────────────────────────────────────
 
-function loadEnv(projectRoot: string): {
-  readonly envFs: EnvFileSystem;
-  readonly boardConfig: BoardConfig;
-  readonly rawEnv: Record<string, string>;
-} {
+/**
+ * Load `.clancy/.env` and detect the board provider for the autopilot loop.
+ *
+ * @param projectRoot - Absolute path to the project root.
+ * @returns Loaded env, board config, and raw env vars, or `undefined` when no env file or no board detected.
+ */
+function loadEnv(projectRoot: string): LoadEnvResult {
   const envFs = makeEnvFs();
   const rawEnv = loadClancyEnv(projectRoot, envFs);
 
   if (!rawEnv) {
-    console.error('✗ No .clancy/.env found — run /clancy:board-setup first');
-    return process.exit(1);
+    console.error('✗ No .clancy/.env found — run /clancy:init first');
+    return undefined;
   }
 
   const boardResult = detectBoard(rawEnv);
 
   if (typeof boardResult === 'string') {
     console.error(boardResult);
-    return process.exit(1);
+    console.error(
+      '  Use /clancy:implement --from <plan> for local mode, or run /clancy:init to configure a board.',
+    );
+    return undefined;
   }
 
   return { envFs, boardConfig: boardResult, rawEnv };
