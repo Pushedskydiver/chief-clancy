@@ -11,6 +11,7 @@ import type { EnvFileSystem, ExecGit } from '@chief-clancy/core';
 import type {
   CostFs,
   FetchFn,
+  ListPlansFs,
   LockFs,
   ProgressFs,
   QualityFs,
@@ -152,10 +153,7 @@ function isDirectory(filePath: string): boolean {
 }
 
 /** Build a ListPlansFs adapter from real node:fs functions. */
-export function makePlanFs(): {
-  readonly readdir: (p: string) => readonly string[];
-  readonly exists: (p: string) => boolean;
-} {
+export function makePlanFs(): ListPlansFs {
   return {
     readdir: (p: string) => readdirSync(p),
     exists: (p: string) => existsSync(p),
