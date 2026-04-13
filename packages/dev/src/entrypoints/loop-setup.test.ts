@@ -40,13 +40,14 @@ describe('loadEnv', () => {
 
   it('returns undefined when detectBoard returns an error string', () => {
     mockLoadClancyEnv.mockReturnValue({ GH_TOKEN: 'x' });
-    mockDetectBoard.mockReturnValue('Missing GITHUB_REPO');
+    mockDetectBoard.mockReturnValue('✗ Missing GITHUB_REPO');
 
     const result = loadEnv('/project');
 
     expect(result).toBeUndefined();
-    expect(console.error).toHaveBeenCalledWith(
-      expect.stringContaining('Missing GITHUB_REPO'),
+    expect(console.error).toHaveBeenCalledWith('✗ Missing GITHUB_REPO');
+    expect(console.error).not.toHaveBeenCalledWith(
+      expect.stringContaining('✗ ✗'),
     );
     expect(console.error).toHaveBeenCalledWith(
       expect.stringContaining('/clancy:implement --from'),

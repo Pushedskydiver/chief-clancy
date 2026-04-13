@@ -55,7 +55,7 @@ function loadEnv(projectRoot: string): LoadEnvResult {
   const boardResult = detectBoard(rawEnv);
 
   if (typeof boardResult === 'string') {
-    console.error(`✗ ${boardResult}`);
+    console.error(boardResult);
     console.error(
       '  Use /clancy:implement --from <plan> for local mode, or run /clancy:init to configure a board.',
     );

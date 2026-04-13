@@ -45,13 +45,14 @@ describe('loadEnv', () => {
 
   it('returns undefined when detectBoard returns an error string', () => {
     mockLoadClancyEnv.mockReturnValue({ JIRA_HOST: 'x' });
-    mockDetectBoard.mockReturnValue('Missing JIRA_TOKEN');
+    mockDetectBoard.mockReturnValue('✗ Missing JIRA_TOKEN');
 
     const result = loadEnv('/project');
 
     expect(result).toBeUndefined();
-    expect(console.error).toHaveBeenCalledWith(
-      expect.stringContaining('Missing JIRA_TOKEN'),
+    expect(console.error).toHaveBeenCalledWith('✗ Missing JIRA_TOKEN');
+    expect(console.error).not.toHaveBeenCalledWith(
+      expect.stringContaining('✗ ✗'),
     );
     expect(console.error).toHaveBeenCalledWith(
       expect.stringContaining('/clancy:implement --from'),
