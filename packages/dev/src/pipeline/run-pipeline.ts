@@ -33,7 +33,9 @@ export type PipelineDeps = {
     ctx: RunContext,
   ) => Promise<{ readonly action: 'continue' | 'abort' | 'resumed' }>;
   /** Preflight — binary checks, env, board detection. */
-  readonly preflight: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
+  readonly preflight: (
+    ctx: RunContext,
+  ) => Promise<{ readonly ok: boolean; readonly error?: string }>;
   /** Epic completion — check for completed epics. */
   readonly epicCompletion: (
     ctx: RunContext,
@@ -119,7 +121,8 @@ async function runPhases(
 ): Promise<PipelineResult> {
   // Preflight
   const preflight = await deps.preflight(ctx);
-  if (!preflight.ok) return { status: 'aborted', phase: 'preflight' };
+  if (!preflight.ok)
+    return { status: 'aborted', phase: 'preflight', error: preflight.error };
 
   // Epic completion (informational — never aborts)
   await deps.epicCompletion(ctx);

@@ -45,7 +45,9 @@ export function wirePreflight(opts: {
   readonly projectRoot: string;
   readonly exec: ExecGit;
   readonly fetch: FetchFn;
-}): (ctx: RunContext) => Promise<{ readonly ok: boolean }> {
+}): (
+  ctx: RunContext,
+) => Promise<{ readonly ok: boolean; readonly error?: string }> {
   return (ctx) => {
     if (ctx.fromPath) {
       if (!isGitRepo(opts.exec)) {
