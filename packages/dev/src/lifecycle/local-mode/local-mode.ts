@@ -40,6 +40,24 @@ export function createNoopBoard(): Board {
 
 // ─── createLocalConfig ───────────────────────────────────────────────────────
 
+/** Keys from `.clancy/.env` to pass through to the synthetic config. */
+const GIT_PASSTHROUGH_KEYS = [
+  'GITHUB_TOKEN',
+  'GITLAB_TOKEN',
+  'BITBUCKET_USER',
+  'BITBUCKET_TOKEN',
+  'AZDO_PAT',
+  'CLANCY_GIT_PLATFORM',
+  'CLANCY_GIT_API_URL',
+] as const;
+
+/** Pick defined values for the passthrough keys from an env record. */
+function pickGitEnv(envFile: Record<string, string>): Record<string, string> {
+  return Object.fromEntries(
+    GIT_PASSTHROUGH_KEYS.filter((k) => envFile[k]).map((k) => [k, envFile[k]]),
+  );
+}
+
 /**
  * Create a synthetic {@link BoardConfig} for local-mode execution.
  *
@@ -64,20 +82,7 @@ export function createLocalConfig(opts?: {
         envFile['CLANCY_BASE_BRANCH'] ??
         process.env['CLANCY_BASE_BRANCH'] ??
         'main',
-      // Pass through git host tokens for PR creation (if available)
-      ...(envFile['GITHUB_TOKEN'] && {
-        GITHUB_TOKEN: envFile['GITHUB_TOKEN'],
-      }),
-      ...(envFile['GITLAB_TOKEN'] && {
-        GITLAB_TOKEN: envFile['GITLAB_TOKEN'],
-      }),
-      ...(envFile['BITBUCKET_USER'] && {
-        BITBUCKET_USER: envFile['BITBUCKET_USER'],
-      }),
-      ...(envFile['BITBUCKET_TOKEN'] && {
-        BITBUCKET_TOKEN: envFile['BITBUCKET_TOKEN'],
-      }),
-      ...(envFile['AZDO_PAT'] && { AZDO_PAT: envFile['AZDO_PAT'] }),
+      ...pickGitEnv(envFile),
     },
   };
 }

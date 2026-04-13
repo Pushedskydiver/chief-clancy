@@ -145,6 +145,23 @@ describe('createLocalConfig', () => {
     expect(config.env).toHaveProperty('BITBUCKET_TOKEN', 'bb_tok');
   });
 
+  it('includes CLANCY_GIT_PLATFORM from envFile when present', () => {
+    const config = createLocalConfig({
+      envFile: { CLANCY_GIT_PLATFORM: 'gitlab' },
+    });
+    expect(config.env).toHaveProperty('CLANCY_GIT_PLATFORM', 'gitlab');
+  });
+
+  it('includes CLANCY_GIT_API_URL from envFile when present', () => {
+    const config = createLocalConfig({
+      envFile: { CLANCY_GIT_API_URL: 'https://git.corp.com/api/v4' },
+    });
+    expect(config.env).toHaveProperty(
+      'CLANCY_GIT_API_URL',
+      'https://git.corp.com/api/v4',
+    );
+  });
+
   it('reads CLANCY_BASE_BRANCH from process.env when envFile omits it', () => {
     const original = process.env['CLANCY_BASE_BRANCH'];
     process.env['CLANCY_BASE_BRANCH'] = 'staging';
@@ -167,6 +184,8 @@ describe('createLocalConfig', () => {
     expect(config.env).not.toHaveProperty('AZDO_PAT');
     expect(config.env).not.toHaveProperty('BITBUCKET_USER');
     expect(config.env).not.toHaveProperty('BITBUCKET_TOKEN');
+    expect(config.env).not.toHaveProperty('CLANCY_GIT_PLATFORM');
+    expect(config.env).not.toHaveProperty('CLANCY_GIT_API_URL');
   });
 
   it('omits git tokens when envFile is undefined', () => {
