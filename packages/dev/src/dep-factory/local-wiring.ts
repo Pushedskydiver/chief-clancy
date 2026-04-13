@@ -9,6 +9,8 @@ import type { FetchFn } from '../lifecycle/pr-creation/index.js';
 import type { RunContext } from '../pipeline/context.js';
 import type { EnvFileSystem, ExecGit } from '@chief-clancy/core';
 
+import { basename } from 'node:path';
+
 import { createBoard, detectBoard } from '@chief-clancy/core';
 
 import { runLocalPreflight } from '../lifecycle/local-mode/index.js';
@@ -70,7 +72,7 @@ export function localTicketSeed(
   fromPath: string,
   readFile: (path: string) => string,
 ): void {
-  const slug = fromPath.replace(/^.*\//, '').replace(/\.md$/, '');
+  const slug = basename(fromPath, '.md');
   const content = readFile(fromPath);
   const plan = parsePlanFile(content, slug);
   ctx.setTicket(toSyntheticTicket(plan));

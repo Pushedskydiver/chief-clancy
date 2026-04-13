@@ -20,7 +20,7 @@ Pick up exactly one ticket from the Kanban board, implement it, commit, push, cr
 
 ## Step 1 — Preflight checks
 
-If `--from {path}` was passed, skip Steps 1.2–1.4 (local mode does not need board credentials or the implement script — the pipeline runs inline with synthetic config).
+If `--from {path}` was passed, skip items 2–4 below (local mode does not need board credentials or the implement script — the runtime uses synthetic config and a no-op board).
 
 1. Check `.clancy/` exists. If not:
 
