@@ -2,9 +2,9 @@
 
 Living state document for the Clancy monorepo. Records the current state, the phase ledger, and the next decision. Session-by-session detail lives in git history (each phase's PRs are tagged + commit messages reference them).
 
-## Current state (2026-04-13)
+## Current state (2026-04-14)
 
-**Implement `--from` feature complete.** Full local pipeline works: brief → plan → approve → implement, no board needed. All 6 PRs shipped (#281-#286). Batch mode (`--from {dir} --afk`), 20 e2e tests, README audit across all packages, 7 feedback memories promoted to repo docs.
+**Local-init-flow near complete.** Full local pipeline is now covered end-to-end across every command: `/clancy:init` (board-optional) → `/clancy:brief` → `/clancy:plan --from` → `/clancy:approve-plan` → `/clancy:implement --from`. Settings, doctor, help, autopilot, status, review are all local-mode aware.
 
 **Published versions:** (changeset merged — version bump pending publish workflow)
 
@@ -20,9 +20,9 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 
 **Test counts:** 879 core, 755 terminal, 1201 dev, 126 brief, 326 plan = **3287 total**.
 
-**Last shipped:** Local-init-flow PR 2 — init workflow local-only path (#289) in Session 76. Board gate, conditional skips, standalone git host, local .env.example + final output. 29 Copilot comments handled (25 fixed, 4 dismissed). Also: 4 new SELF-REVIEW checks added (post-fix consistency sweep, output read-aloud, credential dual-use audit, platform parity check).
+**Last shipped:** Local-init-flow PR 3 — settings/doctor/help/autopilot/status/review local-mode awareness (#290) in Session 77. 7 workflow .md files. Consistent 6-board detection across all files. New `[B] Connect a board` and `[D] Disconnect board` menu options. Doctor gains Shortcut/Notion/AzDO checks (pre-existing gap). Status shows plan inventory via `.approved` marker gate. 2 rounds of Copilot review, 6 comments total, all fixed. DA review caught 2 HIGH findings pre-push.
 
-**Next:** Local-init-flow PR 3 — settings/doctor/help/autopilot/reviewer guards. Then PR 4 (changeset). After that: comprehensive docs update for local pipeline lifecycle + readability review with Alex.
+**Next:** Local-init-flow PR 4 — changeset only (dev patch for #288 guards, terminal patch for #289+#290 workflow updates). After that: audit current review chain + deep research Option A (pre-PR reviewer agent), comprehensive docs update for local pipeline lifecycle, readability review with Alex.
 
 ## Phase ledger
 
