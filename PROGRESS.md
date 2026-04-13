@@ -18,11 +18,11 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 | `@chief-clancy/scan`     | 0.2.3   |
 | `chief-clancy` (wrapper) | 0.9.23  |
 
-**Test counts:** 879 core, 755 terminal, 1195 dev, 126 brief, 326 plan = **3281 total**.
+**Test counts:** 879 core, 755 terminal, 1201 dev, 126 brief, 326 plan = **3287 total**.
 
-**Last shipped:** Implement `--from` PRs 4-6 (#284, #285, #286) in Session 75.
+**Last shipped:** Local-init-flow PR 1 — guard detectBoard crash paths (#288) in Session 76. Also: root tsconfig `types: ["node"]` fix for IDE diagnostics across all packages.
 
-**Next:** Local-aware init flow — make `/clancy:init` board-optional. Plan at `.clancy/plans/local-init-flow.md` (v3, DA-grilled 3 rounds). 4 PRs: runtime guards → init workflow → settings/doctor/help/autopilot/reviewer guards → changeset. After that: comprehensive docs update for local pipeline lifecycle + readability review with Alex.
+**Next:** Local-init-flow PR 2 — init workflow local-only path (`init.md`). Then PR 3 (settings/doctor/help/autopilot/reviewer guards) → PR 4 (changeset). After that: comprehensive docs update for local pipeline lifecycle + readability review with Alex.
 
 ## Phase ledger
 
