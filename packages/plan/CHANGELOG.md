@@ -1,5 +1,13 @@
 # @chief-clancy/plan
 
+## 0.7.0
+
+### Minor Changes
+
+- [#279](https://github.com/Pushedskydiver/chief-clancy/pull/279) [`9796262`](https://github.com/Pushedskydiver/chief-clancy/commit/979626235383335cb667cdd59e1242825930402d) Thanks [@Pushedskydiver](https://github.com/Pushedskydiver)! - Plan: add devil's advocate agent with Step 4g DA grill, 6-item plan health check, and installer infrastructure
+
+  Brief: improve DA agent with dual-mode operation (grill + health-check), Challenges section, severity levels, Step 8a post-brief invocation, and brief health check preamble
+
 ## 0.6.1
 
 ### Patch Changes
