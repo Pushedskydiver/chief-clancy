@@ -25,8 +25,6 @@ import type {
 
 import {
   checkout,
-  createBoard,
-  detectBoard,
   detectRemote,
   ensureBranch,
   fetchRemoteBranch,
@@ -50,7 +48,6 @@ import {
   writeLock,
 } from '../lifecycle/lock/index.js';
 import { attemptPrCreation } from '../lifecycle/pr-creation/index.js';
-import { runPreflight } from '../lifecycle/preflight/preflight.js';
 import {
   appendProgress,
   countReworkCycles,
@@ -68,7 +65,6 @@ import {
   epicCompletion,
   feasibilityPhase,
   lockCheck,
-  preflightPhase,
   prRetry,
   reworkDetection,
   ticketFetch,
@@ -76,6 +72,7 @@ import {
 } from '../pipeline/index.js';
 import { wireDeliver } from './deliver-phase.js';
 import { makeInvokePhase } from './invoke-phase.js';
+import { localTicketSeed, wirePreflight } from './local-wiring.js';
 
 /** Options for building the pipeline dependency object. */
 type DepFactoryOpts = {
@@ -182,17 +179,12 @@ function wireEarlyPhases(opts: DepFactoryOpts, progress: AppendFn) {
         executeResume: (resumeOpts) => executeResume(resumeOpts),
       }),
 
-    preflight: (ctx: RunContext) =>
-      preflightPhase(ctx, {
-        runPreflight: (root) =>
-          runPreflight(root, {
-            exec: (file, args) => exec([file, ...args]),
-            envFs: opts.envFs,
-          }),
-        detectBoard: (env) => detectBoard(env),
-        createBoard: (config) =>
-          createBoard(config, (url, init) => opts.fetch(url, init ?? {})),
-      }),
+    preflight: wirePreflight({
+      envFs: opts.envFs,
+      projectRoot,
+      exec,
+      fetch: opts.fetch,
+    }),
 
     epicCompletion: (ctx: RunContext) =>
       epicCompletion(ctx, {
@@ -222,7 +214,6 @@ function wireEarlyPhases(opts: DepFactoryOpts, progress: AppendFn) {
 
 function wireTicketPhases(opts: DepFactoryOpts, progress: AppendFn) {
   const { projectRoot, exec, progressFs, spawn, fetch: fetchFn } = opts;
-
   return {
     reworkDetection: (ctx: RunContext) =>
       reworkDetection(ctx, {
@@ -243,8 +234,9 @@ function wireTicketPhases(opts: DepFactoryOpts, progress: AppendFn) {
         },
       }),
 
-    ticketFetch: (ctx: RunContext) =>
-      ticketFetch(ctx, {
+    ticketFetch: async (ctx: RunContext) => {
+      if (ctx.fromPath) localTicketSeed(ctx, ctx.fromPath, opts.envFs.readFile);
+      return ticketFetch(ctx, {
         fetchTicket: (board: Board) =>
           board.fetchTicket({ buildLabel: resolveBuildLabel(ctx) }),
         countReworkCycles: (key: string) =>
@@ -252,13 +244,10 @@ function wireTicketPhases(opts: DepFactoryOpts, progress: AppendFn) {
         appendProgress: progress,
         computeTicketBranch: (provider: BoardProvider, key: string) =>
           computeTicketBranch(provider, key),
-        computeTargetBranch: (
-          provider: BoardProvider,
-          baseBranch: string,
-          parent?: string,
-        ) => computeTargetBranch(provider, baseBranch, parent),
-      }),
-
+        computeTargetBranch: (p: BoardProvider, b: string, par?: string) =>
+          computeTargetBranch(p, b, par),
+      });
+    },
     feasibility: (ctx: RunContext) =>
       feasibilityPhase(ctx, {
         checkFeasibility: (ticket, model) => {

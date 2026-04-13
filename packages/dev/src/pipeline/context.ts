@@ -23,7 +23,20 @@ type CreateContextOpts = {
   readonly isAfk?: boolean;
   /** Timestamp override for deterministic testing (default: `Date.now()`). */
   readonly now?: number;
+  /** Path to a local plan file for `--from` mode (overrides board mode). */
+  readonly fromPath?: string;
 };
+
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
+/** Extract the value after `--from` in argv, or `undefined` if absent. */
+function parseFromArg(argv: readonly string[]): string | undefined {
+  const idx = argv.indexOf('--from');
+  if (idx === -1 || idx + 1 >= argv.length) return undefined;
+  const value = argv[idx + 1];
+  if (value.startsWith('--')) return undefined;
+  return value;
+}
 
 // ─── RunContext class ────────────────────────────────────────────────────────
 
@@ -42,6 +55,7 @@ export class RunContext {
   readonly skipFeasibility: boolean;
   readonly startTime: number;
   readonly isAfk: boolean;
+  readonly fromPath: string | undefined;
 
   /* eslint-disable functional/prefer-readonly-type -- phase-populated fields are mutated progressively */
 
@@ -154,6 +168,7 @@ export class RunContext {
     this.skipFeasibility = opts.argv.includes('--skip-feasibility');
     this.startTime = opts.now ?? Date.now();
     this.isAfk = opts.isAfk ?? false;
+    this.fromPath = opts.fromPath ?? parseFromArg(opts.argv);
   }
 }
 

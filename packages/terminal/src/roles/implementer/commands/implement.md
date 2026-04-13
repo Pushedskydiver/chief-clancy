@@ -14,6 +14,12 @@ Pass `--dry-run` to preview what Clancy would do without making any changes:
 - Shows the ticket, epic, target branch, and feature branch
 - Exits before any git operations or Claude invocation
 
+Pass `--from {path}` to implement a local plan file instead of a board ticket:
+
+- Skips board credential checks and ticket fetch
+- Parses the plan file for ticket key, title, and implementation details
+- Works with or without `.clancy/.env` (git tokens optional for PR creation)
+
 @.claude/clancy/workflows/implement.md
 
 Run one ticket as documented in the workflow above.
