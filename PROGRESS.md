@@ -18,11 +18,13 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 | `@chief-clancy/scan`     | 0.2.2   |
 | `chief-clancy` (wrapper) | 0.9.22  |
 
-**Test counts:** 879 core, 742 terminal, 1106 dev, 126 brief, 326 plan = **3179 total**.
+**Test counts:** 879 core, 742 terminal, 1188 dev, 126 brief, 326 plan = **3261 total**.
 
-**Last shipped:** Plan DA agent (#277-#279) + e2e test fix in Session 74.
+**Last shipped:** Implement `--from` PRs 1-3 (#281, #282, #283) in Session 74.
 
-**Next:** `--from` support for `/clancy:implement` — plan grilled (3 DA rounds) at `.clancy/plans/implement-from.md`. 6 PRs: parser, local-mode infra, pipeline wiring, batch mode, e2e tests, changeset + READMEs.
+**Next:** `--from` PRs 4-6 remaining. PR 4: directory + `--afk` batch mode (list-plans, natural sort, executeQueue, partial failure). PR 5: e2e tests (local plan pipeline + lifecycle contract). PR 6: changeset + README updates. Plan at `.clancy/plans/implement-from.md`.
+
+**Also shipped in Session 74:** Evidence-based dismissal discipline added to `docs/DEVELOPMENT.md` Review Gate + `docs/RATIONALIZATIONS.md`. Pipeline error plumbing fix — all abort sites now thread error/reason strings through `PipelineResult`.
 
 ## Phase ledger
 
