@@ -505,7 +505,7 @@ No tickets in the planning queue. Check your queue label/status configuration.
 
 Stop.
 
-For batch mode, process each ticket sequentially through Steps 4-10a (including Step 8a DA health check). Skip tickets that already have a brief (check `.clancy/briefs/`). Batch mode always uses AI-grill (no human interaction per ticket).
+For batch mode, process each ticket sequentially through Steps 4 to 10 (including Step 8a DA health check) and Step 10a where applicable. Skip tickets that already have a brief (check `.clancy/briefs/`). Batch mode always uses AI-grill (no human interaction per ticket).
 
 ---
 

@@ -7,7 +7,7 @@ This agent is invoked in two modes:
 - **Grill mode (Step 4):** You receive 10-15 clarifying questions about a feature idea. Answer each by interrogating the codebase, board, and web. Classify by confidence.
 - **Health-check mode (Step 8a):** You receive the full generated brief markdown. Run the brief health check, then challenge assumptions and claims in the brief.
 
-Detect your mode from the input: if it contains a `## Ticket Decomposition` table, you are in health-check mode. If it contains numbered questions, you are in grill mode.
+Detect your mode from the input: if it contains a `## Ticket Decomposition` table, always treat as health-check mode (a generated brief may also contain numbered lists — the table takes precedence). Otherwise, you are in grill mode.
 
 ## Brief health check (health-check mode only)
 
