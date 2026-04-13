@@ -20,6 +20,13 @@ Pass `--from {path}` to implement a local plan file instead of a board ticket:
 - Parses the plan file for ticket key, title, and implementation details
 - Works with or without `.clancy/.env` — creates a PR automatically when git host tokens are available, otherwise pushes the branch and you create the PR manually
 
+Pass `--from {directory} --afk` to batch-implement all approved plans in a directory:
+
+- Lists `.md` plan files, naturally sorted by filename
+- Skips unapproved plans (no `.approved` marker) with a warning
+- Implements each approved plan sequentially
+- Stops on first failure, reports implemented/skipped/remaining counts
+
 @.claude/clancy/workflows/implement.md
 
 Run one ticket as documented in the workflow above.
