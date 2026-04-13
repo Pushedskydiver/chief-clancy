@@ -8,8 +8,12 @@ export default defineConfig({
     alias: {
       '~/t': fileURLToPath(new URL('./src', import.meta.url)),
       '~/c': fileURLToPath(new URL('../core/src', import.meta.url)),
+      '~/d': fileURLToPath(new URL('../dev/src', import.meta.url)),
       '@chief-clancy/core': fileURLToPath(
         new URL('../core/src', import.meta.url),
+      ),
+      '@chief-clancy/dev': fileURLToPath(
+        new URL('../dev/src', import.meta.url),
       ),
     },
   },
