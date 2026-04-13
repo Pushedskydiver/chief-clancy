@@ -185,36 +185,36 @@ npx chief-clancy
 
 ## Commands
 
-| Command                                | Description                                                                                                   |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `/clancy:brief` ²                      | Grill phase → strategy brief → vertical slice decomposition → tickets                                         |
-| `/clancy:approve-brief` ²              | Review and approve a strategy brief, then create board tickets                                                |
-| `/clancy:plan` ¹                       | Refine backlog tickets into structured implementation plans                                                   |
-| `/clancy:plan 3` ¹                     | Plan up to 3 tickets in batch mode                                                                            |
-| `/clancy:approve-plan` ¹               | Promote an approved plan to the ticket description                                                            |
-| `/clancy:init`                         | Wizard — optionally connect a board (or skip for local plan-driven mode), collect config, scaffold everything |
-| `/clancy:autopilot`                    | Loop mode — processes board tickets until queue is empty or MAX_ITERATIONS hit (requires a board)             |
-| `/clancy:autopilot 20`                 | Same, override MAX_ITERATIONS to 20 for this session                                                          |
-| `/clancy:implement`                    | Pick up one ticket and stop                                                                                   |
-| `/clancy:implement --from <plan.md>`   | Implement a single approved local plan — no board needed                                                      |
-| `/clancy:implement --from <dir> --afk` | Implement every approved plan in the directory (local batch equivalent of autopilot)                          |
-| `/clancy:dry-run`                      | Preview next ticket without making changes — no git ops, no Claude call                                       |
-| `/clancy:status`                       | Show next tickets without running — read-only                                                                 |
-| `/clancy:review`                       | Score next ticket (0–100%) with actionable recommendations                                                    |
-| `/clancy:logs`                         | Format and display `.clancy/progress.txt`                                                                     |
-| `/clancy:map-codebase`                 | Full 5-agent parallel codebase scan, writes structured docs                                                   |
-| `/clancy:update-docs`                  | Incremental refresh — re-runs agents for changed areas                                                        |
-| `/clancy:settings`                     | View and change configuration — model, iterations, board, and more                                            |
-| `/clancy:doctor`                       | Diagnose your setup — test every integration, report what's broken                                            |
-| `/clancy:update-terminal`              | Update the full Clancy pipeline to latest version                                                             |
-| `/clancy:update-brief` ³               | Update brief commands only (`--afk` skips confirmation)                                                       |
-| `/clancy:update-plan` ³                | Update plan commands only (`--afk` skips confirmation)                                                        |
-| `/clancy:update-dev` ³                 | Update dev commands and bundles (`--afk` skips confirmation)                                                  |
-| `/clancy:uninstall-terminal`           | Remove the full Clancy pipeline — detects standalone packages and warns before removing                       |
-| `/clancy:uninstall-brief` ³            | Remove brief commands only (installed via `npx @chief-clancy/brief`)                                          |
-| `/clancy:uninstall-plan` ³             | Remove plan commands only (installed via `npx @chief-clancy/plan`)                                            |
-| `/clancy:uninstall-dev` ³              | Remove dev commands; project-scoped also removes bundles (`npx @chief-clancy/dev`)                            |
-| `/clancy:help`                         | Command reference                                                                                             |
+| Command                                | Description                                                                                                                                                       |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/clancy:brief` ²                      | Grill phase → strategy brief → vertical slice decomposition → tickets                                                                                             |
+| `/clancy:approve-brief` ²              | Review and approve a strategy brief, then create board tickets                                                                                                    |
+| `/clancy:plan` ¹                       | Refine backlog tickets into structured implementation plans                                                                                                       |
+| `/clancy:plan 3` ¹                     | Plan up to 3 tickets in batch mode                                                                                                                                |
+| `/clancy:approve-plan` ¹               | Board: promote the approved plan to the ticket description. Local: write a sibling `.approved` marker (SHA-256 + timestamp) that gates `/clancy:implement --from` |
+| `/clancy:init`                         | Wizard — optionally connect a board (or skip for local plan-driven mode), collect config, scaffold everything                                                     |
+| `/clancy:autopilot`                    | Loop mode — processes board tickets until queue is empty or MAX_ITERATIONS hit (requires a board)                                                                 |
+| `/clancy:autopilot 20`                 | Same, override MAX_ITERATIONS to 20 for this session                                                                                                              |
+| `/clancy:implement`                    | Pick up one ticket and stop                                                                                                                                       |
+| `/clancy:implement --from <plan.md>`   | Implement a single approved local plan — no board needed                                                                                                          |
+| `/clancy:implement --from <dir> --afk` | Implement every approved plan in the directory (local batch equivalent of autopilot)                                                                              |
+| `/clancy:dry-run`                      | Preview next ticket without making changes — no git ops, no Claude call                                                                                           |
+| `/clancy:status`                       | Show next tickets without running — read-only                                                                                                                     |
+| `/clancy:review`                       | Score next ticket (0–100%) with actionable recommendations                                                                                                        |
+| `/clancy:logs`                         | Format and display `.clancy/progress.txt`                                                                                                                         |
+| `/clancy:map-codebase`                 | Full 5-agent parallel codebase scan, writes structured docs                                                                                                       |
+| `/clancy:update-docs`                  | Incremental refresh — re-runs agents for changed areas                                                                                                            |
+| `/clancy:settings`                     | View and change configuration — model, iterations, board, and more                                                                                                |
+| `/clancy:doctor`                       | Diagnose your setup — test every integration, report what's broken                                                                                                |
+| `/clancy:update-terminal`              | Update the full Clancy pipeline to latest version                                                                                                                 |
+| `/clancy:update-brief` ³               | Update brief commands only (`--afk` skips confirmation)                                                                                                           |
+| `/clancy:update-plan` ³                | Update plan commands only (`--afk` skips confirmation)                                                                                                            |
+| `/clancy:update-dev` ³                 | Update dev commands and bundles (`--afk` skips confirmation)                                                                                                      |
+| `/clancy:uninstall-terminal`           | Remove the full Clancy pipeline — detects standalone packages and warns before removing                                                                           |
+| `/clancy:uninstall-brief` ³            | Remove brief commands only (installed via `npx @chief-clancy/brief`)                                                                                              |
+| `/clancy:uninstall-plan` ³             | Remove plan commands only (installed via `npx @chief-clancy/plan`)                                                                                                |
+| `/clancy:uninstall-dev` ³              | Remove dev commands; project-scoped also removes bundles (`npx @chief-clancy/dev`)                                                                                |
+| `/clancy:help`                         | Command reference                                                                                                                                                 |
 
 ¹ Planner is an optional role — see [Roles](#roles) below.
 ² Strategist is an optional role — see [Roles](#roles) below.

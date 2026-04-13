@@ -2,7 +2,7 @@
 
 Three Claude Code workflow tools — different philosophies, different sweet spots.
 
-|                       | [Clancy](https://github.com/Pushedskydiver/clancy)                                                                         | [GSD](https://github.com/gsd-build/get-shit-done)    | [PAUL](https://github.com/ChristopherKahler/paul)          |
+|                       | [Clancy](https://github.com/Pushedskydiver/chief-clancy)                                                                   | [GSD](https://github.com/gsd-build/get-shit-done)    | [PAUL](https://github.com/ChristopherKahler/paul)          |
 | --------------------- | -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------- |
 | **Purpose**           | Autonomous ticket or local-plan implementation                                                                             | Structured project phases                            | In-session efficiency                                      |
 | **Board integration** | Optional — Jira, GitHub Issues, Linear, Shortcut, Notion, Azure DevOps, or no board (local plan files in `.clancy/plans/`) | None                                                 | None                                                       |

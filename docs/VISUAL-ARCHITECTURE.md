@@ -22,7 +22,13 @@ Interactive diagrams showing how packages, roles, commands, and flows connect. R
 
 ## 1. Package Boundaries
 
-Seven packages. Dependency direction is strict: `core ← terminal ← chief-clancy`. `brief`, `plan`, `scan`, and `dev` are standalone — they have no core/terminal dependency and can be installed independently via their own `npx @chief-clancy/<pkg>` entry points. No reverse imports. Enforced by eslint-plugin-boundaries.
+Seven packages. Dependency direction is strict: `core ← terminal ← chief-clancy`. The standalone packages each have their own `npx @chief-clancy/{pkg}` entry point and can be installed independently of `terminal`:
+
+- `scan` — no package dependencies
+- `brief` and `plan` — depend on `scan` only
+- `dev` — depends on `core` and `scan` (uses `core` for board integrations, schemas, shared utilities)
+
+No reverse imports. Enforced by eslint-plugin-boundaries.
 
 ```mermaid
 graph TD
@@ -65,7 +71,7 @@ graph TD
         scanAgents["agents/ (5 specialists)"]
     end
 
-    subgraph dev["@chief-clancy/dev (standalone — executor)"]
+    subgraph dev["@chief-clancy/dev (standalone from terminal — uses core)"]
         devInstaller["installer/"]
         devPipeline["pipeline/\n(phase orchestrator)"]
         devLifecycle["lifecycle/\n(ticket lifecycle modules)"]
@@ -80,6 +86,8 @@ graph TD
     devPipeline --> board
     devLifecycle --> board
     devLifecycle --> shared
+    brief --> scanCommands
+    plan --> scanCommands
     board --> schemas
     board --> shared
 
@@ -161,7 +169,7 @@ stateDiagram-v2
     [*] --> Idea: Vague idea
 
     state "Strategist (optional)" as strat {
-        Idea --> Grill: /clancy:brief (board)\nor /clancy:brief --from outline.md (local)
+        Idea --> Grill: /clancy:brief (board)\nor /clancy:brief --from {outline} (local)
         Grill --> Brief: Generate brief
         Brief --> ReviewBrief: Human reviews
         ReviewBrief --> Brief: Feedback → revise
@@ -170,14 +178,14 @@ stateDiagram-v2
 
     state "Planner (optional)" as plnr {
         Tickets --> Backlog: Tickets with\nclancy:plan label
-        Backlog --> Planning: /clancy:plan (board)\nor /clancy:plan --from <brief> (local)
+        Backlog --> Planning: /clancy:plan (board)\nor /clancy:plan --from {brief} (local)
         Planning --> ReviewPlan: Human reviews plan
         ReviewPlan --> Planning: Feedback → revise
         ReviewPlan --> Ready: /clancy:approve-plan\n(board: − clancy:plan + clancy:build\nlocal: writes .approved marker)
     }
 
     state "Implementer" as impl {
-        Ready --> InProgress: /clancy:implement (board, filters clancy:build)\nor /clancy:implement --from <plan.md> (local, checks .approved)
+        Ready --> InProgress: /clancy:implement (board, filters clancy:build)\nor /clancy:implement --from {plan.md} (local, checks .approved)
         InProgress --> Claude: Invoke Claude session
         Claude --> Deliver: Code committed
     }
@@ -645,7 +653,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    Approve(["/clancy:approve-plan &lt;target&gt;"]) --> Resolve{"Target shape?"}
+    Approve(["/clancy:approve-plan {target}"]) --> Resolve{"Target shape?"}
 
     Resolve -->|Ticket key| BoardPath["Load plan from ticket comments"]
     Resolve -->|Plan-file stem or path| LocalPath["Read .clancy/plans/{stem}.md"]

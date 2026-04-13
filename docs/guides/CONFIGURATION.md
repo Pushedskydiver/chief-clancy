@@ -4,16 +4,20 @@ Set during `/clancy:init` advanced setup, or by editing `.clancy/.env` directly.
 
 ## Local mode (no board)
 
-Board credentials are **optional**. If `.clancy/.env` has none of the board markers below, Clancy runs in local mode:
+Board credentials are **optional**. If `.clancy/.env` has none of the marker vars below, Clancy runs in local mode.
 
-| Board        | Marker vars (all required for that board)   |
-| ------------ | ------------------------------------------- |
-| Jira         | `JIRA_BASE_URL`                             |
-| GitHub       | `GITHUB_TOKEN` **and** `GITHUB_REPO`        |
-| Linear       | `LINEAR_API_KEY`                            |
-| Shortcut     | `SHORTCUT_API_TOKEN`                        |
-| Notion       | `NOTION_TOKEN` **and** `NOTION_DATABASE_ID` |
-| Azure DevOps | `AZDO_ORG` **and** `AZDO_PROJECT`           |
+| Board        | Marker var (triggers board detection) | Also required at runtime                               |
+| ------------ | ------------------------------------- | ------------------------------------------------------ |
+| Jira         | `JIRA_BASE_URL`                       | `JIRA_USER`, `JIRA_API_TOKEN`, `JIRA_PROJECT_KEY`      |
+| GitHub       | `GITHUB_TOKEN` + `GITHUB_REPO`        | (token is shared with git-host; repo gates board mode) |
+| Linear       | `LINEAR_API_KEY`                      | `LINEAR_TEAM_ID`                                       |
+| Shortcut     | `SHORTCUT_API_TOKEN`                  | —                                                      |
+| Notion       | `NOTION_DATABASE_ID`                  | `NOTION_TOKEN`                                         |
+| Azure DevOps | `AZDO_ORG`                            | `AZDO_PROJECT`, `AZDO_PAT`                             |
+
+Detection happens first (`@chief-clancy/core`'s `detectBoard()` checks the marker column); schema validation then enforces the full required set. A marker present without its supporting vars fails preflight with a credentials error rather than silently falling through to local mode.
+
+The terminal workflow files (`/clancy:settings`, `/clancy:doctor`, `/clancy:autopilot`, etc.) apply a slightly stricter rule — they only treat the project as having a board once the pair on the right-hand side is present — so that settings UI doesn't show board options for a half-configured project. Both rules agree in the fully-configured case; they differ only at the edges of partial config.
 
 In local mode:
 
@@ -22,7 +26,7 @@ In local mode:
 - Status transitions, board filters, labels, and sprint vars (below) have no effect — they gate on board presence.
 - Git-host credentials (`GITHUB_TOKEN`, `GITLAB_TOKEN`, `BITBUCKET_USER`/`BITBUCKET_TOKEN`, or `AZDO_PAT` when `CLANCY_GIT_PLATFORM=azure`) are still used for PR creation.
 
-Note: `GITHUB_TOKEN` and `AZDO_PAT` are dual-use. They count as board markers only when paired with `GITHUB_REPO` / `AZDO_PROJECT` respectively — on their own they're treated as git-host credentials.
+Dual-use note: `GITHUB_TOKEN` is both a board credential (paired with `GITHUB_REPO` → GitHub Issues board) and a git-host credential on its own. `AZDO_PAT` is only a required credential for the Azure DevOps board and/or a git-host credential when `CLANCY_GIT_PLATFORM=azure` — it is **not** a detection marker. Disconnecting a board via `/clancy:settings` preserves these tokens for PR creation.
 
 ## Figma MCP
 
