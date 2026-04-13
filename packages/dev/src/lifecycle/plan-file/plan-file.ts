@@ -192,6 +192,6 @@ export function toSyntheticTicket(plan: ParsedPlan): FetchedTicket {
       plan.acceptance,
     ].join('\n\n'),
     parentInfo: 'none',
-    blockers: 'none',
+    blockers: 'None',
   };
 }

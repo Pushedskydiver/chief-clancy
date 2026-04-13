@@ -539,7 +539,7 @@ describe('toSyntheticTicket', () => {
     const plan = parsePlanFile(BOARD_PLAN, 'x');
     const ticket = toSyntheticTicket(plan);
     expect(ticket.parentInfo).toBe('none');
-    expect(ticket.blockers).toBe('none');
+    expect(ticket.blockers).toBe('None');
   });
 
   it('satisfies FetchedTicket type', () => {
