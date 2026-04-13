@@ -21,7 +21,7 @@ This workflow runs inside a Claude Code session, not a vanilla terminal. Accept 
 Before asking any questions, silently check:
 
 - Is this an existing project? Check for `package.json`, `.git`, `src/`, `app/`, `lib/`
-- Is a board already configured? Check `.clancy/.env` for `JIRA_BASE_URL`, `GITHUB_TOKEN`, `LINEAR_API_KEY`
+- Is a board already configured? Check `.clancy/.env` for `JIRA_BASE_URL`, both `GITHUB_TOKEN` and `GITHUB_REPO` (GitHub Issues requires both — `GITHUB_TOKEN` alone is a git-host credential, not a board indicator), `LINEAR_API_KEY`, `SHORTCUT_API_TOKEN`, `NOTION_DATABASE_ID`, `AZDO_ORG`
 - Does `CLAUDE.md` already exist? Flag for merge — never overwrite
 - Does `.clancy/.env` already exist? This means init has been completed before — warn and offer re-init or abort. Note: `.clancy/` alone may exist from the installer (runtime scripts) without init having run.
 
@@ -70,16 +70,67 @@ Output:
 
 "Chief Wiggum reporting for duty."
 
-Clancy pulls tickets from your Kanban board, plans and implements them, commits, and creates PRs — one ticket per run, fresh context every time.
+Clancy helps you implement tickets from your board — or work fully offline with local briefs, plans, and --from.
 
 Let's get you set up. This takes about 3 minutes (4 steps, then optional extras).
 ```
 
 ---
 
-## Step 3 — Questions (board-dependent)
+## Step 3 — Board gate
+
+Before asking board-specific questions, determine whether the user wants a board connection.
+
+### No board credentials detected in `.clancy/.env`
+
+Output:
+
+Do you want to connect a Kanban board?
+
+Y — Connect Jira, GitHub Issues, Linear, Shortcut, Notion, or Azure DevOps
+N — No board. Use local files only (brief → plan → implement --from)
+
+If **N (local mode)**: set an internal `localMode = true` flag for this session. Skip directly to **Q3e** (max rework cycles). Before Q3e, ask the standalone git host question (see below).
+
+If **Y**: proceed to Q1 (board selection) as normal.
+
+### Re-init with existing board (board credentials found in `.clancy/.env`)
+
+Detect the board provider from the existing env vars and output:
+
+You have {board} configured. What would you like to do?
+
+[1] Keep current board and re-run setup
+[2] Switch to a different board
+[3] Disconnect board (switch to local mode)
+
+- Option **1**: proceed with existing board credentials. Skip Q1 and Q2 (board selection and credentials). For Jira/Linear: continue from Q2c (git host). For GitHub Issues/Shortcut/Notion/Azure DevOps: skip Q2c and continue from Q3e (first universal question).
+- Option **2**: proceed to Q1 (board selection) to pick a new board. Old credentials will be overwritten.
+- Option **3**: remove board-identifying vars from `.clancy/.env` for the currently connected provider (e.g. `GITHUB_REPO`, `JIRA_BASE_URL`/`JIRA_USER`/`JIRA_API_TOKEN`/`JIRA_PROJECT_KEY`, `LINEAR_API_KEY`, `SHORTCUT_API_TOKEN`/`SHORTCUT_WORKFLOW`, `NOTION_TOKEN`/`NOTION_DATABASE_ID`, `AZDO_ORG`/`AZDO_PROJECT`). Keep universal settings (`CLANCY_BASE_BRANCH`, `CLANCY_MAX_REWORK`, etc.) and preserve shared git-host tokens (`GITHUB_TOKEN`, `GITLAB_TOKEN`, `BITBUCKET_*`, `AZDO_PAT`) since they may still be needed for local-mode PR creation. Set `localMode = true`. Skip to standalone git host question, then Q3e.
+
+### Standalone git host question (local mode only)
+
+When `localMode = true`, after the board gate and before Q3e, ask:
+
+Do you want Clancy to create PRs automatically? If so, which git host?
+
+[1] GitHub
+[2] GitLab
+[3] Bitbucket
+[4] Azure DevOps
+[5] Skip — I'll create PRs manually
+
+If [1-3]: fully follow the same host-specific prompts and fields as Q2c for the selected host — not just a single token. GitHub → `GITHUB_TOKEN`; GitLab → `GITLAB_TOKEN` and optionally `CLANCY_GIT_API_URL` + `CLANCY_GIT_PLATFORM=gitlab` for self-hosted; Bitbucket → `BITBUCKET_USER` + `BITBUCKET_TOKEN`. Store all values in `.clancy/.env`.
+If [4]: collect the Azure DevOps personal access token (`AZDO_PAT`). Prompt: `Paste your Azure DevOps personal access token: (needs Code Read & Write scope for PR creation)`. Store in `.clancy/.env`.
+If [5]: skip. No git host token is stored.
+
+---
+
+## Step 3b — Questions (board-dependent)
 
 ### Q1: Board selection
+
+**Skip this section entirely if `localMode = true`.**
 
 Output:
 
@@ -93,7 +144,7 @@ Which Kanban board are you using?
 [6] Azure DevOps
 [7] My board isn't listed
 
-Auto-detection hint: silently check `.clancy/.env` for existing board env vars (`JIRA_BASE_URL`, `GITHUB_TOKEN`, `LINEAR_API_KEY`, `SHORTCUT_API_TOKEN`, `NOTION_DATABASE_ID`, `AZDO_ORG`). If detected, show: `Detected: {board} from your env vars. Use this? [Y/n]` — if yes, skip to Q2 for that board.
+Auto-detection hint: silently check `.clancy/.env` for existing board env vars (`JIRA_BASE_URL`, both `GITHUB_TOKEN` and `GITHUB_REPO` for GitHub Issues, `LINEAR_API_KEY`, `SHORTCUT_API_TOKEN`, `NOTION_DATABASE_ID`, `AZDO_ORG`). If detected, show: `Detected: {board} from your env vars. Use this? [Y/n]` — if yes, skip to Q2 for that board.
 
 If the user selects [7], output the dead-end message and stop:
 
@@ -140,6 +191,8 @@ Store as `AZDO_ORG`, `AZDO_PROJECT`, and `AZDO_PAT` in `.clancy/.env`.
 
 ### Q2: Board-specific config
 
+**Skip this section entirely if `localMode = true`.**
+
 Ask each question individually and wait for an answer before moving to the next.
 
 **Jira** — ask in this order:
@@ -176,6 +229,8 @@ If enter is pressed with no value: skip — omit the label clause entirely (Clan
 ---
 
 ### Q2b: Board credential verification
+
+**Skip this section entirely if `localMode = true`** — no board credentials to verify.
 
 After collecting all credentials for the chosen board, verify the connection before continuing.
 
@@ -248,6 +303,8 @@ Never silently continue with unverified credentials — the user must explicitly
 
 ### Q2c (Jira and Linear only): Git host token
 
+**Skip this section if `localMode = true`** — the standalone git host question in Step 3 already handled this.
+
 When the board is **Jira** or **Linear**, Clancy needs a git host token to create pull requests after implementation. Skip this step entirely for **GitHub Issues** — the `GITHUB_TOKEN` collected in Q2 already covers PR creation.
 
 Output:
@@ -259,7 +316,8 @@ Which git host does this project use?
 [1] GitHub
 [2] GitLab
 [3] Bitbucket
-[4] Skip — I'll push and create PRs manually
+[4] Azure DevOps
+[5] Skip — I'll push and create PRs manually
 ```
 
 **If [1] GitHub:**
@@ -292,9 +350,17 @@ If the user enters just a hostname or instance URL without `/api/v4`, append `/a
 
 Store as `BITBUCKET_USER` and `BITBUCKET_TOKEN` in `.clancy/.env`.
 
-**If [4] Skip:** no git host token is written. Clancy will still implement tickets but leave the feature branch for the user to push and create PRs manually.
+**If [4] Azure DevOps:**
+
+`Paste your Azure DevOps personal access token: (needs Code Read & Write scope for PR creation — create at dev.azure.com/{org}/_usersSettings/tokens)`
+
+Store as `AZDO_PAT` in `.clancy/.env`.
+
+**If [5] Skip:** no git host token is written. Clancy will still implement tickets but leave the feature branch for the user to push and create PRs manually.
 
 ---
+
+**Skip Q3 through Q3d-2 entirely if `localMode = true`.** Jump to Q3e (max rework cycles).
 
 ### Q3 (Jira only): Status name
 
@@ -597,11 +663,25 @@ Store the detected (or confirmed) value as `CLANCY_BASE_BRANCH` in `.clancy/.env
 
 Create `.clancy/` directory and the following:
 
-1. Verify `.clancy/clancy-implement.js` and `.clancy/clancy-autopilot.js` exist (copied by the installer). If missing, tell the user to run `npx -y chief-clancy@latest` and stop.
+1. Verify `.clancy/clancy-implement.js` exists (copied by the installer). **If not local mode**, also verify `.clancy/clancy-autopilot.js` exists. If any required script is missing, tell the user to run `npx -y chief-clancy@latest` and stop.
 2. Create `.clancy/docs/` with 10 empty template files (UPPERCASE.md with section headings only):
    - STACK.md, INTEGRATIONS.md, ARCHITECTURE.md, CONVENTIONS.md, TESTING.md
    - GIT.md, DESIGN-SYSTEM.md, ACCESSIBILITY.md, DEFINITION-OF-DONE.md, CONCERNS.md
-3. Write the correct `.env.example` for the chosen board to `.clancy/.env.example` — use the exact content from scaffold.md
+3. Write the correct `.env.example` for the chosen board to `.clancy/.env.example` — use the exact content from scaffold.md. **If `localMode = true`**, write a local-mode template instead:
+   ```
+   # Clancy — local mode (no board)
+   # Connect a board anytime via /clancy:settings
+   CLANCY_BASE_BRANCH=main
+   CLANCY_MAX_REWORK=3
+   # Optional: git host token for PR creation
+   # GITHUB_TOKEN=
+   # GITLAB_TOKEN=
+   # BITBUCKET_USER=
+   # BITBUCKET_TOKEN=
+   # AZDO_PAT=
+   # CLANCY_GIT_PLATFORM=                    # override auto-detection (github/gitlab/bitbucket/bitbucket-server/azure)
+   # CLANCY_GIT_API_URL=                     # self-hosted git instance API base URL
+   ```
 4. Write collected credentials to `.clancy/.env` (if the user provided them)
 5. Handle `CLAUDE.md` — follow the merge logic in scaffold.md exactly:
    - If no CLAUDE.md: write the full template as `CLAUDE.md`
@@ -636,6 +716,8 @@ If no: skip the commit silently. The user can commit manually later.
 ## Step 4c — Optional roles
 
 Clancy includes the Implementer, Reviewer, and Setup roles by default. Optional roles add extra capabilities.
+
+**If `localMode = true`**, add this note after displaying the role options: "In local mode, Planner and Strategist work fully offline if enabled. If you skip them, you can still use `implement --from` with your own plan files. Board-push features (ticket creation, plan comments) become available after connecting a board via /clancy:settings."
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -674,6 +756,8 @@ Note: as more roles are added in future versions, they appear as additional numb
 ---
 
 ## Step 4c-2 — Pipeline labels (conditional)
+
+**Skip this section if `localMode = true`** — pipeline labels are board-specific (defaults exist in code).
 
 Only ask this if any optional role was enabled in Step 4c. If neither Planner nor Strategist was selected, skip this section entirely. If `CLANCY_LABEL` or `CLANCY_PLAN_LABEL` are already set in `.clancy/.env`, show:
 
@@ -743,6 +827,8 @@ Then ask `CLANCY_LABEL_PLAN` and `CLANCY_LABEL_BUILD` using the same prompts and
 
 ## Step 4d (if Planner role selected): Planning queue config
 
+**Skip this section if `localMode = true`** — no board queue to configure.
+
 Only ask this if the user selected Planner in Step 4c above (or if re-running init and `CLANCY_ROLES` already includes `planner`).
 
 If the planner role is not enabled, skip this step entirely.
@@ -795,6 +881,8 @@ If [3]: prompt for the value, store as `CLANCY_PLAN_STATE_TYPE` in `.clancy/.env
 
 ## Step 4e (Jira only, if Planner role selected): Post-approval transition
 
+**Skip this section if `localMode = true`** — no board status to transition.
+
 Only ask this if the user selected Planner in Step 4c above (or if re-running init and `CLANCY_ROLES` already includes `planner`), **and** the board is Jira.
 
 If the planner role is not enabled, or the board is not Jira, skip this step entirely.
@@ -815,6 +903,8 @@ If [2]: skip — no `CLANCY_STATUS_PLANNED` line written.
 ---
 
 ## Step 4f (if Strategist role selected): Strategist config
+
+**Skip this section if `localMode = true`** — no board ticket creation target.
 
 Only ask this if the user selected Strategist in Step 4c above (or if re-running init and `CLANCY_ROLES` already includes `strategist`).
 
@@ -864,7 +954,22 @@ If [2]: prompt for the value, store as `CLANCY_COMPONENT` in `.clancy/.env`. Wra
 
 ## Step 5 — Optional enhancements
 
-Output:
+**If `localMode = true`**, output:
+
+```
+Clancy is set up. A few optional enhancements are available:
+
+  - Figma MCP      — fetch design specs when tickets include a Figma URL
+  - Playwright     — screenshot and verify UI after implementing tickets
+  - Notifications  — post to Slack or Teams when a ticket completes or errors
+
+Each takes about 2 minutes to configure, or skip any for now.
+You can always add them later via /clancy:settings.
+
+Set up optional enhancements? [y/N]
+```
+
+**Otherwise (board mode)**, output:
 
 ```
 Clancy is set up. A few optional enhancements are available:
@@ -885,6 +990,8 @@ If no: skip to Step 6.
 If yes, walk through each in order. After each enhancement (whether configured or skipped), ask before starting the next one: `Set up [enhancement name]? [y/N]`
 
 ### Enhancement 1: Max iterations
+
+**Skip this enhancement if `localMode = true`** — no autopilot queue in local mode.
 
 Output:
 
@@ -1080,7 +1187,29 @@ If no: output "Run /clancy:map-codebase when you're ready." then continue to fin
 
 ## Final output
 
-Output:
+**If `localMode = true`**, output:
+
+```
+╔═══════════════════════════════════════════════════════════╗
+║  ✅ Clancy is ready (local mode — no board).             ║
+╚═══════════════════════════════════════════════════════════╝
+
+- Scripts: `.clancy/clancy-implement.js`
+- Docs: `.clancy/docs/` (10 files)
+- Config: `.clancy/.env`
+- CLAUDE.md: updated
+
+Next steps:
+  /clancy:map-codebase  — scan your codebase
+  /clancy:implement --from <plan.md> — execute a saved plan
+
+"Clancy's on the beat."
+```
+
+If Strategist was enabled, also include in the "Next steps" block: `/clancy:brief "..." — generate a strategic brief`
+If Planner was enabled, also include: `/clancy:plan --from <brief> — create implementation plans`
+
+**Otherwise (board mode)**, output:
 
 ```
 ╔═══════════════════════════════════════════════════════════╗
