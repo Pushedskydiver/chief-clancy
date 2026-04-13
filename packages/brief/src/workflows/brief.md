@@ -792,7 +792,7 @@ Using all gathered context (idea, grill output, research findings), generate the
 
 ## Challenges
 
-{Assumptions or claims that evidence contradicts — from DA grill. Each entry has Assumption, Evidence, Severity, Suggestion. "No challenges identified." if none.}
+{Assumptions or claims that evidence contradicts — from the DA grill (Step 4) and the DA health check (Step 8a). Each entry has Assumption, Evidence, Severity, Suggestion. "No challenges identified." if none remain after Step 8a triage.}
 
 ## Open Questions
 
@@ -859,7 +859,7 @@ List resolved open questions explicitly.}
 
 ## Step 8a — DA health check
 
-After generating the brief (Step 8), run the devil's advocate agent against the **generated brief content**. This step fires for both fresh briefs and revised briefs (the revision flow in Step 5 jumps to Step 8 generation, then falls through here).
+After generating the brief (Step 8), run the devil's advocate agent against the **generated brief content**. This step fires for both fresh briefs and revised briefs — the revision path in Step 5 generates a revised brief (using Step 8's template and rules), and Step 8a runs against that output the same way it runs against a fresh brief.
 
 Spawn the devil's advocate agent via the Agent tool. The agent file is at:
 `.claude/clancy/agents/devils-advocate.md`
