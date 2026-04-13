@@ -96,7 +96,7 @@ Skip the rest of Step 4 in local mode. The brief/plan/implement `--from` pipelin
 **Azure DevOps** — if `AZDO_ORG` AND `AZDO_PROJECT` are both set (`AZDO_PAT` alone may be a git-host credential, not a board marker):
 
 1. Check: `AZDO_ORG`, `AZDO_PROJECT`, `AZDO_PAT`
-2. Ping: `GET https://dev.azure.com/{AZDO_ORG}/{AZDO_PROJECT}/_apis/projects/{AZDO_PROJECT}?api-version=7.1` with basic auth (`:{AZDO_PAT}` base64-encoded)
+2. Ping: `GET https://dev.azure.com/{AZDO_ORG}/_apis/projects/{AZDO_PROJECT}?api-version=7.1` with basic auth (`:{AZDO_PAT}` base64-encoded)
 3. Report status
 
 ---

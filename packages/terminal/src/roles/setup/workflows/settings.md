@@ -725,7 +725,7 @@ If [2]: remove `CLANCY_STATUS_PLANNED` from `.clancy/.env`.
 Always shown. GitHub Issues users already have `GITHUB_TOKEN` (used as both board + git-host credential); this option still applies if they want to use a different host for PRs, or switch hosts.
 
 ```
-Git host — current: {GitHub / GitLab / Bitbucket / not set}
+Git host — current: {GitHub / GitLab / Bitbucket / Azure DevOps / not set}
 Clancy pushes feature branches and creates PRs on your git host.
 
 [1] GitHub
