@@ -6,6 +6,9 @@ Board integrations, schemas, types, and shared utilities for [Clancy](https://gi
 
 > This package is part of the [Clancy monorepo](https://github.com/Pushedskydiver/chief-clancy). You don't install it directly — it's a dependency of [`@chief-clancy/dev`](../dev) and [`@chief-clancy/terminal`](../terminal).
 
+> [!WARNING]
+> Clancy is in early development. Expect breaking changes and rough edges.
+
 ## What's in it
 
 ### Board integrations
@@ -38,11 +41,11 @@ Cache (`Cached<T>`), HTTP (`fetchAndParse`, `retryFetch`), git operations, remot
 ## Part of the Clancy monorepo
 
 - [`chief-clancy`](https://www.npmjs.com/package/chief-clancy) — full pipeline (install, configure, implement, autopilot)
+- [`@chief-clancy/terminal`](https://www.npmjs.com/package/@chief-clancy/terminal) — installer, slash commands, hooks, runners
 - [`@chief-clancy/dev`](https://www.npmjs.com/package/@chief-clancy/dev) — standalone ticket executor
 - [`@chief-clancy/scan`](https://www.npmjs.com/package/@chief-clancy/scan) — codebase scanning agents and workflows
 - [`@chief-clancy/brief`](https://www.npmjs.com/package/@chief-clancy/brief) — strategic brief generator
 - [`@chief-clancy/plan`](https://www.npmjs.com/package/@chief-clancy/plan) — implementation planner
-- [`@chief-clancy/terminal`](https://www.npmjs.com/package/@chief-clancy/terminal) — installer, slash commands, hooks, runners
 
 ## Credits
 

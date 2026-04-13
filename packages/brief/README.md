@@ -8,6 +8,9 @@
 npx @chief-clancy/brief
 ```
 
+> [!WARNING]
+> Clancy is in early development. Expect breaking changes and rough edges.
+
 Turn feature ideas into structured strategic briefs with vertical-slice ticket decomposition. Works standalone — no board credentials, no pipeline, no config required.
 
 ## What it does
@@ -110,11 +113,11 @@ Running `/clancy:map-codebase` before briefing enriches the devil's advocate ana
 ## Part of the Clancy monorepo
 
 - [`chief-clancy`](https://www.npmjs.com/package/chief-clancy) — full pipeline (install, configure, implement, autopilot)
+- [`@chief-clancy/core`](https://www.npmjs.com/package/@chief-clancy/core) — board integrations, schemas, shared utilities
+- [`@chief-clancy/terminal`](https://www.npmjs.com/package/@chief-clancy/terminal) — installer, slash commands, hooks, runners
 - [`@chief-clancy/dev`](https://www.npmjs.com/package/@chief-clancy/dev) — standalone ticket executor
 - [`@chief-clancy/scan`](https://www.npmjs.com/package/@chief-clancy/scan) — codebase scanning agents and workflows
 - [`@chief-clancy/plan`](https://www.npmjs.com/package/@chief-clancy/plan) — implementation planner
-- [`@chief-clancy/terminal`](https://www.npmjs.com/package/@chief-clancy/terminal) — installer, slash commands, hooks, runners
-- [`@chief-clancy/core`](https://www.npmjs.com/package/@chief-clancy/core) — board integrations, pipeline phases, schemas
 
 ## Credits
 

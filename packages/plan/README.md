@@ -8,6 +8,9 @@
 npx @chief-clancy/plan
 ```
 
+> [!WARNING]
+> Clancy is in early development. Expect breaking changes and rough edges.
+
 Generate structured implementation plans for your codebase. Plan from board tickets (posted as ticket comments) or fully offline from local Clancy briefs (read from `.clancy/briefs/`, with plans saved to `.clancy/plans/`). No full pipeline required.
 
 ## What it does
@@ -101,9 +104,9 @@ sha256=d2c9f3a1b4e6c8f09123456789abcdef0123456789abcdef0123456789abcd
 approved_at=2026-04-08T22:30:00Z
 ```
 
-The full 64-character hex hash is what `.approved` actually stores — any plan-implementing tool reads the marker, hashes the current plan file the same way, and blocks implementation on any mismatch.
+The full 64-character hex hash is what `.approved` actually stores. The `--from` implement flow uses the marker as an advisory approval signal — in single-file mode no approval check is performed, and in batch mode plans without a marker are skipped. SHA comparison is not currently performed at runtime.
 
-The marker is the gate plan-implementing tools check before applying changes — if the plan file is edited after approval, the SHA mismatch blocks implementation until you re-approve. A dedicated `/clancy:implement-from` slash command was originally scoped for the plan package but is **deferred** until `@chief-clancy/dev` is extracted (the slash command is convenience, not capability — Claude Code can already do the SHA gate + structured plan parse via natural-language instruction). In the meantime, you can apply approved plans by asking Claude Code directly — for example: `Implement .clancy/plans/add-dark-mode-2.md, verifying the .approved marker's sha256 first` — or by installing the full Clancy pipeline (`npx chief-clancy`) for the board-driven flow.
+**Implementing approved plans:** Install [`chief-clancy`](https://www.npmjs.com/package/chief-clancy) and run `/clancy:implement --from .clancy/plans/add-dark-mode-2.md`. The `--from` flag parses the plan, creates a synthetic ticket, and runs the full pipeline without board credentials. For batch execution, point `--from` at the plans directory with `--afk`: `/clancy:implement --from .clancy/plans/ --afk`.
 
 Clancy also tries to update the brief file's `<!-- planned:1,2 -->` marker to `<!-- approved:1 planned:1,2 -->` so `/clancy:plan --list` knows which rows are approved, but that brief-marker update is best-effort and may warn-and-skip if the expected brief metadata or matching marker is missing.
 
@@ -160,11 +163,11 @@ Running `/clancy:map-codebase` before planning gives the planner real codebase c
 ## Part of the Clancy monorepo
 
 - [`chief-clancy`](https://www.npmjs.com/package/chief-clancy) — full pipeline (install, configure, implement, autopilot)
+- [`@chief-clancy/core`](https://www.npmjs.com/package/@chief-clancy/core) — board integrations, schemas, shared utilities
+- [`@chief-clancy/terminal`](https://www.npmjs.com/package/@chief-clancy/terminal) — installer, slash commands, hooks, runners
 - [`@chief-clancy/dev`](https://www.npmjs.com/package/@chief-clancy/dev) — standalone ticket executor
 - [`@chief-clancy/scan`](https://www.npmjs.com/package/@chief-clancy/scan) — codebase scanning agents and workflows
 - [`@chief-clancy/brief`](https://www.npmjs.com/package/@chief-clancy/brief) — strategic brief generator
-- [`@chief-clancy/terminal`](https://www.npmjs.com/package/@chief-clancy/terminal) — installer, slash commands, hooks, runners
-- [`@chief-clancy/core`](https://www.npmjs.com/package/@chief-clancy/core) — board integrations, pipeline phases, schemas
 
 ## Credits
 

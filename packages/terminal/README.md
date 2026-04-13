@@ -6,6 +6,9 @@ Installer, slash commands, hooks, runners, agents, and Claude CLI bridge for [Cl
 
 > This package is part of the [Clancy monorepo](https://github.com/Pushedskydiver/chief-clancy). You don't install it directly — run `npx chief-clancy` to install Clancy into your project.
 
+> [!WARNING]
+> Clancy is in early development. Expect breaking changes and rough edges.
+
 ## What's in it
 
 ### Installer
@@ -41,9 +44,10 @@ CJS bundles built by esbuild — best-effort, fail-open, never block the user:
 
 ### Runners
 
-Two execution modes powered by the [`@chief-clancy/dev`](https://www.npmjs.com/package/@chief-clancy/dev) pipeline:
+Three execution modes powered by the [`@chief-clancy/dev`](https://www.npmjs.com/package/@chief-clancy/dev) pipeline:
 
 - **`runImplement`** — single ticket: fetch, implement, deliver, exit
+- **`runImplementBatch`** — batch `--from`: implement approved local plans sequentially, stop on first failure
 - **`runAutopilot`** — loop: repeat implement until queue is empty, generate session report
 
 ### Agents
@@ -60,11 +64,11 @@ Specialist agent prompts (`.md` files) for devil's advocate grilling and verific
 ## Part of the Clancy monorepo
 
 - [`chief-clancy`](https://www.npmjs.com/package/chief-clancy) — full pipeline (install, configure, implement, autopilot)
+- [`@chief-clancy/core`](https://www.npmjs.com/package/@chief-clancy/core) — board integrations, schemas, shared utilities
 - [`@chief-clancy/dev`](https://www.npmjs.com/package/@chief-clancy/dev) — standalone ticket executor
 - [`@chief-clancy/scan`](https://www.npmjs.com/package/@chief-clancy/scan) — codebase scanning agents and workflows
 - [`@chief-clancy/brief`](https://www.npmjs.com/package/@chief-clancy/brief) — strategic brief generator
 - [`@chief-clancy/plan`](https://www.npmjs.com/package/@chief-clancy/plan) — implementation planner
-- [`@chief-clancy/core`](https://www.npmjs.com/package/@chief-clancy/core) — board integrations, pipeline phases, schemas
 
 ## Credits
 
