@@ -20,9 +20,9 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 
 **Test counts:** 879 core, 755 terminal, 1201 dev, 126 brief, 326 plan = **3287 total**.
 
-**Last shipped:** Local-init-flow PR 1 — guard detectBoard crash paths (#288) in Session 76. Also: root tsconfig `types: ["node"]` fix for IDE diagnostics across all packages.
+**Last shipped:** Local-init-flow PR 2 — init workflow local-only path (#289) in Session 76. Board gate, conditional skips, standalone git host, local .env.example + final output. 29 Copilot comments handled (25 fixed, 4 dismissed). Also: 4 new SELF-REVIEW checks added (post-fix consistency sweep, output read-aloud, credential dual-use audit, platform parity check).
 
-**Next:** Local-init-flow PR 2 — init workflow local-only path (`init.md`). Then PR 3 (settings/doctor/help/autopilot/reviewer guards) → PR 4 (changeset). After that: comprehensive docs update for local pipeline lifecycle + readability review with Alex.
+**Next:** Local-init-flow PR 3 — settings/doctor/help/autopilot/reviewer guards. Then PR 4 (changeset). After that: comprehensive docs update for local pipeline lifecycle + readability review with Alex.
 
 ## Phase ledger
 
