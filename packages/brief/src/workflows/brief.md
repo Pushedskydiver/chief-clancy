@@ -870,6 +870,7 @@ Pass the agent the full generated brief markdown only — do NOT include grill q
 
 Review the DA output:
 
+- **Discovery:** merge any new findings into the brief's `## Background Research` section. These are codebase/board/web facts the DA uncovered while investigating the brief's claims — they enrich the brief's research context.
 - **HIGH Challenges or health check failures:** revise the brief to address these before proceeding to Step 9. Re-run Step 8a after revision to verify fixes. Maximum 2 revision cycles — if HIGH challenges remain after 2 revisions, note the unresolved items in the `## Risks` section and proceed to Step 9.
 - **MEDIUM Challenges:** note in the brief's `## Risks` section if not addressed directly.
 - **Open Questions:** merge any new items into the brief's `## Open Questions` section with severity prefixes.

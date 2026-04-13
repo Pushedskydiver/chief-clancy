@@ -13,7 +13,7 @@ Detect your mode from the input: if it contains a `## Ticket Decomposition` tabl
 
 Run these 5 mechanical checks against the brief's `## Ticket Decomposition` table. Report any failures at the top of the Challenges section with severity HIGH.
 
-1. **Decomposition table has >10 rows** — the brief's own rules cap at 10 tickets. More than 10 is a scope creep signal.
+1. **Decomposition table has >10 data rows** (excluding the header and separator lines) — the brief's own rules cap at 10 tickets. More than 10 is a scope creep signal.
 2. **Any row has an empty Description** — every row in the decomposition table must have a 1-2 sentence description. Empty descriptions mean the ticket will be ambiguous.
 3. **Any row is sized L (4+ hours)** — L-sized rows should be split further. Large rows hide complexity.
 4. **Dependency column has gaps** — rows that reference dependencies not listed in the decomposition table. Dangling references mean the brief is incomplete.
