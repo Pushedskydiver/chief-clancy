@@ -2,6 +2,9 @@
 '@chief-clancy/dev': minor
 '@chief-clancy/terminal': patch
 '@chief-clancy/plan': patch
+'@chief-clancy/core': patch
+'@chief-clancy/brief': patch
+'@chief-clancy/scan': patch
 'chief-clancy': patch
 ---
 
@@ -13,4 +16,4 @@ Add `--from` support to the implement pipeline for local plan execution.
 
 **plan (patch):** README updated — replaced deferred `implement-from` text with shipped `--from` usage docs pointing at `@chief-clancy/dev`.
 
-**chief-clancy (patch):** README updated — mentions `--from` local plan execution and adds step 5 to "How it works".
+**chief-clancy, core, brief, scan (patch):** README consistency pass — standardised monorepo link ordering (dependency-first), section naming, early-stage warning, and `--from` mentions where applicable.
