@@ -25,6 +25,16 @@ import { makeEnvFs } from './adapters.js';
 const DEFAULT_QUEUE_LIMIT = 50;
 const MAX_FETCH_LIMIT = 100;
 
+// ─── Types ────────────────────────────────────────────────────────────────
+
+type LoadEnvResult =
+  | {
+      readonly envFs: EnvFileSystem;
+      readonly boardConfig: BoardConfig;
+      readonly rawEnv: Record<string, string>;
+    }
+  | undefined;
+
 // ─── Env loading ──────────────────────────────────────────────────────────
 
 /**
@@ -33,13 +43,7 @@ const MAX_FETCH_LIMIT = 100;
  * @param projectRoot - Absolute path to the project root.
  * @returns Loaded env, board config, and raw env vars, or `undefined` when no env file or no board detected.
  */
-function loadEnv(projectRoot: string):
-  | {
-      readonly envFs: EnvFileSystem;
-      readonly boardConfig: BoardConfig;
-      readonly rawEnv: Record<string, string>;
-    }
-  | undefined {
+function loadEnv(projectRoot: string): LoadEnvResult {
   const envFs = makeEnvFs();
   const rawEnv = loadClancyEnv(projectRoot, envFs);
 

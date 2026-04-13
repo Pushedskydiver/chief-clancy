@@ -38,6 +38,12 @@ import {
   makeQualityFs,
 } from './adapters.js';
 
+// ─── Types ──────────────────────────────────────────────────────────────────
+
+type LoadEnvResult =
+  | { readonly envFs: EnvFileSystem; readonly boardConfig: BoardConfig }
+  | undefined;
+
 // ─── Setup helpers ──────────────────────────────────────────────────────────
 
 function parseTicketKey(): string {
@@ -58,11 +64,7 @@ function parseTicketKey(): string {
  * @param projectRoot - Absolute path to the project root.
  * @returns Loaded env and board config, or `undefined` when no env file or no board detected.
  */
-export function loadEnv(
-  projectRoot: string,
-):
-  | { readonly envFs: EnvFileSystem; readonly boardConfig: BoardConfig }
-  | undefined {
+export function loadEnv(projectRoot: string): LoadEnvResult {
   const envFs = makeEnvFs();
   const env = loadClancyEnv(projectRoot, envFs);
 
