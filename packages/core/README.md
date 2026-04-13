@@ -6,6 +6,9 @@ Board integrations, schemas, types, and shared utilities for [Clancy](https://gi
 
 > This package is part of the [Clancy monorepo](https://github.com/Pushedskydiver/chief-clancy). You don't install it directly — it's a dependency of [`@chief-clancy/dev`](../dev) and [`@chief-clancy/terminal`](../terminal).
 
+> [!WARNING]
+> Clancy is in early development. Expect breaking changes and rough edges.
+
 ## What's in it
 
 ### Board integrations

@@ -8,6 +8,9 @@
 npx @chief-clancy/plan
 ```
 
+> [!WARNING]
+> Clancy is in early development. Expect breaking changes and rough edges.
+
 Generate structured implementation plans for your codebase. Plan from board tickets (posted as ticket comments) or fully offline from local Clancy briefs (read from `.clancy/briefs/`, with plans saved to `.clancy/plans/`). No full pipeline required.
 
 ## What it does

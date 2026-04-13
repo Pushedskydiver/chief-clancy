@@ -8,6 +8,9 @@
 npx chief-clancy
 ```
 
+> [!WARNING]
+> Clancy is in early development. Expect breaking changes and rough edges.
+
 Clancy scaffolds slash commands, hooks, and board integrations into your Claude Code project. It picks up tickets from your Kanban board (Jira, GitHub Issues, Linear, Shortcut, Notion, or Azure DevOps), implements them autonomously, and creates pull requests. Also supports local plan execution via `--from` — no board needed.
 
 ## How it works

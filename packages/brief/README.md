@@ -8,6 +8,9 @@
 npx @chief-clancy/brief
 ```
 
+> [!WARNING]
+> Clancy is in early development. Expect breaking changes and rough edges.
+
 Turn feature ideas into structured strategic briefs with vertical-slice ticket decomposition. Works standalone — no board credentials, no pipeline, no config required.
 
 ## What it does

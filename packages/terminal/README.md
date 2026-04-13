@@ -6,6 +6,9 @@ Installer, slash commands, hooks, runners, agents, and Claude CLI bridge for [Cl
 
 > This package is part of the [Clancy monorepo](https://github.com/Pushedskydiver/chief-clancy). You don't install it directly — run `npx chief-clancy` to install Clancy into your project.
 
+> [!WARNING]
+> Clancy is in early development. Expect breaking changes and rough edges.
+
 ## What's in it
 
 ### Installer

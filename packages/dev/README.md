@@ -8,6 +8,9 @@
 npx @chief-clancy/dev
 ```
 
+> [!WARNING]
+> Clancy is in early development. Expect breaking changes and rough edges.
+
 Pick up tickets from your board and execute them autonomously — branch, implement, create PR. Works standalone with board credentials, or as part of the full Clancy pipeline.
 
 ## What it does
