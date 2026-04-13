@@ -184,9 +184,11 @@ async function runLocalMode(
 async function main(): Promise<void> {
   const projectRoot = process.cwd();
 
-  // --from mode: skip board detection and ticket key entirely.
-  // Check full argv before parseTicketKey() consumes argv[2].
-  if (process.argv.includes('--from')) {
+  // --from with a usable value → skip board detection and ticket key.
+  const fromIdx = process.argv.indexOf('--from');
+  const fromValue = fromIdx !== -1 ? process.argv[fromIdx + 1] : undefined;
+
+  if (fromIdx !== -1 && fromValue && !fromValue.startsWith('--')) {
     return runLocalMode(projectRoot, process.argv.slice(2));
   }
 
@@ -195,7 +197,9 @@ async function main(): Promise<void> {
 
   // Board mode: detect board, run single-ticket executor.
   const envResult = loadEnv(projectRoot);
-  if (!envResult) return;
+
+  if (!envResult) return process.exit(1);
+
   const { envFs, boardConfig } = envResult;
 
   const board = createBoard(boardConfig, (url, init) =>

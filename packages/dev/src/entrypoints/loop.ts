@@ -275,7 +275,9 @@ async function main(): Promise<void> {
   const loopArgs = parseLoopArgs(process.argv);
   const projectRoot = process.cwd();
   const envResult = loadEnv(projectRoot);
-  if (!envResult) return;
+
+  if (!envResult) return process.exit(1);
+
   const { envFs, boardConfig, rawEnv } = envResult;
   const env = mergeEnv(rawEnv);
 
