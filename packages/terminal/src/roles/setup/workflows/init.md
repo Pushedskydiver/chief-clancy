@@ -21,7 +21,7 @@ This workflow runs inside a Claude Code session, not a vanilla terminal. Accept 
 Before asking any questions, silently check:
 
 - Is this an existing project? Check for `package.json`, `.git`, `src/`, `app/`, `lib/`
-- Is a board already configured? Check `.clancy/.env` for `JIRA_BASE_URL`, `GITHUB_TOKEN`, `LINEAR_API_KEY`, `SHORTCUT_API_TOKEN`, `NOTION_DATABASE_ID`, `AZDO_ORG`
+- Is a board already configured? Check `.clancy/.env` for `JIRA_BASE_URL`, both `GITHUB_TOKEN` and `GITHUB_REPO` (GitHub Issues requires both — `GITHUB_TOKEN` alone is a git-host credential, not a board indicator), `LINEAR_API_KEY`, `SHORTCUT_API_TOKEN`, `NOTION_DATABASE_ID`, `AZDO_ORG`
 - Does `CLAUDE.md` already exist? Flag for merge — never overwrite
 - Does `.clancy/.env` already exist? This means init has been completed before — warn and offer re-init or abort. Note: `.clancy/` alone may exist from the installer (runtime scripts) without init having run.
 
@@ -104,7 +104,7 @@ You have {board} configured. What would you like to do?
 [2] Switch to a different board
 [3] Disconnect board (switch to local mode)
 
-- Option **1**: proceed with existing board credentials. Skip Q1 and Q2 (board selection and credentials). For Jira/Linear: continue from Q2c (git host). For GitHub Issues/Shortcut/Notion/Azure DevOps: skip Q2c and continue from Q3 (status config).
+- Option **1**: proceed with existing board credentials. Skip Q1 and Q2 (board selection and credentials). For Jira/Linear: continue from Q2c (git host). For GitHub Issues/Shortcut/Notion/Azure DevOps: skip Q2c and continue from Q3e (first universal question).
 - Option **2**: proceed to Q1 (board selection) to pick a new board. Old credentials will be overwritten.
 - Option **3**: remove all board credential vars from `.clancy/.env` (keep universal settings like `CLANCY_BASE_BRANCH`, `CLANCY_MAX_REWORK`, etc.). Set `localMode = true`. Skip to standalone git host question, then Q3e.
 
