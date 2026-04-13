@@ -51,7 +51,7 @@ These disciplines must execute on every non-trivial review. Marking them as "app
 
 When two sections describe the same accept/reject set (parser/validator, Step N preflight/Step M validation, matrix/flag prose, command-file flags/workflow flags, **spec-claim/actual-file**), read them side-by-side with 3-5 example inputs and confirm they agree. The most common failure mode: writing one side, then the other, without ever reading both at the same time. Caught real bugs in PR #216 (R4#2, R4#3) and the Phase D plan-package-extraction.md grill (two outright wrong claims).
 
-**Intra-file pairs count.** A prompt's skip clause and its output format template are a schema pair even within the same file. If section A says "skip X and note that it was skipped" but section B says "if no X found, write: 'none'" — those two instructions feed the same output and must agree. _Caught by Copilot: PR #277 ��� DA agent skip clause conflicted with the Challenges "No challenges identified" instruction._
+**Intra-file pairs count.** A prompt's skip clause and its output format template are a schema pair even within the same file. If section A says "skip X and note that it was skipped" but section B says "if no X found, write: 'none'" — those two instructions feed the same output and must agree. _Caught by Copilot: PR #277 — DA agent skip clause conflicted with the Challenges "No challenges identified" instruction._
 
 ### Post-restructure consistency sweep
 

@@ -875,6 +875,8 @@ Review the DA output:
 - **MEDIUM Challenges:** note in the brief's `## Risks` section if not addressed directly.
 - **Open Questions:** merge any new items into the brief's `## Open Questions` section with severity prefixes.
 
+After triage, update the brief's `## Challenges` section: keep any unresolved Challenges from Step 8a (with their severity and evidence). If all Challenges were resolved during revision, set the section to "No challenges identified."
+
 If the DA finds no issues (health check clean, "No challenges identified", no new open questions), proceed directly to Step 9.
 
 ---
