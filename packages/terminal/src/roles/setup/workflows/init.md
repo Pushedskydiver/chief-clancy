@@ -120,7 +120,7 @@ Do you want Clancy to create PRs automatically? If so, which git host?
 [4] Azure DevOps
 [5] Skip — I'll create PRs manually
 
-If [1-3]: collect the appropriate token (same prompts as Q2c for the selected host). Store in `.clancy/.env`.
+If [1-3]: fully follow the same host-specific prompts and fields as Q2c for the selected host — not just a single token. GitHub → `GITHUB_TOKEN`; GitLab → `GITLAB_TOKEN` and optionally `CLANCY_GIT_API_URL` + `CLANCY_GIT_PLATFORM=gitlab` for self-hosted; Bitbucket → `BITBUCKET_USER` + `BITBUCKET_TOKEN`. Store all values in `.clancy/.env`.
 If [4]: collect the Azure DevOps personal access token (`AZDO_PAT`). Prompt: `Paste your Azure DevOps personal access token: (needs Code Read & Write scope for PR creation)`. Store in `.clancy/.env`.
 If [5]: skip. No git host token is stored.
 
@@ -654,7 +654,7 @@ Store the detected (or confirmed) value as `CLANCY_BASE_BRANCH` in `.clancy/.env
 
 Create `.clancy/` directory and the following:
 
-1. Verify `.clancy/clancy-implement.js` exists (copied by the installer). **If `localMode = false`**, also verify `.clancy/clancy-autopilot.js` exists. If any required script is missing, tell the user to run `npx -y chief-clancy@latest` and stop.
+1. Verify `.clancy/clancy-implement.js` exists (copied by the installer). **If not local mode**, also verify `.clancy/clancy-autopilot.js` exists. If any required script is missing, tell the user to run `npx -y chief-clancy@latest` and stop.
 2. Create `.clancy/docs/` with 10 empty template files (UPPERCASE.md with section headings only):
    - STACK.md, INTEGRATIONS.md, ARCHITECTURE.md, CONVENTIONS.md, TESTING.md
    - GIT.md, DESIGN-SYSTEM.md, ACCESSIBILITY.md, DEFINITION-OF-DONE.md, CONCERNS.md
