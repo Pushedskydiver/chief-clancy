@@ -505,7 +505,7 @@ No tickets in the planning queue. Check your queue label/status configuration.
 
 Stop.
 
-For batch mode, process each ticket sequentially through Steps 4-10. Skip tickets that already have a brief (check `.clancy/briefs/`). Batch mode always uses AI-grill (no human interaction per ticket).
+For batch mode, process each ticket sequentially through Steps 4 to 10 (including Step 8a DA health check) and Step 10a where applicable. Skip tickets that already have a brief (check `.clancy/briefs/`). Batch mode always uses AI-grill (no human interaction per ticket).
 
 ---
 
@@ -603,7 +603,7 @@ Typical: 10-15 questions, 8-12 resolved, 2-4 open.
 
 ### Output from both modes
 
-Both grill modes produce a `## Discovery` section and an `## Open Questions` section. Each Q&A in Discovery includes a source tag:
+Both grill modes produce three sections: `## Discovery`, `## Challenges`, and `## Open Questions`. Each Q&A in Discovery includes a source tag. Challenges list assumptions that evidence contradicts. Open Questions carry severity prefixes.
 
 ```
 ## Discovery
@@ -618,10 +618,17 @@ A: Yes, store in localStorage. User confirmed. (Source: human)
 Q: What's the industry standard for dark mode colour contrast?
 A: WCAG AA requires 4.5:1 ratio for normal text. (Source: web)
 
+## Challenges
+
+- **Assumption:** "Dark mode is just CSS changes"
+- **Evidence:** `src/components/Chart.tsx` uses hardcoded colour values that bypass the theme system. (Source: codebase)
+- **Severity:** MEDIUM
+- **Suggestion:** Audit all components for hardcoded colours before estimating scope.
+
 ## Open Questions
-- [ ] Should dark mode apply to emails/PDFs or just the web UI?
-- [ ] Should portal users see all org data or only their team's?
-      (No RBAC policy found in codebase or ticket — needs PO input)
+- [HIGH] Should dark mode apply to emails/PDFs or just the web UI?
+- [MEDIUM] Should portal users see all org data or only their team's?
+           (No RBAC policy found in codebase or ticket — needs PO input)
 ```
 
 Source tags: `(Source: human)`, `(Source: codebase)`, `(Source: board)`, `(Source: web)`
@@ -783,10 +790,15 @@ Using all gathered context (idea, grill output, research findings), generate the
 | 2   | {Vertical slice title} | {1-2 sentences} | M    | #1   | AFK  |
 | 3   | {Vertical slice title} | {1-2 sentences} | M    | #1   | HITL |
 
+## Challenges
+
+{Assumptions or claims that evidence contradicts — from the DA grill (Step 4) and the DA health check (Step 8a). Each entry has Assumption, Evidence, Severity, Suggestion. "No challenges identified." if none remain after Step 8a triage.}
+
 ## Open Questions
 
-- [ ] {Unresolved question from grill phase — with reason}
-- [ ] {Unresolved question — needs PO input}
+- [HIGH] {Unresolved question that blocks architecture/feasibility}
+- [MEDIUM] {Unresolved question that affects scope/estimate}
+- [LOW] {Unresolved question that's nice to resolve but not blocking}
 
 ## Success Criteria
 
@@ -842,6 +854,30 @@ If revising from feedback (Step 5):
 {What feedback was addressed and how the brief changed.
 List resolved open questions explicitly.}
 ```
+
+---
+
+## Step 8a — DA health check
+
+After generating the brief (Step 8), run the devil's advocate agent against the **generated brief content**. This step fires for both fresh briefs and revised briefs — the revision path in Step 5 generates a revised brief (using Step 8's template and rules), and Step 8a runs against that output the same way it runs against a fresh brief.
+
+Spawn the devil's advocate agent via the Agent tool. The agent file is at:
+`.claude/clancy/agents/devils-advocate.md`
+
+Pass the agent the full generated brief markdown only — do NOT include grill questions or idea text. The agent runs its brief health check preamble (5 mechanical checks against the decomposition table) and then investigates any claims or assumptions in the brief. It produces three sections: Discovery, Challenges, Open Questions.
+
+**Important:** In Step 4 (AI-grill), the DA agent receives _questions about the idea_. Here in Step 8a, it receives the _generated brief itself_. The health check preamble only fires here (in Step 4, the skip clause triggers because no brief exists yet).
+
+Review the DA output:
+
+- **Discovery:** merge any new findings into the brief's `## Background Research` section. These are codebase/board/web facts the DA uncovered while investigating the brief's claims — they enrich the brief's research context.
+- **HIGH Challenges or health check failures:** revise the brief to address these before proceeding to Step 9. Re-run Step 8a after revision to verify fixes. Maximum 2 revision cycles — if HIGH challenges remain after 2 revisions, note the unresolved items in the `## Risks` section and proceed to Step 9.
+- **MEDIUM Challenges:** note in the brief's `## Risks` section if not addressed directly.
+- **Open Questions:** merge any new items into the brief's `## Open Questions` section with severity prefixes.
+
+After triage, update the brief's `## Challenges` section: keep any unresolved Challenges from Step 8a (with their severity and evidence). If all Challenges were resolved during revision, set the section to "No challenges identified."
+
+If the DA finds no issues (health check clean, "No challenges identified", no new open questions), proceed directly to Step 9.
 
 ---
 

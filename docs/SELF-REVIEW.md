@@ -80,6 +80,8 @@ Workflow `.md` files are as load-bearing as TypeScript — Claude follows them s
 - **Forward references** — if a workflow references a command that ships in a later PR (e.g. `/clancy:update-terminal` before PR U4), add a comment in the PR body explaining the forward reference. Copilot flags these every time.
 - **Step number consistency** — after inserting or renumbering steps, grep for `Step N` references in the same file AND cross-referencing files (approve workflows, tests, other commands that mention step numbers)
 - **Table column alignment** — markdown tables rendered by Prettier may have different column widths than hand-written ones. Run `pnpm format` before checking table rendering
+- **Multi-mode prompt simulation** — if a prompt can be invoked with different inputs (flags, modes, step contexts), mentally execute it with each input type. Does every instruction still make sense? Does the output format work for all cases? Read the intro, every instruction, and the output template as if you were the LLM receiving input X — then repeat with input Y. _Caught by Copilot: PR #277 — DA agent intro said "You receive 10-15 clarifying questions" which was false for the Step 8a health-check invocation that passes a generated brief._
+- **Derived threshold alignment** — when a check references a rule defined elsewhere (e.g., "max N rows", "size L = 4+ hours"), verify the threshold matches the source rule. Grep for the authoritative value in the file that defines it. _Caught by Copilot: PR #277 — health check flagged >15 rows but brief.md's own decomposition rules cap at 10._
 
 ## Carried-over content
 

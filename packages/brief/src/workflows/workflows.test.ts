@@ -388,6 +388,23 @@ describe('three-state mode detection', () => {
     expect(content).toContain('/clancy:board-setup');
   });
 
+  it('Step 8a DA health check fires after brief generation', () => {
+    expect(content).toContain('## Step 8a — DA health check');
+    expect(content).toContain('.claude/clancy/agents/devils-advocate.md');
+    expect(content).toContain('full generated brief markdown');
+  });
+
+  it('Step 8a fires for both fresh and revised briefs', () => {
+    expect(content).toContain('fresh briefs and revised briefs');
+  });
+
+  it('Step 8a has severity-based triage and revision cap', () => {
+    expect(content).toContain('HIGH Challenges or health check failures');
+    expect(content).toContain('MEDIUM Challenges');
+    expect(content).toContain('Maximum 2 revision cycles');
+    expect(content).toContain('proceed directly to Step 9');
+  });
+
   it('Step 10 runs when board credentials are available', () => {
     expect(content).toContain(
       'when board credentials are available (terminal mode or standalone+board mode)',

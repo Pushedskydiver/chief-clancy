@@ -91,6 +91,34 @@ _Pattern from: all uninstall/update workflows._
 
 ---
 
+## Agent prompts
+
+### Intra-file instruction conflicts
+
+A prompt's conditional logic (skip clause, mode detection) and its output format template can contradict each other. If section A says "skip X and note it was skipped" but the output template says "if no X, write: 'none'" — those two paths produce different text for the same output section. Walk every conditional path through to the output format.
+
+_Caught: PR #277 (Copilot, 2 comments) — DA agent skip clause said "note that it was skipped" but Challenges output said "write: No challenges identified."_
+
+### Multi-mode prompts assuming single input type
+
+When a prompt is invoked from multiple workflow steps with different inputs, the intro and instructions may only describe one input type. Every instruction must make sense for all invocation modes — "Work through each question" is wrong when the input is a generated brief, not questions.
+
+_Caught: PR #277 (Copilot) — DA agent intro said "You receive 10-15 clarifying questions" but Step 8a passes the generated brief._
+
+### Derived thresholds misaligned with source rules
+
+When a mechanical check references a rule defined elsewhere (e.g., "max N rows"), the threshold must match the source. The source rule is authoritative — grep for it before writing a derived check.
+
+_Caught: PR #277 (Copilot) — health check flagged >15 rows but brief.md's Ticket Decomposition rules say "Max 10 tickets."_
+
+### Ambiguous table row counts
+
+Markdown tables have header and separator lines that look like rows. When a mechanical check counts "rows", specify whether the header/separator lines are included or excluded to avoid off-by-two errors.
+
+_Caught: PR #277 (Copilot) — ">10 rows" was ambiguous about header/separator lines._
+
+---
+
 ## How this file is used
 
 - The DA subagent reads `docs/` files as context before reviewing — this file is automatically included
