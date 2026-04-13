@@ -51,7 +51,9 @@ If `--from {path}` was passed, skip items 2–4 below (local mode does not need 
 
 ## Step 2 — Run
 
-**With `--from {path}`:** pass the `--from {path}` argument through to the script. The pipeline reads the plan file, creates a synthetic ticket, and runs with a no-op board — no credential checks, no dry-run-first fetch, no feasibility interview. Skip Steps 2a and 2b and go directly to 2c, appending `--from {path} --skip-feasibility` to the script arguments.
+**With `--from {path}` (file):** pass the `--from {path}` argument through to the script. The pipeline reads the plan file, creates a synthetic ticket, and runs with a no-op board — no credential checks, no dry-run-first fetch, no feasibility interview. Skip Steps 2a and 2b and go directly to 2c, appending `--from {path} --skip-feasibility` to the script arguments.
+
+**With `--from {directory} --afk` (batch):** pass `--from {directory} --afk` through to the script. The runtime lists `.md` plan files in the directory (naturally sorted), skips unapproved plans with a warning, and implements each approved plan sequentially. Stops on first failure and reports a summary. Skip Steps 2a, 2b, and 2c — the batch runner handles everything. Error if `--from {directory}` is passed without `--afk`.
 
 Check if the user passed `--dry-run` as an argument to the slash command.
 

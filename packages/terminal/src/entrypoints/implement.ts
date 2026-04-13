@@ -8,15 +8,25 @@
  * Built by esbuild into a self-contained ESM bundle with zero npm deps.
  */
 import type { EnvFileSystem, ExecGit } from '@chief-clancy/core';
-import type { CostFs, LockFs, ProgressFs, QualityFs } from '@chief-clancy/dev';
+import type {
+  CostFs,
+  FetchFn,
+  LockFs,
+  ProgressFs,
+  QualityFs,
+  SpawnSyncFn,
+} from '@chief-clancy/dev';
 import type { SpawnSyncReturns } from 'node:child_process';
 
 import { spawnSync } from 'node:child_process';
 import {
   appendFileSync,
+  existsSync,
   mkdirSync,
+  readdirSync,
   readFileSync,
   renameSync,
+  statSync,
   unlinkSync,
   writeFileSync,
 } from 'node:fs';
@@ -25,6 +35,7 @@ import { fileURLToPath } from 'node:url';
 
 import { runPipeline } from '@chief-clancy/dev';
 
+import { runImplementBatch } from '../runner/implement/batch.js';
 import { runImplement } from '../runner/implement/implement.js';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -114,25 +125,76 @@ export function makeEnvFs(): EnvFileSystem {
 
 // ─── Main ───────────────────────────────────────────────────────────────────
 
+/** Parse `--from {path}` from argv, returning undefined if absent. */
+function parseFromArg(argv: readonly string[]): string | undefined {
+  const idx = argv.indexOf('--from');
+  if (idx === -1 || idx + 1 >= argv.length) return undefined;
+  const value = argv[idx + 1];
+  if (value.startsWith('--')) return undefined;
+  return value;
+}
+
+/** Check whether the given path is a directory. */
+function isDirectory(filePath: string): boolean {
+  try {
+    return statSync(filePath).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+/** Build a ListPlansFs adapter from real node:fs functions. */
+export function makePlanFs(): {
+  readonly readdir: (p: string) => readonly string[];
+  readonly exists: (p: string) => boolean;
+} {
+  return {
+    readdir: (p: string) => readdirSync(p),
+    exists: (p: string) => existsSync(p),
+  };
+}
+
 async function main(): Promise<void> {
   const projectRoot = process.cwd();
+  const argv = process.argv;
+  const fromPath = parseFromArg(argv);
+  const isAfk = argv.includes('--afk');
 
-  await runImplement({
-    argv: process.argv,
+  const spawnFn: SpawnSyncFn = (cmd, args, opts) =>
+    spawnSync(cmd, [...args], { ...opts, stdio: [...opts.stdio] });
+  const fetchFn: FetchFn = globalThis.fetch.bind(globalThis);
+
+  const shared = {
     projectRoot,
-    isAfk: false,
     exec: makeExecGit(projectRoot),
     lockFs: makeLockFs(),
     progressFs: makeProgressFs(),
     costFs: makeCostFs(),
     envFs: makeEnvFs(),
     qualityFs: makeQualityFs(),
-    spawn: (cmd, args, opts) =>
-      spawnSync(cmd, [...args], { ...opts, stdio: [...opts.stdio] }),
-    fetch: globalThis.fetch.bind(globalThis),
+    spawn: spawnFn,
+    fetch: fetchFn,
     runPipeline,
     console,
-  });
+  };
+
+  if (fromPath && isDirectory(fromPath)) {
+    if (!isAfk) {
+      console.error(
+        'Error: --from with a directory requires --afk for batch mode.',
+      );
+      return;
+    }
+    await runImplementBatch({
+      ...shared,
+      directory: fromPath,
+      argv,
+      planFs: makePlanFs(),
+    });
+    return;
+  }
+
+  await runImplement({ ...shared, argv, isAfk });
 }
 
 // Main guard — self-execute when run directly (e.g. node .clancy/clancy-implement.js)

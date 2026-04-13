@@ -39,6 +39,12 @@ export { checkFeasibility } from './lifecycle/feasibility/feasibility.js';
 
 export { formatDuration } from './lifecycle/format/format.js';
 
+export { listPlanFiles } from './lifecycle/plan-file/index.js';
+export type {
+  ListPlansFs,
+  PlanFileEntry,
+} from './lifecycle/plan-file/index.js';
+
 export type { LockData, LockFs } from './lifecycle/lock/index.js';
 export {
   deleteLock,
