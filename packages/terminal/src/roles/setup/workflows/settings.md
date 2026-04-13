@@ -123,11 +123,14 @@ Integrations
   [I2] Playwright        {enabled if PLAYWRIGHT_ENABLED=true, else off}
   [I3] Notifications     {configured if CLANCY_NOTIFY_WEBHOOK set, else not set}
 
-  {If a board is configured:}
+  {Only if a board is configured:}
   [S]  Switch board      currently: {Jira / GitHub Issues / Linear / Shortcut / Notion / Azure DevOps}
   [D]  Disconnect board  switch to local mode (removes board credentials, keeps other settings)
-  {If local mode:}
+  {/End board-only block}
+  {Only if local mode:}
   [B]  Connect a board   add a Kanban board to enable /clancy:autopilot and /clancy:review
+  {/End local-only block}
+  {Always shown:}
   [V]  Save as defaults  save current settings for all future projects
   [X]  Exit
 
@@ -962,8 +965,8 @@ This will remove the board credentials from .clancy/.env and switch to local mod
 Your other settings (model, iterations, base branch, roles, integrations) will be kept.
 Git host credentials (GITHUB_TOKEN, GITLAB_TOKEN, BITBUCKET_*, AZDO_PAT when used for PRs) are kept for PR creation.
 
-Local mode keeps /clancy:brief, /clancy:plan, and /clancy:implement --from working.
-/clancy:autopilot, /clancy:review, and /clancy:status require a board.
+Local mode keeps /clancy:brief, /clancy:plan, /clancy:status, and /clancy:implement --from working.
+/clancy:autopilot and /clancy:review require a board.
 
 Confirm? [Y/n]
 ```

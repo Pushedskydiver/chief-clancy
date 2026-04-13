@@ -107,9 +107,9 @@ query {
 When no board is configured, gather a local snapshot:
 
 1. **Plans:** list files in `.clancy/plans/` matching `*.md`. Record each plan's basename (without `.md`) and the first non-empty, non-heading line as a short summary (truncate to ~80 chars).
-2. **Approved plans:** a plan is "approved" if it contains an `Approved: true` front-matter key, a `## Status: Approved` heading, or equivalent marker used by `/clancy:approve-plan`. If the marker convention is unclear, simply count total plans and skip the approved count.
+2. **Approved plans:** a plan is "approved" only when the sibling marker file `.clancy/plans/{plan-id}.approved` exists. Do not infer approval from plan front-matter, markdown headings, or any other content inside the `.md` file. Re-use the plan package's inventory logic if available — this must match the gate used by `/clancy:approve-plan` exactly. A malformed `.approved` marker (missing or non-hex `sha256=` line) is a `Stale (re-approve)` state — surface a count rather than inventing a verdict.
 3. **Progress:** if `.clancy/progress.txt` exists, read the last 5 non-empty lines.
-4. **Recent branches:** `git branch --sort=-committerdate --format='%(refname:short) %(committerdate:relative)' | grep -v '^main' | head -5` (falls back to empty if not a git repo).
+4. **Recent branches:** determine the configured base branch from `CLANCY_BASE_BRANCH` (defaulting to `main`). Run a git-only command such as `git for-each-ref --sort=-committerdate --count=6 --format='%(refname:short) %(committerdate:relative)' refs/heads`, then exclude the configured base branch in workflow logic before displaying up to 5 entries. Falls back to empty if not a git repo.
 
 Display:
 
@@ -119,7 +119,7 @@ Display:
 
 Local mode — no board configured
 
-Plans ({N} total, {M} approved):
+Plans ({N} total, {M} approved, {S} stale):
   1. <plan-slug> — <summary line>
   2. <plan-slug> — <summary line>
   3. <plan-slug> — <summary line>

@@ -77,7 +77,7 @@ Clancy supports two paths:
 2. `/clancy:map-codebase` — generate codebase docs
 3. `/clancy:brief` → `/clancy:plan --from` → `/clancy:approve-plan` → `/clancy:implement --from .clancy/plans/<plan>.md`
 
-Step 3 of the local path requires the Strategist role (for `/clancy:brief`) and the Planner role (for `/clancy:plan`) — enable either during `/clancy:init` or via `/clancy:settings`.
+Step 3 of the local path requires the Strategist role (for `/clancy:brief`) and the Planner role (for `/clancy:plan`) — enable the relevant role(s) during `/clancy:init` or via `/clancy:settings` (typically both for the full local path).
 
 Either way, Clancy picks one unit of work per loop, fresh context every iteration. No context rot.
 
