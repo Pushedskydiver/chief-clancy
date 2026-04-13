@@ -151,11 +151,11 @@ export async function runImplementBatch(opts: BatchOpts): Promise<void> {
       dim('. Starting...'),
   );
 
-  const pathBySlugs = Object.fromEntries(approved.map((p) => [p.slug, p.path]));
+  const pathBySlug = new Map(approved.map((p) => [p.slug, p.path] as const));
 
   const outcome = await executeQueue<PipelineResult>({
     queue: approved.map((p) => p.slug),
-    run: (slug) => runOnePlan(opts, pathBySlugs[slug]),
+    run: (slug) => runOnePlan(opts, pathBySlug.get(slug)!),
     shouldHalt: batchHalt,
     sleep: () => Promise.resolve(),
     clock,
