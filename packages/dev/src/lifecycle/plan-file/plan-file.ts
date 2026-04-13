@@ -148,10 +148,11 @@ export function checkApprovalStatus(
   const marker = fs.readFile(markerPath);
   const sha256Line = /^sha256=(.+)$/m.exec(marker);
   const approvedAtLine = /^approved_at=(.+)$/m.exec(marker);
-  const approvedAt = approvedAtLine?.[1] ?? '';
+  // Trim captures to handle CRLF line endings (Windows git checkouts)
+  const approvedAt = approvedAtLine?.[1]?.trim() ?? '';
 
   const currentSha = createHash('sha256').update(planContent).digest('hex');
-  const markerSha = sha256Line?.[1] ?? '';
+  const markerSha = sha256Line?.[1]?.trim() ?? '';
 
   if (currentSha === markerSha) {
     return { status: 'approved', approvedAt };

@@ -322,6 +322,15 @@ describe('parsePlanFile', () => {
         '## Clancy Implementation Plan',
       );
     });
+
+    it('falls back to slug when plan header present but no Ticket or Row', () => {
+      const content =
+        '## Clancy Implementation Plan\n\n### Summary\n\nSome content.';
+      const plan = parsePlanFile(content, 'my-slug');
+      expect(plan.headerFormat).toBe('local');
+      expect(plan.key).toBe('my-slug');
+      expect(plan.title).toBe('my-slug');
+    });
   });
 
   describe('feedback / revision sections', () => {
@@ -470,6 +479,19 @@ describe('checkApprovalStatus', () => {
     const fs = makeFs({ exists: existsFn });
     checkApprovalStatus('.clancy/plans/my-plan.md', planContent, fs);
     expect(existsFn).toHaveBeenCalledWith('.clancy/plans/my-plan.approved');
+  });
+
+  it('handles CRLF line endings in marker file', () => {
+    const marker = `sha256=${sha}\r\napproved_at=2026-04-13T10:00:00Z\r\n`;
+    const fs = makeFs({
+      exists: vi.fn(() => true),
+      readFile: vi.fn(() => marker),
+    });
+    const result = checkApprovalStatus('plans/x.md', planContent, fs);
+    expect(result).toEqual({
+      status: 'approved',
+      approvedAt: '2026-04-13T10:00:00Z',
+    });
   });
 });
 
