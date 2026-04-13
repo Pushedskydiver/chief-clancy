@@ -142,7 +142,7 @@ Which Kanban board are you using?
 [6] Azure DevOps
 [7] My board isn't listed
 
-Auto-detection hint: silently check `.clancy/.env` for existing board env vars (`JIRA_BASE_URL`, `GITHUB_TOKEN`, `LINEAR_API_KEY`, `SHORTCUT_API_TOKEN`, `NOTION_DATABASE_ID`, `AZDO_ORG`). If detected, show: `Detected: {board} from your env vars. Use this? [Y/n]` — if yes, skip to Q2 for that board.
+Auto-detection hint: silently check `.clancy/.env` for existing board env vars (`JIRA_BASE_URL`, both `GITHUB_TOKEN` and `GITHUB_REPO` for GitHub Issues, `LINEAR_API_KEY`, `SHORTCUT_API_TOKEN`, `NOTION_DATABASE_ID`, `AZDO_ORG`). If detected, show: `Detected: {board} from your env vars. Use this? [Y/n]` — if yes, skip to Q2 for that board.
 
 If the user selects [7], output the dead-end message and stop:
 
@@ -947,11 +947,14 @@ If [2]: prompt for the value, store as `CLANCY_COMPONENT` in `.clancy/.env`. Wra
 ```
 Clancy is set up. A few optional enhancements are available:
 
-  1. Figma MCP        — fetch design specs when tickets include a Figma URL
-  2. Playwright       — screenshot and verify UI after implementing tickets
-  3. Notifications    — post to Slack or Teams when a ticket completes or errors
+  - Figma MCP      — fetch design specs when tickets include a Figma URL
+  - Playwright     — screenshot and verify UI after implementing tickets
+  - Notifications  — post to Slack or Teams when a ticket completes or errors
 
 Each takes about 2 minutes to configure, or skip any for now.
+You can always add them later via /clancy:settings.
+
+Set up optional enhancements? [y/N]
 ```
 
 **Otherwise (board mode)**, output:
@@ -1188,6 +1191,7 @@ Next steps:
   /clancy:map-codebase  — scan your codebase
   /clancy:brief "..."   — generate a strategic brief
   /clancy:plan --from <brief> — create implementation plans
+  /clancy:implement --from <plan.md> — execute a saved plan
 
 "Clancy's on the beat."
 ```
