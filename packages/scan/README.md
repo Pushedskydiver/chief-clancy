@@ -6,7 +6,7 @@
 
 Shared package containing the 5 specialist scanning agents and the `map-codebase` / `update-docs` commands and workflows. Consumed by [`@chief-clancy/brief`](https://www.npmjs.com/package/@chief-clancy/brief), [`@chief-clancy/plan`](https://www.npmjs.com/package/@chief-clancy/plan), [`@chief-clancy/dev`](https://www.npmjs.com/package/@chief-clancy/dev), [`@chief-clancy/terminal`](https://www.npmjs.com/package/@chief-clancy/terminal), and [`chief-clancy`](https://www.npmjs.com/package/chief-clancy).
 
-## What it contains
+## What's in it
 
 ### Agents
 
