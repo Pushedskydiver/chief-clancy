@@ -316,7 +316,8 @@ Which git host does this project use?
 [1] GitHub
 [2] GitLab
 [3] Bitbucket
-[4] Skip — I'll push and create PRs manually
+[4] Azure DevOps
+[5] Skip — I'll push and create PRs manually
 ```
 
 **If [1] GitHub:**
@@ -349,7 +350,13 @@ If the user enters just a hostname or instance URL without `/api/v4`, append `/a
 
 Store as `BITBUCKET_USER` and `BITBUCKET_TOKEN` in `.clancy/.env`.
 
-**If [4] Skip:** no git host token is written. Clancy will still implement tickets but leave the feature branch for the user to push and create PRs manually.
+**If [4] Azure DevOps:**
+
+`Paste your Azure DevOps personal access token: (needs Code Read & Write scope for PR creation — create at dev.azure.com/{org}/_usersSettings/tokens)`
+
+Store as `AZDO_PAT` in `.clancy/.env`.
+
+**If [5] Skip:** no git host token is written. Clancy will still implement tickets but leave the feature branch for the user to push and create PRs manually.
 
 ---
 
