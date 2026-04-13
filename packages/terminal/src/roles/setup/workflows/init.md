@@ -81,7 +81,7 @@ Let's get you set up. This takes about 3 minutes (4 steps, then optional extras)
 
 Before asking board-specific questions, determine whether the user wants a board connection.
 
-### Fresh install (no board credentials in `.clancy/.env`)
+### No board credentials detected in `.clancy/.env`
 
 Output:
 
@@ -1193,15 +1193,12 @@ If no: output "Run /clancy:map-codebase when you're ready." then continue to fin
 Next steps:
   /clancy:map-codebase  — scan your codebase
   /clancy:implement --from <plan.md> — execute a saved plan
-```
-
-If Strategist was enabled, also show: `/clancy:brief "..." — generate a strategic brief`
-If Planner was enabled, also show: `/clancy:plan --from <brief> — create implementation plans`
-
-```
 
 "Clancy's on the beat."
 ```
+
+If Strategist was enabled, also include in the "Next steps" block: `/clancy:brief "..." — generate a strategic brief`
+If Planner was enabled, also include: `/clancy:plan --from <brief> — create implementation plans`
 
 **Otherwise (board mode)**, output:
 
