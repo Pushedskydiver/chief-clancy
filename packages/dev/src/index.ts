@@ -39,8 +39,14 @@ export { checkFeasibility } from './lifecycle/feasibility/feasibility.js';
 
 export { formatDuration } from './lifecycle/format/format.js';
 
-export { listPlanFiles } from './lifecycle/plan-file/index.js';
+export {
+  checkApprovalStatus,
+  listPlanFiles,
+  parsePlanFile,
+  toSyntheticTicket,
+} from './lifecycle/plan-file/index.js';
 export type {
+  ApprovalFs,
   ListPlansFs,
   PlanFileEntry,
 } from './lifecycle/plan-file/index.js';

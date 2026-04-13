@@ -274,6 +274,8 @@ Independent versioning managed by `@changesets/cli`. Coordinated v1.0.0 release 
 4. `scripts/group-changelog.ts` post-processes changelogs with gitmoji category headers
 5. Merge the version PR → `changesets/action` publishes to npm + creates GitHub Releases
 
+**New packages start private.** Set `"private": true` in `package.json` when scaffolding. Only flip to `false` and add a changeset in the final PR when the package is ready (README written, API stable). This prevents `changesets/action` from auto-publishing before the package is complete.
+
 See `.github/workflows/publish.yml` for the full workflow. `NPM_TOKEN` secret required in repo settings.
 
 ---
@@ -338,6 +340,8 @@ Use these size labels in PR descriptions and phase plans. Hard numeric complexit
 - You find yourself writing "and" in the task title (a sign it is two tasks)
 
 XL tasks always get broken down. M is the sweet spot for a phase PR; L is acceptable for a substantial change with a clean review story.
+
+**Merge PR clusters when intermediate states don't compile.** When a planned PR split creates an intermediate state that fails the quality suite, merge the cluster into one PR with small, reviewable commits instead of fighting the toolchain. Ask: "does the intermediate state after PR N compile and pass?" If not, merge PRs N and N+1. The full review chain still runs on the merged PR.
 
 ### Pre-merge
 
