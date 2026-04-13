@@ -708,7 +708,7 @@ If no: skip the commit silently. The user can commit manually later.
 
 Clancy includes the Implementer, Reviewer, and Setup roles by default. Optional roles add extra capabilities.
 
-**If `localMode = true`**, add this note after displaying the role options: "In local mode, brief and plan work fully offline. Board-push features (ticket creation, plan comments) become available after connecting a board via /clancy:settings."
+**If `localMode = true`**, add this note after displaying the role options: "In local mode, Planner and Strategist work fully offline if enabled. If you skip them, you can still use `implement --from` with your own plan files. Board-push features (ticket creation, plan comments) become available after connecting a board via /clancy:settings."
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1192,9 +1192,13 @@ If no: output "Run /clancy:map-codebase when you're ready." then continue to fin
 
 Next steps:
   /clancy:map-codebase  — scan your codebase
-  /clancy:brief "..."   — generate a strategic brief
-  /clancy:plan --from <brief> — create implementation plans
   /clancy:implement --from <plan.md> — execute a saved plan
+```
+
+If Strategist was enabled, also show: `/clancy:brief "..." — generate a strategic brief`
+If Planner was enabled, also show: `/clancy:plan --from <brief> — create implementation plans`
+
+```
 
 "Clancy's on the beat."
 ```
