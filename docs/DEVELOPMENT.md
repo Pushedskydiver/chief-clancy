@@ -341,6 +341,8 @@ Use these size labels in PR descriptions and phase plans. Hard numeric complexit
 
 XL tasks always get broken down. M is the sweet spot for a phase PR; L is acceptable for a substantial change with a clean review story.
 
+**Merge PR clusters when intermediate states don't compile.** When a planned PR split creates an intermediate state that fails the quality suite, merge the cluster into one PR with small, reviewable commits instead of fighting the toolchain. Ask: "does the intermediate state after PR N compile and pass?" If not, merge PRs N and N+1. The full review chain still runs on the merged PR.
+
 ### Pre-merge
 
 Every PR must pass before merging:
