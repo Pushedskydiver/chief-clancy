@@ -178,6 +178,24 @@ describe('runImplementBatch — failure handling', () => {
 
     expect(pipelineCallCount(opts)).toBe(1);
   });
+
+  it('continues through all plans in dry-run mode', async () => {
+    const pipeline = vi.fn().mockResolvedValue({ status: 'dry-run' });
+
+    const opts = createBatchOpts({
+      runPipeline: pipeline,
+      planFs: {
+        readdir: vi
+          .fn()
+          .mockReturnValue(['plan-1.md', 'plan-2.md', 'plan-3.md']),
+        exists: vi.fn().mockReturnValue(true),
+      },
+    });
+
+    await runImplementBatch(opts);
+
+    expect(pipelineCallCount(opts)).toBe(3);
+  });
 });
 
 // ─── Summary ────────────────────────────────────────────────────────────────

@@ -79,9 +79,7 @@ function replaceFromPath(
 
 function buildSummaryLine(counts: SummaryCounts, elapsed: string): string {
   const parts = [
-    counts.implemented > 0
-      ? green(`${counts.implemented} implemented`)
-      : undefined,
+    green(`${counts.implemented} implemented`),
     counts.skipped > 0 ? yellow(`${counts.skipped} skipped`) : undefined,
     counts.remaining > 0 ? red(`${counts.remaining} remaining`) : undefined,
   ].filter((p): p is string => p !== undefined);
@@ -95,15 +93,19 @@ function warnSkipped(out: ConsoleLike, slugs: readonly string[]): void {
   );
 }
 
-/** Batch halt — stop on any non-success result (stricter than autopilot). */
+/** Batch halt — stop on error/abort but allow dry-run to continue. */
 function batchHalt(result: PipelineResult) {
-  return result.status === 'completed' || result.status === 'resumed'
-    ? ({ stop: false } as const)
-    : ({
-        stop: true,
-        reason:
-          result.error ?? `${result.status} at ${result.phase ?? 'unknown'}`,
-      } as const);
+  if (
+    result.status === 'completed' ||
+    result.status === 'resumed' ||
+    result.status === 'dry-run'
+  ) {
+    return { stop: false } as const;
+  }
+  return {
+    stop: true,
+    reason: result.error ?? `${result.status} at ${result.phase ?? 'unknown'}`,
+  } as const;
 }
 
 // ─── Entry point ────────────────────────────────────────────────────────────

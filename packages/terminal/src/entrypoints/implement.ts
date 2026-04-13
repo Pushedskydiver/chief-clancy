@@ -134,12 +134,20 @@ function parseFromArg(argv: readonly string[]): string | undefined {
   return value;
 }
 
-/** Check whether the given path is a directory. */
+/** Check whether the given path is a directory. Only treats ENOENT as "not found". */
 function isDirectory(filePath: string): boolean {
   try {
     return statSync(filePath).isDirectory();
-  } catch {
-    return false;
+  } catch (error: unknown) {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      error.code === 'ENOENT'
+    ) {
+      return false;
+    }
+    throw error;
   }
 }
 
