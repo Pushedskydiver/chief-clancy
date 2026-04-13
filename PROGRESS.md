@@ -20,7 +20,9 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 
 **Test counts:** 879 core, 742 terminal, 1106 dev, 126 brief, 326 plan = **3179 total**.
 
-**Last shipped:** Plan DA agent (#277-#279) in Session 74.
+**Last shipped:** Plan DA agent (#277-#279) + e2e test fix in Session 74.
+
+**Next:** `--from` support for `/clancy:implement` — plan grilled (3 DA rounds) at `.clancy/plans/implement-from.md`. 6 PRs: parser, local-mode infra, pipeline wiring, batch mode, e2e tests, changeset + READMEs.
 
 ## Phase ledger
 
