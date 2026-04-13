@@ -667,6 +667,8 @@ Create `.clancy/` directory and the following:
    # GITLAB_TOKEN=
    # BITBUCKET_USER=
    # BITBUCKET_TOKEN=
+   # CLANCY_GIT_PLATFORM=                    # override auto-detection (github/gitlab/bitbucket)
+   # CLANCY_GIT_API_URL=                     # self-hosted git instance API base URL
    ```
 4. Write collected credentials to `.clancy/.env` (if the user provided them)
 5. Handle `CLAUDE.md` — follow the merge logic in scaffold.md exactly:
