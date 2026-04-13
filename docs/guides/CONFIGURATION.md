@@ -17,7 +17,7 @@ Board credentials are **optional**. If `.clancy/.env` has none of the marker var
 
 Detection happens first (`@chief-clancy/core`'s `detectBoard()` checks the marker column); schema validation then enforces the full required set. A marker present without its supporting vars fails preflight with a credentials error rather than silently falling through to local mode.
 
-The terminal workflow files (`/clancy:settings`, `/clancy:doctor`, `/clancy:autopilot`, etc.) apply a slightly stricter rule — they only treat the project as having a board once the pair on the right-hand side is present — so that settings UI doesn't show board options for a half-configured project. Both rules agree in the fully-configured case; they differ only at the edges of partial config.
+The terminal workflow files (`/clancy:settings`, `/clancy:doctor`, `/clancy:autopilot`, etc.) apply a stricter rule for **Notion and Azure DevOps only**: they require `NOTION_TOKEN` + `NOTION_DATABASE_ID` and `AZDO_ORG` + `AZDO_PROJECT` respectively before treating those providers as configured. Jira, GitHub, Linear, and Shortcut workflow detection matches core exactly (single marker, then validate the rest). The stricter Notion/AzDO gate is deliberate: their single markers are ambiguous (`NOTION_TOKEN` alone could be orphaned config, `AZDO_ORG` alone doesn't identify a project), so settings UI waits for both before offering board-specific actions. Both rules agree in the fully-configured case; they differ only at the edges of partial Notion/AzDO configs.
 
 In local mode:
 
