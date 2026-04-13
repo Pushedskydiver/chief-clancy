@@ -13,7 +13,7 @@ This is a **living document** — when CodeRabbit catches something the self-rev
 
 See also: [DEVELOPMENT.md](DEVELOPMENT.md) for the full review gate flow, [TESTING.md](TESTING.md) for test-specific disciplines.
 
-**Last reviewed:** 2026-04-09
+**Last reviewed:** 2026-04-13
 
 ---
 
@@ -69,6 +69,17 @@ For every new regex assertion or slice-based string check, walk through the simp
 - `not.toContain` slices that don't bound the slice region — verify both slice markers exist before asserting absence
 
 If the assertion would pass against the wrong input, tighten it before committing.
+
+## Workflow/prompt file accuracy
+
+Workflow `.md` files are as load-bearing as TypeScript — Claude follows them step-by-step. Apply the same rigour as code review.
+
+- **Control flow completeness** — does every conditional path (if/else, success/failure, found/not-found) have an explicit outcome? Look for steps that warn but don't stop, then fall through to a success message. _Caught by Copilot: PR #269 Step 8 warned on unchanged version then fell through to Step 9 success._
+- **Parameterised values** — are hardcoded values (flags, package names, paths) correct for all execution paths? A fallback message shouldn't hardcode `--local` when the workflow also handles `--global` and `both`. _Caught by Copilot: PR #269 Step 2 fallback._
+- **Post-rename sweep** — after renaming a command (e.g. `/clancy:update` → `/clancy:update-terminal`), grep all workflow files, help text, and descriptions for the old name. Check that descriptions still make sense with the new name ("Update Clancy" is ambiguous when per-package updates exist). _Caught by Copilot: PR #272 ambiguous descriptions._
+- **Forward references** — if a workflow references a command that ships in a later PR (e.g. `/clancy:update-terminal` before PR U4), add a comment in the PR body explaining the forward reference. Copilot flags these every time.
+- **Step number consistency** — after inserting or renumbering steps, grep for `Step N` references in the same file AND cross-referencing files (approve workflows, tests, other commands that mention step numbers)
+- **Table column alignment** — markdown tables rendered by Prettier may have different column widths than hand-written ones. Run `pnpm format` before checking table rendering
 
 ## Carried-over content
 

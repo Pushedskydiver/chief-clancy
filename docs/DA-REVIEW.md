@@ -6,7 +6,7 @@ This is a **living document** — when CodeRabbit or a downstream review catches
 
 See also: [SELF-REVIEW.md](SELF-REVIEW.md) for line-level accuracy checks (DA owns architectural concerns; self-review owns code-level accuracy), [DEVELOPMENT.md](DEVELOPMENT.md) for the full review gate flow, and [RATIONALIZATIONS.md](RATIONALIZATIONS.md) for the anti-rationalization index — read the Review section before every DA pass.
 
-**Last reviewed:** 2026-04-09
+**Last reviewed:** 2026-04-13
 
 ---
 
@@ -93,6 +93,17 @@ DEAD CODE IDENTIFIED:
 Don't leave dead code lying around — it confuses future readers and agents. But don't silently delete things you're not sure about. When in doubt, ask.
 
 ---
+
+## Workflow & prompt files
+
+Workflow `.md` files in `src/{commands,workflows,agents}/` are runtime artifacts — Claude follows them step-by-step. Review them with the same adversarial posture as code.
+
+- [ ] Every conditional branch has an explicit terminal action (stop, proceed to Step N, or skip silently with documented reason). No implicit fall-throughs from error/warning paths into success paths
+- [ ] Coexistence advisories reference commands that exist (or will exist in the same PR batch — check the plan)
+- [ ] VERSION marker checks use the correct marker name for each package (VERSION.brief, VERSION.plan, VERSION.dev, VERSION) and the correct file path (.clancy/ for dev, commands/clancy/ for others)
+- [ ] `npx` commands use `@latest` suffix, correct package name, and correct `--local`/`--global` flags for the detected install mode
+- [ ] Hard constraints section is consistent with the overview section (same list of "never touch" items)
+- [ ] GitHub releases API URLs use correct URL-encoding (`%40` for `@`, `%2F` for `/`) and the correct package name in the tag
 
 ## Architecture & imports
 
