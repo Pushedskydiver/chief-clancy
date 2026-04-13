@@ -603,7 +603,7 @@ Typical: 10-15 questions, 8-12 resolved, 2-4 open.
 
 ### Output from both modes
 
-Both grill modes produce a `## Discovery` section and an `## Open Questions` section. Each Q&A in Discovery includes a source tag:
+Both grill modes produce three sections: `## Discovery`, `## Challenges`, and `## Open Questions`. Each Q&A in Discovery includes a source tag. Challenges list assumptions that evidence contradicts. Open Questions carry severity prefixes.
 
 ```
 ## Discovery
@@ -618,10 +618,17 @@ A: Yes, store in localStorage. User confirmed. (Source: human)
 Q: What's the industry standard for dark mode colour contrast?
 A: WCAG AA requires 4.5:1 ratio for normal text. (Source: web)
 
+## Challenges
+
+- **Assumption:** "Dark mode is just CSS changes"
+- **Evidence:** `src/components/Chart.tsx` uses hardcoded colour values that bypass the theme system. (Source: codebase)
+- **Severity:** MEDIUM
+- **Suggestion:** Audit all components for hardcoded colours before estimating scope.
+
 ## Open Questions
-- [ ] Should dark mode apply to emails/PDFs or just the web UI?
-- [ ] Should portal users see all org data or only their team's?
-      (No RBAC policy found in codebase or ticket — needs PO input)
+- [HIGH] Should dark mode apply to emails/PDFs or just the web UI?
+- [MEDIUM] Should portal users see all org data or only their team's?
+           (No RBAC policy found in codebase or ticket — needs PO input)
 ```
 
 Source tags: `(Source: human)`, `(Source: codebase)`, `(Source: board)`, `(Source: web)`
@@ -783,10 +790,15 @@ Using all gathered context (idea, grill output, research findings), generate the
 | 2   | {Vertical slice title} | {1-2 sentences} | M    | #1   | AFK  |
 | 3   | {Vertical slice title} | {1-2 sentences} | M    | #1   | HITL |
 
+## Challenges
+
+{Assumptions or claims that evidence contradicts — from DA grill. Each entry has Assumption, Evidence, Severity, Suggestion. "No challenges identified." if none.}
+
 ## Open Questions
 
-- [ ] {Unresolved question from grill phase — with reason}
-- [ ] {Unresolved question — needs PO input}
+- [HIGH] {Unresolved question that blocks architecture/feasibility}
+- [MEDIUM] {Unresolved question that affects scope/estimate}
+- [LOW] {Unresolved question that's nice to resolve but not blocking}
 
 ## Success Criteria
 
