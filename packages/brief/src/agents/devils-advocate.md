@@ -64,7 +64,9 @@ Severity guide:
 
 If the health check found failures, list them here as Challenges with severity HIGH.
 
-If no challenges are found, write: "No challenges identified."
+If the health check was skipped (pre-brief invocation in Step 4), write: "Health check skipped — no brief content to inspect."
+
+If no challenges are found and the health check passed, write: "No challenges identified."
 
 ## Open Questions
 
