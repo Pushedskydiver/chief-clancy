@@ -4,7 +4,7 @@ Autonomous, board-driven development for Claude Code. Monorepo for `@chief-clanc
 
 ## Project overview
 
-Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash commands, hooks, and board integrations (Jira, GitHub Issues, Linear, Shortcut, Notion, Azure DevOps) into Claude Code projects. This monorepo splits the codebase into `@chief-clancy/core` (board intelligence, types, lifecycle, pipeline), `@chief-clancy/terminal` (installer, hooks, CLI bridge), `@chief-clancy/brief` (standalone strategic brief generator), and `@chief-clancy/plan` (standalone implementation planner). The `chief-clancy` wrapper delegates to terminal and sources brief + plan content from their respective packages.
+Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash commands, hooks, and board integrations (Jira, GitHub Issues, Linear, Shortcut, Notion, Azure DevOps) into Claude Code projects. This monorepo splits the codebase into `@chief-clancy/core` (board intelligence, types, lifecycle, pipeline), `@chief-clancy/terminal` (installer, hooks, CLI bridge), `@chief-clancy/brief` (standalone strategic brief generator), `@chief-clancy/plan` (standalone implementation planner), `@chief-clancy/dev` (standalone autonomous ticket executor), and `@chief-clancy/scan` (codebase scanning agents). The `chief-clancy` wrapper delegates to terminal and sources brief + plan content from their respective packages.
 
 ## Tech stack
 
