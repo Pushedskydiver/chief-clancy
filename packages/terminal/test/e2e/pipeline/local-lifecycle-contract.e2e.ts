@@ -145,11 +145,11 @@ describe('Lifecycle contract — plan parser', () => {
     expect(plan.headerFormat).toBe('local');
     expect(plan.key).toBe('test-plan-1');
     expect(plan.title).toBe('Test feature implementation');
-    expect(plan.summary).toContain('test feature');
+    expect(plan.summary).toContain('Implement the test feature');
     expect(plan.affectedFiles).toContain('src/feature.ts');
-    expect(plan.approach).toContain('TDD');
-    expect(plan.testStrategy).toContain('Unit tests');
-    expect(plan.acceptance).toContain('Feature module exists');
+    expect(plan.approach).toContain('Create the feature module with TDD');
+    expect(plan.testStrategy).toContain('Unit tests for the feature module');
+    expect(plan.acceptance).toContain('Feature module exists and is tested');
     expect(plan.size).toBe('S');
     expect(plan.planned).toBe('2026-04-13');
   });
@@ -167,9 +167,11 @@ describe('Lifecycle contract — plan parser', () => {
 
     expect(plan.key).toBe('feedback-plan');
     expect(plan.title).toBe('Improved error handling');
-    expect(plan.summary).toContain('error handling');
+    expect(plan.summary).toContain(
+      'Add better error handling to the API layer',
+    );
     expect(plan.affectedFiles).toContain('src/api.ts');
-    expect(plan.approach).toContain('AbortController');
+    expect(plan.approach).toContain('Wrap fetch calls with AbortController');
   });
 });
 

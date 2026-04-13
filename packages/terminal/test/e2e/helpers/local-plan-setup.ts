@@ -35,6 +35,16 @@ import {
 
 import { createClaudeSimulator } from '../../helpers/claude-simulator.js';
 
+/** Check whether an error is an ENOENT (file not found). */
+function isEnoent(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'code' in error &&
+    error.code === 'ENOENT'
+  );
+}
+
 // ─── Plan file helpers ──────────────────────────────────────────────────────
 
 /** Minimal plan file content for testing. */
@@ -252,8 +262,8 @@ function setupLocalPipeline(opts: LocalSetupOpts = {}): LocalPipelineSetup {
     deleteFile: (p: string) => {
       try {
         rmSync(p);
-      } catch {
-        /* ignore */
+      } catch (error: unknown) {
+        if (!isEnoent(error)) throw error;
       }
     },
     mkdir: (p: string) => mkdirSync(p, { recursive: true }),
@@ -263,8 +273,9 @@ function setupLocalPipeline(opts: LocalSetupOpts = {}): LocalPipelineSetup {
     readFile: (p: string) => {
       try {
         return readFileSync(p, 'utf8');
-      } catch {
-        return '';
+      } catch (error: unknown) {
+        if (isEnoent(error)) return '';
+        throw error;
       }
     },
     appendFile: (p: string, c: string) => {
@@ -286,8 +297,9 @@ function setupLocalPipeline(opts: LocalSetupOpts = {}): LocalPipelineSetup {
     readFile: (p: string) => {
       try {
         return readFileSync(p, 'utf8');
-      } catch {
-        return '{}';
+      } catch (error: unknown) {
+        if (isEnoent(error)) return '{}';
+        throw error;
       }
     },
     writeFile: (p: string, c: string) => {
