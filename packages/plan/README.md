@@ -104,11 +104,9 @@ sha256=d2c9f3a1b4e6c8f09123456789abcdef0123456789abcdef0123456789abcd
 approved_at=2026-04-08T22:30:00Z
 ```
 
-The full 64-character hex hash is what `.approved` actually stores — any plan-implementing tool reads the marker, hashes the current plan file the same way, and blocks implementation on any mismatch.
+The full 64-character hex hash is what `.approved` actually stores — any plan-implementing tool reads the marker, hashes the current plan file the same way, and can detect edits after approval. Approval is advisory: a SHA mismatch produces a warning but does not block execution.
 
-The marker is the gate plan-implementing tools check before applying changes — if the plan file is edited after approval, the SHA mismatch produces a warning (approval is advisory, not blocking).
-
-**Implementing approved plans:** Install [`@chief-clancy/dev`](https://www.npmjs.com/package/@chief-clancy/dev) and run `/clancy:implement --from .clancy/plans/add-dark-mode-2.md`. The `--from` flag parses the plan, creates a synthetic ticket, and runs the full pipeline without board credentials. For batch execution, point `--from` at the plans directory with `--afk`: `/clancy:implement --from .clancy/plans/ --afk`.
+**Implementing approved plans:** Install [`chief-clancy`](https://www.npmjs.com/package/chief-clancy) and run `/clancy:implement --from .clancy/plans/add-dark-mode-2.md`. The `--from` flag parses the plan, creates a synthetic ticket, and runs the full pipeline without board credentials. For batch execution, point `--from` at the plans directory with `--afk`: `/clancy:implement --from .clancy/plans/ --afk`.
 
 Clancy also tries to update the brief file's `<!-- planned:1,2 -->` marker to `<!-- approved:1 planned:1,2 -->` so `/clancy:plan --list` knows which rows are approved, but that brief-marker update is best-effort and may warn-and-skip if the expected brief metadata or matching marker is missing.
 

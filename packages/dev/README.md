@@ -46,7 +46,7 @@ The `/clancy:dev` slash command fetches a ticket from your board, grades it thro
 
 ## Local plan execution (`--from`)
 
-Execute local plan files without board credentials:
+The pipeline supports executing local plan files without board credentials. This capability is surfaced via `/clancy:implement` (installed by [`chief-clancy`](https://www.npmjs.com/package/chief-clancy) or [`@chief-clancy/terminal`](https://www.npmjs.com/package/@chief-clancy/terminal)):
 
 ```bash
 # Single plan
