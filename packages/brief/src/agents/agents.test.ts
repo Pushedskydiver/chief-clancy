@@ -89,7 +89,7 @@ describe('agents directory structure', () => {
     );
 
     expect(content).toContain('## Brief health check');
-    expect(content).toContain('>15 rows');
+    expect(content).toContain('>10 rows');
     expect(content).toContain('empty Description');
     expect(content).toContain('sized L (4+ hours)');
     expect(content).toContain('Dependency column has gaps');
