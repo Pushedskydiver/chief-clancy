@@ -41,6 +41,24 @@ The `/clancy:dev` slash command fetches a ticket from your board, grades it thro
 | `--resume`           | Resume from a partial pre-flight checkpoint                               |
 | `--yes`              | Skip interactive cost confirmation                                        |
 
+## Local plan execution (`--from`)
+
+Execute local plan files without board credentials:
+
+```bash
+# Single plan
+/clancy:implement --from .clancy/plans/add-dark-mode-1.md
+
+# Batch mode — implement all approved plans in a directory
+/clancy:implement --from .clancy/plans/ --afk
+```
+
+**How it works:** The `--from` flag bypasses the board entirely — no credentials, no ticket fetch. The pipeline parses the plan file for ticket key (slug), title, and implementation details, creates a synthetic ticket, and runs with a no-op board. Approval is advisory: a missing or stale `.approved` marker produces a warning but does not block execution.
+
+**Batch mode** (`--from {directory} --afk`) lists `.md` plan files in the directory, naturally sorted by filename, skips unapproved plans with a warning, and implements each approved plan sequentially. Stops on first failure and reports an implemented/skipped/remaining summary.
+
+**PR creation** works in two tiers: if `.clancy/.env` contains a `GITHUB_TOKEN` (or equivalent), PRs are created automatically. Without tokens, the branch is pushed and you create the PR manually.
+
 ## Readiness gate
 
 Every ticket is graded against a 5-check rubric before execution:
