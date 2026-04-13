@@ -149,6 +149,16 @@ function makeReadinessGate(opts: {
     });
 }
 
+// ─── Argv helpers ───────────────────────────────────────────────────────────
+
+/** Check `--from` in argv: `'valid'` with a usable path, `'bare'` without, or `false` if absent. */
+function checkFromFlag(argv: readonly string[]): 'valid' | 'bare' | false {
+  const idx = argv.indexOf('--from');
+  if (idx === -1) return false;
+  const value = argv[idx + 1];
+  return value !== undefined && !value.startsWith('--') ? 'valid' : 'bare';
+}
+
 // ─── Local mode ─────────────────────────────────────────────────────────────
 
 /**
@@ -187,11 +197,13 @@ async function main(): Promise<void> {
   const projectRoot = process.cwd();
 
   // --from with a usable value → skip board detection and ticket key.
-  const fromIdx = process.argv.indexOf('--from');
-  const fromValue = fromIdx !== -1 ? process.argv[fromIdx + 1] : undefined;
+  const fromFlag = checkFromFlag(process.argv);
 
-  if (fromIdx !== -1 && fromValue && !fromValue.startsWith('--')) {
+  if (fromFlag === 'valid')
     return runLocalMode(projectRoot, process.argv.slice(2));
+  if (fromFlag === 'bare') {
+    console.error('Usage: clancy-dev --from <plan-file>');
+    return process.exit(2);
   }
 
   const ticketKey = parseTicketKey();
