@@ -33,7 +33,9 @@ export type PipelineDeps = {
     ctx: RunContext,
   ) => Promise<{ readonly action: 'continue' | 'abort' | 'resumed' }>;
   /** Preflight — binary checks, env, board detection. */
-  readonly preflight: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
+  readonly preflight: (
+    ctx: RunContext,
+  ) => Promise<{ readonly ok: boolean; readonly error?: string }>;
   /** Epic completion — check for completed epics. */
   readonly epicCompletion: (
     ctx: RunContext,
@@ -47,18 +49,32 @@ export type PipelineDeps = {
     ctx: RunContext,
   ) => Promise<{ readonly detected: boolean }>;
   /** Ticket fetch — fetch ticket + compute branches. */
-  readonly ticketFetch: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
+  readonly ticketFetch: (ctx: RunContext) => Promise<{
+    readonly ok: boolean;
+    readonly error?: string;
+    readonly reason?: string;
+  }>;
   // Dry-run (phase 5) is an inline ctx.dryRun check — no dependency needed.
   /** Feasibility — Claude feasibility check. */
-  readonly feasibility: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
+  readonly feasibility: (ctx: RunContext) => Promise<{
+    readonly ok: boolean;
+    readonly error?: string;
+    readonly reason?: string;
+  }>;
   /** Branch setup — git branch operations + lock write. */
-  readonly branchSetup: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
+  readonly branchSetup: (
+    ctx: RunContext,
+  ) => Promise<{ readonly ok: boolean; readonly error?: string }>;
   /** Transition — move ticket to In Progress. */
   readonly transition: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
   /** Invoke — run Claude session. */
-  readonly invoke: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
+  readonly invoke: (
+    ctx: RunContext,
+  ) => Promise<{ readonly ok: boolean; readonly error?: string }>;
   /** Deliver — push + PR creation. */
-  readonly deliver: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
+  readonly deliver: (
+    ctx: RunContext,
+  ) => Promise<{ readonly ok: boolean; readonly error?: string }>;
   /** Cost — log estimated token cost. */
   readonly cost: (ctx: RunContext) => { readonly ok: boolean };
   /** Cleanup — completion data + notification. */
@@ -119,7 +135,8 @@ async function runPhases(
 ): Promise<PipelineResult> {
   // Preflight
   const preflight = await deps.preflight(ctx);
-  if (!preflight.ok) return { status: 'aborted', phase: 'preflight' };
+  if (!preflight.ok)
+    return { status: 'aborted', phase: 'preflight', error: preflight.error };
 
   // Epic completion (informational — never aborts)
   await deps.epicCompletion(ctx);
@@ -132,29 +149,42 @@ async function runPhases(
 
   // Ticket fetch
   const ticket = await deps.ticketFetch(ctx);
-  if (!ticket.ok) return { status: 'aborted', phase: 'ticket-fetch' };
+  if (!ticket.ok)
+    return {
+      status: 'aborted',
+      phase: 'ticket-fetch',
+      error: ticket.error ?? ticket.reason,
+    };
 
   // Dry-run gate
   if (ctx.dryRun) return { status: 'dry-run' };
 
   // Feasibility
   const feasibility = await deps.feasibility(ctx);
-  if (!feasibility.ok) return { status: 'aborted', phase: 'feasibility' };
+  if (!feasibility.ok)
+    return {
+      status: 'aborted',
+      phase: 'feasibility',
+      error: feasibility.error ?? feasibility.reason,
+    };
 
   // Branch setup
   const branch = await deps.branchSetup(ctx);
-  if (!branch.ok) return { status: 'aborted', phase: 'branch-setup' };
+  if (!branch.ok)
+    return { status: 'aborted', phase: 'branch-setup', error: branch.error };
 
   // Transition (best-effort — never aborts)
   await deps.transition(ctx);
 
   // Invoke Claude session
   const invoke = await deps.invoke(ctx);
-  if (!invoke.ok) return { status: 'aborted', phase: 'invoke' };
+  if (!invoke.ok)
+    return { status: 'aborted', phase: 'invoke', error: invoke.error };
 
   // Deliver
   const deliver = await deps.deliver(ctx);
-  if (!deliver.ok) return { status: 'aborted', phase: 'deliver' };
+  if (!deliver.ok)
+    return { status: 'aborted', phase: 'deliver', error: deliver.error };
 
   // Cost (best-effort — never aborts)
   deps.cost(ctx);

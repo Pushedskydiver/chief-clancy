@@ -20,6 +20,8 @@ Pick up exactly one ticket from the Kanban board, implement it, commit, push, cr
 
 ## Step 1 — Preflight checks
 
+If `--from {path}` was passed, skip items 2–4 below (local mode does not need board credentials or the implement script — the runtime uses synthetic config and a no-op board).
+
 1. Check `.clancy/` exists. If not:
 
    ```
@@ -48,6 +50,8 @@ Pick up exactly one ticket from the Kanban board, implement it, commit, push, cr
 ---
 
 ## Step 2 — Run
+
+**With `--from {path}`:** pass the `--from {path}` argument through to the script. The pipeline reads the plan file, creates a synthetic ticket, and runs with a no-op board — no credential checks, no dry-run-first fetch, no feasibility interview. Skip Steps 2a and 2b and go directly to 2c, appending `--from {path} --skip-feasibility` to the script arguments.
 
 Check if the user passed `--dry-run` as an argument to the slash command.
 

@@ -187,4 +187,44 @@ describe('createContext', () => {
     expect(ctx.dryRun).toBe(false);
     expect(ctx.skipFeasibility).toBe(false);
   });
+
+  it('parses --from path from argv', () => {
+    const ctx = createContext({
+      projectRoot: '/p',
+      argv: ['--from', '.clancy/plans/my-plan.md'],
+    });
+
+    expect(ctx.fromPath).toBe('.clancy/plans/my-plan.md');
+  });
+
+  it('fromPath is undefined when --from absent', () => {
+    const ctx = createContext({ projectRoot: '/p', argv: [] });
+
+    expect(ctx.fromPath).toBeUndefined();
+  });
+
+  it('fromPath is undefined when --from has no following value', () => {
+    const ctx = createContext({ projectRoot: '/p', argv: ['--from'] });
+
+    expect(ctx.fromPath).toBeUndefined();
+  });
+
+  it('fromPath is undefined when --from is followed by another flag', () => {
+    const ctx = createContext({
+      projectRoot: '/p',
+      argv: ['--from', '--dry-run'],
+    });
+
+    expect(ctx.fromPath).toBeUndefined();
+  });
+
+  it('accepts fromPath from opts (overrides argv)', () => {
+    const ctx = createContext({
+      projectRoot: '/p',
+      argv: ['--from', 'argv-path.md'],
+      fromPath: 'opts-path.md',
+    });
+
+    expect(ctx.fromPath).toBe('opts-path.md');
+  });
 });

@@ -204,6 +204,32 @@ After DA and self-review are clean:
    - **Reply** — always reply to every comment explaining what was done and why. If diverging from CodeRabbit's suggestion, explain the reasoning.
 4. If pushing additional commits, update the PR body to reflect all changes.
 
+### Evaluating Automated Review Findings (Copilot / CodeRabbit)
+
+Automated reviewers (Copilot, CodeRabbit) flag real issues mixed with false positives. Every finding gets one of three outcomes: **fix**, **fix differently**, or **dismiss**. The first two are straightforward — the third requires discipline.
+
+**Dismissing requires evidence, not rationale.** A rationale explains _why you think_ the finding doesn't apply. Evidence _proves_ it doesn't apply. The difference:
+
+| Rationale (weak)                   | Evidence (strong)                                                                                                                                                                                |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| "This can't happen in practice"    | `resolvePlatformHandlers` returns `undefined` when env is empty (line 227) → rework detection returns `{ detected: false }` without calling `setRework` (line 70) → `isRework` stays `undefined` |
+| "The existing pattern does this"   | `fetch-ticket.test.ts:37` uses `sharedEnv: vi.fn(() => ({}))` — same empty return                                                                                                                |
+| "This is scope creep"              | _(no evidence — this is a rationalization)_                                                                                                                                                      |
+| "Plan files are machine-generated" | Plan template at `plan.md:897` exclusively uses em-dash (—) — no en-dash or hyphen variants documented                                                                                           |
+
+**Before dismissing, answer two questions:**
+
+1. **What's my evidence?** A grep result, a line number, a type constraint, a call-site guarantee. If you can only produce a reason but not evidence, the dismissal is weak.
+2. **What would a DA say?** If a DA could counter with "that's a rationalization because..." and you don't have a rebuttal, fix it instead.
+
+**Severity guides the bar for dismissal:**
+
+- **HIGH/MEDIUM findings** — evidence must be concrete (line numbers, type system guarantees, grep results). "It works" is never sufficient. If the fix is trivial (< 10 lines), fix it rather than argue.
+- **LOW/nit findings** — a clear rationale with a consistency argument ("existing pattern does X") is sufficient. Cross-reference the existing pattern.
+- **False positives** — state what the tool got wrong factually. "The tool claims X but the code at line Y does Z" is a valid dismissal.
+
+**Always reply to every comment** — even dismissed ones. The reply is the audit trail. Future sessions and contributors read these replies to understand design decisions.
+
 ### Automated Security Scanning (CI)
 
 These run automatically in CI and do not require manual steps:
