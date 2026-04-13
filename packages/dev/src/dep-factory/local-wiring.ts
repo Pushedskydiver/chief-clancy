@@ -21,6 +21,16 @@ import {
 import { runPreflight } from '../lifecycle/preflight/preflight.js';
 import { preflightPhase } from '../pipeline/index.js';
 
+/** Check whether the cwd is inside a git repository. */
+function isGitRepo(exec: ExecGit): boolean {
+  try {
+    exec(['rev-parse', '--git-dir']);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Build the preflight closure with local-mode branching.
  *
@@ -38,6 +48,12 @@ export function wirePreflight(opts: {
 }): (ctx: RunContext) => Promise<{ readonly ok: boolean }> {
   return (ctx) => {
     if (ctx.fromPath) {
+      if (!isGitRepo(opts.exec)) {
+        return Promise.resolve({
+          ok: false,
+          error: 'Not inside a git repository',
+        });
+      }
       runLocalPreflight(ctx, {
         envFs: opts.envFs,
         projectRoot: opts.projectRoot,

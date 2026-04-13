@@ -56,6 +56,23 @@ describe('wirePreflight (local path)', () => {
     const result = await preflight(ctx);
     expect(result).toEqual({ ok: true });
   });
+
+  it('returns ok: false when not in a git repo', async () => {
+    const notGitPreflight = wirePreflight({
+      envFs: noopEnvFs,
+      projectRoot: '/repo',
+      exec: vi.fn(() => {
+        throw new Error('not a git repo');
+      }),
+      fetch: vi.fn(),
+    });
+    const ctx = makeCtx('plan.md');
+    const result = await notGitPreflight(ctx);
+    expect(result).toEqual({
+      ok: false,
+      error: 'Not inside a git repository',
+    });
+  });
 });
 
 // ─── localTicketSeed ─────────────────────────────────────────────────────────
