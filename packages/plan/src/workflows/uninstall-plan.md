@@ -77,6 +77,10 @@ For each location being removed, delete files in this order:
 - `plan.md`
 - `update-plan.md`
 
+**Agents** (from `<base>/clancy/agents/`):
+
+- `devils-advocate.md`
+
 Delete each file. If a file does not exist, skip it silently.
 
 ### 4b — Shared files (only when no other package is installed)
