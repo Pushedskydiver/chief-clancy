@@ -230,6 +230,8 @@ If enter is pressed with no value: skip — omit the label clause entirely (Clan
 
 ### Q2b: Board credential verification
 
+**Skip this section entirely if `localMode = true`** — no board credentials to verify.
+
 After collecting all credentials for the chosen board, verify the connection before continuing.
 
 **Jira** — call `GET {JIRA_BASE_URL}/rest/api/3/project/{JIRA_PROJECT_KEY}` with basic auth (`{JIRA_USER}:{JIRA_API_TOKEN}` base64-encoded in the `Authorization: Basic` header).
