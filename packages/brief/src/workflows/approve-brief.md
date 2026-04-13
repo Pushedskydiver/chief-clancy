@@ -33,7 +33,14 @@ The detected install mode is captured for Step 6's pipeline label decision.
 
 If in **terminal mode** (`.clancy/.env` present AND `.clancy/clancy-implement.js` present):
 
-a. Source `.clancy/.env` and check board credentials are present.
+a. Source `.clancy/.env` and check board credentials are present. If `.clancy/.env` exists but no board is configured (terminal-mode local install), stop with:
+
+```
+/clancy:approve-brief creates tickets on a board — it requires a board connection.
+
+You're in local mode. Connect a board via /clancy:settings to use approve-brief.
+(The rest of the local pipeline — /clancy:brief, /clancy:plan, /clancy:approve-plan, /clancy:implement --from — works without a board.)
+```
 
 b. Check `CLANCY_ROLES` includes `strategist` (or env var is unset, which indicates a global install where all roles are available). If `CLANCY_ROLES` is set but does not include `strategist`:
 

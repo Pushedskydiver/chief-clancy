@@ -8,18 +8,38 @@ Read-only board check. Fetches the next 3 tickets Clancy would pick up and displ
 
 ## Step 1 — Preflight checks
 
-1. Check `.clancy/` exists and `.clancy/.env` is present.
-2. Source `.clancy/.env` and check board credentials are present.
-3. On any missing config, show a specific error and stop:
+1. Check `.clancy/` exists and `.clancy/.env` is present. If missing:
+
    ```
    Missing config. Run /clancy:init to set up Clancy.
    ```
+
+   Stop.
+
+2. Source `.clancy/.env` and detect which board is configured using the markers listed in Step 2 below.
+
+3. If **no board markers are present** (local mode), skip to Step 2b — local plan inventory.
+
+4. Otherwise, check that all required vars for the detected board are present. If any are missing:
+   ```
+   Missing credentials for {board}. Run /clancy:settings to fix, or edit .clancy/.env.
+   ```
+   Stop.
 
 ---
 
 ## Step 2 — Detect board and fetch tickets
 
-Detect board from `.clancy/.env`:
+Detect board from `.clancy/.env` using these markers:
+
+- Jira: `JIRA_BASE_URL`
+- GitHub Issues: `GITHUB_TOKEN` AND `GITHUB_REPO` (`GITHUB_TOKEN` alone is a git-host credential)
+- Linear: `LINEAR_API_KEY`
+- Shortcut: `SHORTCUT_API_TOKEN`
+- Notion: `NOTION_TOKEN` AND `NOTION_DATABASE_ID`
+- Azure DevOps: `AZDO_ORG` AND `AZDO_PROJECT`
+
+Then fetch per the board-specific section below.
 
 **Jira:**
 
@@ -79,6 +99,55 @@ query {
   }
 }
 ```
+
+---
+
+## Step 2b — Local mode inventory (no board)
+
+When no board is configured, gather a local snapshot:
+
+1. **Plans:** list files in `.clancy/plans/` matching `*.md`. Record each plan's basename (without `.md`) and the first non-empty, non-heading line as a short summary (truncate to ~80 chars).
+2. **Approved plans:** a plan is "approved" only when the sibling marker file `.clancy/plans/{plan-id}.approved` exists. Do not infer approval from plan front-matter, markdown headings, or any other content inside the `.md` file. Re-use the plan package's inventory logic if available — this must match the gate used by `/clancy:approve-plan` exactly. A malformed `.approved` marker (missing or non-hex `sha256=` line) is a `Stale (re-approve)` state — surface a count rather than inventing a verdict.
+3. **Progress:** if `.clancy/progress.txt` exists, read the last 5 non-empty lines.
+4. **Recent branches:** determine the configured base branch from `CLANCY_BASE_BRANCH` (defaulting to `main`). Run a git-only command such as `git for-each-ref --sort=-committerdate --count=6 --format='%(refname:short) %(committerdate:relative)' refs/heads`, then exclude the configured base branch in workflow logic before displaying up to 5 entries. Falls back to empty if not a git repo.
+
+Display:
+
+```
+🚨 Clancy — Status
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Local mode — no board configured
+
+Plans ({N} total, {M} approved, {S} stale):
+  1. <plan-slug> — <summary line>
+  2. <plan-slug> — <summary line>
+  3. <plan-slug> — <summary line>
+  …
+
+Recent progress:
+  <last 5 progress lines, most recent first>
+
+Recent branches:
+  <up to 5 recent branches with relative date>
+
+"Let me check the dispatch..." — Run /clancy:implement --from .clancy/plans/<plan>.md to execute an approved plan.
+```
+
+If `.clancy/plans/` is missing or empty:
+
+```
+🚨 Clancy — Status
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Local mode — no board configured
+
+No plans yet in .clancy/plans/.
+
+"Quiet. Too quiet." — Run /clancy:brief then /clancy:plan --from to draft your first plan.
+```
+
+Skip Step 3 (board ticket display) when running Step 2b.
 
 ---
 

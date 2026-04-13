@@ -12,6 +12,8 @@ This workflow runs inside a Claude Code session. Accept natural language alongsi
 - "enable planner", "R1", "planner" → all resolve to the Planner role toggle
 - "enable strategist", "R2", "strategist" → all resolve to the Strategist role toggle
 - "switch board", "S" → switch board flow
+- "disconnect", "disconnect board", "D" → disconnect board flow (only when a board is configured)
+- "connect", "connect a board", "add board", "B" → connect board flow (only in local mode)
 - If a response is ambiguous, ask for clarification
 
 ---
@@ -35,17 +37,18 @@ Stop.
 Source `.clancy/.env` silently. Detect which board is configured:
 
 - `JIRA_BASE_URL` set → Jira
-- `GITHUB_TOKEN` set → GitHub Issues
+- `GITHUB_TOKEN` set AND `GITHUB_REPO` set → GitHub Issues (`GITHUB_TOKEN` alone is a git-host credential, not a board)
 - `LINEAR_API_KEY` set → Linear
 - `SHORTCUT_API_TOKEN` set → Shortcut
-- `NOTION_DATABASE_ID` set → Notion
-- `AZDO_ORG` set → Azure DevOps
+- `NOTION_TOKEN` set AND `NOTION_DATABASE_ID` set → Notion
+- `AZDO_ORG` set AND `AZDO_PROJECT` set → Azure DevOps (`AZDO_PAT` alone may be a git-host credential)
+- None of the above → **local mode** (no board configured)
 
 ---
 
 ## Step 3 — Display settings menu
 
-Show all current values. Board-specific settings only appear when that board is configured. Use stable letter/number mnemonics so options don't shift when boards change.
+Show all current values. Board-specific settings only appear when that board is configured. In local mode (no board), the entire board section and board-dependent planner settings (P1, P2) are hidden. Use stable letter/number mnemonics so options don't shift when boards change.
 
 ```
 🚨 Clancy — Settings
@@ -120,14 +123,21 @@ Integrations
   [I2] Playwright        {enabled if PLAYWRIGHT_ENABLED=true, else off}
   [I3] Notifications     {configured if CLANCY_NOTIFY_WEBHOOK set, else not set}
 
+  {Only if a board is configured:}
   [S]  Switch board      currently: {Jira / GitHub Issues / Linear / Shortcut / Notion / Azure DevOps}
-  [D]  Save as defaults  save current settings for all future projects
+  [D]  Disconnect board  switch to local mode (removes board credentials, keeps other settings)
+  {/End board-only block}
+  {Only if local mode:}
+  [B]  Connect a board   add a Kanban board to enable /clancy:autopilot and /clancy:review
+  {/End local-only block}
+  {Always shown:}
+  [V]  Save as defaults  save current settings for all future projects
   [X]  Exit
 
 Which setting would you like to change?
 ```
 
-Accept the user's response as a code (e.g. "G1", "R1"), a setting name (e.g. "max iterations", "model"), or a natural language description (e.g. "change the model", "enable planner"). If ambiguous, clarify. Show only the board-specific section that matches the configured board. The Planner section only appears when the Planner role is enabled.
+Accept the user's response as a code (e.g. "G1", "R1"), a setting name (e.g. "max iterations", "model"), or a natural language description (e.g. "change the model", "enable planner"). If ambiguous, clarify. Show only the board-specific section that matches the configured board. In local mode (no board), skip the board-specific section entirely and hide all board-dependent Planner settings. If the Planner section has no items after that filter, hide the section entirely. The Planner section only appears when the Planner role is enabled and has at least one applicable item.
 
 ---
 
@@ -712,23 +722,25 @@ If [2]: remove `CLANCY_STATUS_PLANNED` from `.clancy/.env`.
 
 ### [H1] Git host token
 
-Only shown for Jira and Linear boards. GitHub Issues users already have `GITHUB_TOKEN` for PR creation.
+Always shown. GitHub Issues users already have `GITHUB_TOKEN` (used as both board + git-host credential); this option still applies if they want to use a different host for PRs, or switch hosts.
 
 ```
-Git host — current: {GitHub / GitLab / Bitbucket / not set}
+Git host — current: {GitHub / GitLab / Bitbucket / Azure DevOps / not set}
 Clancy pushes feature branches and creates PRs on your git host.
 
 [1] GitHub
 [2] GitLab
 [3] Bitbucket
-[4] Remove (push and create PRs manually)
-[5] Cancel
+[4] Azure DevOps
+[5] Remove (push and create PRs manually)
+[6] Cancel
 ```
 
-If [1]: prompt `Paste your GitHub personal access token:` then write `GITHUB_TOKEN=<value>` to `.clancy/.env`. Remove any existing `GITLAB_TOKEN`, `BITBUCKET_USER`, `BITBUCKET_TOKEN`.
-If [2]: prompt `Paste your GitLab personal access token:` then write `GITLAB_TOKEN=<value>` to `.clancy/.env`. Optionally ask for a self-hosted API base URL (e.g. `https://gitlab.example.com/api/v4`) and write `CLANCY_GIT_API_URL` and `CLANCY_GIT_PLATFORM="gitlab"`. If the user enters just a hostname or instance URL without `/api/v4`, append `/api/v4` automatically. Remove any existing `GITHUB_TOKEN` (only if board is not GitHub), `BITBUCKET_USER`, `BITBUCKET_TOKEN`.
-If [3]: prompt for `Bitbucket username` and `Bitbucket app password`, write `BITBUCKET_USER` and `BITBUCKET_TOKEN` to `.clancy/.env`. Remove any existing `GITHUB_TOKEN` (only if board is not GitHub), `GITLAB_TOKEN`.
-If [4]: remove all git host token vars (`GITLAB_TOKEN`, `BITBUCKET_USER`, `BITBUCKET_TOKEN`, `CLANCY_GIT_PLATFORM`, `CLANCY_GIT_API_URL`). Keep `GITHUB_TOKEN` only if board is GitHub Issues.
+If [1]: prompt `Paste your GitHub personal access token:` then write `GITHUB_TOKEN=<value>` to `.clancy/.env`. Remove any existing `GITLAB_TOKEN`, `BITBUCKET_USER`, `BITBUCKET_TOKEN`, `AZDO_PAT` (only if AzDO isn't the board).
+If [2]: prompt `Paste your GitLab personal access token:` then write `GITLAB_TOKEN=<value>` to `.clancy/.env`. Optionally ask for a self-hosted API base URL (e.g. `https://gitlab.example.com/api/v4`) and write `CLANCY_GIT_API_URL` and `CLANCY_GIT_PLATFORM="gitlab"`. If the user enters just a hostname or instance URL without `/api/v4`, append `/api/v4` automatically. Remove any existing `GITHUB_TOKEN` (only if board is not GitHub), `BITBUCKET_USER`, `BITBUCKET_TOKEN`, `AZDO_PAT` (only if AzDO isn't the board).
+If [3]: prompt for `Bitbucket username` and `Bitbucket app password`, write `BITBUCKET_USER` and `BITBUCKET_TOKEN` to `.clancy/.env`. Remove any existing `GITHUB_TOKEN` (only if board is not GitHub), `GITLAB_TOKEN`, `AZDO_PAT` (only if AzDO isn't the board).
+If [4]: prompt `Paste your Azure DevOps personal access token (Code Read & Write scope):` then write `AZDO_PAT=<value>` to `.clancy/.env` and `CLANCY_GIT_PLATFORM="azure"`. Remove any existing `GITHUB_TOKEN` (only if board is not GitHub), `GITLAB_TOKEN`, `BITBUCKET_USER`, `BITBUCKET_TOKEN`.
+If [5]: remove all git host token vars (`GITLAB_TOKEN`, `BITBUCKET_USER`, `BITBUCKET_TOKEN`, `CLANCY_GIT_PLATFORM`, `CLANCY_GIT_API_URL`). Keep `GITHUB_TOKEN` only if board is GitHub Issues. Keep `AZDO_PAT` only if board is Azure DevOps.
 
 ---
 
@@ -897,6 +909,94 @@ Then loop back to the main settings menu.
 
 ---
 
+### [B] Connect a board
+
+Only shown in local mode (no board credentials detected in Step 2). Runs the same credential-collection, verification, and confirmation flow as `[S] Switch board` above, but without an "old board" to remove from.
+
+**Step 1: Pick a board**
+
+```
+Connect a board — none currently configured
+
+[1] Jira
+[2] GitHub Issues
+[3] Linear
+[4] Shortcut
+[5] Notion
+[6] Azure DevOps
+[7] Cancel
+```
+
+**Step 2: Collect credentials** — same per-board question lists as `[S] Switch board` Step 1.
+
+**Step 3: Verify credentials** — same verification flow as `[S] Switch board` Step 2. Never write anything if verification fails.
+
+**Step 4: Confirm**
+
+```
+Ready to connect {new board} and switch from local mode.
+Your other settings (model, iterations, base branch, roles) will be kept.
+
+Confirm? [Y/n]
+```
+
+If no: print `Cancelled. No changes made.` and loop back.
+
+**Step 5: Apply** — append the new board credentials to `.clancy/.env`. For Jira, also ask the status filter question (same as init Q3) and write `CLANCY_JQL_STATUS`. Print:
+
+```
+✅ Connected {new board}. "New beat, same Chief."
+```
+
+Then loop back to the main settings menu (the board-specific section will now appear).
+
+---
+
+### [D] Disconnect board
+
+Only shown when a board is configured. Switches the project to local mode — removes board credentials while keeping universal settings (model, iterations, base branch, roles, Playwright, Figma, notifications, git host).
+
+**Step 1: Confirm**
+
+```
+Disconnect board — currently: {Jira / GitHub Issues / Linear / Shortcut / Notion / Azure DevOps}
+
+This will remove the board credentials from .clancy/.env and switch to local mode.
+Your other settings (model, iterations, base branch, roles, integrations) will be kept.
+Git host credentials (GITHUB_TOKEN, GITLAB_TOKEN, BITBUCKET_*, AZDO_PAT when used for PRs) are kept for PR creation.
+
+Local mode keeps /clancy:brief, /clancy:plan, /clancy:status, and /clancy:implement --from working.
+/clancy:autopilot and /clancy:review require a board.
+
+Confirm? [Y/n]
+```
+
+If no: print `Cancelled. No changes made.` and loop back.
+
+**Step 2: Remove board-identifying credentials**
+
+Remove these vars from `.clancy/.env` based on the currently detected board:
+
+- Jira: `JIRA_BASE_URL`, `JIRA_USER`, `JIRA_API_TOKEN`, `JIRA_PROJECT_KEY`, `CLANCY_JQL_STATUS`, `CLANCY_JQL_SPRINT`, `CLANCY_STATUS_IN_PROGRESS`, `CLANCY_STATUS_DONE`, `CLANCY_STATUS_REVIEW`, `CLANCY_STATUS_PLANNED`, `CLANCY_BRIEF_ISSUE_TYPE`, `CLANCY_COMPONENT`, `CLANCY_PLAN_STATUS`
+- GitHub Issues: `GITHUB_REPO` (keep `GITHUB_TOKEN` — shared git-host credential), `CLANCY_STATUS_IN_PROGRESS`, `CLANCY_STATUS_DONE`, `CLANCY_STATUS_REVIEW`, `CLANCY_LABEL_PLAN` (if used as the plan label)
+- Linear: `LINEAR_API_KEY`, `LINEAR_TEAM_ID`, `CLANCY_STATUS_IN_PROGRESS`, `CLANCY_STATUS_DONE`, `CLANCY_STATUS_REVIEW`, `CLANCY_PLAN_STATE_TYPE`
+- Shortcut: `SHORTCUT_API_TOKEN`, `SHORTCUT_WORKFLOW`
+- Notion: `NOTION_TOKEN`, `NOTION_DATABASE_ID`, `CLANCY_NOTION_STATUS`, `CLANCY_NOTION_ASSIGNEE`, `CLANCY_NOTION_LABELS`, `CLANCY_NOTION_PARENT`
+- Azure DevOps: `AZDO_ORG`, `AZDO_PROJECT`. Keep `AZDO_PAT` only if `CLANCY_GIT_PLATFORM=azure` (PAT is also the git-host credential); otherwise remove it.
+
+Never remove: `GITHUB_TOKEN` (git-host), `GITLAB_TOKEN`, `BITBUCKET_USER`, `BITBUCKET_TOKEN`, `CLANCY_GIT_PLATFORM`, `CLANCY_GIT_API_URL`, `MAX_ITERATIONS`, `CLANCY_MODEL`, `CLANCY_BASE_BRANCH`, `CLANCY_ROLES`, `CLANCY_TDD`, `CLANCY_MODE`, `CLANCY_MAX_REWORK`, `CLANCY_FIX_RETRIES`, `CLANCY_TIME_LIMIT`, `CLANCY_BRANCH_GUARD`, `CLANCY_QUIET_START`, `CLANCY_QUIET_END`, `CLANCY_DESKTOP_NOTIFY`, `CLANCY_BRIEF_EPIC`, `CLANCY_LABEL_BRIEF`, `CLANCY_LABEL_BUILD`, `PLAYWRIGHT_*`, `FIGMA_API_KEY`, `CLANCY_NOTIFY_WEBHOOK`.
+
+**Step 3: Print and loop**
+
+```
+✅ Disconnected. Now running in local mode.
+   Re-connect anytime with [B] Connect a board.
+```
+
+Loop back to the main settings menu (the board section and board-dependent planner settings will disappear).
+
+---
+
 ### [X] Exit
 
 Print nothing extra. Stop.
@@ -914,7 +1014,7 @@ When updating a value:
 
 ---
 
-### [D] Save as global defaults
+### [V] Save as global defaults
 
 When selected:
 

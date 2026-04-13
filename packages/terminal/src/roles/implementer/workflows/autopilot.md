@@ -66,17 +66,46 @@ If the user types `n` or `N`: print `Cancelled.` and stop. Any other input (incl
 
    Stop.
 
-3. Source `.clancy/.env` and check that board credentials are present.
+3. Source `.clancy/.env` and detect which board is configured.
+
+   **Board markers (any one means a board is configured):**
+   - Jira: `JIRA_BASE_URL`
+   - GitHub Issues: `GITHUB_TOKEN` AND `GITHUB_REPO` (`GITHUB_TOKEN` alone is a git-host credential)
+   - Linear: `LINEAR_API_KEY`
+   - Shortcut: `SHORTCUT_API_TOKEN`
+   - Notion: `NOTION_TOKEN` AND `NOTION_DATABASE_ID`
+   - Azure DevOps: `AZDO_ORG` AND `AZDO_PROJECT`
+
+   If no board markers are present (**local mode**):
+
+   ```
+   🚨 Clancy — Autopilot
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   No board configured — /clancy:autopilot requires a board connection.
+
+   For local batch execution across approved plans, use:
+     /clancy:implement --from .clancy/plans/ --afk
+
+   To connect a board: /clancy:settings
+   ```
+
+   Stop. Do not silently proceed — autopilot's loop model is driven by a ticket queue.
+
+   Otherwise, check that all required vars for the detected board are present:
 
    **Jira:** `JIRA_BASE_URL`, `JIRA_USER`, `JIRA_API_TOKEN`, `JIRA_PROJECT_KEY`
    **GitHub:** `GITHUB_TOKEN`, `GITHUB_REPO`
    **Linear:** `LINEAR_API_KEY`, `LINEAR_TEAM_ID`
+   **Shortcut:** `SHORTCUT_API_TOKEN`
+   **Notion:** `NOTION_TOKEN`, `NOTION_DATABASE_ID`
+   **Azure DevOps:** `AZDO_ORG`, `AZDO_PROJECT`, `AZDO_PAT`
 
    If any required var is missing:
 
    ```
    Missing credentials in .clancy/.env: <var name>
-   Run /clancy:init to reconfigure, or edit .clancy/.env directly.
+   Run /clancy:settings to reconfigure, or edit .clancy/.env directly.
    ```
 
    Stop.

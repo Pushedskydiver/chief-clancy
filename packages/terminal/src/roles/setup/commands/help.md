@@ -6,7 +6,7 @@ Display the following:
 
 ---
 
-## Clancy — autonomous, board-driven development for Claude Code
+## Clancy — autonomous development for Claude Code
 
 Named after Chief Clancy Wiggum (Ralph's dad, The Simpsons). Built on the Ralph technique
 coined by Geoffrey Huntley (ghuntley.com/ralph/). Clancy extends that foundation with board
@@ -63,11 +63,23 @@ integration (6 boards), structured codebase docs, and a git workflow built for t
 
 ### How it works
 
-1. Run `/clancy:init` to connect your Kanban board and scaffold .clancy/
-2. Run `/clancy:map-codebase` to generate codebase docs (or say yes during init)
-3. Run `/clancy:dry-run` to preview the first ticket, then `/clancy:implement` to run it — then go AFK with `/clancy:autopilot`
+Clancy supports two paths:
 
-Clancy picks one ticket per loop, fresh context every iteration. No context rot.
+**With a board** — autonomous loop over a Kanban queue:
+
+1. `/clancy:init` — connect your board and scaffold `.clancy/`
+2. `/clancy:map-codebase` — generate codebase docs (or say yes during init)
+3. `/clancy:dry-run` → `/clancy:implement` → `/clancy:autopilot`
+
+**Without a board** — local plan-driven flow:
+
+1. `/clancy:init` — answer No when asked about a board
+2. `/clancy:map-codebase` — generate codebase docs
+3. `/clancy:brief` → `/clancy:plan --from` → `/clancy:approve-plan` → `/clancy:implement --from .clancy/plans/<plan>.md`
+
+Step 3 of the local path requires the Strategist role (for `/clancy:brief`) and the Planner role (for `/clancy:plan`) — enable the relevant role(s) during `/clancy:init` or via `/clancy:settings` (typically both for the full local path).
+
+Either way, Clancy picks one unit of work per loop, fresh context every iteration. No context rot.
 
 ### Links
 
