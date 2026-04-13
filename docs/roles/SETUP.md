@@ -4,26 +4,30 @@ Setup commands configure Clancy and keep it healthy.
 
 ## Commands
 
-| Command                      | What it does                                                                       |
-| ---------------------------- | ---------------------------------------------------------------------------------- |
-| `/clancy:init`               | Wizard — choose board, collect credentials, scaffold everything                    |
-| `/clancy:settings`           | View and modify configuration (board filters, status transitions, roles)           |
-| `/clancy:doctor`             | Diagnose issues — checks credentials, board connectivity, file integrity           |
-| `/clancy:map-codebase`       | Generate structured docs in `.clancy/docs/` using 5 parallel specialist agents     |
-| `/clancy:update-docs`        | Refresh codebase docs after significant changes                                    |
-| `/clancy:update-terminal`    | Update the full Clancy pipeline to the latest version (`--afk` skips confirmation) |
-| `/clancy:uninstall-terminal` | Remove the full Clancy pipeline from the project                                   |
-| `/clancy:help`               | Show all available commands                                                        |
+| Command                      | What it does                                                                                                       |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `/clancy:init`               | Wizard — optionally connect a board (or skip for local plan-driven mode), collect credentials, scaffold everything |
+| `/clancy:settings`           | View and modify configuration (board filters, status transitions, roles)                                           |
+| `/clancy:doctor`             | Diagnose issues — checks credentials, board connectivity, file integrity                                           |
+| `/clancy:map-codebase`       | Generate structured docs in `.clancy/docs/` using 5 parallel specialist agents                                     |
+| `/clancy:update-docs`        | Refresh codebase docs after significant changes                                                                    |
+| `/clancy:update-terminal`    | Update the full Clancy pipeline to the latest version (`--afk` skips confirmation)                                 |
+| `/clancy:uninstall-terminal` | Remove the full Clancy pipeline from the project                                                                   |
+| `/clancy:help`               | Show all available commands                                                                                        |
 
 ## Init wizard
 
 `/clancy:init` walks you through first-time setup:
 
-1. **Choose board** — Jira, GitHub Issues, Linear, Shortcut, Notion, or Azure DevOps
-2. **Enter credentials** — API keys, project keys, team IDs (stored in `.clancy/.env`)
-3. **Configure filters** — label, sprint, status transitions
-4. **Optional roles** — enable Strategist, Planner, or other optional roles via `CLANCY_ROLES`
-5. **Scaffold** — creates `.clancy/` directory, copies runtime scripts, merges CLAUDE.md
+1. **Board gate** — answer whether you want to connect a Kanban board. Choosing **No** enters local mode: board-specific questions are skipped, `.clancy/.env` is written without board credentials, and the final output directs you to `/clancy:brief` and `/clancy:implement --from`.
+2. **Choose board** (board path only) — Jira, GitHub Issues, Linear, Shortcut, Notion, or Azure DevOps
+3. **Enter credentials** (board path only) — API keys, project keys, team IDs (stored in `.clancy/.env`)
+4. **Configure filters** (board path only) — label, sprint, status transitions
+5. **Git host** — always asked. Picks up to one of GitHub, GitLab, Bitbucket, Azure DevOps, or Skip. Used for PR creation (board or local)
+6. **Optional roles** — enable Strategist, Planner, or other optional roles via `CLANCY_ROLES`
+7. **Scaffold** — creates `.clancy/` directory, copies runtime scripts, merges CLAUDE.md
+
+To add a board later, run `/clancy:settings` and pick `[B] Connect a board`. To remove one, use `[D] Disconnect board` — your universal settings, roles, and git-host credentials are preserved.
 
 ## Settings
 
@@ -60,7 +64,7 @@ These docs are read by the implementer before every run, giving it full codebase
 
 `/clancy:doctor` runs diagnostic checks:
 
-- Board credentials are valid (makes a test API call)
+- Board credentials are valid (makes a test API call). In local mode this prints `✓ Local mode — no board configured` and skips the ping.
 - Required env vars are present
 - Runtime scripts exist
 - Codebase docs are populated

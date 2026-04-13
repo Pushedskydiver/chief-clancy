@@ -2,6 +2,28 @@
 
 Set during `/clancy:init` advanced setup, or by editing `.clancy/.env` directly. Use `/clancy:settings` → "Save as defaults" to save non-credential settings to `~/.clancy/defaults.json` — new projects created with `/clancy:init` will inherit them automatically.
 
+## Local mode (no board)
+
+Board credentials are **optional**. If `.clancy/.env` has none of the board markers below, Clancy runs in local mode:
+
+| Board        | Marker vars (all required for that board)   |
+| ------------ | ------------------------------------------- |
+| Jira         | `JIRA_BASE_URL`                             |
+| GitHub       | `GITHUB_TOKEN` **and** `GITHUB_REPO`        |
+| Linear       | `LINEAR_API_KEY`                            |
+| Shortcut     | `SHORTCUT_API_TOKEN`                        |
+| Notion       | `NOTION_TOKEN` **and** `NOTION_DATABASE_ID` |
+| Azure DevOps | `AZDO_ORG` **and** `AZDO_PROJECT`           |
+
+In local mode:
+
+- `/clancy:brief`, `/clancy:plan --from`, `/clancy:approve-plan`, `/clancy:implement --from`, `/clancy:status`, `/clancy:doctor` all work without any board credentials.
+- `/clancy:autopilot` and `/clancy:review` require a board and will stop with a redirect to `/clancy:settings`.
+- Status transitions, board filters, labels, and sprint vars (below) have no effect — they gate on board presence.
+- Git-host credentials (`GITHUB_TOKEN`, `GITLAB_TOKEN`, `BITBUCKET_USER`/`BITBUCKET_TOKEN`, or `AZDO_PAT` when `CLANCY_GIT_PLATFORM=azure`) are still used for PR creation.
+
+Note: `GITHUB_TOKEN` and `AZDO_PAT` are dual-use. They count as board markers only when paired with `GITHUB_REPO` / `AZDO_PROJECT` respectively — on their own they're treated as git-host credentials.
+
 ## Figma MCP
 
 ```

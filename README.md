@@ -1,6 +1,6 @@
 # Clancy
 
-**Autonomous, board-driven development for Claude Code.**
+**Autonomous development for Claude Code — driven by your Kanban board, or by local plan files.**
 
 [![npm](https://img.shields.io/npm/v/chief-clancy?style=for-the-badge&color=cb3837)](https://www.npmjs.com/package/chief-clancy) [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](./LICENSE) [![CI](https://img.shields.io/github/actions/workflow/status/Pushedskydiver/chief-clancy/ci.yml?style=for-the-badge&label=CI)](https://github.com/Pushedskydiver/chief-clancy/actions/workflows/ci.yml) [![GitHub Stars](https://img.shields.io/github/stars/Pushedskydiver/chief-clancy?style=for-the-badge)](https://github.com/Pushedskydiver/chief-clancy/stargazers)
 
@@ -42,16 +42,16 @@ Brief → approve → plan → implement. Pipeline labels (`clancy:brief` → `c
 
 Clancy is for developers who:
 
-- Use a Kanban board (Jira, GitHub Issues, Linear, Shortcut, Notion, or Azure DevOps) and want Claude to work through their backlog unattended
+- Use a Kanban board (Jira, GitHub Issues, Linear, Shortcut, Notion, or Azure DevOps) and want Claude to work through their backlog unattended — **or** work solo without a board and want Claude to execute local plan files (`.clancy/plans/*.md`) instead
 - Are comfortable with Claude Code and want to extend it for team workflows — not just solo hacking
-- Have a codebase with enough structure that an AI agent can make meaningful progress on a ticket without constant hand-holding
+- Have a codebase with enough structure that an AI agent can make meaningful progress on a unit of work without constant hand-holding
 - Want to go AFK and come back to committed, merged work
 
 **Clancy is not for you if:**
 
 - You want to supervise every change — use Claude Code directly instead
-- Your tickets are large, vague, or span multiple sessions — Clancy works best with small, well-scoped tickets
-- You don't use a Kanban board — you can still use `/clancy:map-codebase` for codebase scanning, but the run loop won't apply
+- Your tickets or plans are large, vague, or span multiple sessions — Clancy works best with small, well-scoped units
+- You don't want any structure — Clancy assumes either a board _or_ an approved plan file; it won't invent the target itself
 
 Evaluating other tools? See [COMPARISON.md](./docs/COMPARISON.md) for a side-by-side with GSD and PAUL.
 
@@ -129,6 +129,8 @@ claude --dangerously-skip-permissions
 
 ## Getting started
 
+**With a Kanban board:**
+
 ```bash
 # 1. Install Clancy commands
 npx chief-clancy
@@ -152,38 +154,64 @@ npx chief-clancy
 # /clancy:brief --afk #42 → /clancy:approve-brief --afk → /clancy:autopilot
 ```
 
+**Without a board — local plan-driven flow:**
+
+```bash
+# 1. Install Clancy commands (same as above)
+npx chief-clancy
+
+# 2. Open a project in Claude Code, then answer "No" when asked about a board:
+/clancy:init
+
+# 3. Scan your codebase
+/clancy:map-codebase
+
+# 4. Draft a strategy brief from an outline file, then decompose into plans:
+/clancy:brief --from outline.md
+/clancy:plan --from .clancy/briefs/<brief>.md
+
+# 5. Approve the plan (writes a .approved marker file):
+/clancy:approve-plan .clancy/plans/<plan>.md
+
+# 6. Implement one plan, or all approved plans in the directory AFK:
+/clancy:implement --from .clancy/plans/<plan>.md
+/clancy:implement --from .clancy/plans/ --afk
+```
+
 ---
 
 ## Commands
 
-| Command                      | Description                                                                             |
-| ---------------------------- | --------------------------------------------------------------------------------------- |
-| `/clancy:brief` ²            | Grill phase → strategy brief → vertical slice decomposition → tickets                   |
-| `/clancy:approve-brief` ²    | Review and approve a strategy brief, then create board tickets                          |
-| `/clancy:plan` ¹             | Refine backlog tickets into structured implementation plans                             |
-| `/clancy:plan 3` ¹           | Plan up to 3 tickets in batch mode                                                      |
-| `/clancy:approve-plan` ¹     | Promote an approved plan to the ticket description                                      |
-| `/clancy:init`               | Wizard — choose board, collect config, scaffold everything                              |
-| `/clancy:autopilot`          | Loop mode — processes tickets until queue is empty or MAX_ITERATIONS hit                |
-| `/clancy:autopilot 20`       | Same, override MAX_ITERATIONS to 20 for this session                                    |
-| `/clancy:implement`          | Pick up one ticket and stop                                                             |
-| `/clancy:dry-run`            | Preview next ticket without making changes — no git ops, no Claude call                 |
-| `/clancy:status`             | Show next tickets without running — read-only                                           |
-| `/clancy:review`             | Score next ticket (0–100%) with actionable recommendations                              |
-| `/clancy:logs`               | Format and display `.clancy/progress.txt`                                               |
-| `/clancy:map-codebase`       | Full 5-agent parallel codebase scan, writes structured docs                             |
-| `/clancy:update-docs`        | Incremental refresh — re-runs agents for changed areas                                  |
-| `/clancy:settings`           | View and change configuration — model, iterations, board, and more                      |
-| `/clancy:doctor`             | Diagnose your setup — test every integration, report what's broken                      |
-| `/clancy:update-terminal`    | Update the full Clancy pipeline to latest version                                       |
-| `/clancy:update-brief` ³     | Update brief commands only (`--afk` skips confirmation)                                 |
-| `/clancy:update-plan` ³      | Update plan commands only (`--afk` skips confirmation)                                  |
-| `/clancy:update-dev` ³       | Update dev commands and bundles (`--afk` skips confirmation)                            |
-| `/clancy:uninstall-terminal` | Remove the full Clancy pipeline — detects standalone packages and warns before removing |
-| `/clancy:uninstall-brief` ³  | Remove brief commands only (installed via `npx @chief-clancy/brief`)                    |
-| `/clancy:uninstall-plan` ³   | Remove plan commands only (installed via `npx @chief-clancy/plan`)                      |
-| `/clancy:uninstall-dev` ³    | Remove dev commands; project-scoped also removes bundles (`npx @chief-clancy/dev`)      |
-| `/clancy:help`               | Command reference                                                                       |
+| Command                                | Description                                                                                                   |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `/clancy:brief` ²                      | Grill phase → strategy brief → vertical slice decomposition → tickets                                         |
+| `/clancy:approve-brief` ²              | Review and approve a strategy brief, then create board tickets                                                |
+| `/clancy:plan` ¹                       | Refine backlog tickets into structured implementation plans                                                   |
+| `/clancy:plan 3` ¹                     | Plan up to 3 tickets in batch mode                                                                            |
+| `/clancy:approve-plan` ¹               | Promote an approved plan to the ticket description                                                            |
+| `/clancy:init`                         | Wizard — optionally connect a board (or skip for local plan-driven mode), collect config, scaffold everything |
+| `/clancy:autopilot`                    | Loop mode — processes board tickets until queue is empty or MAX_ITERATIONS hit (requires a board)             |
+| `/clancy:autopilot 20`                 | Same, override MAX_ITERATIONS to 20 for this session                                                          |
+| `/clancy:implement`                    | Pick up one ticket and stop                                                                                   |
+| `/clancy:implement --from <plan.md>`   | Implement a single approved local plan — no board needed                                                      |
+| `/clancy:implement --from <dir> --afk` | Implement every approved plan in the directory (local batch equivalent of autopilot)                          |
+| `/clancy:dry-run`                      | Preview next ticket without making changes — no git ops, no Claude call                                       |
+| `/clancy:status`                       | Show next tickets without running — read-only                                                                 |
+| `/clancy:review`                       | Score next ticket (0–100%) with actionable recommendations                                                    |
+| `/clancy:logs`                         | Format and display `.clancy/progress.txt`                                                                     |
+| `/clancy:map-codebase`                 | Full 5-agent parallel codebase scan, writes structured docs                                                   |
+| `/clancy:update-docs`                  | Incremental refresh — re-runs agents for changed areas                                                        |
+| `/clancy:settings`                     | View and change configuration — model, iterations, board, and more                                            |
+| `/clancy:doctor`                       | Diagnose your setup — test every integration, report what's broken                                            |
+| `/clancy:update-terminal`              | Update the full Clancy pipeline to latest version                                                             |
+| `/clancy:update-brief` ³               | Update brief commands only (`--afk` skips confirmation)                                                       |
+| `/clancy:update-plan` ³                | Update plan commands only (`--afk` skips confirmation)                                                        |
+| `/clancy:update-dev` ³                 | Update dev commands and bundles (`--afk` skips confirmation)                                                  |
+| `/clancy:uninstall-terminal`           | Remove the full Clancy pipeline — detects standalone packages and warns before removing                       |
+| `/clancy:uninstall-brief` ³            | Remove brief commands only (installed via `npx @chief-clancy/brief`)                                          |
+| `/clancy:uninstall-plan` ³             | Remove plan commands only (installed via `npx @chief-clancy/plan`)                                            |
+| `/clancy:uninstall-dev` ³              | Remove dev commands; project-scoped also removes bundles (`npx @chief-clancy/dev`)                            |
+| `/clancy:help`                         | Command reference                                                                                             |
 
 ¹ Planner is an optional role — see [Roles](#roles) below.
 ² Strategist is an optional role — see [Roles](#roles) below.

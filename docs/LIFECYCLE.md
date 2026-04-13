@@ -1,12 +1,21 @@
-# Ticket Lifecycle — End-to-End Flow
+# Lifecycle — End-to-End Flow
 
 The complete journey of a feature from idea to merged code. Human steps are marked with 👤.
+
+Clancy runs either of two parallel paths:
+
+- **Board path** — tickets flow through the `clancy:brief → clancy:plan → clancy:build` label pipeline on your Kanban board.
+- **Local path** — no board. Briefs, plans, and approvals live as files in `.clancy/briefs/` and `.clancy/plans/`. The gate for implementation is a sibling `.approved` marker file (written by `/clancy:approve-plan`).
+
+Commands have the same names in both paths; `--from <file>` flags route to the local variant.
 
 ---
 
 ## Strategy Phase
 
 Owned by the **Strategist** virtual role (see [docs/roles/STRATEGIST.md](roles/STRATEGIST.md)). Slash commands ship in [`@chief-clancy/brief`](../packages/brief/) and can be installed standalone via `npx @chief-clancy/brief`.
+
+**Board path:**
 
 ```
 👤 Create a vague ticket on your board
@@ -48,11 +57,32 @@ Owned by the **Strategist** virtual role (see [docs/roles/STRATEGIST.md](roles/S
    Each labelled clancy:plan (ready for /clancy:plan).
 ```
 
+**Local path:**
+
+```
+👤 Draft a rough outline in a local file
+   (e.g. outline.md — a few lines on what you want built)
+
+👤 Run /clancy:brief --from outline.md
+   │
+   ├─ Same grill + research flow as the board path
+   └─ Writes brief to .clancy/briefs/<slug>.md
+      (no board ticket is created)
+
+👤 Review .clancy/briefs/<slug>.md
+   │
+   ├─ Want changes? → 👤 add ## Feedback, re-run /clancy:brief --from
+   └─ Happy? → continue to planning (no approve-brief step in local path;
+      the local flow skips ticket creation, so approval is implicit)
+```
+
 ---
 
 ## Planning Phase (optional)
 
 Owned by the **Planner** virtual role (see [docs/roles/PLANNER.md](roles/PLANNER.md)). Slash commands ship in [`@chief-clancy/plan`](../packages/plan/) and can be installed standalone via `npx @chief-clancy/plan`. Skip if tickets are clear enough from the brief.
+
+**Board path:**
 
 ```
 👤 Run /clancy:plan (picks next ticket with clancy:plan label)
@@ -75,11 +105,29 @@ Owned by the **Planner** virtual role (see [docs/roles/PLANNER.md](roles/PLANNER
    skip all confirmations for fully autonomous planning.
 ```
 
+**Local path:**
+
+```
+👤 Run /clancy:plan --from .clancy/briefs/<brief>.md
+   │
+   ├─ Reads the brief + codebase
+   └─ Writes plan(s) to .clancy/plans/<plan-id>.md
+
+👤 Review .clancy/plans/<plan-id>.md
+   │
+   ├─ Want changes? → 👤 re-run /clancy:plan --from or edit directly
+   └─ Happy? → 👤 /clancy:approve-plan .clancy/plans/<plan-id>.md
+         (writes sibling .approved marker with SHA-256 of the plan file —
+          the gate every local implementation checks)
+```
+
 ---
 
 ## Implementation Phase
 
 ### Interactive (one ticket at a time)
+
+**Board path:**
 
 ```
 👤 Run /clancy:implement
@@ -112,7 +160,24 @@ Owned by the **Planner** virtual role (see [docs/roles/PLANNER.md](roles/PLANNER
 👤 Repeat /clancy:implement for each ticket
 ```
 
+**Local path:**
+
+```
+👤 Run /clancy:implement --from .clancy/plans/<plan-id>.md
+   │
+   ├─ Verifies the sibling .approved marker exists and matches SHA-256
+   ├─ Creates a synthetic ticket from the plan (no board calls)
+   ├─ Claude implements the plan
+   │    (verification gate runs lint/test/typecheck, same as board path)
+   ├─ Creates PR targeting CLANCY_BASE_BRANCH
+   └─ Logs cost
+
+👤 Review + merge the PR
+```
+
 ### AFK Mode (autonomous batch)
+
+**Board path:**
 
 ```
 👤 Run /clancy:autopilot
@@ -127,6 +192,22 @@ Owned by the **Planner** virtual role (see [docs/roles/PLANNER.md](roles/PLANNER
    (.clancy/session-report.md)
 👤 Review + merge PRs that were created
 ```
+
+**Local path:**
+
+```
+👤 Run /clancy:implement --from .clancy/plans/ --afk
+   │
+   ├─ Naturally sorts every .md in the directory
+   ├─ Skips plans without a matching .approved marker (warns)
+   ├─ Implements each approved plan sequentially
+   ├─ Stops on first failure, reports summary
+   └─ Generates session report when done
+
+👤 Come back later, review session report and merge PRs
+```
+
+`/clancy:autopilot` itself requires a board — the local batch equivalent is `/clancy:implement --from <dir> --afk`.
 
 ---
 
