@@ -83,6 +83,12 @@ Workflow `.md` files are as load-bearing as TypeScript — Claude follows them s
 - **Multi-mode prompt simulation** — if a prompt can be invoked with different inputs (flags, modes, step contexts), mentally execute it with each input type. Does every instruction still make sense? Does the output format work for all cases? Read the intro, every instruction, and the output template as if you were the LLM receiving input X — then repeat with input Y. _Caught by Copilot: PR #277 — DA agent intro said "You receive 10-15 clarifying questions" which was false for the Step 8a health-check invocation that passes a generated brief._
 - **Derived threshold alignment** — when a check references a rule defined elsewhere (e.g., "max N rows", "size L = 4+ hours"), verify the threshold matches the source rule. Grep for the authoritative value in the file that defines it. _Caught by Copilot: PR #277 — health check flagged >15 rows but brief.md's own decomposition rules cap at 10._
 
+### Structural traps in workflow markdown
+
+- **GFM table cells escape pipes** — regexes with `|` (alternation) inside markdown table cells get auto-escaped by Prettier to `\|`. The LLM reads this as a literal pipe, not alternation. Fix: pull regexes with pipes out of the table into a separate paragraph.
+- **Nested backticks inside bold spans** — nesting inline code inside `**...**` trips Prettier's formatter, silently rewriting the file on every save. Fix: drop the outer bold; use single bold words or a separate sentence.
+- **Multi-step audit-log ordering** — if Step 4c claims to write "after Step 7's row" but executes before Step 7, the ordering is unachievable. Fix: defer ALL writes to the last step that runs; have it write in the correct order.
+
 ## Carried-over content
 
 - Do hardcoded version numbers match the repo's config? (CodeRabbit caught Node 22+ in role docs when `engines.node` requires >=24.0.0)
