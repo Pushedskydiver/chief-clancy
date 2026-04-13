@@ -27,7 +27,7 @@ import { buildPipelineDeps } from '../dep-factory/dep-factory.js';
 import { runSingleTicketByKey } from '../execute/index.js';
 import { runReadinessGate } from '../execute/readiness/index.js';
 import { formatDuration } from '../lifecycle/format/format.js';
-import { runPipeline } from '../pipeline/index.js';
+import { createContext, runPipeline } from '../pipeline/index.js';
 import { buildPrompt, buildReworkPrompt } from '../prompt-builder/index.js';
 import {
   makeCostFs,
@@ -51,23 +51,34 @@ function parseTicketKey(): string {
   return key;
 }
 
-function loadEnv(projectRoot: string): {
-  readonly envFs: EnvFileSystem;
-  readonly boardConfig: BoardConfig;
-} {
+/**
+ * Load `.clancy/.env` and detect the board provider.
+ *
+ * @internal Exported for testing.
+ * @param projectRoot - Absolute path to the project root.
+ * @returns Loaded env and board config, or `undefined` when no env file or no board detected.
+ */
+export function loadEnv(
+  projectRoot: string,
+):
+  | { readonly envFs: EnvFileSystem; readonly boardConfig: BoardConfig }
+  | undefined {
   const envFs = makeEnvFs();
   const env = loadClancyEnv(projectRoot, envFs);
 
   if (!env) {
-    console.error('✗ No .clancy/.env found — run the installer first');
-    process.exit(1);
+    console.error('✗ No .clancy/.env found — run /clancy:init first');
+    return undefined;
   }
 
   const boardResult = detectBoard(env);
 
   if (typeof boardResult === 'string') {
-    console.error(boardResult);
-    return process.exit(1);
+    console.error(`✗ ${boardResult}`);
+    console.error(
+      '  Use /clancy:implement --from <plan> for local mode, or run /clancy:init to configure a board.',
+    );
+    return undefined;
   }
 
   return { envFs, boardConfig: boardResult };
@@ -136,12 +147,56 @@ function makeReadinessGate(opts: {
     });
 }
 
+// ─── Local mode ─────────────────────────────────────────────────────────────
+
+/**
+ * Run the pipeline in local mode (`--from`), skipping board detection.
+ * The pipeline's local-wiring handles preflight and ticket seeding.
+ */
+async function runLocalMode(
+  projectRoot: string,
+  argv: readonly string[],
+): Promise<void> {
+  const ctx = createContext({ projectRoot, argv, isAfk: false });
+
+  const pipelineDeps = buildPipelineDeps({
+    projectRoot,
+    exec: makeExecGit(projectRoot),
+    lockFs: makeLockFs(),
+    progressFs: makeProgressFs(),
+    costFs: makeCostFs(),
+    envFs: makeEnvFs(),
+    qualityFs: makeQualityFs(),
+    spawn: (cmd, args, opts) =>
+      spawnSync(cmd, [...args], { ...opts, stdio: [...opts.stdio] }),
+    fetch: globalThis.fetch.bind(globalThis),
+    buildPrompt,
+    buildReworkPrompt,
+  });
+
+  const startTime = Date.now();
+  const result = await runPipeline(ctx, pipelineDeps);
+  displayResult(result, formatDuration(Date.now() - startTime));
+}
+
 // ─── Main ───────────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
-  const ticketKey = parseTicketKey();
   const projectRoot = process.cwd();
-  const { envFs, boardConfig } = loadEnv(projectRoot);
+
+  // --from mode: skip board detection and ticket key entirely.
+  // Check full argv before parseTicketKey() consumes argv[2].
+  if (process.argv.includes('--from')) {
+    return runLocalMode(projectRoot, process.argv.slice(2));
+  }
+
+  const ticketKey = parseTicketKey();
+  const passthroughArgv = process.argv.slice(3);
+
+  // Board mode: detect board, run single-ticket executor.
+  const envResult = loadEnv(projectRoot);
+  if (!envResult) return;
+  const { envFs, boardConfig } = envResult;
 
   const board = createBoard(boardConfig, (url, init) =>
     globalThis.fetch(url, init),
@@ -175,7 +230,7 @@ async function main(): Promise<void> {
     pipelineDeps,
     runPipeline,
     projectRoot,
-    argv: process.argv.slice(3),
+    argv: passthroughArgv,
     isAfk: false,
     readinessGate: makeReadinessGate({
       rubric: loadRubric(),

@@ -274,7 +274,9 @@ export async function runLoop(deps: LoopDeps): Promise<void> {
 async function main(): Promise<void> {
   const loopArgs = parseLoopArgs(process.argv);
   const projectRoot = process.cwd();
-  const { envFs, boardConfig, rawEnv } = loadEnv(projectRoot);
+  const envResult = loadEnv(projectRoot);
+  if (!envResult) return;
+  const { envFs, boardConfig, rawEnv } = envResult;
   const env = mergeEnv(rawEnv);
 
   const rubric = loopArgs.bypassReadiness ? undefined : loadRubric();
