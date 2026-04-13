@@ -233,6 +233,26 @@ describe('parsePlanFile', () => {
       const plan = parsePlanFile(LOCAL_PLAN, 'add-dark-mode-3');
       expect(plan.headerFormat).toBe('local');
     });
+
+    it('ignores Ticket line in section body when detecting header format', () => {
+      const content = [
+        '## Clancy Implementation Plan',
+        '',
+        '**Source:** Migrate auth',
+        '**Row:** #1 — Extract middleware',
+        '**Planned:** 2026-04-13',
+        '',
+        '### Summary',
+        '',
+        'See board ticket for context:',
+        '**Ticket:** [PROJ-42] Original auth ticket',
+      ].join('\n');
+
+      const plan = parsePlanFile(content, 'migrate-auth-1');
+      expect(plan.headerFormat).toBe('local');
+      expect(plan.key).toBe('migrate-auth-1');
+      expect(plan.title).toBe('Extract middleware');
+    });
   });
 
   describe('sections', () => {

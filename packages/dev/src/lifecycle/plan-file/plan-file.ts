@@ -88,8 +88,15 @@ export function parsePlanFile(content: string, slug: string): ParsedPlan {
     );
   }
 
-  // Detect header format
-  const ticketMatch = /^\*\*Ticket:\*\*\s*\[([^\]]+)\]\s*(.+)$/m.exec(content);
+  // Scope header detection to the block before the first ### section
+  const firstSection = content.indexOf('\n### ');
+  const headerBlock =
+    firstSection >= 0 ? content.slice(0, firstSection) : content;
+
+  // Detect header format from the header block only
+  const ticketMatch = /^\*\*Ticket:\*\*\s*\[([^\]]+)\]\s*(.+)$/m.exec(
+    headerBlock,
+  );
   const headerFormat: 'board' | 'local' = ticketMatch ? 'board' : 'local';
 
   const { key, title } = ticketMatch
@@ -97,11 +104,11 @@ export function parsePlanFile(content: string, slug: string): ParsedPlan {
     : {
         key: slug,
         title:
-          /^\*\*Row:\*\*\s*#\d+\s*—\s*(.+)$/m.exec(content)?.[1]?.trim() ??
+          /^\*\*Row:\*\*\s*#\d+\s*—\s*(.+)$/m.exec(headerBlock)?.[1]?.trim() ??
           slug,
       };
 
-  const plannedMatch = /^\*\*Planned:\*\*\s*(.+)$/m.exec(content);
+  const plannedMatch = /^\*\*Planned:\*\*\s*(.+)$/m.exec(headerBlock);
   const planned = plannedMatch ? plannedMatch[1].trim() : '';
 
   const sizeRaw = extractSection(content, 'Size Estimate');
