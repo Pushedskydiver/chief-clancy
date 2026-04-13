@@ -48,6 +48,40 @@ describe('workflows directory structure', () => {
 
     expect(content).toContain('## Step 1');
   });
+
+  it('Step 4g DA grill fires after plan generation', () => {
+    const content = readFileSync(new URL('plan.md', import.meta.url), 'utf8');
+
+    expect(content).toContain('### 4g. DA grill');
+    expect(content).toContain('.claude/clancy/agents/devils-advocate.md');
+    expect(content).toContain('full plan content generated in Step 4f only');
+  });
+
+  it('Step 4g has severity-based triage and revision cap', () => {
+    const content = readFileSync(new URL('plan.md', import.meta.url), 'utf8');
+
+    expect(content).toContain(
+      'HIGH Challenges (including health check failures)',
+    );
+    expect(content).toContain('MEDIUM Challenges');
+    expect(content).toContain('Maximum 2 revision cycles');
+    expect(content).toContain('proceed directly to Step 5');
+  });
+
+  it('Step 4g handles all three DA output sections', () => {
+    const content = readFileSync(new URL('plan.md', import.meta.url), 'utf8');
+
+    expect(content).toContain('Discovery:');
+    expect(content).toContain('Open Questions:');
+    expect(content).toContain('Risks / Considerations');
+  });
+
+  it('agent reference uses .claude/clancy/agents/ path', () => {
+    const content = readFileSync(new URL('plan.md', import.meta.url), 'utf8');
+
+    expect(content).toContain('.claude/clancy/agents/devils-advocate.md');
+    expect(content).not.toContain('src/agents/devils-advocate.md');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -1698,6 +1732,14 @@ describe('uninstall-plan workflow', () => {
     expect(content).toContain('approve-plan.md');
     expect(content).toContain('plan.md');
     expect(content).toContain('update-plan.md');
+  });
+
+  it('lists plan-exclusive agent in Step 4a', () => {
+    const step4a = content.slice(
+      content.indexOf('### 4a'),
+      content.indexOf('### 4b'),
+    );
+    expect(step4a).toContain('devils-advocate.md');
   });
 
   it('lists shared files that require version-marker checks', () => {

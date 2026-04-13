@@ -25,6 +25,7 @@ export type PlanInstallPaths = {
 type PlanInstallSources = {
   readonly commandsDir: string;
   readonly workflowsDir: string;
+  readonly agentsDir: string;
   readonly scanAgentsDir: string;
   readonly scanCommandsDir: string;
   readonly scanWorkflowsDir: string;
@@ -75,6 +76,9 @@ const WORKFLOW_FILES = [
   'uninstall-plan.md',
   'update-plan.md',
 ] as const;
+
+/** Agent files shipped with the plan package. */
+const AGENT_FILES = ['devils-advocate.md'] as const;
 
 /** Scan agent files from @chief-clancy/scan. */
 const SCAN_AGENT_FILES = [
@@ -235,6 +239,12 @@ export const runPlanInstall = (options: RunPlanInstallOptions): void => {
     files: WORKFLOW_FILES,
     srcDir: sources.workflowsDir,
     destDir: paths.workflowsDest,
+    fs,
+  });
+  copyFiles({
+    files: AGENT_FILES,
+    srcDir: sources.agentsDir,
+    destDir: paths.agentsDest,
     fs,
   });
   copyFiles({

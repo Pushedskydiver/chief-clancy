@@ -130,6 +130,7 @@ const createMockFs = (files: Record<string, string> = {}) => {
 const defaultSources = {
   commandsDir: '/pkg/src/commands',
   workflowsDir: '/pkg/src/workflows',
+  agentsDir: '/pkg/src/agents',
   scanAgentsDir: '/scan/src/agents',
   scanCommandsDir: '/scan/src/commands',
   scanWorkflowsDir: '/scan/src/workflows',
@@ -172,6 +173,7 @@ const buildOptions = (
       '# Clancy Uninstall Plan Workflow\n\nUninstall content here.',
     '/pkg/src/workflows/update-plan.md':
       '# Clancy Update Plan Workflow\n\nUpdate content here.',
+    '/pkg/src/agents/devils-advocate.md': "# Devil's Advocate Agent",
     '/scan/src/agents/arch-agent.md': '# Architecture Agent',
     '/scan/src/agents/concerns-agent.md': '# Concerns Agent',
     '/scan/src/agents/design-agent.md': '# Design Agent',
@@ -275,6 +277,28 @@ describe('runPlanInstall', () => {
     opts.fs.isSymlink.mockReturnValue(true);
 
     expect(() => runPlanInstall(opts)).toThrow('Symlink rejected');
+  });
+
+  it('copies plan agent files to agents destination', () => {
+    const opts = buildOptions();
+    runPlanInstall(opts);
+
+    expect(opts.fs.copyFile).toHaveBeenCalledWith(
+      join(defaultSources.agentsDir, 'devils-advocate.md'),
+      join(defaultPaths.agentsDest, 'devils-advocate.md'),
+    );
+  });
+
+  it('does not inline plan agent files in global mode', () => {
+    const opts = buildOptions({ mode: 'global' });
+    runPlanInstall(opts);
+
+    const writeCalls = opts.fs.writeFile.mock.calls;
+    const agentWrite = writeCalls.find(
+      ([path]) => path === join(defaultPaths.agentsDest, 'devils-advocate.md'),
+    );
+
+    expect(agentWrite).toBeUndefined();
   });
 
   it('copies scan agent files to agents destination', () => {

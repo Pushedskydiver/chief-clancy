@@ -46,6 +46,7 @@ const scanRoot = join(
 const sources = {
   commandsDir: join(planRoot, 'src', 'commands'),
   workflowsDir: join(planRoot, 'src', 'workflows'),
+  agentsDir: join(planRoot, 'src', 'agents'),
 };
 
 // ---------------------------------------------------------------------------
@@ -100,6 +101,7 @@ const WORKFLOW_FILES = [
   'uninstall-plan.md',
   'update-plan.md',
 ];
+const AGENT_FILES = ['devils-advocate.md'];
 const SCAN_AGENT_FILES = [
   'arch-agent.md',
   'concerns-agent.md',
@@ -192,6 +194,11 @@ function installFiles(dest, mode) {
   );
   WORKFLOW_FILES.forEach((f) =>
     copyChecked(join(sources.workflowsDir, f), join(workflowsDest, f)),
+  );
+
+  // Plan agents
+  AGENT_FILES.forEach((f) =>
+    copyChecked(join(sources.agentsDir, f), join(agentsDest, f)),
   );
 
   // Scan files (agents, commands, workflows from @chief-clancy/scan)
