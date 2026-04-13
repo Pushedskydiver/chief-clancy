@@ -121,7 +121,7 @@ Do you want Clancy to create PRs automatically? If so, which git host?
 [5] Skip — I'll create PRs manually
 
 If [1-3]: collect the appropriate token (same prompts as Q2c for the selected host). Store in `.clancy/.env`.
-If [4]: collect the Azure DevOps personal access token (`AZDO_PAT`) using the same prompt as Q2's Azure DevOps section. Store in `.clancy/.env`.
+If [4]: collect the Azure DevOps personal access token (`AZDO_PAT`). Prompt: `Paste your Azure DevOps personal access token: (needs Code Read & Write scope for PR creation)`. Store in `.clancy/.env`.
 If [5]: skip. No git host token is stored.
 
 ---
@@ -670,7 +670,7 @@ Create `.clancy/` directory and the following:
    # BITBUCKET_USER=
    # BITBUCKET_TOKEN=
    # AZDO_PAT=
-   # CLANCY_GIT_PLATFORM=                    # override auto-detection (github/gitlab/bitbucket/azure)
+   # CLANCY_GIT_PLATFORM=                    # override auto-detection (github/gitlab/bitbucket/bitbucket-server/azure)
    # CLANCY_GIT_API_URL=                     # self-hosted git instance API base URL
    ```
 4. Write collected credentials to `.clancy/.env` (if the user provided them)
