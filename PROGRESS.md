@@ -4,27 +4,25 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 
 ## Current state (2026-04-13)
 
-**DA agents shipped for both brief and plan.** Brief DA now has dual-mode operation (grill + health-check), Challenges section with severity levels, and Step 8a post-brief invocation. Plan DA added with Step 4g grill, 6-item plan health check, and installer infrastructure. Review docs strengthened (DA-REVIEW, SELF-REVIEW, REVIEW-PATTERNS) with 4 new patterns from Copilot catches.
+**Implement `--from` feature complete.** Full local pipeline works: brief → plan → approve → implement, no board needed. All 6 PRs shipped (#281-#286). Batch mode (`--from {dir} --afk`), 20 e2e tests, README audit across all packages, 7 feedback memories promoted to repo docs.
 
-**Published versions:**
+**Published versions:** (changeset merged — version bump pending publish workflow)
 
 | Package                  | Version |
 | ------------------------ | ------- |
-| `@chief-clancy/core`     | 0.1.1   |
-| `@chief-clancy/terminal` | 0.1.13  |
-| `@chief-clancy/dev`      | 0.2.1   |
-| `@chief-clancy/brief`    | 0.4.2   |
-| `@chief-clancy/plan`     | 0.7.0   |
-| `@chief-clancy/scan`     | 0.2.2   |
-| `chief-clancy` (wrapper) | 0.9.22  |
+| `@chief-clancy/core`     | 0.1.2   |
+| `@chief-clancy/terminal` | 0.1.14  |
+| `@chief-clancy/dev`      | 0.3.0   |
+| `@chief-clancy/brief`    | 0.4.3   |
+| `@chief-clancy/plan`     | 0.7.1   |
+| `@chief-clancy/scan`     | 0.2.3   |
+| `chief-clancy` (wrapper) | 0.9.23  |
 
-**Test counts:** 879 core, 742 terminal, 1188 dev, 126 brief, 326 plan = **3261 total**.
+**Test counts:** 879 core, 755 terminal, 1195 dev, 126 brief, 326 plan = **3281 total**.
 
-**Last shipped:** Implement `--from` PRs 1-3 (#281, #282, #283) in Session 74.
+**Last shipped:** Implement `--from` PRs 4-6 (#284, #285, #286) in Session 75.
 
-**Next:** `--from` PRs 4-6 remaining. PR 4: directory + `--afk` batch mode (list-plans, natural sort, executeQueue, partial failure). PR 5: e2e tests (local plan pipeline + lifecycle contract). PR 6: changeset + README updates. Plan at `.clancy/plans/implement-from.md`.
-
-**Also shipped in Session 74:** Evidence-based dismissal discipline added to `docs/DEVELOPMENT.md` Review Gate + `docs/RATIONALIZATIONS.md`. Pipeline error plumbing fix — all abort sites now thread error/reason strings through `PipelineResult`.
+**Next:** Local-aware init flow — make `/clancy:init` board-optional. Plan at `.clancy/plans/local-init-flow.md` (v3, DA-grilled 3 rounds). 4 PRs: runtime guards → init workflow → settings/doctor/help/autopilot/reviewer guards → changeset. After that: comprehensive docs update for local pipeline lifecycle + readability review with Alex.
 
 ## Phase ledger
 
