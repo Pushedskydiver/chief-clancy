@@ -2,9 +2,9 @@
 
 Living state document for the Clancy monorepo. Records the current state, the phase ledger, and the next decision. Session-by-session detail lives in git history (each phase's PRs are tagged + commit messages reference them).
 
-## Current state (2026-04-12)
+## Current state (2026-04-13)
 
-**Cross-package update system shipped.** All packages have install, update, and uninstall commands. Per-package update commands (`/clancy:update-brief`, `/clancy:update-plan`, `/clancy:update-dev`) shipped alongside terminal rename (`/clancy:update-terminal` + thin redirect).
+**DA agents shipped for both brief and plan.** Brief DA now has dual-mode operation (grill + health-check), Challenges section with severity levels, and Step 8a post-brief invocation. Plan DA added with Step 4g grill, 6-item plan health check, and installer infrastructure. Review docs strengthened (DA-REVIEW, SELF-REVIEW, REVIEW-PATTERNS) with 4 new patterns from Copilot catches.
 
 **Published versions:**
 
@@ -13,14 +13,14 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 | `@chief-clancy/core`     | 0.1.1   |
 | `@chief-clancy/terminal` | 0.1.13  |
 | `@chief-clancy/dev`      | 0.2.1   |
-| `@chief-clancy/brief`    | 0.4.1   |
-| `@chief-clancy/plan`     | 0.6.1   |
+| `@chief-clancy/brief`    | 0.4.2   |
+| `@chief-clancy/plan`     | 0.7.0   |
 | `@chief-clancy/scan`     | 0.2.2   |
-| `chief-clancy` (wrapper) | 0.9.21  |
+| `chief-clancy` (wrapper) | 0.9.22  |
 
-**Test counts:** 879 core, 742 terminal, 1106 dev, 119 brief, 312 plan = **3158 total**.
+**Test counts:** 879 core, 742 terminal, 1106 dev, 126 brief, 326 plan = **3179 total**.
 
-**Last shipped:** Cross-package update system (#269-#275) in Session 74.
+**Last shipped:** Plan DA agent (#277-#279) in Session 74.
 
 ## Phase ledger
 
