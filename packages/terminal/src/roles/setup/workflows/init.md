@@ -669,7 +669,8 @@ Create `.clancy/` directory and the following:
    # GITLAB_TOKEN=
    # BITBUCKET_USER=
    # BITBUCKET_TOKEN=
-   # CLANCY_GIT_PLATFORM=                    # override auto-detection (github/gitlab/bitbucket)
+   # AZDO_PAT=
+   # CLANCY_GIT_PLATFORM=                    # override auto-detection (github/gitlab/bitbucket/azure)
    # CLANCY_GIT_API_URL=                     # self-hosted git instance API base URL
    ```
 4. Write collected credentials to `.clancy/.env` (if the user provided them)
