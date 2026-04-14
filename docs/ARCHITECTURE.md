@@ -256,7 +256,7 @@ Human reviews plan file
   +- Leaves feedback -> /clancy:plan --from -> auto-detects feedback, revises plan
 ```
 
-The `.approved` marker is the **gate** the implementer checks in local mode. The consumer (`/clancy:implement --from`, via `packages/dev/src/lifecycle/plan-file/plan-file.ts`) re-hashes the plan file and refuses to run on hash mismatch — the user must delete the marker and re-approve.
+The `.approved` marker is a **write-side contract today** — `/clancy:approve-plan` writes it correctly (SHA-256 + timestamp via `O_EXCL`), but runtime enforcement is deferred per `packages/plan/src/workflows/approve-plan.md:412-418`. The verifier function `checkApprovalStatus` exists at `packages/dev/src/lifecycle/plan-file/plan-file.ts:144` but has no callers in the pipeline today. `runLocalMode` in `packages/dev/src/entrypoints/dev.ts:168` runs `--from` plans without checking the marker. Until the verifier is wired, approval is a workflow-level convention — the user (or Claude Code via natural-language instruction) reads the marker and refuses to apply on mismatch.
 
 Planner and implementer work on separate queues (board path) or separate plan-file states (local path). They never compete for the same work.
 

@@ -185,7 +185,7 @@ stateDiagram-v2
     }
 
     state "Implementer" as impl {
-        Ready --> InProgress: /clancy:implement (board, filters clancy:build)\nor /clancy:implement --from {plan.md} (local, checks .approved)
+        Ready --> InProgress: /clancy:implement (board, filters clancy:build)\nor /clancy:implement --from {plan.md}\n(local — runtime marker check deferred)
         InProgress --> Claude: Invoke Claude session
         Claude --> Deliver: Code committed
     }
@@ -226,13 +226,13 @@ What happens inside `/clancy:implement` (and each iteration of `/clancy:autopilo
 
 ```mermaid
 flowchart TD
-    Start(["/clancy:implement\n(or --from <plan.md>)"]) --> LockCheck
+    Start(["/clancy:implement\n(or --from {plan.md})"]) --> LockCheck
 
     LockCheck{"Lock file\nexists?"} -->|No| AcquireLock["Acquire lock\n(.clancy/lock.json)"]
     LockCheck -->|"Yes — PID alive"| Stop0["Another session running ✗"]
     LockCheck -->|"Yes — PID dead"| Resume["Resume crashed session\n(read ticket + branch from lock)"]
 
-    AcquireLock --> FromFlag{"--from\n<plan>?"}
+    AcquireLock --> FromFlag{"--from\n{plan}?"}
     Resume --> Branch
 
     FromFlag -->|No — board path| Preflight
@@ -489,7 +489,7 @@ graph TD
 
         subgraph "plans/"
             plan1["{plan-id}.md"]
-            plan1a["{plan-id}.approved\n(SHA-256 + approved_at —\ngate for /clancy:implement --from)"]
+            plan1a["{plan-id}.approved\n(SHA-256 + approved_at —\nwrite-side contract; runtime\nverifier wiring deferred)"]
             plan2["{plan-id}.md"]
             planFb["...feedback.md\n(companion file)"]
         end
@@ -505,13 +505,13 @@ graph TD
     mapcb -->|generates| conv
     mapcb -->|generates| test
 
-    brief(["/clancy:brief\n(or --from <outline>)"]) -->|writes| brief1
-    plan(["/clancy:plan\n(or --from <brief>)"]) -->|writes| plan1
+    brief(["/clancy:brief\n(or --from {outline})"]) -->|writes| brief1
+    plan(["/clancy:plan\n(or --from {brief})"]) -->|writes| plan1
     approveplan(["/clancy:approve-plan"]) -->|writes marker| plan1a
 
-    once(["/clancy:implement\n(or --from <plan.md>)"]) -->|reads| env
+    once(["/clancy:implement\n(or --from {plan.md})"]) -->|reads| env
     once -->|reads| stack
-    once -->|"local path: reads + verifies"| plan1a
+    once -.->|"runtime verification deferred —\nmarker is write-side contract"| plan1a
     once -->|appends| progress
     once -->|executes| oncejs
 
@@ -610,7 +610,7 @@ The optional planning phase. Runs per-ticket after the strategist creates them.
 
 ```mermaid
 flowchart TD
-    Start(["/clancy:plan\n(or --from <brief>)"]) --> Mode{"--from\n<brief>?"}
+    Start(["/clancy:plan\n(or --from {brief})"]) --> Mode{"--from\n{brief}?"}
 
     Mode -->|No — board path| Preflight["Preflight\n(.clancy/.env, board credentials)"]
     Mode -->|Yes — local path| LocalPreflight["Preflight\n(.clancy/.env, brief file exists)"]
@@ -669,7 +669,7 @@ flowchart TD
     Existing -->|"No (default)"| AlreadyApproved["Already approved — stop.\n(Marker preserved byte-for-byte.)"]
     Existing -->|"Yes"| PushFallthrough["Skip Step 4a/4b,\nrun board push retry"]
     WriteMarker --> LogL["Log: APPROVE_PLAN\nin progress.txt"]
-    LogL --> ReadyL(["Plan ready for\n/clancy:implement --from\n(consumer verifies hash)"])
+    LogL --> ReadyL(["Plan ready for\n/clancy:implement --from\n(runtime hash verification\ndeferred — convention today)"])
 
     style StopB stroke:#c62828,stroke-width:2px
     style AlreadyApproved stroke:#f9a825,stroke-width:2px
@@ -677,7 +677,7 @@ flowchart TD
     style WriteMarker stroke:#1565c0,stroke-width:2px
 ```
 
-Hash comparison happens in the **consumer** (`/clancy:implement --from`), not in `/clancy:approve-plan`. Approve is write-once via `O_EXCL`; implement reads the marker, re-hashes the plan, and refuses to run on mismatch — the user must delete the marker and re-approve.
+**Runtime enforcement is currently deferred.** Approve-plan writes the marker correctly via `O_EXCL`; no code in the `/clancy:implement --from` execution path reads it today. The verifier `checkApprovalStatus` exists at `packages/dev/src/lifecycle/plan-file/plan-file.ts:144` but has no pipeline callers. Until the verifier is wired, the marker is a write-side contract only — re-hashing and mismatch-refusal happen by workflow convention (human or Claude Code reads the marker before applying the plan), not at runtime.
 
 ---
 

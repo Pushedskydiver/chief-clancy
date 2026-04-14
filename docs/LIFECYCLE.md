@@ -175,12 +175,14 @@ Owned by the **Planner** virtual role (see [docs/roles/PLANNER.md](roles/PLANNER
 
 👤 Review + merge the PR
 
-Note: runtime marker/SHA verification of the sibling .approved file
-is intentionally deferred (see approve-plan.md "Marker is the gate for
-future implementation tooling"). The verifier exists in @chief-clancy/dev
-but is not yet wired into local-mode preflight — today the marker is a
-write-side contract, and approval is enforced manually or by workflow
-convention. Once the verifier lands, mismatches will refuse to run.
+Note: the sibling `.approved` marker is a write-side contract today.
+Neither single-plan (`--from <file>`) nor batch (`--from <dir> --afk`)
+modes check the marker or validate its SHA-256 at runtime — the
+verifier `checkApprovalStatus` exists in @chief-clancy/dev but is
+unused in the pipeline. Approval is enforced manually or by workflow
+convention (human or Claude Code reads the marker before applying).
+See approve-plan.md "Marker is the gate for future implementation
+tooling" — a future PR will wire the runtime gate.
 ```
 
 ### AFK Mode (autonomous batch)
