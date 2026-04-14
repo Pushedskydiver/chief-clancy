@@ -58,7 +58,7 @@ blocking scope is visible.
 
 Per Decision 4: one master grill on the plan (complete — `notes.md`
 iteration log v1→v7) + **light per-PR grill** on each draft before it
-opens ("does this PR match the plan and the rule text?"). The master
-grill found real defects on 7 consecutive rounds where the author's
-"done" claim was wrong — per-PR light-grilling is load-bearing, not
-theatre.
+opens ("does this PR match the plan and the rule text?"). Every grill
+round through v7 found real defects, and the author's stopping-claim
+was wrong on 3 rounds in a row — per-PR light-grilling is load-bearing,
+not theatre.
