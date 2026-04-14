@@ -4,7 +4,7 @@ The implementer is Clancy's core — it turns a unit of work into working code. 
 
 ## How it works
 
-1. Resolves the target — highest-priority ticket from the implementation queue, **or** the plan file passed via `--from` (validated against its sibling `.approved` marker)
+1. Resolves the target — highest-priority ticket from the implementation queue, **or** the plan file passed via `--from`. A sibling `.clancy/plans/{stem}.approved` marker is written by `/clancy:approve-plan` as a convention; runtime enforcement of that gate is deferred (see `approve-plan.md` "Marker is the gate for future implementation tooling") — the verifier function exists in `@chief-clancy/dev` but is not yet wired into local-mode preflight. Until it is, approval is enforced manually or by workflow convention.
 2. Reads core codebase docs in `.clancy/docs/` (STACK, ARCHITECTURE, CONVENTIONS, GIT, DEFINITION-OF-DONE, CONCERNS) and loads additional docs if relevant
 3. Creates a feature branch, implements the work, writes tests
 4. Commits, pushes the feature branch, and creates a PR (targeting the epic branch for parented tickets, or `CLANCY_BASE_BRANCH` otherwise)

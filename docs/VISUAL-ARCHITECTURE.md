@@ -247,17 +247,15 @@ flowchart TD
         P4 --> P5["Branch freshness check"]
     end
 
-    subgraph LocalPreflight["Local Preflight (--from)"]
+    subgraph LocalPreflight["Local Preflight (--from) — current behaviour"]
         L1["Validate plan path"] -->|Missing| Stop1b["Plan file not found ✗"]
-        L1 --> L2["Check sibling .approved marker"]
-        L2 -->|Missing| Stop2b["Plan not approved —\nrun /clancy:approve-plan ✗"]
-        L2 -->|Hash mismatch| Stop2c["Plan changed since approval —\ndelete marker and re-approve ✗"]
-        L2 -->|OK| L3["Git connectivity check"]
+        L1 --> L3["Git connectivity check"]
         L3 --> L4["Branch freshness check"]
+        L4 --> LNote["Note: runtime .approved marker/SHA gate\nis deferred — not enforced in preflight today.\nWrite-side contract only; verifier lands in a future PR."]
     end
 
     P5 --> EpicScan
-    L4 --> FetchTicket
+    LNote --> FetchTicket
 
     EpicScan["Epic completion scan\n(check if any epics have\nall children done → create\nepic PR if so — board only)"] --> FetchTicket
 

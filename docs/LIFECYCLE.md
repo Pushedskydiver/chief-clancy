@@ -167,7 +167,6 @@ Owned by the **Planner** virtual role (see [docs/roles/PLANNER.md](roles/PLANNER
 ```
 👤 Run /clancy:implement --from .clancy/plans/<plan-id>.md
    │
-   ├─ Verifies the sibling .approved marker exists and matches SHA-256
    ├─ Creates a synthetic ticket from the plan (no board calls)
    ├─ Claude implements the plan
    │    (verification gate runs lint/test/typecheck, same as board path)
@@ -175,6 +174,13 @@ Owned by the **Planner** virtual role (see [docs/roles/PLANNER.md](roles/PLANNER
    └─ Logs cost
 
 👤 Review + merge the PR
+
+Note: runtime marker/SHA verification of the sibling .approved file
+is intentionally deferred (see approve-plan.md "Marker is the gate for
+future implementation tooling"). The verifier exists in @chief-clancy/dev
+but is not yet wired into local-mode preflight — today the marker is a
+write-side contract, and approval is enforced manually or by workflow
+convention. Once the verifier lands, mismatches will refuse to run.
 ```
 
 ### AFK Mode (autonomous batch)
