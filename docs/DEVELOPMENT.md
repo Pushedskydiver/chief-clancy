@@ -260,9 +260,9 @@ Clancy runs three active process rules (P1-P3). Each has a target ownership mode
 
 ### P1 — spec grilling + upstream research
 
-- **Owner (target):** `FileChanged` hook → reminder injection. Not yet wired.
-- **Trigger:** write to any `focus.md`.
-- **Mechanism (target):** reminder-level, not gate-level. Claude Code hooks cannot spawn subagents directly; the hook injects `additionalContext` that Claude sees on the next turn and acts on. Escalation path: wrap grill invocation as an MCP tool.
+- **Owner (target):** `PostToolUse` hook on file-writing tools → reminder injection. Not yet wired.
+- **Trigger:** completion of a `Write` / `Edit` / `MultiEdit` that writes any `focus.md`.
+- **Mechanism (target):** reminder-level, not gate-level. Claude Code hooks cannot spawn subagents directly; the `PostToolUse` hook injects `additionalContext` that Claude sees on the next turn and acts on. Escalation path: wrap grill invocation as an MCP tool.
 
 Applies to new specs, ruleset drafts, PR-level specs for non-trivial PRs, and rationale docs. The writer spawns a grill-subagent — same writer-≠-reviewer discipline as the DA step of the Review Gate above, scoped to specs instead of PRs. The subagent iterates until findings are nit-picks. P1 covers both limbs: adversarial review of the draft and upstream research into prior art. See [GLOSSARY.md](GLOSSARY.md) "Spec grilling".
 
@@ -303,7 +303,7 @@ Clancy has four non-code persistence surfaces: repo docs, `focus.md` (introduced
 1. **Each fact has exactly one home.** Write it there; nowhere else.
 2. **Other surfaces reference facts via pointers (links), not copies.** Example: `PROGRESS.md` says _"Session N landed 8 decisions — see `focus.md`"_, not the decision content itself.
 3. **When a fact's home changes** (e.g., a `focus.md` decision stabilises and promotes to a repo doc), update pointers and delete the old copy in the same commit. No lingering duplicates.
-4. **The memory index's "Deleted — content moved to repo docs" section is the template.** Generalise it to all cross-surface moves — see `MEMORY.md` for the worked example.
+4. **The memory index's "Deleted — content moved to repo docs" section is the template.** Generalise it to all cross-surface moves. "Memory" here refers to the external Claude Code memory surface (under `~/.claude/projects/`), not a tracked repo file — the worked example lives there, not in the repo.
 
 ---
 
