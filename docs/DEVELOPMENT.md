@@ -252,6 +252,61 @@ The self-review checklist is a **living document** — when CodeRabbit catches s
 
 ---
 
+## Process rules
+
+Clancy runs three active process rules (P1-P3). Each has a target ownership model — a stated owner, trigger, and mechanism — not "the author should remember to do X". Practices that rely on human remembrance decay fast under cognitive load.
+
+**Current status (2026-04-15): P1 and P2 are adopted as reader-discipline; the hook and CI-gate listed as their eventual owners are planned, not yet wired. P3 is human-initiated by design and runs today.** The sections below describe the target model. Until the automation lands, contributors apply P1 and P2 by hand and reviewers flag omissions.
+
+### P1 — spec grilling + upstream research
+
+- **Owner (target):** `FileChanged` hook → reminder injection. Not yet wired.
+- **Trigger:** write to any `focus.md`.
+- **Mechanism (target):** reminder-level, not gate-level. Claude Code hooks cannot spawn subagents directly; the hook injects `additionalContext` that Claude sees on the next turn and acts on. Escalation path: wrap grill invocation as an MCP tool.
+
+Applies to new specs, ruleset drafts, PR-level specs for non-trivial PRs, and rationale docs. The writer spawns a grill-subagent — same writer-≠-reviewer discipline as the DA step of the Review Gate above, scoped to specs instead of PRs. The subagent iterates until findings are nit-picks. P1 covers both limbs: adversarial review of the draft and upstream research into prior art. See [GLOSSARY.md](GLOSSARY.md) "Spec grilling".
+
+### P2 — one `focus.md` per active workstream
+
+- **Owner (target):** CI gate. Not yet wired.
+- **Trigger:** PR creation.
+- **Mechanism (target):** genuine gate — file-existence check in the workstream directory.
+
+The `focus.md` convention is introduced by this doc; there are no `focus.md` files in the repo yet. The first workstream to adopt this creates the first one. One `focus.md` per active workstream; no PR without one (once the gate lands). The file records active decisions and open questions for that workstream; once decisions stabilise, they promote into repo docs per State-surface ownership below.
+
+### P3 — overnight agent runs for mechanical work
+
+- **Owner:** ad-hoc, Alex-initiated.
+- **Trigger:** Alex decides a refactor is mechanical enough.
+- **Mechanism:** human initiates; Claude executes; pre-push quality suite + human PR review remain non-negotiable.
+
+**First-of-kind P3 runs are supervised** — Alex watches, doesn't sleep. Repeat runs of a known-good pattern may run unsupervised; promotion from supervised → unsupervised is Alex's judgment call, not a counted threshold.
+
+---
+
+## State-surface ownership
+
+Clancy has four non-code persistence surfaces: repo docs, `focus.md` (introduced by the P2 rule above — not yet in use), `PROGRESS.md`, and memory. The question is not "which wins when they disagree" (precedence) — it's "which is home" (per-field ownership). These surfaces record different kinds of things; ranking them is a category error. When duplicates are found, the home-surface content is authoritative; delete the duplicate elsewhere and replace with a pointer.
+
+### Per-field ownership
+
+| Fact kind                                                | Home                                 | Rationale                                             |
+| -------------------------------------------------------- | ------------------------------------ | ----------------------------------------------------- |
+| Stable rules, conventions, architecture                  | Repo docs (`docs/*.md`, `CLAUDE.md`) | PR-reviewed, versioned, authoritative                 |
+| Active-workstream decisions + rationale                  | `focus.md` (per workstream)          | Where decisions are made                              |
+| Session state (what shipped, what's next, handoff)       | `PROGRESS.md`                        | Session handoff artefact; read first on session start |
+| Cross-project facts (user role, feedback, external refs) | Memory                               | Cross-session; verify-first on recall                 |
+| Code invariants + behaviour                              | Code + tests                         | Docs describe; code enforces                          |
+
+### Anti-duplication rules
+
+1. **Each fact has exactly one home.** Write it there; nowhere else.
+2. **Other surfaces reference facts via pointers (links), not copies.** Example: `PROGRESS.md` says _"Session N landed 8 decisions — see `focus.md`"_, not the decision content itself.
+3. **When a fact's home changes** (e.g., a `focus.md` decision stabilises and promotes to a repo doc), update pointers and delete the old copy in the same commit. No lingering duplicates.
+4. **The memory index's "Deleted — content moved to repo docs" section is the template.** Generalise it to all cross-surface moves — see `MEMORY.md` for the worked example.
+
+---
+
 ## Versioning
 
 | Package                  | Initial version | Current (2026-04-09) | Rationale                                      |

@@ -82,6 +82,8 @@ For Stop-the-Line, Surface Assumptions, NOTICED BUT NOT TOUCHING, Prove-It Patte
 - **Before commenting on a PR:** read `docs/DA-REVIEW.md`.
 - **Before opening a PR:** read `docs/SELF-REVIEW.md`.
 - **Before making a design decision:** read `docs/RATIONALIZATIONS.md` and `docs/DEVELOPMENT.md` "Review Gate".
+- **Before proposing a process change or a rule promotion:** read `docs/DEVELOPMENT.md` "Process rules".
+- **When surfaces (`focus.md` / `PROGRESS.md` / memory) appear to disagree:** read `docs/DEVELOPMENT.md` "State-surface ownership".
 - **Before writing a commit message:** read `docs/GIT.md`.
 - **Before writing tests:** read `docs/TESTING.md`.
 - **Before changing code style or adding a new board:** read `docs/CONVENTIONS.md`.
