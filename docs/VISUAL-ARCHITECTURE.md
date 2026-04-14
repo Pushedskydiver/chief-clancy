@@ -248,10 +248,8 @@ flowchart TD
     end
 
     subgraph LocalPreflight["Local Preflight (--from) — current behaviour"]
-        L1["Validate plan path"] -->|Missing| Stop1b["Plan file not found ✗"]
-        L1 --> L3["Git connectivity check"]
-        L3 --> L4["Branch freshness check"]
-        L4 --> LNote["Note: runtime .approved marker/SHA gate\nis deferred — not enforced in preflight today.\nWrite-side contract only; verifier lands in a future PR."]
+        L3["Git repo check (isGitRepo)"] -->|"Not a git repo"| Stop1b["Not inside a git repository ✗"]
+        L3 --> LNote["Wires synthetic config + no-op board.\nNo plan-path validation, no marker check,\nno SHA verification at preflight.\n(Plan file is read later in ticketFetch;\na missing path surfaces as a pipeline error.)"]
     end
 
     P5 --> EpicScan
