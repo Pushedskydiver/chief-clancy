@@ -6,14 +6,14 @@ Set during `/clancy:init` advanced setup, or by editing `.clancy/.env` directly.
 
 Board credentials are **optional**. If `.clancy/.env` has none of the marker vars below, Clancy runs in local mode.
 
-| Board        | Marker var (triggers board detection) | Also required at runtime                               |
-| ------------ | ------------------------------------- | ------------------------------------------------------ |
-| Jira         | `JIRA_BASE_URL`                       | `JIRA_USER`, `JIRA_API_TOKEN`, `JIRA_PROJECT_KEY`      |
-| GitHub       | `GITHUB_TOKEN` + `GITHUB_REPO`        | (token is shared with git-host; repo gates board mode) |
-| Linear       | `LINEAR_API_KEY`                      | `LINEAR_TEAM_ID`                                       |
-| Shortcut     | `SHORTCUT_API_TOKEN`                  | —                                                      |
-| Notion       | `NOTION_DATABASE_ID`                  | `NOTION_TOKEN`                                         |
-| Azure DevOps | `AZDO_ORG`                            | `AZDO_PROJECT`, `AZDO_PAT`                             |
+| Board        | Marker var (triggers board detection) | Also required at runtime                                                     |
+| ------------ | ------------------------------------- | ---------------------------------------------------------------------------- |
+| Jira         | `JIRA_BASE_URL`                       | `JIRA_USER`, `JIRA_API_TOKEN`, `JIRA_PROJECT_KEY`                            |
+| GitHub       | `GITHUB_TOKEN` + `GITHUB_REPO`        | `GITHUB_TOKEN`, `GITHUB_REPO` (both required; token is shared with git-host) |
+| Linear       | `LINEAR_API_KEY`                      | `LINEAR_TEAM_ID`                                                             |
+| Shortcut     | `SHORTCUT_API_TOKEN`                  | —                                                                            |
+| Notion       | `NOTION_DATABASE_ID`                  | `NOTION_TOKEN`                                                               |
+| Azure DevOps | `AZDO_ORG`                            | `AZDO_PROJECT`, `AZDO_PAT`                                                   |
 
 Detection happens first (`@chief-clancy/core`'s `detectBoard()` checks the marker column); schema validation then enforces the full required set. A marker present without its supporting vars fails preflight with a credentials error rather than silently falling through to local mode.
 

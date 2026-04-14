@@ -23,7 +23,7 @@ Setup commands configure Clancy and keep it healthy.
 2. **Choose board** (board path only) — Jira, GitHub Issues, Linear, Shortcut, Notion, or Azure DevOps
 3. **Enter credentials** (board path only) — API keys, project keys, team IDs (stored in `.clancy/.env`)
 4. **Configure filters** (board path only) — label, sprint, status transitions
-5. **Git host** — always asked. Picks up to one of GitHub, GitLab, Bitbucket, Azure DevOps, or Skip. Used for PR creation (board or local)
+5. **Git host** — conditional on board choice. Local mode: the standalone git host question (GitHub / GitLab / Bitbucket / Azure DevOps / Skip) is asked before the universal settings. Jira and Linear: Q2c asks the same question. GitHub Issues: Q2c is skipped because the `GITHUB_TOKEN` collected for the board also covers PR creation. Shortcut, Notion, and Azure DevOps: Q2c is currently skipped — for these boards the git host can be configured later via `/clancy:settings` if PR creation is needed
 6. **Optional roles** — enable Strategist, Planner, or other optional roles via `CLANCY_ROLES`
 7. **Scaffold** — creates `.clancy/` directory, copies runtime scripts, merges CLAUDE.md
 
