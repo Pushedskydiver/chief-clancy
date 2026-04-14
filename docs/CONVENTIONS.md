@@ -127,6 +127,27 @@ These patterns apply to all board adapters (`board/{provider}/`):
 
 ---
 
+## Error Handling
+
+**Return a `Result`-shaped discriminated union for expected failures; `throw` for broken invariants.** `Result` here names a _shape_, not an exported type — there is no shared `Result<T, E>` alias today; each site declares the union inline (a shared alias can land when two or more consumers want to import it). TypeScript has no checked exceptions — a signature that can throw gives no type-level signal. Return-typed failures make failure visible at call sites.
+
+### Rules
+
+- **Return a `Result`-shaped discriminated union** for expected domain failures — not found, unauthorised, validation fail, parse error, network failure, conflict; anything the caller should meaningfully handle.
+- **`throw` only for:**
+  - Programmer bugs / invariant violations — impossible states, exhaustiveness failures, contract violations. Fail fast, loudly.
+  - Unrecoverable conditions — out-of-memory, corrupted state; anywhere the caller's only sensible response is to crash.
+- **Pick ONE Result shape and enforce it.** House shape: `{ ok: true, ...data } | { ok: false, error: { kind: '<tag>', ...context } }`. The `error` channel is a tagged discriminated union, not a bare string. No mixing with `{ success, ... }` or library types.
+- **Default to an opaque-unknown kind for uncategorised failures.** Recommended shape: `{ kind: 'unknown'; message: string; cause?: unknown }`. No shared type alias today; introduce one the first time two or more call-sites want to import it. Ergonomically close to a string but on a typed chassis — widening later adds a variant; it never devolves into string parsing.
+- **Don't design the taxonomy upfront.** New sites start with `kind: 'unknown'`. Promote to a named variant (`kind: 'not-found'`, `kind: 'validation'`, `kind: 'network'`) the first time a caller wants to branch on category — not before.
+- **Don't wrap `throw` in a `Result` shape defensively.** A function that genuinely cannot fail in its domain should return `T`, not an `{ ok: true }` union with no reachable failure. Result plumbing without a real failure channel is noise.
+
+### Current-shape baseline and migration
+
+The codebase today uses `{ ok: false, error: string }` in many sites — `packages/core/src/types/remote.ts` and the looser `PingResult` (`packages/core/src/types/board.ts:52`, `{ ok: boolean; error?: string }`) consumed by every board adapter's ping. Pipeline phases in `packages/dev/src/pipeline/` vary today (`error`, `reason`, or bare `ok` on failure). One outlier `{ success: false, error: { message } }` lives in `packages/core/src/board/detect-board.ts:33`. **New code uses the tagged-union shape above; existing sites migrate opportunistically when touched.** No forced-march refactor.
+
+---
+
 ## Naming Conventions
 
 - **Files:** kebab-case (`fetch-ticket.ts`, `env-parser.ts`)
