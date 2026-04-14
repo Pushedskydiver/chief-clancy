@@ -270,9 +270,13 @@ Applies to new specs, ruleset drafts, PR-level specs for non-trivial PRs, and ra
 
 - **Owner (target):** CI gate. Not yet wired.
 - **Trigger:** PR creation.
-- **Mechanism (target):** genuine gate — file-existence check in the workstream directory.
+- **Mechanism (target):** genuine gate — file-existence check on the glob `focus.md` OR `workstreams/*/focus.md`. At least one must resolve.
 
-The `focus.md` convention is introduced by this doc; there are no `focus.md` files in the repo yet. The first workstream to adopt this creates the first one. One `focus.md` per active workstream; no PR without one (once the gate lands). The file records active decisions and open questions for that workstream; once decisions stabilise, they promote into repo docs per State-surface ownership below.
+The `focus.md` convention is introduced by this doc; there are no `focus.md` files in the repo yet.
+
+**Location — start at repo root, migrate on concurrency.** The first workstream creates `focus.md` at the repo root (peer to `CLAUDE.md` and `PROGRESS.md` — see the State-surface table below). This matches the established `program.md` prior art from Karpathy's autoresearch loop cited in the original P2 design. **If a second workstream opens concurrently, both move to `workstreams/<id>/focus.md` in the same PR** — where `<id>` is a kebab-case identifier for the workstream. The CI-gate glob covers both layouts from day one, so the migration never leaves the repo in a gateless state.
+
+One `focus.md` per active workstream; no PR without one (once the gate lands). The file records active decisions and open questions for that workstream; once decisions stabilise, they promote into repo docs per State-surface ownership below. When a workstream completes, delete the file (or, if under `workstreams/<id>/`, delete the subdirectory) in the same PR that promotes the final decisions — no lingering empty scaffolding.
 
 ### P3 — overnight agent runs for mechanical work
 
@@ -286,17 +290,17 @@ The `focus.md` convention is introduced by this doc; there are no `focus.md` fil
 
 ## State-surface ownership
 
-Clancy has four non-code persistence surfaces: repo docs, `focus.md` (introduced by the P2 rule above — not yet in use), `PROGRESS.md`, and memory. The question is not "which wins when they disagree" (precedence) — it's "which is home" (per-field ownership). These surfaces record different kinds of things; ranking them is a category error. When duplicates are found, the home-surface content is authoritative; delete the duplicate elsewhere and replace with a pointer.
+Clancy has four non-code persistence surfaces: repo docs, `focus.md` (introduced by the P2 rule above — lives at repo root until a second concurrent workstream triggers migration to `workstreams/<id>/focus.md`; not yet in use), `PROGRESS.md`, and memory. The question is not "which wins when they disagree" (precedence) — it's "which is home" (per-field ownership). These surfaces record different kinds of things; ranking them is a category error. When duplicates are found, the home-surface content is authoritative; delete the duplicate elsewhere and replace with a pointer.
 
 ### Per-field ownership
 
-| Fact kind                                                | Home                                 | Rationale                                             |
-| -------------------------------------------------------- | ------------------------------------ | ----------------------------------------------------- |
-| Stable rules, conventions, architecture                  | Repo docs (`docs/*.md`, `CLAUDE.md`) | PR-reviewed, versioned, authoritative                 |
-| Active-workstream decisions + rationale                  | `focus.md` (per workstream)          | Where decisions are made                              |
-| Session state (what shipped, what's next, handoff)       | `PROGRESS.md`                        | Session handoff artefact; read first on session start |
-| Cross-project facts (user role, feedback, external refs) | Memory                               | Cross-session; verify-first on recall                 |
-| Code invariants + behaviour                              | Code + tests                         | Docs describe; code enforces                          |
+| Fact kind                                                | Home                                                                     | Rationale                                                       |
+| -------------------------------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| Stable rules, conventions, architecture                  | Repo docs (`docs/*.md`, `CLAUDE.md`)                                     | PR-reviewed, versioned, authoritative                           |
+| Active-workstream decisions + rationale                  | `focus.md` at repo root (or `workstreams/<id>/focus.md` once concurrent) | Where decisions are made; see P2 above for location / migration |
+| Session state (what shipped, what's next, handoff)       | `PROGRESS.md`                                                            | Session handoff artefact; read first on session start           |
+| Cross-project facts (user role, feedback, external refs) | Memory                                                                   | Cross-session; verify-first on recall                           |
+| Code invariants + behaviour                              | Code + tests                                                             | Docs describe; code enforces                                    |
 
 ### Anti-duplication rules
 
