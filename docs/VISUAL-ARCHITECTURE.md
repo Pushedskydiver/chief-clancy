@@ -647,7 +647,7 @@ flowchart TD
 
 ### Approve-plan flow
 
-`/clancy:approve-plan` resolves its target in one of two shapes. When given a board ticket key it runs the board-transport flow (label swap, optional status transition). When given a plan-file stem (or path) it writes a sibling `.approved` marker file containing the SHA-256 of the plan file and an `approved_at` timestamp. That marker is the **gate** `/clancy:implement --from` checks before applying any plan.
+`/clancy:approve-plan` resolves its target in one of two shapes. When given a board ticket key it runs the board-transport flow (label swap, optional status transition). When given a plan-file stem (or path) it writes a sibling `.approved` marker file containing the SHA-256 of the plan file and an `approved_at` timestamp. Enforcement at implement time is partial today: batch mode (`--from <dir> --afk`) filters by marker **existence** (skips unapproved plans), single-plan mode does not check the marker, and SHA-256 verification is deferred in both modes.
 
 ```mermaid
 flowchart TD
@@ -677,7 +677,7 @@ flowchart TD
     style WriteMarker stroke:#1565c0,stroke-width:2px
 ```
 
-**Runtime enforcement is currently deferred.** Approve-plan writes the marker correctly via `O_EXCL`; no code in the `/clancy:implement --from` execution path reads it today. The verifier `checkApprovalStatus` exists at `packages/dev/src/lifecycle/plan-file/plan-file.ts:144` but has no pipeline callers. Until the verifier is wired, the marker is a write-side contract only — re-hashing and mismatch-refusal happen by workflow convention (human or Claude Code reads the marker before applying the plan), not at runtime.
+**Runtime enforcement is split.** Batch mode (`--from <dir> --afk`) DOES check marker existence — `runImplementBatch` in `packages/terminal/src/runner/implement/batch.ts` skips plans without a sibling `.approved` file. Single-plan mode (`--from <file>`) does not check the marker at all. **SHA-256 verification is deferred everywhere** — the verifier `checkApprovalStatus` at `packages/dev/src/lifecycle/plan-file/plan-file.ts:144` has no pipeline callers. Hash drift (plan edited after approval) is caught only by workflow convention today — human or Claude Code reads the marker and refuses to apply on mismatch.
 
 ---
 

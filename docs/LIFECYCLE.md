@@ -175,14 +175,19 @@ Owned by the **Planner** virtual role (see [docs/roles/PLANNER.md](roles/PLANNER
 
 👤 Review + merge the PR
 
-Note: the sibling `.approved` marker is a write-side contract today.
-Neither single-plan (`--from <file>`) nor batch (`--from <dir> --afk`)
-modes check the marker or validate its SHA-256 at runtime — the
-verifier `checkApprovalStatus` exists in @chief-clancy/dev but is
-unused in the pipeline. Approval is enforced manually or by workflow
-convention (human or Claude Code reads the marker before applying).
-See approve-plan.md "Marker is the gate for future implementation
-tooling" — a future PR will wire the runtime gate.
+Marker enforcement today is split:
+  - Batch mode (`--from <dir> --afk`): filters by marker EXISTENCE —
+    plans without a sibling `.approved` file are skipped with a
+    warning (runImplementBatch + listPlanFiles in
+    packages/terminal/src/runner/implement/batch.ts).
+  - Single-plan mode (`--from <file>`): no marker check at all — any
+    plan file passed via --from runs.
+  - SHA-256 hash verification: NOT wired in either mode. The verifier
+    checkApprovalStatus exists in @chief-clancy/dev but has no pipeline
+    callers. Hash drift (plan edited after approval) is caught only by
+    workflow convention (human or Claude Code reads the marker before
+    applying). See approve-plan.md "Marker is the gate for future
+    implementation tooling" — SHA verification lands in a future PR.
 ```
 
 ### AFK Mode (autonomous batch)

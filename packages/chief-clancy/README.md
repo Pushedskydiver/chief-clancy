@@ -30,7 +30,7 @@ Clancy scaffolds slash commands, hooks, and board integrations into your Claude 
 3. **Scan:** `/clancy:map-codebase`
 4. **Draft:** `/clancy:brief --from outline.md` → `/clancy:plan --from <brief>` → `/clancy:approve-plan <plan>` (writes a `.approved` marker file — a write-side contract; a future PR will wire a runtime gate that re-hashes the plan and refuses to run on mismatch)
 5. **Run one plan:** `/clancy:implement --from .clancy/plans/<plan>.md`
-6. **Go AFK:** `/clancy:implement --from .clancy/plans/ --afk` — the workflow spec describes batch-executing plans in the directory. Runtime wiring for directory iteration is deferred; today this flag is handled manually or via Claude Code rather than by the runtime
+6. **Go AFK:** `/clancy:implement --from .clancy/plans/ --afk` — batch-executes every plan in the directory that has a sibling `.approved` marker, naturally sorted. Unapproved plans are skipped with a warning. (Marker SHA-256 verification is deferred — only marker existence is currently checked.)
 
 ## Packages
 
