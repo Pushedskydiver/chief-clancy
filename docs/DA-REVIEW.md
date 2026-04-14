@@ -54,7 +54,9 @@ Before walking the architectural checklists, extract every verifiable claim the 
 - **Named identifier** — function, file path, package, env var, URL (`checkApprovalStatus` exists, `packages/dev/src/foo.ts`)
 - **Wiring assertion** — "X is enforced", "Y gates Z", "A called before B"
 - **Universal quantifier** — "all workflows", "every command", "each package"
-- **Behaviour claim** — "X does Y when Z"
+- **Behaviour claim** — "X does Y when Z".
+  - **Includes external-tool semantics** — how Node resolves `package.json` `exports`, how pnpm links workspace deps, how TypeScript applies path aliases, how Prettier formats tables. Claims about external-tool behaviour must be verified against the tool's documentation, not just inferred from the diff — a natural-language restatement of what a tool does is not evidence it actually does that.
+  - _Caught by Copilot: PR #298 — the Package-export boundary entry said Node `exports` controls "files and symbols", but Node `exports` actually controls import paths (per the Node.js subpath-exports spec); symbol visibility is a separate concern governed by each resolved module's own `export` statements (ES module semantics)._
 - **Structural claim** — diagram node/edge, table cell, architecture statement
 
 **Generate the retrieval query from the extracted claim alone, not the surrounding prose.** Anchoring on the draft's framing re-reads what the prose already said and produces false-agreement. For each claim: form the query from the claim text, run retrieval (grep the identifier, Read the referenced file, enumerate the universal set), compare the result to what the claim asserts, flag any mismatch with a `file:line` citation and the ground-truth snippet.
@@ -84,9 +86,13 @@ After any rewrite that changes a load-bearing model (column order, write orderin
 Run BOTH regexes on every PR:
 
 - **History:** `PR \d+|slice \d|Slice \d|Phase [A-D]|from PR`
-- **Stale-forward:** `deferred to a future|lands in a future|in a subsequent slice|TODO|FIXME|tbd|coming soon|will be added`
+- **Stale-forward:** `deferred to a future|lands in a future|in a subsequent slice|TODO|FIXME|tbd|coming soon|will be added|added by PR|promoted in PR|when Rule \d+|after PR \d+ lands`
 
 Scope: every file touched by the PR PLUS the package READMEs (`packages/*/README.md`). The narrow runtime-only sweep missed a finding in PR #219 — the package READMEs are in scope.
+
+**PR-plan vocabulary in permanent docs is a red flag.** Phrasing like `added-by-PR-N`, `promoted-in-PR-N`, `when-Rule-N-is-promoted`, or `after-Phase-N-lands` style references to in-flight promotion-plan state — fine in promotion tracking docs (`PROMOTION-PLAN.md`, gitignored research notes), but stale-forward inside permanent docs (`GLOSSARY.md`, `CONVENTIONS.md`, `DEVELOPMENT.md`). Either remove the forward-reference (definitions should stand alone) or point at a tracked artifact describing the plan (`PROMOTION-PLAN.md`, an issue, or a PR). _Caught by Copilot: PR #298 — Spec grilling glossary entry and Public API entry both referenced unshipped content via PR-plan / Rule-N phrasing._
+
+_Regex self-match carve-out:_ the new stale-forward tokens appear (in hyphenated / escaped form) inside this paragraph's definitional examples and attributions. Sweeps that land inside this file's own rule text are expected false positives — treat as noise.
 
 ### Test permissiveness audit
 
