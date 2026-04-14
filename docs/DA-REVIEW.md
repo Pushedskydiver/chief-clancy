@@ -6,7 +6,7 @@ This is a **living document** — when CodeRabbit or a downstream review catches
 
 See also: [SELF-REVIEW.md](SELF-REVIEW.md) for line-level accuracy checks (DA owns architectural concerns; self-review owns code-level accuracy), [DEVELOPMENT.md](DEVELOPMENT.md) for the full review gate flow, and [RATIONALIZATIONS.md](RATIONALIZATIONS.md) for the anti-rationalization index — read the Review section before every DA pass.
 
-**Last reviewed:** 2026-04-14
+**Last reviewed:** 2026-04-14 (Step 0 results)
 
 ---
 
@@ -61,7 +61,13 @@ Before walking the architectural checklists, extract every verifiable claim the 
 
 The other Required disciplines below are specialisations: Schema-pair check is claim-extraction where the two sides are paired sections; Post-restructure consistency sweep is re-extraction after a load-bearing edit. Run this pass first — its output feeds the rest.
 
-Baseline catch rate is under measurement on a replay corpus (PRs #291, #283, #278) as of 2026-04-14. _Motivated by PR #291 — 49 findings of which 24 were restatements of the same wrong mental model, all retrieval-addressable._
+Measured on the 35-finding replay corpus (2026-04-14): 65.7% end-to-end recall on retrieval-addressable classes. _Motivated by PR #291 — 49 findings of which 24 were restatements of the same wrong mental model, all retrieval-addressable._
+
+### Wiring-claim direction audit
+
+When an extracted claim asserts absence — "X is NOT wired", "Y is deferred", "no code reads Z", "runtime enforcement is not yet implemented" — grep for callers of X/Y/Z **before** accepting the claim. The corpus measured 43% recall on these negative-proof claims vs 71% on positive-proof claims: reviewers (and hardened DA) are systematically weaker at falsifying "absence" than "presence". The fix is mechanical — the grep takes seconds, and if callers exist, the claim is the defect.
+
+Examples this would have caught: PR #291 R5 fix-overcorrection cluster (7 findings where the doc claimed batch-mode wiring was deferred, but `runImplementBatch` was already implemented in `packages/terminal/src/runner/implement/batch.ts`); PR #291 R5 `--skip-feasibility` "not implemented" claims (runtime honours the flag via `feasibility.ts:67`).
 
 ### Schema-pair check
 
