@@ -179,4 +179,4 @@ Selective brevity for chat output, commit messages, and PR comments — adapted 
 
 ### Rationale
 
-Per the AGENTS.md paper ([arxiv:2602.11988](https://arxiv.org/abs/2602.11988)), context bloat increases inference cost ~20% and degrades task success ~3% via reasoning-token overhead. Per the Brevity Constraints paper, brevity helps SELECTIVELY — universal compression hurts elaboration tasks. Following both: be terse in conversational output, elaborate in reasoning artifacts.
+Reasoning accuracy degrades as input length grows ([Levy et al. 2024, arxiv:2402.14848](https://arxiv.org/abs/2402.14848)) and recall is U-shaped over long context ([Liu et al. 2023, arxiv:2307.03172](https://arxiv.org/abs/2307.03172)) — real evidence for conciseness. Per the Brevity Constraints paper, brevity helps SELECTIVELY — universal compression hurts elaboration tasks. Following both: be terse in conversational output, elaborate in reasoning artifacts.
