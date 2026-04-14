@@ -22,7 +22,7 @@ Decision 5 anti-duplication, this file **does not copy plan content**
 | PR        | Scope                                                                                          | Status     | Link                                                            |
 | --------- | ---------------------------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------- |
 | PR-1      | CLAUDE.md philosophy correction (citation + Pattern-D triggers)                                | ✅ merged  | [#295](https://github.com/Pushedskydiver/chief-clancy/pull/295) |
-| PR0       | This file — promotion-plan pointer + checklist                                                 | 🔄 open    | —                                                               |
+| PR0       | This file — promotion-plan pointer + checklist                                                 | 🔄 open    | [#296](https://github.com/Pushedskydiver/chief-clancy/pull/296) |
 | PR1       | Glossary additions (Spec grilling, boundary terms, public-API reconciliation)                  | ☐ pending  | —                                                               |
 | PR2       | `CONVENTIONS.md` — Rule 12 error-handling tagged-union                                         | ☐ pending  | —                                                               |
 | PR3       | `DEVELOPMENT.md` — Process rules + State-surface ownership (depends on PR-1)                   | ☐ pending  | —                                                               |
