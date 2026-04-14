@@ -133,7 +133,7 @@ These patterns apply to all board adapters (`board/{provider}/`):
 
 ### Rules
 
-- **Return a `Result`-shaped discriminated union** for expected domain failures — not found, unauthorized, validation fail, parse error, network failure, conflict; anything the caller should meaningfully handle.
+- **Return a `Result`-shaped discriminated union** for expected domain failures — not found, unauthorised, validation fail, parse error, network failure, conflict; anything the caller should meaningfully handle.
 - **`throw` only for:**
   - Programmer bugs / invariant violations — impossible states, exhaustiveness failures, contract violations. Fail fast, loudly.
   - Unrecoverable conditions — out-of-memory, corrupted state; anywhere the caller's only sensible response is to crash.
