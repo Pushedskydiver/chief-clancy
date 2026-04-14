@@ -6,7 +6,7 @@ This is a **living document** — when CodeRabbit or a downstream review catches
 
 See also: [SELF-REVIEW.md](SELF-REVIEW.md) for line-level accuracy checks (DA owns architectural concerns; self-review owns code-level accuracy), [DEVELOPMENT.md](DEVELOPMENT.md) for the full review gate flow, and [RATIONALIZATIONS.md](RATIONALIZATIONS.md) for the anti-rationalization index — read the Review section before every DA pass.
 
-**Last reviewed:** 2026-04-13
+**Last reviewed:** 2026-04-14
 
 ---
 
@@ -46,6 +46,22 @@ This is the counterweight to the adversarial search. Both are needed: search adv
 ## Required disciplines (run on every PR)
 
 These disciplines must execute on every non-trivial review. Marking them as "applied" in a checklist is not the same as having actually done them well — see the [headline meta-rationalization](RATIONALIZATIONS.md#headline--the-meta-rationalization) before every pass.
+
+### Claim-extraction pass
+
+Before walking the architectural checklists, extract every verifiable claim the diff makes about the codebase and verify each one against ground truth. A claim is any prose or code assertion that can be proven false by reading another file. Five buckets (straddles are fine — extract under every bucket that fits):
+
+- **Named identifier** — function, file path, package, env var, URL (`checkApprovalStatus` exists, `packages/dev/src/foo.ts`)
+- **Wiring assertion** — "X is enforced", "Y gates Z", "A called before B"
+- **Universal quantifier** — "all workflows", "every command", "each package"
+- **Behaviour claim** — "X does Y when Z"
+- **Structural claim** — diagram node/edge, table cell, architecture statement
+
+**Generate the retrieval query from the extracted claim alone, not the surrounding prose.** Anchoring on the draft's framing re-reads what the prose already said and produces false-agreement. For each claim: form the query from the claim text, run retrieval (grep the identifier, Read the referenced file, enumerate the universal set), compare the result to what the claim asserts, flag any mismatch with a `file:line` citation and the ground-truth snippet.
+
+The other Required disciplines below are specialisations: Schema-pair check is claim-extraction where the two sides are paired sections; Post-restructure consistency sweep is re-extraction after a load-bearing edit. Run this pass first — its output feeds the rest.
+
+Baseline catch rate is under measurement on a replay corpus (PRs #291, #283, #278) as of 2026-04-14. _Motivated by PR #291 — 49 findings of which 24 were restatements of the same wrong mental model, all retrieval-addressable._
 
 ### Schema-pair check
 
