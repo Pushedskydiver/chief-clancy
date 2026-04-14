@@ -1,6 +1,6 @@
 # Clancy
 
-**Autonomous, board-driven development for Claude Code.**
+**Autonomous development for Claude Code — driven by your Kanban board, or by local plan files.**
 
 [![npm](https://img.shields.io/npm/v/chief-clancy?style=for-the-badge&color=cb3837)](https://www.npmjs.com/package/chief-clancy) [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](https://github.com/Pushedskydiver/chief-clancy/blob/main/LICENSE)
 
@@ -15,12 +15,22 @@ Clancy scaffolds slash commands, hooks, and board integrations into your Claude 
 
 ## How it works
 
+**With a board:**
+
 1. **Install:** `npx chief-clancy` — choose global or local install
-2. **Configure:** `/clancy:init` — choose your board, enter credentials
+2. **Configure:** `/clancy:init` — connect your board, enter credentials
 3. **Scan:** `/clancy:map-codebase` — 5 parallel agents document your codebase
 4. **Run:** `/clancy:implement` — pick up one ticket, implement, create PR
-5. **Or use local plans:** `/clancy:implement --from plan.md` — execute a plan file without board credentials
-6. **Go AFK:** `/clancy:autopilot` — loop through your backlog unattended
+5. **Go AFK:** `/clancy:autopilot` — loop through your backlog unattended
+
+**Without a board — local plan-driven flow:**
+
+1. **Install:** `npx chief-clancy`
+2. **Configure:** `/clancy:init` — answer "No" when asked about a board. When prompted for optional roles, enable **both Strategist and Planner** — the local flow uses `/clancy:brief` and `/clancy:plan`, which only install when their roles are enabled.
+3. **Scan:** `/clancy:map-codebase`
+4. **Draft:** `/clancy:brief --from outline.md` → `/clancy:plan --from <brief>` → `/clancy:approve-plan <plan>` (writes a `.approved` marker file — a write-side contract; a future PR will wire a runtime gate that re-hashes the plan and refuses to run on mismatch)
+5. **Run one plan:** `/clancy:implement --from .clancy/plans/<plan>.md`
+6. **Go AFK:** `/clancy:implement --from .clancy/plans/ --afk` — batch-executes every plan in the directory that has a sibling `.approved` marker, naturally sorted. Unapproved plans are skipped with a warning. (Marker SHA-256 verification is deferred — only marker existence is currently checked.)
 
 ## Packages
 

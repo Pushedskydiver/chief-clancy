@@ -2,19 +2,19 @@
 
 Three Claude Code workflow tools — different philosophies, different sweet spots.
 
-|                       | [Clancy](https://github.com/Pushedskydiver/clancy)                        | [GSD](https://github.com/gsd-build/get-shit-done)    | [PAUL](https://github.com/ChristopherKahler/paul)          |
-| --------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------- |
-| **Purpose**           | Autonomous ticket implementation                                          | Structured project phases                            | In-session efficiency                                      |
-| **Board integration** | Jira, GitHub Issues, Linear, Shortcut, Notion, Azure DevOps               | None                                                 | None                                                       |
-| **Roles**             | Strategist¹, Planner¹, Implementer, Reviewer, Setup                       | Single workflow (discuss → plan → build → verify)    | Plan-Apply-Unify loop                                      |
-| **Runtime support**   | Claude Code                                                               | Claude Code, OpenCode, Gemini CLI, Codex             | Claude Code                                                |
-| **Automation level**  | Fully autonomous (AFK loop with verification gates)                       | Semi-autonomous (approve roadmap, then walk away)    | Human-driven                                               |
-| **Quality gates**     | Verification gate (lint/test/typecheck), self-healing retry, branch guard | Verification after each phase                        | BDD acceptance criteria                                    |
-| **Context loading**   | All docs on every ticket, PostCompact re-injection                        | Fresh subagent per phase, main session stays lean    | In-session by default, subagents for bounded research only |
-| **Token usage**       | Heavy (fresh session per ticket)                                          | Moderate (subagents per phase, main session ~30-40%) | Lean (avoids subagent cold-starts)                         |
-| **Crash recovery**    | Lock file + resume detection + PR retry                                   | None built-in                                        | State files for session resumption                         |
-| **Pipeline labels**   | 3-stage lifecycle (brief → plan → build)                                  | None                                                 | None                                                       |
-| **Setup**             | `npx chief-clancy`                                                        | `npx get-shit-done-cc@latest`                        | `npx paul-framework`                                       |
+|                       | [Clancy](https://github.com/Pushedskydiver/chief-clancy)                                                                   | [GSD](https://github.com/gsd-build/get-shit-done)    | [PAUL](https://github.com/ChristopherKahler/paul)          |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------- |
+| **Purpose**           | Autonomous ticket or local-plan implementation                                                                             | Structured project phases                            | In-session efficiency                                      |
+| **Board integration** | Optional — Jira, GitHub Issues, Linear, Shortcut, Notion, Azure DevOps, or no board (local plan files in `.clancy/plans/`) | None                                                 | None                                                       |
+| **Roles**             | Strategist¹, Planner¹, Implementer, Reviewer, Setup                                                                        | Single workflow (discuss → plan → build → verify)    | Plan-Apply-Unify loop                                      |
+| **Runtime support**   | Claude Code                                                                                                                | Claude Code, OpenCode, Gemini CLI, Codex             | Claude Code                                                |
+| **Automation level**  | Fully autonomous (AFK loop with verification gates)                                                                        | Semi-autonomous (approve roadmap, then walk away)    | Human-driven                                               |
+| **Quality gates**     | Verification gate (lint/test/typecheck), self-healing retry, branch guard                                                  | Verification after each phase                        | BDD acceptance criteria                                    |
+| **Context loading**   | All docs on every ticket, PostCompact re-injection                                                                         | Fresh subagent per phase, main session stays lean    | In-session by default, subagents for bounded research only |
+| **Token usage**       | Heavy (fresh session per ticket)                                                                                           | Moderate (subagents per phase, main session ~30-40%) | Lean (avoids subagent cold-starts)                         |
+| **Crash recovery**    | Lock file + resume detection + PR retry                                                                                    | None built-in                                        | State files for session resumption                         |
+| **Pipeline labels**   | 3-stage lifecycle (brief → plan → build)                                                                                   | None                                                 | None                                                       |
+| **Setup**             | `npx chief-clancy`                                                                                                         | `npx get-shit-done-cc@latest`                        | `npx paul-framework`                                       |
 
 ¹ **Strategist** and **Planner** are virtual roles. Their slash commands ship in the standalone packages [`@chief-clancy/brief`](../packages/brief/) and [`@chief-clancy/plan`](../packages/plan/) and can be installed independently of the full pipeline. See [docs/roles/STRATEGIST.md](roles/STRATEGIST.md) and [docs/roles/PLANNER.md](roles/PLANNER.md).
 
@@ -22,21 +22,21 @@ Three Claude Code workflow tools — different philosophies, different sweet spo
 
 ## When to use Clancy
 
-You have a ticket board (Jira, GitHub Issues, Linear, Shortcut, Notion, or Azure DevOps) with well-scoped, assigned tickets and you want Claude to work through them autonomously while you do other things.
+You have either (a) a ticket board with well-scoped, assigned tickets, or (b) a loose outline of work you want to decompose into local plan files and implement one at a time. Clancy runs either path autonomously while you do other things.
 
 Clancy is the right tool if:
 
-- Your team already works from a backlog
-- You want minimal human involvement per ticket
+- You work from a backlog (team board) **or** from local plan files without any board
+- You want minimal human involvement per unit of work
 - You want the full pipeline: strategy briefs → planning → implementation → review
 - You're comfortable with autonomous git operations (branch, PR, epic completion)
 - You need crash recovery and verification gates for reliable AFK mode
 
 Clancy is the wrong tool if:
 
-- You don't use a ticket board
 - You want to review and approve each implementation step
-- Token cost is a hard constraint — each ticket is a fresh session that reads your full docs
+- You want Clancy to invent the target itself — it assumes either a ticket or an approved plan file as input
+- Token cost is a hard constraint — each unit of work is a fresh session that reads your full docs
 
 ---
 

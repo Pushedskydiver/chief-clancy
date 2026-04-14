@@ -2,28 +2,35 @@
 
 ## Overview
 
-Clancy is a monorepo of four npm packages that install Claude Code slash commands, workflows, hooks, and runtime scripts into a user's project. Board logic is implemented in TypeScript ESM modules. Hooks are pre-built CommonJS bundles. Commands and workflows are markdown.
+Clancy is a monorepo of seven npm packages that install Claude Code slash commands, workflows, hooks, and runtime scripts into a user's project. Board logic is implemented in TypeScript ESM modules. Hooks are pre-built CommonJS bundles. Commands and workflows are markdown.
 
 > For visual diagrams of packages, flows, and board interactions, see [VISUAL-ARCHITECTURE.md](VISUAL-ARCHITECTURE.md).
 
 ## Packages
 
 ```
-chief-clancy               — CLI wrapper (npx chief-clancy)
+chief-clancy                  — CLI wrapper (npx chief-clancy)
   └── @chief-clancy/terminal  — installer, runner, hooks, commands, agents
-        └── @chief-clancy/core   — board integrations, pipeline, lifecycle, schemas
+        └── @chief-clancy/core   — board integrations, schemas, shared utilities
 
-@chief-clancy/brief        — standalone brief generator (no core/terminal deps)
+Standalone packages (own npx entry points, install independently of terminal):
+@chief-clancy/scan            — no package deps
+@chief-clancy/brief           — depends on scan
+@chief-clancy/plan            — depends on scan
+@chief-clancy/dev             — depends on core + scan (ticket executor runtime)
 ```
 
-**Dependency direction: core <- terminal <- chief-clancy.** Brief is standalone (no deps on core or terminal). No reverse imports. Enforced by `eslint-plugin-boundaries`.
+**Dependency direction: core ← terminal ← chief-clancy.** The standalone packages each have their own `npx @chief-clancy/{pkg}` entry point. `scan` has no package deps; `brief` and `plan` depend on `scan`; `dev` depends on `core` and `scan`. No reverse imports. Enforced by `eslint-plugin-boundaries`.
 
-| Package                  | Purpose                                                            | Published      |
-| ------------------------ | ------------------------------------------------------------------ | -------------- |
-| `chief-clancy`           | Thin bin wrapper — resolves paths, wires `runInstall`              | Yes (unscoped) |
-| `@chief-clancy/terminal` | Installer, hooks, runners, slash commands, agents                  | Yes            |
-| `@chief-clancy/core`     | Board abstractions, pipeline phases, lifecycle modules, schemas    | Yes            |
-| `@chief-clancy/brief`    | Standalone brief generator — slash command + lightweight installer | Yes            |
+| Package                  | Purpose                                                                                               | Published      |
+| ------------------------ | ----------------------------------------------------------------------------------------------------- | -------------- |
+| `chief-clancy`           | Thin bin wrapper — resolves paths, wires `runInstall`                                                 | Yes (unscoped) |
+| `@chief-clancy/terminal` | Installer, hooks, runners, slash commands, agents                                                     | Yes            |
+| `@chief-clancy/core`     | Board abstractions, schemas (Zod/mini), shared utilities (cache, http, git-ops, env-parser)           | Yes            |
+| `@chief-clancy/scan`     | Standalone codebase-scan commands + specialist agents (`/clancy:map-codebase`, `/clancy:update-docs`) | Yes            |
+| `@chief-clancy/brief`    | Standalone brief generator — `/clancy:brief`, `/clancy:approve-brief`, `/clancy:board-setup`          | Yes            |
+| `@chief-clancy/plan`     | Standalone planner — `/clancy:plan`, `/clancy:approve-plan` (writes `.approved` marker in local mode) | Yes            |
+| `@chief-clancy/dev`      | Standalone executor — pipeline phases, lifecycle modules, esbuild runtime bundles for `.clancy/`      | Yes            |
 
 ## Directory Structure
 
@@ -212,6 +219,10 @@ Hooks are CommonJS bundles built by esbuild (`hooks/esbuild.hooks.ts`). They are
 
 ## Role Lifecycle: Planner
 
+Runs on two parallel paths depending on whether the source is a board ticket or a local brief file.
+
+**Board path:**
+
 ```
 Backlog ticket
   |
@@ -226,15 +237,40 @@ Human reviews plan on the board
   +- Rejects (leaves feedback) -> /clancy:plan -> auto-detects feedback, generates improved plan
 ```
 
-Planner and implementer work on separate queues. They never compete for the same tickets.
+**Local path (`--from`):**
+
+```
+Brief file in .clancy/briefs/
+  |
+  v
+/clancy:plan --from {brief} --- read brief -> explore codebase -> generate plan -> write .clancy/plans/{plan-id}.md
+  |
+  v
+Human reviews plan file
+  |
+  +- Approves -> /clancy:approve-plan {plan-stem-or-path}
+  |               -> compute SHA-256 of plan file
+  |               -> write sibling .clancy/plans/{plan-id}.approved marker (sha256= + approved_at=) via O_EXCL
+  |               -> ready for /clancy:implement --from .clancy/plans/{plan-id}.md
+  |
+  +- Leaves feedback -> /clancy:plan --from -> auto-detects feedback, revises plan
+```
+
+The `.approved` marker is a **write-side contract today** — `/clancy:approve-plan` writes it correctly (SHA-256 + timestamp via `O_EXCL`), but runtime enforcement is deferred per `packages/plan/src/workflows/approve-plan.md:412-418`. The verifier function `checkApprovalStatus` exists at `packages/dev/src/lifecycle/plan-file/plan-file.ts:144` but has no callers in the pipeline today. `runLocalMode` in `packages/dev/src/entrypoints/dev.ts:168` runs `--from` plans without checking the marker. Until the verifier is wired, approval is a workflow-level convention — the user (or Claude Code via natural-language instruction) reads the marker and refuses to apply on mismatch.
+
+Planner and implementer work on separate queues (board path) or separate plan-file states (local path). They never compete for the same work.
 
 ## Role Lifecycle: Strategist
+
+Runs on two parallel paths.
+
+**Board path:**
 
 ```
 Vague idea (ticket / text / file)
   |
   v
-/clancy:brief --- parse input -> grill phase -> research -> generate brief -> save to .clancy/briefs/
+/clancy:brief --- parse input -> grill phase -> research -> generate brief -> save to .clancy/briefs/ -> post on ticket
   |
   v
 Human reviews brief
@@ -243,6 +279,24 @@ Human reviews brief
   |
   +- Leaves feedback -> /clancy:brief -> auto-detects feedback, revises brief
 ```
+
+**Local path (`--from`):**
+
+```
+Outline file (any local .md)
+  |
+  v
+/clancy:brief --from {outline} --- parse -> grill -> research -> write .clancy/briefs/{slug}.md
+  |
+  v
+Human reviews brief file
+  |
+  +- Happy -> continue to /clancy:plan --from (no approve-brief step — local path skips ticket creation)
+  |
+  +- Leaves feedback in ## Feedback section -> /clancy:brief --from -> auto-detects feedback, revises brief
+```
+
+Only the board path has `/clancy:approve-brief` (its job is to create tickets on a board). The local path skips that step and goes directly to `/clancy:plan --from` once the brief is satisfactory.
 
 Grill modes: **human grill** (default, interactive Q&A) or **AI grill** (`--afk`, devil's advocate agent interrogates codebase, board, and web autonomously).
 

@@ -2,6 +2,32 @@
 
 Set during `/clancy:init` advanced setup, or by editing `.clancy/.env` directly. Use `/clancy:settings` → "Save as defaults" to save non-credential settings to `~/.clancy/defaults.json` — new projects created with `/clancy:init` will inherit them automatically.
 
+## Local mode (no board)
+
+Board credentials are **optional**. If `.clancy/.env` has none of the marker vars below, Clancy runs in local mode.
+
+| Board        | Marker var (triggers board detection) | Also required at runtime                                                     |
+| ------------ | ------------------------------------- | ---------------------------------------------------------------------------- |
+| Jira         | `JIRA_BASE_URL`                       | `JIRA_USER`, `JIRA_API_TOKEN`, `JIRA_PROJECT_KEY`                            |
+| GitHub       | `GITHUB_TOKEN` + `GITHUB_REPO`        | `GITHUB_TOKEN`, `GITHUB_REPO` (both required; token is shared with git-host) |
+| Linear       | `LINEAR_API_KEY`                      | `LINEAR_TEAM_ID`                                                             |
+| Shortcut     | `SHORTCUT_API_TOKEN`                  | —                                                                            |
+| Notion       | `NOTION_DATABASE_ID`                  | `NOTION_TOKEN`                                                               |
+| Azure DevOps | `AZDO_ORG`                            | `AZDO_PROJECT`, `AZDO_PAT`                                                   |
+
+Detection happens first (`@chief-clancy/core`'s `detectBoard()` checks the marker column); schema validation then enforces the full required set. A marker present without its supporting vars fails preflight with a credentials error rather than silently falling through to local mode.
+
+`/clancy:settings`, `/clancy:doctor`, `/clancy:status`, `/clancy:autopilot`, and `/clancy:review` apply a stricter rule for **Notion and Azure DevOps only**: they require `NOTION_TOKEN` + `NOTION_DATABASE_ID` and `AZDO_ORG` + `AZDO_PROJECT` respectively before treating those providers as configured. `/clancy:init` is the exception — its initial board-detection step uses the core-style single-marker check (`NOTION_DATABASE_ID` alone, `AZDO_ORG` alone) to match runtime behaviour during setup. Jira, GitHub, Linear, and Shortcut detection matches core across every workflow. The stricter Notion/AzDO gate in the five workflows above is deliberate UI safeguarding: their single markers are ambiguous (`NOTION_TOKEN` alone could be orphaned config, `AZDO_ORG` alone doesn't identify a project), so those settings UIs wait for both before offering board-specific actions. Both rules agree in the fully-configured case; they differ only at the edges of partial Notion/AzDO configs.
+
+In local mode:
+
+- `/clancy:brief [--from]`, `/clancy:plan --from`, `/clancy:approve-plan`, `/clancy:implement --from`, `/clancy:status`, `/clancy:doctor` all work without any board credentials. The brief and plan commands require their optional roles (Strategist, Planner) to be enabled — set during `/clancy:init` or via `/clancy:settings`.
+- `/clancy:autopilot` and `/clancy:review` require a board and will stop with a redirect to `/clancy:settings`.
+- Status transitions, board filters, labels, and sprint vars (below) have no effect — they gate on board presence.
+- Git-host credentials (`GITHUB_TOKEN`, `GITLAB_TOKEN`, `BITBUCKET_USER`/`BITBUCKET_TOKEN`, or `AZDO_PAT` when `CLANCY_GIT_PLATFORM=azure`) are still used for PR creation.
+
+Dual-use note: `GITHUB_TOKEN` is both a board credential (paired with `GITHUB_REPO` → GitHub Issues board) and a git-host credential on its own. `AZDO_PAT` is only a required credential for the Azure DevOps board and/or a git-host credential when `CLANCY_GIT_PLATFORM=azure` — it is **not** a detection marker. Disconnecting a board via `/clancy:settings` preserves these tokens for PR creation.
+
 ## Figma MCP
 
 ```

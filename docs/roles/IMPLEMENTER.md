@@ -1,23 +1,25 @@
 # Implementer Role
 
-The implementer is Clancy's core — it picks up tickets from your board and turns them into working code.
+The implementer is Clancy's core — it turns a unit of work into working code. The source can be either a board ticket or a local plan file (`--from <plan.md>`); the rest of the flow is identical.
 
 ## How it works
 
-1. Fetches the highest-priority ticket assigned to you from the implementation queue
-2. Reads core codebase docs in `.clancy/docs/` (STACK, ARCHITECTURE, CONVENTIONS, GIT, DEFINITION-OF-DONE, CONCERNS) and loads additional docs if relevant to the ticket
-3. Creates a feature branch, implements the ticket, writes tests
-4. Commits, pushes the feature branch, and creates a PR (targeting the epic branch for parented tickets, or the base branch for standalone tickets)
+1. Resolves the target — highest-priority ticket from the implementation queue, **or** the plan file passed via `--from`. A sibling `.clancy/plans/{stem}.approved` marker is written by `/clancy:approve-plan` as a convention; runtime enforcement of that gate is deferred (see `approve-plan.md` "Marker is the gate for future implementation tooling") — the verifier function exists in `@chief-clancy/dev` but is not yet wired into local-mode preflight. Until it is, approval is enforced manually or by workflow convention.
+2. Reads core codebase docs in `.clancy/docs/` (STACK, ARCHITECTURE, CONVENTIONS, GIT, DEFINITION-OF-DONE, CONCERNS) and loads additional docs if relevant
+3. Creates a feature branch, implements the work, writes tests
+4. Commits, pushes the feature branch, and creates a PR (targeting the epic branch for parented tickets, or `CLANCY_BASE_BRANCH` otherwise)
 5. Logs the result to `.clancy/progress.txt`
 
 ## Commands
 
-| Command                | What it does                                                                 |
-| ---------------------- | ---------------------------------------------------------------------------- |
-| `/clancy:implement`    | Pick up one ticket, implement it, done                                       |
-| `/clancy:autopilot`    | Loop — processes tickets until the queue is empty or `MAX_ITERATIONS` is hit |
-| `/clancy:autopilot 20` | Same, but override `MAX_ITERATIONS` to 20 for this session                   |
-| `/clancy:dry-run`      | Simulate a run without making changes — shows what would happen              |
+| Command                                | What it does                                                                                    |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `/clancy:implement`                    | Pick up one ticket from the board, implement it, done                                           |
+| `/clancy:implement --from <plan.md>`   | Implement a single approved local plan — no board needed                                        |
+| `/clancy:implement --from <dir> --afk` | Implement every approved plan in the directory sequentially — the local equivalent of autopilot |
+| `/clancy:autopilot`                    | Loop — processes board tickets until the queue is empty or `MAX_ITERATIONS` is hit (board only) |
+| `/clancy:autopilot 20`                 | Same, but override `MAX_ITERATIONS` to 20 for this session                                      |
+| `/clancy:dry-run`                      | Simulate a run without making changes — shows what would happen                                 |
 
 ## Pipeline labels
 
