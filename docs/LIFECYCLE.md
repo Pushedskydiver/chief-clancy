@@ -120,7 +120,9 @@ Owned by the **Planner** virtual role (see [docs/roles/PLANNER.md](roles/PLANNER
    ├─ Want changes? → 👤 re-run /clancy:plan --from or edit directly
    └─ Happy? → 👤 /clancy:approve-plan .clancy/plans/<plan-id>.md
          (writes sibling .approved marker with SHA-256 of the plan file —
-          the gate every local implementation checks)
+          a write-side contract. Batch mode filters by marker existence;
+          single-plan mode does not check it; SHA verification deferred —
+          see the implementation phase note below)
 ```
 
 ---
