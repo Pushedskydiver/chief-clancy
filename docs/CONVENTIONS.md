@@ -144,7 +144,7 @@ These patterns apply to all board adapters (`board/{provider}/`):
 
 ### Current-shape baseline and migration
 
-The codebase today uses `{ ok: false, error: string }` in most sites — `core/src/types/remote.ts`, the looser `PingResult` (`core/src/types/board.ts:52`, `{ ok: boolean; error?: string }`) consumed by every board adapter's ping, and several phases in `dev/src/pipeline/`. One outlier `{ success: false, error: { message } }` lives in `core/src/board/detect-board.ts:33`. **New code uses the tagged-union shape above; existing sites migrate opportunistically when touched.** No forced-march refactor.
+The codebase today uses `{ ok: false, error: string }` in many sites — `core/src/types/remote.ts` and the looser `PingResult` (`core/src/types/board.ts:52`, `{ ok: boolean; error?: string }`) consumed by every board adapter's ping. Pipeline phases in `dev/src/pipeline/` vary today (`error`, `reason`, or bare `ok` on failure). One outlier `{ success: false, error: { message } }` lives in `core/src/board/detect-board.ts:33`. **New code uses the tagged-union shape above; existing sites migrate opportunistically when touched.** No forced-march refactor.
 
 ---
 
