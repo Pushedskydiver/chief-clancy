@@ -26,7 +26,7 @@ Decision 5 anti-duplication, this file **does not copy plan content**
 | PR1       | Glossary additions (Spec grilling, boundary terms, public-API reconciliation)                  | ✅ merged  | [#298](https://github.com/Pushedskydiver/chief-clancy/pull/298) |
 | PR2       | `CONVENTIONS.md` — Rule 12 error-handling tagged-union                                         | ✅ merged  | [#300](https://github.com/Pushedskydiver/chief-clancy/pull/300) |
 | PR3       | `DEVELOPMENT.md` — Process rules + State-surface ownership (depends on PR-1)                   | ✅ merged  | [#301](https://github.com/Pushedskydiver/chief-clancy/pull/301) |
-| PR4       | `core` exports tightening (0.1.x → 0.2.0 semver break + README + wrapper changesets)           | 🔄 open    | [#tbd](#)                                                       |
+| PR4       | `core` exports tightening (0.1.x → 0.2.0 semver break + README + wrapper changesets)           | 🔄 open    | [#302](https://github.com/Pushedskydiver/chief-clancy/pull/302) |
 | _Barrier_ | Folder refactor — first-of-kind P3 supervised (Alex-initiated)                                 | ☐ pending  | —                                                               |
 | PR5       | `CONVENTIONS.md` — Rule 7 + Rule 11 bundled rewrite (after barrier)                            | ☐ pending  | —                                                               |
 | PR6       | `SELF-REVIEW.md` + `DA-REVIEW.md` — line-items per promoted rule                               | ☐ pending  | —                                                               |
