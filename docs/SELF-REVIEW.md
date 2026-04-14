@@ -105,6 +105,9 @@ Workflow `.md` files are as load-bearing as TypeScript — Claude follows them s
 - Was the same fix applied everywhere it's needed? (don't fix helpers but miss test files)
 - Do config options extend defaults rather than replacing them?
 - Do docs reference files that only exist in memory (`~/.claude/projects/`) but not in the repo? Contributors can't see memory files
+- Do markdown links in tracked docs resolve from the GitHub-web reading context? A link to a gitignored path (e.g. `.claude/research/...`) will 404 on github.com even if the file exists locally. Either link to a tracked path, use a plain backtick reference, or explicitly note the path is local-only. _Caught by Copilot: PR #296._
+- When referencing files in prose, do path prefixes match other references to the same file in the same document? (e.g. don't write `CONVENTIONS.md:182` in one paragraph when other paragraphs in the same file use `docs/CONVENTIONS.md`) — grep every file reference in the diff. _Caught by Copilot: PR #296._
+- Are labels/identifiers used as grep anchors unique within the file? (session numbers in PROGRESS.md, heading IDs, PR numbers in status tables — duplicates break `grep`-based navigation.) _Caught by Copilot: PR #296._
 - After renaming a config key or constant, are all references updated? (not just the definition)
 
 ## Lint-staged safety
