@@ -10,10 +10,12 @@ post-Phase-5 (PR7).
 
 Full plan — PR sequence, exact line numbers, verbatim replacement text,
 dependency chains, rationale — lives in
-[`.claude/research/readability/notes.md`](../.claude/research/readability/notes.md)
-under the **"Promotion plan v7 (Session 81, Decision 8, post-grill-v6)"**
-section. Per Decision 5 anti-duplication, this file **does not copy plan
-content** — it points and tracks status.
+`.claude/research/readability/notes.md` under the
+**"Promotion plan v7 (Session 81, Decision 8, post-grill-v6)"**
+section. That notes file exists only in a local Claude Code workspace
+and is not tracked in this repository (`.claude/` is gitignored). Per
+Decision 5 anti-duplication, this file **does not copy plan content**
+— it points and tracks status.
 
 ## Merge status
 
