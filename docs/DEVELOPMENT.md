@@ -290,7 +290,7 @@ One `focus.md` per active workstream; no PR without one (once the gate lands). T
 
 ## State-surface ownership
 
-Clancy has four non-code persistence surfaces: repo docs, `focus.md` (introduced by the P2 rule above — lives at repo root until a second concurrent workstream triggers migration to `workstreams/<id>/focus.md`; not yet in use), `PROGRESS.md`, and memory. The question is not "which wins when they disagree" (precedence) — it's "which is home" (per-field ownership). These surfaces record different kinds of things; ranking them is a category error. When duplicates are found, the home-surface content is authoritative; delete the duplicate elsewhere and replace with a pointer.
+Clancy has four non-code persistence surfaces to reconcile: repo docs, `focus.md` (introduced by the P2 rule above — lives at repo root until a second concurrent workstream triggers migration to `workstreams/<id>/focus.md`; not yet in use), `PROGRESS.md`, and memory. The table below also lists code + tests as the separate enforcement surface for behaviour and invariants — docs describe, code enforces. The question is not "which wins when they disagree" (precedence) — it's "which is home" (per-field ownership). These surfaces record different kinds of things; ranking them is a category error. When duplicates are found, the home-surface content is authoritative; delete the duplicate elsewhere and replace with a pointer.
 
 ### Per-field ownership
 
