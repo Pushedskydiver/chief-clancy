@@ -1,5 +1,16 @@
 # @chief-clancy/terminal
 
+## 0.1.15
+
+### Patch Changes
+
+- [#291](https://github.com/Pushedskydiver/chief-clancy/pull/291) [`7c686cf`](https://github.com/Pushedskydiver/chief-clancy/commit/7c686cffd377c90f3f13e6a52ffce844ba81530f) Thanks [@Pushedskydiver](https://github.com/Pushedskydiver)! - Local-init-flow: board-optional path across the pipeline.
+  - **dev** — guard `detectBoard` crash paths in both `dev.ts` and `loop-setup.ts` so `loadEnv` returns undefined instead of exiting. Only `dev.ts` routes `--from` to `runLocalMode` (the loop entrypoint doesn't handle `--from`). Exit code preserved via `return process.exit(1)` in `main()` on `loadEnv` failure ([#288](https://github.com/Pushedskydiver/chief-clancy/issues/288)).
+  - **terminal** — `/clancy:init` gains a board-optional path with Step 3 board gate, conditional skips for board-specific sections, standalone git-host question (5 options incl. Azure DevOps), local-mode `.env.example` template, local-mode Step 5 enhancement list, and local-mode final output ([#289](https://github.com/Pushedskydiver/chief-clancy/issues/289)). Settings, doctor, help, autopilot, status, and review are now local-mode aware: consistent 6-board detection, new `[B] Connect a board` and `[D] Disconnect board` menu options, doctor gains Shortcut/Notion/AzDO checks, status shows plan inventory gated by the real `.approved` marker, autopilot/review redirect to `/clancy:settings` or `/clancy:implement --from` in local mode ([#290](https://github.com/Pushedskydiver/chief-clancy/issues/290)).
+
+- Updated dependencies [[`7c686cf`](https://github.com/Pushedskydiver/chief-clancy/commit/7c686cffd377c90f3f13e6a52ffce844ba81530f)]:
+  - @chief-clancy/dev@0.3.1
+
 ## 0.1.14
 
 ### Patch Changes
