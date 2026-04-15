@@ -125,7 +125,7 @@ Consumers within a package use deep paths (`~/d/dep-factory/invoke-phase.js`). C
 
 ### Migration state — `core/`
 
-**Barrier-Core landed in `@chief-clancy/core@0.3.0`.** All internal `index.ts` barrels under `src/{types,schemas,shared,board}/` have been deleted; all consumers import from declaration files directly. New `core/` files follow Rule 7 (flat-first, single-file concepts stay flat, **no new internal barrels under `src/{types,schemas,shared,board}/`**). The package-entry `src/index.ts` is the only barrel that remains, and it re-exports per declaration file, not via intermediate barrels.
+**Barrier-Core landed in `@chief-clancy/core@1.0.0`.** All internal `index.ts` barrels under `src/{types,schemas,shared,board}/` have been deleted; all consumers import from declaration files directly. New `core/` files follow Rule 7 (flat-first, single-file concepts stay flat, **no new internal barrels under `src/{types,schemas,shared,board}/`**). The package-entry `src/index.ts` is the only barrel that remains, and it re-exports per declaration file, not via intermediate barrels.
 
 ### Mode is an adapter, not a phase
 
