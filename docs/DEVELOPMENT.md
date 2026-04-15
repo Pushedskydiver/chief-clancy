@@ -266,9 +266,9 @@ Clancy runs three active process rules (P1-P3). Each has a target ownership mode
 
 Applies to new specs, ruleset drafts, PR-level specs for non-trivial PRs, and rationale docs. The writer spawns a grill-subagent — same writer-≠-reviewer discipline as the DA step of the Review Gate above, scoped to specs instead of PRs. The subagent iterates per the [Two-phase grill discipline](#two-phase-grill-discipline) below — discovery rounds until findings converge to nits, then a verification round that confirms the nit-floor. P1 covers both limbs: adversarial review of the draft and upstream research into prior art. See [GLOSSARY.md](GLOSSARY.md) "Spec grilling".
 
-### Two-phase grill discipline
+#### Two-phase grill discipline
 
-_Shared mechanism referenced by P1 + P3 — not a fourth process rule._ Applies to every grill — both P1 spec grills and P3 plan grills. The grill loop is not one kind of thing; it's two:
+_Shared mechanism — referenced by P3 as well as P1._ Applies to every grill — both P1 spec grills and P3 plan grills. The grill loop is not one kind of thing; it's two:
 
 1. **Discovery phase (R1..R_n-1).** Brief: _"find what's wrong."_ Adversarial-creative. Iterate until findings converge to nits. The last discovery round has self-terminating bias — the subagent and the author both want to converge, so the last discovery round is the _least_ independent.
 2. **Verification phase (R_n, final).** Brief: _"confirm or disprove the nit-floor claim."_ Evaluative-skeptical. The incentive target is the done-claim itself, not finding more issues. A distinct round, not "one more discovery pass."
@@ -279,7 +279,7 @@ Without the verification phase, the last discovery round self-certifies — whic
 
 **The verification round must actually fire.** "It would have returned zero" is a rationalization, not a substitute — zero is only evidence when an independent verification prompt produced it.
 
-Pilot evidence — three independent runs, different artefact types: Barrier ([PR #305](https://github.com/Pushedskydiver/chief-clancy/pull/305)) applied the discipline as a final verification DA on a code diff; PR5 ([#306](https://github.com/Pushedskydiver/chief-clancy/pull/306)) and PR6 ([#308](https://github.com/Pushedskydiver/chief-clancy/pull/308)) applied it as plan grills on non-trivial spec drafts. In each case, the verification pass caught defects the discovery loop converged past — self-referential cross-section inconsistencies, stale line-number references, logical contradictions that individual-claim checks missed. One-pass grilling does not produce this signal.
+Pilot evidence — three independent runs, different artifact types: Barrier ([PR #305](https://github.com/Pushedskydiver/chief-clancy/pull/305)) applied the discipline as a final verification DA on a code diff; PR5 ([#306](https://github.com/Pushedskydiver/chief-clancy/pull/306)) and PR6 ([#308](https://github.com/Pushedskydiver/chief-clancy/pull/308)) applied it as plan grills on non-trivial spec drafts. In each case, the verification pass caught defects the discovery loop converged past — self-referential cross-section inconsistencies, stale line-number references, logical contradictions that individual-claim checks missed. One-pass grilling does not produce this signal.
 
 ### P2 — one `focus.md` per active workstream
 
@@ -322,7 +322,7 @@ Clancy has four non-code persistence surfaces to reconcile: repo docs, `focus.md
 | -------------------------------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------- |
 | Stable rules, conventions, architecture                  | Repo docs (`docs/*.md`, `CLAUDE.md`)                                     | PR-reviewed, versioned, authoritative                           |
 | Active-workstream decisions + rationale                  | `focus.md` at repo root (or `workstreams/<id>/focus.md` once concurrent) | Where decisions are made; see P2 above for location / migration |
-| Session state (what shipped, what's next, handoff)       | `PROGRESS.md`                                                            | Session handoff artefact; read first on session start           |
+| Session state (what shipped, what's next, handoff)       | `PROGRESS.md`                                                            | Session handoff artifact; read first on session start           |
 | Cross-project facts (user role, feedback, external refs) | Memory                                                                   | Cross-session; verify-first on recall                           |
 | Code invariants + behaviour                              | Code + tests                                                             | Docs describe; code enforces                                    |
 
