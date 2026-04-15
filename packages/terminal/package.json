@@ -1,6 +1,6 @@
 {
   "name": "@chief-clancy/terminal",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Installer, slash commands, hooks, AFK runner, agents, Claude CLI bridge",
   "author": "Alex Clapperton",
   "license": "MIT",

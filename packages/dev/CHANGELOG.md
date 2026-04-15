@@ -1,5 +1,11 @@
 # @chief-clancy/dev
 
+## 0.4.2
+
+### Patch Changes
+
+- [#315](https://github.com/Pushedskydiver/chief-clancy/pull/315) [`5065bb4`](https://github.com/Pushedskydiver/chief-clancy/commit/5065bb4db08d6b046525e02c6a257c72447d170f) Thanks [@Pushedskydiver](https://github.com/Pushedskydiver)! - Break two pre-existing madge cycles in `packages/dev/src` via shared-module extracts. Extract `resolveBuildLabel` + `DEFAULT_BUILD_LABEL` to `dep-factory/build-label.ts`; extract `PlatformReworkHandlers` + `ReworkCtx` to `lifecycle/rework/rework-types.ts`. No runtime behaviour change.
+
 ## 0.4.1
 
 ### Patch Changes
