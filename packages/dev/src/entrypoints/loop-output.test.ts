@@ -1,12 +1,12 @@
 import type { LoopOutcome } from '../index.js';
-import type { PipelineResult } from '../pipeline/index.js';
+import type { PipelineResult } from '../pipeline/run-pipeline.js';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { sendNotification } from '../notify/index.js';
+import { sendNotification } from '../notify/notify.js';
 import { displayOutcome, notifyIfConfigured } from './loop-output.js';
 
-vi.mock('../notify/index.js', () => ({
+vi.mock('../notify/notify.js', () => ({
   sendNotification: vi.fn().mockResolvedValue(undefined),
 }));
 

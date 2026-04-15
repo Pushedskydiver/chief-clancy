@@ -12,18 +12,18 @@ import type {
   PrCreationResult,
   RemoteInfo,
 } from '@chief-clancy/core/types/remote.js';
-import type { FetchFn } from '~/d/lifecycle/pr-creation/index.js';
-import type { ProgressFs } from '~/d/lifecycle/progress/index.js';
+import type { FetchFn } from '~/d/lifecycle/pr-creation/pr-creation.js';
+import type { ProgressFs } from '~/d/lifecycle/progress/progress.js';
 
-import { resolveCommitType } from '~/d/lifecycle/commit-type/index.js';
-import { gatherChildEntries } from '~/d/lifecycle/epic/index.js';
+import { resolveCommitType } from '~/d/lifecycle/commit-type/commit-type.js';
+import { gatherChildEntries } from '~/d/lifecycle/epic/epic.js';
 import {
   computeDeliveryOutcome,
   progressForOutcome,
-} from '~/d/lifecycle/outcome/index.js';
-import { attemptPrCreation } from '~/d/lifecycle/pr-creation/index.js';
-import { appendProgress } from '~/d/lifecycle/progress/index.js';
-import { buildEpicPrBody } from '~/d/lifecycle/pull-request/pr-body/index.js';
+} from '~/d/lifecycle/outcome/outcome.js';
+import { attemptPrCreation } from '~/d/lifecycle/pr-creation/pr-creation.js';
+import { appendProgress } from '~/d/lifecycle/progress/progress.js';
+import { buildEpicPrBody } from '~/d/lifecycle/pull-request/pr-body/pr-body.js';
 
 import { detectRemote } from '@chief-clancy/core/shared/git-ops/index.js';
 

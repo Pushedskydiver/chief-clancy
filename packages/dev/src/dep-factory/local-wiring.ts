@@ -5,7 +5,7 @@
  * Provides preflight and ticket-seed helpers that the dep-factory
  * calls when `ctx.fromPath` is set.
  */
-import type { FetchFn } from '../lifecycle/pr-creation/index.js';
+import type { FetchFn } from '../lifecycle/pr-creation/pr-creation.js';
 import type { RunContext } from '../pipeline/context.js';
 import type { EnvFileSystem, ExecGit } from '@chief-clancy/core';
 
@@ -13,13 +13,13 @@ import { basename } from 'node:path';
 
 import { createBoard, detectBoard } from '@chief-clancy/core';
 
-import { runLocalPreflight } from '../lifecycle/local-mode/index.js';
+import { runLocalPreflight } from '../lifecycle/local-mode/local-mode.js';
 import {
   parsePlanFile,
   toSyntheticTicket,
-} from '../lifecycle/plan-file/index.js';
+} from '../lifecycle/plan-file/plan-file.js';
 import { runPreflight } from '../lifecycle/preflight/preflight.js';
-import { preflightPhase } from '../pipeline/index.js';
+import { preflightPhase } from '../pipeline/phases/preflight-phase/preflight-phase.js';
 
 /** Check whether the cwd is inside a git repository. */
 function isGitRepo(exec: ExecGit): boolean {

@@ -6,15 +6,12 @@
  * set, so pre-seeding skips the queue-based fetch and runs a specific
  * ticket directly.
  */
-import type {
-  PipelineDeps,
-  PipelineResult,
-  RunContext,
-} from '../pipeline/index.js';
+import type { RunContext } from '../pipeline/context.js';
+import type { PipelineDeps, PipelineResult } from '../pipeline/run-pipeline.js';
 import type { FetchedTicket } from '@chief-clancy/core';
 
-import { createContext } from '../pipeline/index.js';
-import { parseReadinessFlags } from './flags/index.js';
+import { createContext } from '../pipeline/context.js';
+import { parseReadinessFlags } from './flags/readiness-flags.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

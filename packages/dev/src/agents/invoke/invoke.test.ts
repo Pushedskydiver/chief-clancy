@@ -2,7 +2,7 @@
  * Tests for the readiness invoker — spawns Claude with the rubric
  * and parses the verdict from stdout.
  */
-import type { SpawnSyncFn } from '../../types/index.js';
+import type { SpawnSyncFn } from '../../types/spawn.js';
 import type { SpawnSyncReturns } from 'node:child_process';
 
 import { describe, expect, it, vi } from 'vitest';

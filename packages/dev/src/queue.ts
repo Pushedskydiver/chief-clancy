@@ -8,7 +8,7 @@
  * Both delegate to {@link runLoopCore}, which handles quiet hours,
  * stop conditions, and inter-iteration sleep.
  */
-import type { ConsoleLike } from './types/index.js';
+import type { ConsoleLike } from './types/spawn.js';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 

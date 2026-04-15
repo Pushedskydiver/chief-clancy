@@ -4,7 +4,7 @@
  * Aggregation: overall = worst colour across checks.
  * Additional rule: if yellowCount >= threshold, overall escalates to red.
  */
-import type { CheckResult } from '../types/index.js';
+import type { CheckResult } from '../types/types.js';
 
 import { describe, expect, it } from 'vitest';
 

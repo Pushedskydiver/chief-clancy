@@ -8,11 +8,11 @@ import type { ExecGit } from '@chief-clancy/core/shared/git-ops/index.js';
 import type {
   ProgressEntry,
   ProgressFs,
-} from '~/d/lifecycle/progress/index.js';
-import type { EpicContext } from '~/d/lifecycle/pull-request/pr-body/index.js';
+} from '~/d/lifecycle/progress/progress.js';
+import type { EpicContext } from '~/d/lifecycle/pull-request/pr-body/pr-body.js';
 
-import { findEntriesWithStatus } from '~/d/lifecycle/progress/index.js';
-import { isEpicBranch } from '~/d/lifecycle/pull-request/pr-body/index.js';
+import { findEntriesWithStatus } from '~/d/lifecycle/progress/progress.js';
+import { isEpicBranch } from '~/d/lifecycle/pull-request/pr-body/pr-body.js';
 
 import {
   branchExists,

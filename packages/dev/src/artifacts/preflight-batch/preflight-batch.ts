@@ -12,14 +12,14 @@
 import type {
   CheckResult,
   ReadinessVerdict,
-} from '../../agents/types/index.js';
-import type { ConsoleLike } from '../../types/index.js';
-import type { AtomicFs } from '../atomic-write/index.js';
+} from '../../agents/types/types.js';
+import type { ConsoleLike } from '../../types/spawn.js';
+import type { AtomicFs } from '../atomic-write/atomic-write.js';
 
 import { join } from 'node:path';
 
-import { READINESS_CHECK_IDS } from '../../agents/types/index.js';
-import { atomicWrite } from '../atomic-write/index.js';
+import { READINESS_CHECK_IDS } from '../../agents/types/types.js';
+import { atomicWrite } from '../atomic-write/atomic-write.js';
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 // Cosmetic cost estimates — logged to console, not gating.

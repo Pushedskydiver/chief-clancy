@@ -9,12 +9,12 @@ import type {
   CheckColour,
   CheckResult,
   ReadinessVerdict,
-} from '../../agents/types/index.js';
-import type { AtomicFs } from '../atomic-write/index.js';
+} from '../../agents/types/types.js';
+import type { AtomicFs } from '../atomic-write/atomic-write.js';
 
 import { join } from 'node:path';
 
-import { atomicWrite, rotateFile } from '../atomic-write/index.js';
+import { atomicWrite, rotateFile } from '../atomic-write/atomic-write.js';
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 

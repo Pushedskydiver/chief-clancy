@@ -4,13 +4,13 @@
  * Records which tickets were processed, their statuses, timing, and
  * any halt reason. Uses atomic-write + rotation (keep last 3).
  */
-import type { PipelineResult } from '../../pipeline/index.js';
+import type { PipelineResult } from '../../pipeline/run-pipeline.js';
 import type { LoopOutcome } from '../../queue.js';
-import type { AtomicFs } from '../atomic-write/index.js';
+import type { AtomicFs } from '../atomic-write/atomic-write.js';
 
 import { join } from 'node:path';
 
-import { atomicWrite, rotateFile } from '../atomic-write/index.js';
+import { atomicWrite, rotateFile } from '../atomic-write/atomic-write.js';
 
 // ─── Constants ────────────────────────────────────────────────────────────
 

@@ -11,7 +11,7 @@ import type {
   RemoteInfo,
 } from '@chief-clancy/core/types/remote.js';
 
-import { buildManualPrUrl } from '~/d/lifecycle/pr-creation/index.js';
+import { buildManualPrUrl } from '~/d/lifecycle/pr-creation/pr-creation.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

@@ -1,4 +1,4 @@
-import type { RunContext } from '../pipeline/index.js';
+import type { RunContext } from '../pipeline/context.js';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -12,7 +12,7 @@ vi.mock('@chief-clancy/core', () => ({
   })),
 }));
 
-vi.mock('../pipeline/index.js', () => ({
+vi.mock('../pipeline/phases/deliver-phase/deliver-phase.js', () => ({
   deliverPhase: vi.fn((_ctx: unknown, deps: unknown) => deps),
 }));
 

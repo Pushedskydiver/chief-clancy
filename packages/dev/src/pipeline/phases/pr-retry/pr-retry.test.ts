@@ -4,7 +4,7 @@ import type {
   PrCreationResult,
   RemoteInfo,
 } from '@chief-clancy/core/types/remote.js';
-import type { ProgressEntry } from '~/d/lifecycle/progress/index.js';
+import type { ProgressEntry } from '~/d/lifecycle/progress/progress.js';
 
 import { describe, expect, it, vi } from 'vitest';
 

@@ -2,8 +2,8 @@
  * Loop execution helpers — build the per-ticket runner, execute the
  * queue, display results, and send notifications.
  */
-import type { GateResult } from '../execute/readiness/index.js';
-import type { PipelineResult } from '../pipeline/index.js';
+import type { GateResult } from '../execute/readiness/readiness-gate.js';
+import type { PipelineResult } from '../pipeline/run-pipeline.js';
 import type { LoopOutcome } from '../queue.js';
 import type { EnvFileSystem, FetchedTicket } from '@chief-clancy/core';
 
@@ -11,9 +11,12 @@ import { spawnSync } from 'node:child_process';
 import { setTimeout as sleep } from 'node:timers/promises';
 
 import { buildPipelineDeps } from '../dep-factory/dep-factory.js';
-import { runSingleTicketByKey } from '../execute/index.js';
-import { runPipeline } from '../pipeline/index.js';
-import { buildPrompt, buildReworkPrompt } from '../prompt-builder/index.js';
+import { runSingleTicketByKey } from '../execute/single.js';
+import { runPipeline } from '../pipeline/run-pipeline.js';
+import {
+  buildPrompt,
+  buildReworkPrompt,
+} from '../prompt-builder/prompt-builder.js';
 import { executeQueue } from '../queue.js';
 import { checkStopCondition } from '../stop-condition.js';
 import {

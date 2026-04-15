@@ -16,13 +16,11 @@ import type {
   RemoteInfo,
 } from '@chief-clancy/core/types/remote.js';
 
-import { createPullRequest as createAzdoPr } from '~/d/lifecycle/pull-request/azdo/index.js';
-import {
-  createPullRequest as createBbCloudPr,
-  createServerPullRequest as createBbServerPr,
-} from '~/d/lifecycle/pull-request/bitbucket/index.js';
-import { createPullRequest as createGitHubPr } from '~/d/lifecycle/pull-request/github/index.js';
-import { createMergeRequest as createGitLabMr } from '~/d/lifecycle/pull-request/gitlab/index.js';
+import { createPullRequest as createAzdoPr } from '~/d/lifecycle/pull-request/azdo/azdo.js';
+import { createPullRequest as createBbCloudPr } from '~/d/lifecycle/pull-request/bitbucket/cloud.js';
+import { createServerPullRequest as createBbServerPr } from '~/d/lifecycle/pull-request/bitbucket/server.js';
+import { createPullRequest as createGitHubPr } from '~/d/lifecycle/pull-request/github/github.js';
+import { createMergeRequest as createGitLabMr } from '~/d/lifecycle/pull-request/gitlab/gitlab.js';
 
 import { resolveGitToken } from '@chief-clancy/core/shared/git-token/index.js';
 import { buildApiBaseUrl } from '@chief-clancy/core/shared/remote/index.js';

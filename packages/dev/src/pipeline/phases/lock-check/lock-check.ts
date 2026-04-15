@@ -6,8 +6,8 @@
  */
 import type { RunContext } from '../../context.js';
 import type { ExecGit } from '@chief-clancy/core/shared/git-ops/index.js';
-import type { LockData, LockFs } from '~/d/lifecycle/lock/index.js';
-import type { ProgressFs } from '~/d/lifecycle/progress/index.js';
+import type { LockData, LockFs } from '~/d/lifecycle/lock/lock.js';
+import type { ProgressFs } from '~/d/lifecycle/progress/progress.js';
 
 import {
   deleteLock,

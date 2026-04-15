@@ -13,10 +13,10 @@ import type {
 import type {
   ProgressEntry,
   ProgressFs,
-} from '~/d/lifecycle/progress/index.js';
+} from '~/d/lifecycle/progress/progress.js';
 
-import { computeTicketBranch } from '~/d/lifecycle/branch/index.js';
-import { findEntriesWithStatus } from '~/d/lifecycle/progress/index.js';
+import { computeTicketBranch } from '~/d/lifecycle/branch/branch.js';
+import { findEntriesWithStatus } from '~/d/lifecycle/progress/progress.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

@@ -5,10 +5,10 @@
  * Reuses the `-p --dangerously-skip-permissions` pattern from
  * cli-bridge.ts for autonomous operation.
  */
-import type { SpawnSyncFn } from '../../types/index.js';
-import type { ReadinessVerdict } from '../types/index.js';
+import type { SpawnSyncFn } from '../../types/spawn.js';
+import type { ReadinessVerdict } from '../types/types.js';
 
-import { safeParseVerdict } from '../parse-verdict/index.js';
+import { safeParseVerdict } from '../parse-verdict/parse-verdict.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

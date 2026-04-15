@@ -4,7 +4,7 @@
 import type {
   CheckResult,
   ReadinessVerdict,
-} from '../../agents/types/index.js';
+} from '../../agents/types/types.js';
 
 import { describe, expect, it, vi } from 'vitest';
 

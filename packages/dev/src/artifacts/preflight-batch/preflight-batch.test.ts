@@ -5,8 +5,8 @@
 import type {
   CheckColour,
   ReadinessVerdict,
-} from '../../agents/types/index.js';
-import type { AtomicFs } from '../atomic-write/index.js';
+} from '../../agents/types/types.js';
+import type { AtomicFs } from '../atomic-write/atomic-write.js';
 import type { BatchGradeOpts, GradeOneFn } from './preflight-batch.js';
 
 import { describe, expect, it, vi } from 'vitest';

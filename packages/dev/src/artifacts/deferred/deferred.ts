@@ -4,12 +4,12 @@
  * Written when yellow tickets are skipped during afk-strict execution.
  * Overwritten each run (no rotation — each run starts fresh).
  */
-import type { CheckColour } from '../../agents/types/index.js';
-import type { AtomicFs } from '../atomic-write/index.js';
+import type { CheckColour } from '../../agents/types/types.js';
+import type { AtomicFs } from '../atomic-write/atomic-write.js';
 
 import { join } from 'node:path';
 
-import { atomicWrite } from '../atomic-write/index.js';
+import { atomicWrite } from '../atomic-write/atomic-write.js';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 

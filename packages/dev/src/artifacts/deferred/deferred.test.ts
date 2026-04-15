@@ -1,4 +1,4 @@
-import type { AtomicFs } from '../atomic-write/index.js';
+import type { AtomicFs } from '../atomic-write/atomic-write.js';
 
 import { describe, expect, it, vi } from 'vitest';
 

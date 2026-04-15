@@ -8,9 +8,9 @@
 import type {
   CheckColour,
   ReadinessVerdict,
-} from '../../agents/types/index.js';
+} from '../../agents/types/types.js';
 
-import { aggregateVerdict } from '../../agents/aggregate/index.js';
+import { aggregateVerdict } from '../../agents/aggregate/aggregate.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

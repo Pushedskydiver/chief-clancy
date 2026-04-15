@@ -6,7 +6,7 @@
  */
 import type { BoardConfig } from '@chief-clancy/core/schemas/env/env.js';
 import type { Ticket } from '@chief-clancy/core/types/index.js';
-import type { ProgressEntry } from '~/d/lifecycle/progress/index.js';
+import type { ProgressEntry } from '~/d/lifecycle/progress/progress.js';
 
 /** Epic context for child PRs targeting an epic/milestone branch. */
 export type EpicContext = {

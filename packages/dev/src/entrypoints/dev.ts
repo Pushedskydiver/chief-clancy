@@ -8,7 +8,7 @@
  *
  * Built by esbuild into a self-contained ESM bundle with zero npm deps.
  */
-import type { PipelineResult } from '../pipeline/index.js';
+import type { PipelineResult } from '../pipeline/run-pipeline.js';
 import type {
   BoardConfig,
   EnvFileSystem,
@@ -21,14 +21,18 @@ import { fileURLToPath } from 'node:url';
 
 import { createBoard, detectBoard, loadClancyEnv } from '@chief-clancy/core';
 
-import { invokeReadinessGrade } from '../agents/invoke/index.js';
+import { invokeReadinessGrade } from '../agents/invoke/invoke.js';
 import { loadRubric } from '../agents/rubric-loader.js';
 import { buildPipelineDeps } from '../dep-factory/dep-factory.js';
-import { runSingleTicketByKey } from '../execute/index.js';
-import { runReadinessGate } from '../execute/readiness/index.js';
+import { runReadinessGate } from '../execute/readiness/readiness-gate.js';
+import { runSingleTicketByKey } from '../execute/single.js';
 import { formatDuration } from '../lifecycle/format/format.js';
-import { createContext, runPipeline } from '../pipeline/index.js';
-import { buildPrompt, buildReworkPrompt } from '../prompt-builder/index.js';
+import { createContext } from '../pipeline/context.js';
+import { runPipeline } from '../pipeline/run-pipeline.js';
+import {
+  buildPrompt,
+  buildReworkPrompt,
+} from '../prompt-builder/prompt-builder.js';
 import {
   makeCostFs,
   makeEnvFs,

@@ -1,5 +1,5 @@
 import type { PlatformReworkHandlers } from './rework-handlers.js';
-import type { ProgressFs } from '~/d/lifecycle/progress/index.js';
+import type { ProgressFs } from '~/d/lifecycle/progress/progress.js';
 
 import fc from 'fast-check';
 import { describe, expect, it, vi } from 'vitest';

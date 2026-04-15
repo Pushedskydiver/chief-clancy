@@ -1,6 +1,6 @@
-import type { PipelineResult } from '../../pipeline/index.js';
+import type { PipelineResult } from '../../pipeline/run-pipeline.js';
 import type { LoopOutcome } from '../../queue.js';
-import type { AtomicFs } from '../atomic-write/index.js';
+import type { AtomicFs } from '../atomic-write/atomic-write.js';
 
 import { describe, expect, it, vi } from 'vitest';
 

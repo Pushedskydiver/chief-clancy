@@ -5,12 +5,12 @@
  * array if present) or regex-matches from reason strings. The drift report
  * is informational only — logged, not gating.
  */
-import type { ReadinessVerdict } from '../../agents/types/index.js';
-import type { AtomicFs } from '../atomic-write/index.js';
+import type { ReadinessVerdict } from '../../agents/types/types.js';
+import type { AtomicFs } from '../atomic-write/atomic-write.js';
 
 import { join } from 'node:path';
 
-import { atomicWrite } from '../atomic-write/index.js';
+import { atomicWrite } from '../atomic-write/atomic-write.js';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
