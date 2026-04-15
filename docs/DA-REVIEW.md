@@ -187,7 +187,7 @@ DA owns the **comment and doc layer**: stale prose, drifted TSDoc, hardcoded val
 
 ### Rule 11 — TSDoc scope
 
-DA-REVIEW Rule 11 owns the **architectural gate** (is this symbol actually public API? Is TSDoc at the declaration site, not a re-export barrel? Does a deep-alias path count as a public-API signal?). SELF-REVIEW Rule 11 owns the **file-level walk** (touched functions brought up to spec; signature-restating deleted; immediately-above-export formatting).
+DA-REVIEW Rule 11 owns the **architectural gate** (is this symbol actually public API? Is TSDoc at the declaration site, not a re-export barrel? Is the WHY non-obvious enough to warrant TSDoc on an internal?). SELF-REVIEW Rule 11 owns the **file-level walk** (touched functions brought up to spec; signature-restating deleted; immediately-above-export formatting).
 
 - [ ] New symbols on the public-API surface (library-entry or wildcard-exposed) have TSDoc that adds semantics beyond the signature.
 - [ ] Re-export sites (barrels — including nested barrels that re-export from other barrels) carry no TSDoc. Trace to the original declaration file.
