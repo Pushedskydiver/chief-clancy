@@ -67,7 +67,14 @@ Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 - **Max 3 chained method calls.** Beyond 3, assign intermediate results to named variables. Inline callbacks in chains must be short (1–2 lines) — extract longer logic into a named function and pass it in.
 - **No long ternaries.** If it doesn't fit on one line, use `if/else` or extract a function.
 - **No nested ternaries.** Ever.
-- **JSDoc on all exported functions.** Description, `@param` for each parameter, `@returns`. Not on internal helpers where types make it obvious.
+- **TSDoc on package public API only.** Public API = symbols exported from a path declared in `package.json` `exports` (today: the `src/index.ts` in library-publishing packages — `core`, `terminal`, `brief`, `plan`, `dev` — plus paths under `core/src/{types,schemas,shared,board}/` reachable via the wildcard subpaths). Bin-only packages (`chief-clancy`) and content-only packages (`scan`) don't expose a library surface; no TSDoc rule applies. TSDoc must add semantics beyond the signature: units, invariants, error conditions, edge-case behaviour, cross-function contracts, or _why_ the symbol exists.
+  - **Migration is deferred.** Existing JSDoc stays until the file is touched for other reasons. **When editing any function in a covered file, bring that function's TSDoc up to spec. Don't refactor TSDoc you aren't otherwise changing.** New code follows the rule immediately.
+  - **Deep path aliases are not themselves a public-API signal.** `~/d/foo.js` is an internal ergonomic; a file reachable _only_ via `~/…` aliases (with no `package.json` `exports` entry) is internal. Files reachable via both an alias and the exports map (e.g. every path under `core/`'s wildcard subtrees) ARE public API — the exports map is the definition of record regardless of how a consumer chooses to import.
+  - **Declaration site, not re-export site.** When a symbol is declared internally and re-exported, TSDoc lives on the source declaration. **Trace through re-exports to the original declaration file (the file with the `function`/`type`/`const` keyword). Intermediate barrels — including nested barrels that re-export from other barrels — carry no TSDoc.** This holds even when a barrel file is itself wildcard-exposed; the exports-map public-API scope applies, but the TSDoc location is always the original declaration.
+  - **Exported symbols only.** Private helpers in the same file don't inherit the requirement.
+  - **Internal functions:** no TSDoc unless the WHY is non-obvious.
+  - **Delete TSDoc that restates the signature** (`@param name - The name`).
+  - **Immediately above the export.** No blank line between TSDoc and the `export` keyword it documents.
 - **Explicit return types on exported functions.** TypeScript inference is for internal code, not public API.
 - **No `any`.** Use `unknown` + type narrowing. `as` casts only where structurally justified with a comment explaining why.
 - **Pure functions by default.** Side effects (HTTP, git, filesystem) isolated to boundary functions. Pure logic extracted into separate functions that take data in and return data out.
@@ -85,14 +92,56 @@ Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 ## Export Hygiene
 
 - **Types start internal.** Only add `export` to a type when it's consumed outside the file. Options objects (`FetchOpts`, `TransitionOpts`) used only by the function in the same file stay non-exported.
-- **Barrel exports match actual consumers.** If nothing outside the module directory imports a function/type, don't re-export it from `index.ts`. Run `pnpm knip` to catch unused exports before pushing.
-- **Core `index.ts` aliases colliding names.** When multiple boards export `fetchBlockerStatus`, alias them in the core barrel: `fetchGitHubBlockerStatus`, `fetchJiraBlockerStatus`, etc.
-- **Label internals stay private.** `ensureLabel`, `addLabel`, `removeLabel`, and low-level helpers (`createLabel`, `fetchLabels`, `getStoryLabelIds`) are internal to each board — don't re-export from the board barrel or core index.
-- **Export for testability is allowed.** When a pure function needs to be tested directly (e.g., `parseCostsLog`, `checkStopCondition`, `parseTime`), exporting it from the module file is preferred over testing through the public entry point. Keep these exports in the module barrel — they're internal API, not package-level public API.
+- **Aliasing colliding cross-board names.** When multiple boards export the same name (e.g. `fetchBlockerStatus`), alias at the import site (`import { fetchBlockerStatus as fetchGitHubBlockerStatus }`) or rename the source export. Don't route collisions through a shared barrel — package-entry (`src/index.ts`) and wildcard-exposed `index.ts` barrels exist for package-boundary exports, not collision resolution.
+- **Board label helpers stay internal.** `ensureLabel`, `addLabel`, `removeLabel`, `createLabel`, `fetchLabels`, `getStoryLabelIds` are per-provider internals. Don't re-export them from any board barrel.
+- **Export for testability is allowed.** When a pure function needs direct unit testing (e.g. `parseCostsLog`, `checkStopCondition`, `parseTime`), export it from the source file. For internal modules, the file-level export _is_ the consumer-visible surface — don't add a barrel just for tests. Package-entry `src/index.ts` and wildcard-exposed `index.ts` barrels remain the package-boundary surface and are unaffected by this rule.
+
+---
+
+## Folder Structure
+
+A **concept folder** (one that groups source code by domain concept, not by build-system role) exists for one of two reasons:
+
+- **Wrapper folder** — a single concept has **≥2 source files** (tests don't count). Examples: `lifecycle/rework/` (`rework.ts` + `rework-builders.ts` + `rework-handlers.ts`), `runner/implement/` (`implement.ts` + `batch.ts`).
+- **Grouping folder** — multiple related concepts clustered by a name the team actually uses (Evans, _Domain-Driven Design_, ubiquitous language). Examples: `lifecycle/pull-request/` (per-provider adapters), `pipeline/phases/`.
+
+Single-file concepts stay flat. No `feature-name/feature-name.ts` wrappers — the wrapper folder adds a directory level without adding information.
+
+Build-system or runtime-contract folders (e.g. `src/entrypoints/`) are a separate category — see the **Boundary folder** row in the barrels table below.
+
+### Barrels (`index.ts`)
+
+Five categories cover every `index.ts` across the monorepo; only two are re-export barrels (the first two rows). Single-impl wrapper rows are zero today — Barrier flattened them all — but kept as a category so the rule has a name for what future refactors must not re-introduce.
+
+| Category                           | Where it lives                                                                                                                                                                                                                                          | Status                                                                                                                                                                                     |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Package entry** (`src/index.ts`) | Library-publishing packages only — `core`, `terminal`, `brief`, `plan`, `dev`. Bin-only (`chief-clancy`) and content-only (`scan`) packages don't have one.                                                                                             | **Kept where it exists.** Defines `package.json` `"."` export; cross-package consumers import from here.                                                                                   |
+| **Wildcard-exposed boundary**      | `index.ts` barrels that live under a subpath-pattern export subtree in `package.json` (today: `core/src/{types,schemas,shared,board}/**/index.ts`; Node subpath patterns match multi-segment paths, so each such barrel is reachable as a public path). | **Each such barrel is a public boundary.** Semver-locked. Non-barrel files under the same subtree are also public (see [Rule 11](#code-style)), but this table classifies `index.ts` only. |
+| **Multi-content folder**           | A folder that already holds multiple concepts (e.g. `lifecycle/pull-request/` — `github.ts` + `gitlab.ts` + `azdo.ts` + `pr-body.ts`).                                                                                                                  | **No barrel.** Consumers import direct files (`~/d/lifecycle/pull-request/github.js`).                                                                                                     |
+| **Single-impl wrapper**            | Folder that wraps a single source file.                                                                                                                                                                                                                 | **Flattened** — folder removed, file lifted to parent.                                                                                                                                     |
+| **Boundary folder**                | Serves a build-system or runtime contract independent of conceptual clustering (e.g. `src/entrypoints/` — esbuild entry points, main-guard pattern, DI adapter assembly).                                                                               | **Kept.** Name and existence are a build-system contract; rules in §Entrypoints govern the contract.                                                                                       |
+
+Consumers within a package use deep paths (`~/d/dep-factory/invoke-phase.js`). Cross-package consumers use the package entry (`@chief-clancy/dev`) — no deep-path cross-package imports are possible for `dev`/`terminal` because they declare only `"."` in their `exports` map. `core/` additionally exposes deep paths via its wildcard subpaths.
+
+### Migration state — `core/`
+
+**New `core/` files follow Rule 7** (flat-first, single-file concepts stay flat, **no new internal barrels under `src/{types,schemas,shared,board}/`**). **Existing `core/` internal barrels are kept** until the separate **Barrier-Core** workstream, which ships **before `core@0.3.0`** (any unrelated 0.3.0 bump forces Barrier-Core first) and **no later than 2026-09-30**. Until then, existing barrel files under `core/src/{types,schemas,shared,board}/` remain wildcard-exposed public boundaries and cannot be removed without a semver-major bump.
+
+This differs deliberately from the [Error Handling migration](#error-handling) (opportunistic, touch-file-to-migrate). Folder-structure migration is scheduled, not opportunistic, because the existing barrels are semver-locked public boundaries — piecemeal migration would churn the public surface.
+
+### Mode is an adapter, not a phase
+
+Local-vs-remote (or any mode axis) is an adapter boundary, not a top-level folder split. Adapters live in their own named folder alongside feature folders (Cockburn, _Hexagonal Architecture_).
+
+### `shared/` discipline
+
+`shared/` holds utilities imported by **2+ sibling folders** with no clearer home. If contents cluster into a concern, they earn their own folder. No `utils/` junk drawers.
 
 ---
 
 ## Entrypoints
+
+`src/entrypoints/` is a boundary folder (see Folder Structure, above); rules below govern its runtime-surface contract.
 
 Runtime entry points (esbuild bundles) live in `src/entrypoints/`, not alongside the library modules they wire. Both `terminal` and `dev` follow this convention.
 
@@ -155,8 +204,6 @@ The codebase today uses `{ ok: false, error: string }` in many sites — `packag
 - **Types/Interfaces:** PascalCase (`Board`, `FetchedTicket`, `RunContext`)
 - **Functions:** camelCase (`createBoard`, `fetchAndParse`)
 - **Constants:** UPPER_SNAKE_CASE for env vars and status values (`CLANCY_BASE_BRANCH`, `PR_CREATED`)
-- **Module directories:** `feature-name/feature-name.ts` pattern (`env-parser/env-parser.ts`, `file-ops/file-ops.ts`)
-- **Barrel exports:** `index.ts` in each module directory, re-exports public API
 
 ---
 

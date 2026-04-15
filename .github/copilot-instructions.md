@@ -39,14 +39,14 @@ Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash comman
 - **Max 3 chained method calls.** Beyond 3, assign to named variables. Inline callbacks must be short — extract longer logic into a named function.
 - **Name compound boolean conditions.** `const isDoubleQuoted = ...` then `if (isDoubleQuoted || isSingleQuoted)`.
 - **No nested ternaries.** Ever.
-- **JSDoc on all exported functions.** Explicit return types on exports. JSDoc must be immediately above its export.
-- **Options objects for 3+ parameters.**
+- **TSDoc on package public API only** (see [CONVENTIONS.md §Code Style](../docs/CONVENTIONS.md#code-style) — Rule 11). Covers `src/index.ts` + `core/src/{types,schemas,shared,board}/` wildcard subtrees. Internal functions: no TSDoc unless the WHY is non-obvious. Explicit return types on exported functions. TSDoc immediately above its export, no blank line between.
+- **Options objects for 4+ parameters.** (ESLint `max-params: 3`.)
 - **Co-locate types with their module.** Only move to `types/` when used by 2+ modules.
 - **Co-locate helpers with their module.** Extract to `shared/` only when used by 2+ modules.
 - **`eslint-disable` is a last resort.** Look for simpler alternatives first (e.g. `.forEach()` + named function instead of `for...of`).
 - **Cross-platform paths:** Use `node:path` join, never string concatenation. Support Windows.
 - **Symlink guards:** Use `lstatSync` with ENOENT-only catch, not `existsSync` + `lstatSync` (dangling symlink bypass).
-- **Internal modules don't use `index.ts` barrels.** Import direct source files (e.g. `./foo/foo.js` or flat `./foo.js`). Only the package-level `src/index.ts` and published-export-boundary barrels (under core's wildcard `exports`) use this pattern.
+- **Internal modules don't use `index.ts` barrels.** Import direct source files (e.g. `./foo/foo.js` or flat `./foo.js`). Only the package-level `src/index.ts` and wildcard-exposed boundaries (under `core`'s wildcard `exports`) use this pattern. See [CONVENTIONS.md §Folder Structure](../docs/CONVENTIONS.md#folder-structure) for the five-category model.
 
 ## Complexity limits (enforced by ESLint)
 
