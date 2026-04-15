@@ -36,9 +36,9 @@ import {
   sendNotification,
 } from '@chief-clancy/dev';
 
-import { runAutopilot } from '../runner/autopilot/autopilot.js';
-import { buildPipelineDeps } from '../runner/dep-factory/index.js';
-import { buildSessionReport } from '../runner/session-report/session-report.js';
+import { runAutopilot } from '../runner/autopilot.js';
+import { buildPipelineDeps } from '../runner/dep-factory.js';
+import { buildSessionReport } from '../runner/session-report.js';
 import {
   makeCostFs,
   makeEnvFs,

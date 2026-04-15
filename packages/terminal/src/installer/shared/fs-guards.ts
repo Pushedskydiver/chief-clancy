@@ -3,7 +3,7 @@
  */
 import { lstatSync } from 'node:fs';
 
-import { hasErrorCode } from '../fs-errors/fs-errors.js';
+import { hasErrorCode } from './fs-errors.js';
 
 /** Throw if `path` does not exist (checked via the injected `exists`). */
 export const requirePath = (

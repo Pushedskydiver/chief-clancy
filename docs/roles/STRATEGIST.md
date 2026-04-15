@@ -8,8 +8,8 @@ The strategist is a **virtual role** — there is no `packages/terminal/src/role
 
 The role-key concept lives on in two places in terminal:
 
-- [`packages/terminal/src/installer/ui/ui.ts`](../../packages/terminal/src/installer/ui/ui.ts) `COMMAND_GROUPS` includes a Strategist entry with `roleKey: 'strategist'` so the UI can show / hide the strategist command surface during install
-- [`packages/terminal/src/installer/brief-content/brief-content.ts`](../../packages/terminal/src/installer/brief-content/brief-content.ts) gates `enabledRoles.has('strategist')` so the terminal installer knows whether to copy brief files from `@chief-clancy/brief` into a terminal-mode install
+- [`packages/terminal/src/installer/ui.ts`](../../packages/terminal/src/installer/ui.ts) `COMMAND_GROUPS` includes a Strategist entry with `roleKey: 'strategist'` so the UI can show / hide the strategist command surface during install
+- [`packages/terminal/src/installer/brief-content.ts`](../../packages/terminal/src/installer/brief-content.ts) gates `enabledRoles.has('strategist')` so the terminal installer knows whether to copy brief files from `@chief-clancy/brief` into a terminal-mode install
 
 This is the same shape as the planner role — see [PLANNER.md](./PLANNER.md). Both are virtual roles whose files live in standalone packages.
 

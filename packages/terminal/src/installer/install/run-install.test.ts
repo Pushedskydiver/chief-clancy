@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 
-import { inlineWorkflows } from '~/t/installer/file-ops/file-ops.js';
-import { installHooks } from '~/t/installer/hook-installer/hook-installer.js';
+import { inlineWorkflows } from '~/t/installer/file-ops.js';
+import { installHooks } from '~/t/installer/hook-installer.js';
 import {
   resolveInstallPaths,
   runInstall,
@@ -9,30 +9,30 @@ import {
 import {
   backupModifiedFiles,
   detectModifiedFiles,
-} from '~/t/installer/manifest/manifest.js';
-import { copyRoleFiles } from '~/t/installer/role-filter/role-filter.js';
-import { printSuccess } from '~/t/installer/ui/ui.js';
+} from '~/t/installer/manifest.js';
+import { copyRoleFiles } from '~/t/installer/role-filter.js';
+import { printSuccess } from '~/t/installer/ui.js';
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('~/t/installer/file-ops/file-ops.js', () => ({
+vi.mock('~/t/installer/file-ops.js', () => ({
   inlineWorkflows: vi.fn(),
 }));
 
-vi.mock('~/t/installer/hook-installer/hook-installer.js', () => ({
+vi.mock('~/t/installer/hook-installer.js', () => ({
   installHooks: vi.fn(() => true),
 }));
 
-vi.mock('~/t/installer/manifest/manifest.js', () => ({
+vi.mock('~/t/installer/manifest.js', () => ({
   buildManifest: vi.fn(() => ({})),
   detectModifiedFiles: vi.fn(() => []),
   backupModifiedFiles: vi.fn(() => null),
 }));
 
-vi.mock('~/t/installer/role-filter/role-filter.js', () => ({
+vi.mock('~/t/installer/role-filter.js', () => ({
   copyRoleFiles: vi.fn(),
 }));
 
-vi.mock('~/t/installer/ui/ui.js', () => ({
+vi.mock('~/t/installer/ui.js', () => ({
   printSuccess: vi.fn(),
 }));
 

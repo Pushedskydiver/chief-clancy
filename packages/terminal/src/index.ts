@@ -6,8 +6,8 @@
  */
 export const PACKAGE_NAME = '@chief-clancy/terminal' as const;
 
-export { copyDir, inlineWorkflows } from './installer/file-ops/file-ops.js';
-export { installHooks } from './installer/hook-installer/hook-installer.js';
+export { copyDir, inlineWorkflows } from './installer/file-ops.js';
+export { installHooks } from './installer/hook-installer.js';
 export type {
   InstallMode,
   InstallPaths,
@@ -24,22 +24,14 @@ export {
   backupModifiedFiles,
   buildManifest,
   detectModifiedFiles,
-} from './installer/manifest/manifest.js';
-export { createPrompts } from './installer/prompts/prompts.js';
-export { copyRoleFiles } from './installer/role-filter/role-filter.js';
-export { printBanner, printSuccess } from './installer/ui/ui.js';
+} from './installer/manifest.js';
+export { createPrompts } from './installer/prompts.js';
+export { copyRoleFiles } from './installer/role-filter.js';
+export { printBanner, printSuccess } from './installer/ui.js';
 
-export {
-  blue,
-  bold,
-  cyan,
-  dim,
-  green,
-  red,
-  yellow,
-} from './shared/ansi/ansi.js';
+export { blue, bold, cyan, dim, green, red, yellow } from './shared/ansi.js';
 
-export { runAutopilot } from './runner/autopilot/autopilot.js';
+export { runAutopilot } from './runner/autopilot.js';
 export {
   buildPipelineDeps,
   buildPrompt,
@@ -52,4 +44,4 @@ export { runImplement } from './runner/implement/implement.js';
 export {
   buildSessionReport,
   generateSessionReport,
-} from './runner/session-report/session-report.js';
+} from './runner/session-report.js';

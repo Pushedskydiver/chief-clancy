@@ -14,9 +14,9 @@ import {
 } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 
-import { fileHash } from '~/t/installer/file-ops/file-ops.js';
-import { hasErrorCode } from '~/t/installer/shared/fs-errors/fs-errors.js';
-import { isPlainObject } from '~/t/installer/shared/type-guards/type-guards.js';
+import { fileHash } from '~/t/installer/file-ops.js';
+import { hasErrorCode } from '~/t/installer/shared/fs-errors.js';
+import { isPlainObject } from '~/t/installer/shared/type-guards.js';
 
 /** A file that has been modified by the user since last install. */
 type ModifiedFile = { readonly rel: string; readonly absPath: string };

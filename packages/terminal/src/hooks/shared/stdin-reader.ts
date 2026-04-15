@@ -7,11 +7,11 @@
  *
  * Both readers return `{}` on any failure — hooks are best-effort.
  */
-import type { HookEvent } from '../types.js';
+import type { HookEvent } from './types.js';
 
 import { text } from 'node:stream/consumers';
 
-import { isPlainObject } from '../types.js';
+import { isPlainObject } from './types.js';
 
 const EMPTY: HookEvent = {};
 const DEFAULT_TIMEOUT_MS = 3000;

@@ -5,7 +5,7 @@
  * debounce state (warned files), and once-per-session flags (drift flags).
  * All paths are keyed by a sanitised session ID.
  */
-import type { TmpdirDeps } from '../types.js';
+import type { TmpdirDeps } from './types.js';
 
 import { join } from 'node:path';
 

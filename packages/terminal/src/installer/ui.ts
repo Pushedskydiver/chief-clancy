@@ -2,7 +2,7 @@
  * Installer UI — banner and success message.
  */
 
-import { blue, bold, cyan, dim, green } from '~/t/shared/ansi/ansi.js';
+import { blue, bold, cyan, dim, green } from '~/t/shared/ansi.js';
 
 /** A single slash command entry: [command, description]. */
 type Command = readonly [string, string];

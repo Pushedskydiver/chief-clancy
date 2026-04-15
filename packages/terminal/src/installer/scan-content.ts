@@ -7,7 +7,7 @@
  */
 import { join } from 'node:path';
 
-import { rejectSymlink } from '~/t/installer/shared/fs-guards/fs-guards.js';
+import { rejectSymlink } from '~/t/installer/shared/fs-guards.js';
 
 // ---------------------------------------------------------------------------
 // Types

@@ -7,11 +7,11 @@
  *
  * Best-effort: returns `null` on any failure — hooks must never crash.
  */
-import type { HookFs, LockData } from '../types.js';
+import type { HookFs, LockData } from './types.js';
 
 import { join } from 'node:path';
 
-import { isPlainObject } from '../types.js';
+import { isPlainObject } from './types.js';
 
 /**
  * Read and parse `.clancy/lock.json` from the given working directory.

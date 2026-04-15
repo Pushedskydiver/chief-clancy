@@ -10,8 +10,8 @@
  */
 import { readFileSync } from 'node:fs';
 
-import { approve, block } from '../shared/hook-output/hook-output.js';
-import { readPreToolUseInput } from '../shared/stdin-reader/stdin-reader.js';
+import { approve, block } from '../shared/hook-output.js';
+import { readPreToolUseInput } from '../shared/stdin-reader.js';
 import {
   extractContent,
   isAllowedPath,

@@ -9,19 +9,19 @@ import type { EnvFileSystem } from '@chief-clancy/core';
 
 import { dirname, join } from 'node:path';
 
-import { handleBriefContent } from '~/t/installer/brief-content/brief-content.js';
-import { inlineWorkflows } from '~/t/installer/file-ops/file-ops.js';
-import { installHooks } from '~/t/installer/hook-installer/hook-installer.js';
+import { handleBriefContent } from '~/t/installer/brief-content.js';
+import { inlineWorkflows } from '~/t/installer/file-ops.js';
+import { installHooks } from '~/t/installer/hook-installer.js';
 import {
   backupModifiedFiles,
   buildManifest,
   detectModifiedFiles,
-} from '~/t/installer/manifest/manifest.js';
-import { handlePlanContent } from '~/t/installer/plan-content/plan-content.js';
-import { copyRoleFiles } from '~/t/installer/role-filter/role-filter.js';
-import { handleScanContent } from '~/t/installer/scan-content/scan-content.js';
-import { printSuccess } from '~/t/installer/ui/ui.js';
-import { blue, dim, green } from '~/t/shared/ansi/ansi.js';
+} from '~/t/installer/manifest.js';
+import { handlePlanContent } from '~/t/installer/plan-content.js';
+import { copyRoleFiles } from '~/t/installer/role-filter.js';
+import { handleScanContent } from '~/t/installer/scan-content.js';
+import { printSuccess } from '~/t/installer/ui.js';
+import { blue, dim, green } from '~/t/shared/ansi.js';
 
 import { loadClancyEnv } from '@chief-clancy/core';
 

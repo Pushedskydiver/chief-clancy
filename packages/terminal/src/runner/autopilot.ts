@@ -17,7 +17,7 @@ import {
   formatDuration,
 } from '@chief-clancy/dev';
 
-import { bold, dim, green } from '../../shared/ansi/ansi.js';
+import { bold, dim, green } from '../shared/ansi.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

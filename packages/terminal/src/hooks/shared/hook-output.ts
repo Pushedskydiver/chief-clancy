@@ -7,7 +7,7 @@
  * PreToolUse hooks use the `hookSpecificOutput` envelope with
  * `permissionDecision` to control tool execution.
  */
-import type { HookContextOutput, PreToolUseResult } from '../types.js';
+import type { HookContextOutput, PreToolUseResult } from './types.js';
 
 /**
  * Build a PreToolUse allow response.

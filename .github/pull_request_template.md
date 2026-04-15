@@ -43,7 +43,7 @@
 
 ### Completeness
 
-- [ ] Barrel exports updated (`index.ts`) for new public API
+- [ ] Package-level `src/index.ts` updated (if adding public API)
 - [ ] PROGRESS.md updated (if completing a phase PR)
 - [ ] Changeset created (`pnpm changeset`) for version-worthy changes
 

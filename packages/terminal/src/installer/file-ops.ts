@@ -16,8 +16,8 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 
-import { hasErrorCode } from '~/t/installer/shared/fs-errors/fs-errors.js';
-import { rejectSymlink } from '~/t/installer/shared/fs-guards/fs-guards.js';
+import { hasErrorCode } from '~/t/installer/shared/fs-errors.js';
+import { rejectSymlink } from '~/t/installer/shared/fs-guards.js';
 
 /**
  * Compute the SHA-256 hash of a file.

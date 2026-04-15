@@ -30,8 +30,8 @@ import {
   listPlanFiles,
 } from '@chief-clancy/dev';
 
-import { dim, green, red, yellow } from '../../shared/ansi/ansi.js';
-import { buildPipelineDeps } from '../dep-factory/index.js';
+import { dim, green, red, yellow } from '../../shared/ansi.js';
+import { buildPipelineDeps } from '../dep-factory.js';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
