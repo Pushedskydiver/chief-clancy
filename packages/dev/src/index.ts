@@ -86,7 +86,7 @@ export {
   fetchReworkFromPrReview,
   postReworkActions,
 } from './lifecycle/rework/rework.js';
-export type { PlatformReworkHandlers } from './lifecycle/rework/rework-handlers.js';
+export type { PlatformReworkHandlers } from './lifecycle/rework/rework-types.js';
 export { resolvePlatformHandlers } from './lifecycle/rework/rework-handlers.js';
 
 // ─── CLI bridge re-exports ─────────────────────────────────────────────────

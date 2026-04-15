@@ -1,4 +1,4 @@
-import type { PlatformReworkHandlers } from './rework-handlers.js';
+import type { PlatformReworkHandlers } from './rework-types.js';
 import type { ProgressFs } from '~/d/lifecycle/progress.js';
 
 import fc from 'fast-check';

@@ -5,7 +5,7 @@
  * {@link PlatformReworkHandlers} interface. Called exclusively by
  * `resolvePlatformHandlers` in `rework-handlers.ts`.
  */
-import type { PlatformReworkHandlers, ReworkCtx } from './rework-handlers.js';
+import type { PlatformReworkHandlers, ReworkCtx } from './rework-types.js';
 import type {
   AzdoRemote,
   BitbucketRemote,
