@@ -5,9 +5,9 @@
  * label API requires reading the current labels and writing the full
  * list back. Wrapped in {@link safeLabel} for best-effort error handling.
  */
-import type { Fetcher } from '~/c/shared/http/index.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
 
-import { jiraIssueLabelsResponseSchema } from '~/c/schemas/index.js';
+import { jiraIssueLabelsResponseSchema } from '~/c/schemas/jira.js';
 import { modifyLabelList, safeLabel } from '~/c/shared/label-helpers.js';
 
 import { isValidIssueKey, jiraHeaders } from './api.js';

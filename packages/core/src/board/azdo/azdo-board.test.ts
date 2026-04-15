@@ -1,6 +1,6 @@
-import type { AzdoEnv } from '~/c/schemas/index.js';
-import type { Fetcher } from '~/c/shared/http/index.js';
-import type { FetchedTicket } from '~/c/types/index.js';
+import type { AzdoEnv } from '~/c/schemas/env.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
+import type { FetchedTicket } from '~/c/types/board.js';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 

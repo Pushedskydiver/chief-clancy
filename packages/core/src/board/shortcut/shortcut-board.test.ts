@@ -1,5 +1,5 @@
-import type { ShortcutEnv } from '~/c/schemas/index.js';
-import type { Fetcher } from '~/c/shared/http/index.js';
+import type { ShortcutEnv } from '~/c/schemas/env.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
 import type { Mock } from 'vitest';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';

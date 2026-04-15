@@ -7,7 +7,7 @@ import type { BitbucketComment } from '@chief-clancy/core/schemas/bitbucket.js';
 import type {
   PrCreationResult,
   PrReviewState,
-} from '@chief-clancy/core/types/index.js';
+} from '@chief-clancy/core/types/remote.js';
 
 import {
   bitbucketCommentsSchema,

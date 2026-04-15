@@ -5,7 +5,7 @@
  * Bitbucket, etc.) and extract owner/repo/project info. No I/O — the
  * actual `git remote get-url` shell-out lives in `git-ops/`.
  */
-import type { GitPlatform, RemoteInfo } from '~/c/types/index.js';
+import type { GitPlatform, RemoteInfo } from '~/c/types/remote.js';
 
 /**
  * Extract hostname and path from a raw git remote URL.

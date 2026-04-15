@@ -14,7 +14,7 @@ import type {
 import type {
   PrCreationResult,
   PrReviewState,
-} from '@chief-clancy/core/types/index.js';
+} from '@chief-clancy/core/types/remote.js';
 
 import {
   gitlabDiscussionsSchema,

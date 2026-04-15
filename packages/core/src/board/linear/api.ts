@@ -5,14 +5,14 @@
  * Personal API keys are passed directly (no "Bearer" prefix) per
  * Linear's documentation.
  */
-import type { LinearIssueNode } from '~/c/schemas/index.js';
-import type { Fetcher } from '~/c/shared/http/index.js';
-import type { PingResult } from '~/c/types/index.js';
+import type { LinearIssueNode } from '~/c/schemas/linear.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
+import type { PingResult } from '~/c/types/board.js';
 
 import {
   linearIssuesResponseSchema,
   linearViewerResponseSchema,
-} from '~/c/schemas/index.js';
+} from '~/c/schemas/linear.js';
 
 /** Linear GraphQL API endpoint. */
 const LINEAR_API = 'https://api.linear.app/graphql';

@@ -7,17 +7,17 @@
 import type {
   ShortcutStoryNode,
   ShortcutWorkflowsResponse,
-} from '~/c/schemas/index.js';
+} from '~/c/schemas/shortcut.js';
 import type { Cached } from '~/c/shared/cache.js';
-import type { Fetcher } from '~/c/shared/http/index.js';
-import type { PingResult } from '~/c/types/index.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
+import type { PingResult } from '~/c/types/board.js';
 
 import {
   shortcutMemberInfoResponseSchema,
   shortcutStorySearchResponseSchema,
   shortcutWorkflowsResponseSchema,
-} from '~/c/schemas/index.js';
-import { fetchAndParse } from '~/c/shared/http/index.js';
+} from '~/c/schemas/shortcut.js';
+import { fetchAndParse } from '~/c/shared/http/fetch-and-parse.js';
 
 /** Shortcut REST API v3 endpoint. */
 export const SHORTCUT_API = 'https://api.app.shortcut.com/api/v3';

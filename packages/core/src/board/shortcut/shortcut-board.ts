@@ -4,13 +4,13 @@
  * Returns a plain object conforming to the Board type, delegating
  * to the Shortcut API, relations, and label functions.
  */
+import type { ShortcutEnv } from '~/c/schemas/env.js';
 import type {
-  ShortcutEnv,
   ShortcutLabelsResponse,
   ShortcutWorkflowsResponse,
-} from '~/c/schemas/index.js';
-import type { Fetcher } from '~/c/shared/http/index.js';
-import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/index.js';
+} from '~/c/schemas/shortcut.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
+import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/board.js';
 
 import { Cached } from '~/c/shared/cache.js';
 

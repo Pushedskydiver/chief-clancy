@@ -5,11 +5,11 @@
  * status (dual-mode: Epic: text convention + native hierarchy links).
  */
 import type { AzdoCtx } from './api/helpers.js';
-import type { AzdoWorkItem } from '~/c/schemas/index.js';
-import type { ChildrenStatus } from '~/c/types/index.js';
+import type { AzdoWorkItem } from '~/c/schemas/azdo/azdo.js';
+import type { ChildrenStatus } from '~/c/types/board.js';
 
-import { azdoWiqlLinkResponseSchema } from '~/c/schemas/index.js';
-import { fetchAndParse } from '~/c/shared/http/index.js';
+import { azdoWiqlLinkResponseSchema } from '~/c/schemas/azdo/azdo.js';
+import { fetchAndParse } from '~/c/shared/http/fetch-and-parse.js';
 
 import { fetchWorkItem, fetchWorkItems, runWiql } from './api/api.js';
 import {

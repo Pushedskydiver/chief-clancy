@@ -1,5 +1,5 @@
-import type { ShortcutLabelsResponse } from '~/c/schemas/index.js';
-import type { Fetcher } from '~/c/shared/http/index.js';
+import type { ShortcutLabelsResponse } from '~/c/schemas/shortcut.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
 
 import { Cached } from '~/c/shared/cache.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';

@@ -1,4 +1,4 @@
-import type { Fetcher } from '~/c/shared/http/index.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
 
 /**
  * Azure DevOps pure helper functions.

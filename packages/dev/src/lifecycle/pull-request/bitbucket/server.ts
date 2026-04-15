@@ -7,7 +7,7 @@ import type { BitbucketServerComment } from '@chief-clancy/core/schemas/bitbucke
 import type {
   PrCreationResult,
   PrReviewState,
-} from '@chief-clancy/core/types/index.js';
+} from '@chief-clancy/core/types/remote.js';
 
 import {
   bitbucketServerActivitiesSchema,

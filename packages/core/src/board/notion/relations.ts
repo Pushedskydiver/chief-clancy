@@ -5,8 +5,8 @@
  * and children status (dual-mode: description text + relation property).
  */
 import type { NotionCtx } from './api/helpers.js';
-import type { NotionPage } from '~/c/schemas/index.js';
-import type { ChildrenStatus } from '~/c/types/index.js';
+import type { NotionPage } from '~/c/schemas/notion.js';
+import type { ChildrenStatus } from '~/c/types/board.js';
 
 import {
   fetchPage,

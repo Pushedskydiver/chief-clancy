@@ -4,17 +4,17 @@
  * Checks blocker status (via story_links + blocked flag), children
  * status (via Epic: text convention + native epic stories API).
  */
-import type { ShortcutWorkflowsResponse } from '~/c/schemas/index.js';
+import type { ShortcutWorkflowsResponse } from '~/c/schemas/shortcut.js';
 import type { Cached } from '~/c/shared/cache.js';
-import type { Fetcher } from '~/c/shared/http/index.js';
-import type { ChildrenStatus } from '~/c/types/index.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
+import type { ChildrenStatus } from '~/c/types/board.js';
 
 import {
   shortcutEpicStoriesResponseSchema,
   shortcutStoryDetailResponseSchema,
   shortcutStorySearchResponseSchema,
-} from '~/c/schemas/index.js';
-import { fetchAndParse } from '~/c/shared/http/index.js';
+} from '~/c/schemas/shortcut.js';
+import { fetchAndParse } from '~/c/shared/http/fetch-and-parse.js';
 
 import { resolveDoneStateIds, SHORTCUT_API, shortcutHeaders } from './api.js';
 

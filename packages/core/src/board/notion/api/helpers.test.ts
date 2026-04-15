@@ -1,4 +1,4 @@
-import type { NotionPage } from '~/c/schemas/index.js';
+import type { NotionPage } from '~/c/schemas/notion.js';
 
 import { describe, expect, it } from 'vitest';
 

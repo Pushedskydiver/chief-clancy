@@ -5,15 +5,16 @@
  * Pure helpers (auth, headers, parsing) are in `helpers.ts`.
  */
 import type { AzdoCtx } from './helpers.js';
-import type { AzdoWorkItem } from '~/c/schemas/index.js';
-import type { PingResult } from '~/c/types/index.js';
+import type { AzdoWorkItem } from '~/c/schemas/azdo/azdo.js';
+import type { PingResult } from '~/c/types/board.js';
 
 import {
   azdoWiqlResponseSchema,
   azdoWorkItemsBatchResponseSchema,
   azdoWorkItemSchema,
-} from '~/c/schemas/index.js';
-import { fetchAndParse, pingEndpoint } from '~/c/shared/http/index.js';
+} from '~/c/schemas/azdo/azdo.js';
+import { fetchAndParse } from '~/c/shared/http/fetch-and-parse.js';
+import { pingEndpoint } from '~/c/shared/http/ping-endpoint.js';
 
 import {
   apiBase,

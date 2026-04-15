@@ -4,10 +4,10 @@
  * Checks blocker status (via issue links) and children status
  * (via Epic: text convention + native parent JQL).
  */
-import type { Fetcher } from '~/c/shared/http/index.js';
-import type { ChildrenStatus } from '~/c/types/index.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
+import type { ChildrenStatus } from '~/c/types/board.js';
 
-import { jiraIssueLinksResponseSchema } from '~/c/schemas/index.js';
+import { jiraIssueLinksResponseSchema } from '~/c/schemas/jira.js';
 import { z } from 'zod/mini';
 
 import { isValidIssueKey, jiraHeaders } from './api.js';

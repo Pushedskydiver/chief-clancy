@@ -8,14 +8,14 @@
  * The 3-step {@link ensureLabel} flow: team labels → workspace labels → create.
  */
 import type { CachedMap } from '~/c/shared/cache.js';
-import type { Fetcher } from '~/c/shared/http/index.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
 
 import {
   linearIssueLabelSearchResponseSchema,
   linearLabelCreateResponseSchema,
   linearTeamLabelsResponseSchema,
   linearWorkspaceLabelsResponseSchema,
-} from '~/c/schemas/index.js';
+} from '~/c/schemas/linear.js';
 import { safeLabel } from '~/c/shared/label-helpers.js';
 
 import { linearGraphql } from './api.js';

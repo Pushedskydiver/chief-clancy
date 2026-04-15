@@ -4,8 +4,8 @@
  * Checks blocker status (via `Blocked by #N` in issue bodies) and
  * children status (via `Epic: #N` / `Parent: #N` text search).
  */
-import type { Fetcher } from '~/c/shared/http/index.js';
-import type { ChildrenStatus } from '~/c/types/index.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
+import type { ChildrenStatus } from '~/c/types/board.js';
 
 import { z } from 'zod/mini';
 

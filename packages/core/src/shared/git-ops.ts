@@ -6,7 +6,7 @@
  * The `exec` function is injected for testability — no direct
  * `child_process` imports in this module.
  */
-import type { GitPlatform, RemoteInfo } from '~/c/types/index.js';
+import type { GitPlatform, RemoteInfo } from '~/c/types/remote.js';
 
 import { parseRemote } from '~/c/shared/remote.js';
 

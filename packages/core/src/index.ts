@@ -10,52 +10,51 @@ export { loadClancyEnv, parseEnvContent } from './shared/env-parser.js';
 
 export { Cached, CachedMap } from './shared/cache.js';
 
-export {
-  fetchAndParse,
-  pingEndpoint,
-  retryFetch,
-} from './shared/http/index.js';
+export { fetchAndParse } from './shared/http/fetch-and-parse.js';
 export type {
-  Fetcher,
   FetchAndParseOptions,
-  PingEndpointOpts,
-  RetryOptions,
-} from './shared/http/index.js';
+  Fetcher,
+} from './shared/http/fetch-and-parse.js';
+export { pingEndpoint } from './shared/http/ping-endpoint.js';
+export type { PingEndpointOpts } from './shared/http/ping-endpoint.js';
+export { retryFetch } from './shared/http/retry-fetch.js';
+export type { RetryOptions } from './shared/http/retry-fetch.js';
 
 export { modifyLabelList, safeLabel } from './shared/label-helpers.js';
 export type { ModifyLabelListOpts } from './shared/label-helpers.js';
 
 export type {
-  AzdoRemote,
-  BitbucketRemote,
-  BitbucketServerRemote,
   Board,
   BoardProvider,
   ChildrenStatus,
   FetchedTicket,
   FetchTicketOpts,
+  PingResult,
+  Ticket,
+} from './types/board.js';
+export type {
+  AzdoRemote,
+  BitbucketRemote,
+  BitbucketServerRemote,
   GenericRemote,
   GitHubRemote,
   GitLabRemote,
   GitPlatform,
   NoRemote,
-  PingResult,
   PrCreationFailure,
   PrCreationResult,
   PrCreationSuccess,
   PrReviewState,
-  ProgressStatus,
   RemoteInfo,
-  Ticket,
-} from './types/index.js';
+} from './types/remote.js';
+export type { ProgressStatus } from './types/progress.js';
 export {
   COMPLETED_STATUSES,
   DELIVERED_STATUSES,
   FAILED_STATUSES,
-} from './types/index.js';
+} from './types/progress.js';
 
 export type {
-  // Env types
   AzdoEnv,
   BoardConfig,
   GitHubEnv,
@@ -64,13 +63,33 @@ export type {
   NotionEnv,
   SharedEnv,
   ShortcutEnv,
-  // Jira API types
-  JiraIssueLabelsResponse,
-  JiraIssueLinksResponse,
-  JiraProjectPing,
-  JiraSearchResponse,
-  JiraTransitionsResponse,
-  // GitHub API types
+} from './schemas/env.js';
+export {
+  azdoEnvSchema,
+  githubEnvSchema,
+  jiraEnvSchema,
+  linearEnvSchema,
+  notionEnvSchema,
+  sharedEnvSchema,
+  shortcutEnvSchema,
+} from './schemas/env.js';
+
+export type {
+  AzdoProjectResponse,
+  AzdoWiqlLinkResponse,
+  AzdoWiqlResponse,
+  AzdoWorkItem,
+  AzdoWorkItemsBatchResponse,
+} from './schemas/azdo/azdo.js';
+export {
+  azdoProjectResponseSchema,
+  azdoWiqlLinkResponseSchema,
+  azdoWiqlResponseSchema,
+  azdoWorkItemSchema,
+  azdoWorkItemsBatchResponseSchema,
+} from './schemas/azdo/azdo.js';
+
+export type {
   GitHubComment,
   GitHubCommentsResponse,
   GitHubIssue,
@@ -82,57 +101,8 @@ export type {
   GitHubRepoPing,
   GitHubReview,
   GitHubReviewList,
-  // Azure DevOps API types
-  AzdoProjectResponse,
-  AzdoWiqlLinkResponse,
-  AzdoWiqlResponse,
-  AzdoWorkItem,
-  AzdoWorkItemsBatchResponse,
-  // Linear API types
-  LinearIssueChildrenResponse,
-  LinearIssueNode,
-  LinearIssueLabelSearchResponse,
-  LinearIssueRelationsResponse,
-  LinearIssueSearchResponse,
-  LinearIssueUpdateResponse,
-  LinearIssuesResponse,
-  LinearLabelCreateResponse,
-  LinearTeamLabelsResponse,
-  LinearViewerResponse,
-  LinearWorkflowStatesResponse,
-  LinearWorkspaceLabelsResponse,
-  // Notion API types
-  NotionDatabaseQueryResponse,
-  NotionMultiSelectOption,
-  NotionPage,
-  NotionUserResponse,
-  // Shortcut API types
-  ShortcutEpicStoriesResponse,
-  ShortcutLabelCreateResponse,
-  ShortcutLabelsResponse,
-  ShortcutMemberInfoResponse,
-  ShortcutStoryDetailResponse,
-  ShortcutStoryNode,
-  ShortcutStorySearchResponse,
-  ShortcutStoryUpdateResponse,
-  ShortcutWorkflowsResponse,
-} from './schemas/index.js';
+} from './schemas/github.js';
 export {
-  // Env schemas
-  azdoEnvSchema,
-  githubEnvSchema,
-  jiraEnvSchema,
-  linearEnvSchema,
-  notionEnvSchema,
-  sharedEnvSchema,
-  shortcutEnvSchema,
-  // Jira API schemas
-  jiraIssueLabelsResponseSchema,
-  jiraIssueLinksResponseSchema,
-  jiraProjectPingSchema,
-  jiraSearchResponseSchema,
-  jiraTransitionsResponseSchema,
-  // GitHub API schemas
   githubCommentSchema,
   githubCommentsResponseSchema,
   githubIssueSchema,
@@ -144,13 +114,38 @@ export {
   githubRepoPingSchema,
   githubReviewListSchema,
   githubReviewSchema,
-  // Azure DevOps API schemas
-  azdoProjectResponseSchema,
-  azdoWiqlLinkResponseSchema,
-  azdoWiqlResponseSchema,
-  azdoWorkItemSchema,
-  azdoWorkItemsBatchResponseSchema,
-  // Linear API schemas
+} from './schemas/github.js';
+
+export type {
+  JiraIssueLabelsResponse,
+  JiraIssueLinksResponse,
+  JiraProjectPing,
+  JiraSearchResponse,
+  JiraTransitionsResponse,
+} from './schemas/jira.js';
+export {
+  jiraIssueLabelsResponseSchema,
+  jiraIssueLinksResponseSchema,
+  jiraProjectPingSchema,
+  jiraSearchResponseSchema,
+  jiraTransitionsResponseSchema,
+} from './schemas/jira.js';
+
+export type {
+  LinearIssueChildrenResponse,
+  LinearIssueLabelSearchResponse,
+  LinearIssueNode,
+  LinearIssueRelationsResponse,
+  LinearIssueSearchResponse,
+  LinearIssueUpdateResponse,
+  LinearIssuesResponse,
+  LinearLabelCreateResponse,
+  LinearTeamLabelsResponse,
+  LinearViewerResponse,
+  LinearWorkflowStatesResponse,
+  LinearWorkspaceLabelsResponse,
+} from './schemas/linear.js';
+export {
   linearIssueChildrenResponseSchema,
   linearIssueLabelSearchResponseSchema,
   linearIssueRelationsResponseSchema,
@@ -162,11 +157,32 @@ export {
   linearViewerResponseSchema,
   linearWorkflowStatesResponseSchema,
   linearWorkspaceLabelsResponseSchema,
-  // Notion API schemas
+} from './schemas/linear.js';
+
+export type {
+  NotionDatabaseQueryResponse,
+  NotionMultiSelectOption,
+  NotionPage,
+  NotionUserResponse,
+} from './schemas/notion.js';
+export {
   notionDatabaseQueryResponseSchema,
   notionPageSchema,
   notionUserResponseSchema,
-  // Shortcut API schemas
+} from './schemas/notion.js';
+
+export type {
+  ShortcutEpicStoriesResponse,
+  ShortcutLabelCreateResponse,
+  ShortcutLabelsResponse,
+  ShortcutMemberInfoResponse,
+  ShortcutStoryDetailResponse,
+  ShortcutStoryNode,
+  ShortcutStorySearchResponse,
+  ShortcutStoryUpdateResponse,
+  ShortcutWorkflowsResponse,
+} from './schemas/shortcut.js';
+export {
   shortcutEpicStoriesResponseSchema,
   shortcutLabelCreateResponseSchema,
   shortcutLabelsResponseSchema,
@@ -175,7 +191,7 @@ export {
   shortcutStorySearchResponseSchema,
   shortcutStoryUpdateResponseSchema,
   shortcutWorkflowsResponseSchema,
-} from './schemas/index.js';
+} from './schemas/shortcut.js';
 
 // Shared utilities (consumed by terminal dep factory for phase wiring)
 export type { ExecGit } from './shared/git-ops.js';
@@ -187,41 +203,41 @@ export {
   fetchRemoteBranch,
 } from './shared/git-ops.js';
 
-export { detectBoard, sharedEnv } from './board/index.js';
+export { detectBoard, sharedEnv } from './board/detect-board.js';
 export { createBoard } from './board/factory.js';
 
+export { createGitHubBoard } from './board/github/github-board.js';
 export {
-  createGitHubBoard,
   fetchBlockerStatus as fetchGitHubBlockerStatus,
   fetchChildrenStatus as fetchGitHubChildrenStatus,
-} from './board/github/index.js';
+} from './board/github/relations.js';
 
+export { createJiraBoard } from './board/jira/jira-board.js';
 export {
-  createJiraBoard,
   fetchBlockerStatus as fetchJiraBlockerStatus,
   fetchChildrenStatus as fetchJiraChildrenStatus,
-} from './board/jira/index.js';
+} from './board/jira/relations.js';
 
+export { createLinearBoard } from './board/linear/linear-board.js';
 export {
-  createLinearBoard,
   fetchBlockerStatus as fetchLinearBlockerStatus,
   fetchChildrenStatus as fetchLinearChildrenStatus,
-} from './board/linear/index.js';
+} from './board/linear/relations.js';
 
+export { createShortcutBoard } from './board/shortcut/shortcut-board.js';
 export {
-  createShortcutBoard,
   fetchBlockerStatus as fetchShortcutBlockerStatus,
   fetchChildrenStatus as fetchShortcutChildrenStatus,
-} from './board/shortcut/index.js';
+} from './board/shortcut/relations.js';
 
+export { createAzdoBoard } from './board/azdo/azdo-board.js';
 export {
-  createAzdoBoard,
   fetchBlockerStatus as fetchAzdoBlockerStatus,
   fetchChildrenStatus as fetchAzdoChildrenStatus,
-} from './board/azdo/index.js';
+} from './board/azdo/relations.js';
 
+export { createNotionBoard } from './board/notion/notion-board.js';
 export {
-  createNotionBoard,
   fetchBlockerStatus as fetchNotionBlockerStatus,
   fetchChildrenStatus as fetchNotionChildrenStatus,
-} from './board/notion/index.js';
+} from './board/notion/relations.js';

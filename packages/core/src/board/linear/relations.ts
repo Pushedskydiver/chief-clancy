@@ -5,8 +5,8 @@
  * (via Epic: text convention + native children API), and issue
  * state transitions via GraphQL mutations.
  */
-import type { Fetcher } from '~/c/shared/http/index.js';
-import type { ChildrenStatus } from '~/c/types/index.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
+import type { ChildrenStatus } from '~/c/types/board.js';
 
 import {
   linearIssueChildrenResponseSchema,
@@ -14,7 +14,7 @@ import {
   linearIssueSearchResponseSchema,
   linearIssueUpdateResponseSchema,
   linearWorkflowStatesResponseSchema,
-} from '~/c/schemas/index.js';
+} from '~/c/schemas/linear.js';
 
 import { linearGraphql } from './api.js';
 

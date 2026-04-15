@@ -4,12 +4,13 @@
  * Low-level functions for interacting with the GitHub REST API.
  * Used by the GitHub board adapter ({@link ../github-board.ts}).
  */
-import type { GitHubIssue } from '~/c/schemas/index.js';
-import type { Fetcher } from '~/c/shared/http/index.js';
-import type { PingResult } from '~/c/types/index.js';
+import type { GitHubIssue } from '~/c/schemas/github.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
+import type { PingResult } from '~/c/types/board.js';
 
-import { githubIssuesResponseSchema } from '~/c/schemas/index.js';
-import { fetchAndParse, pingEndpoint } from '~/c/shared/http/index.js';
+import { githubIssuesResponseSchema } from '~/c/schemas/github.js';
+import { fetchAndParse } from '~/c/shared/http/fetch-and-parse.js';
+import { pingEndpoint } from '~/c/shared/http/ping-endpoint.js';
 import { z } from 'zod/mini';
 
 /** Default GitHub API base URL. */

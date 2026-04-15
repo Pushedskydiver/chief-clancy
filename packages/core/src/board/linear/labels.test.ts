@@ -1,4 +1,4 @@
-import type { Fetcher } from '~/c/shared/http/index.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
 
 import { CachedMap } from '~/c/shared/cache.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';

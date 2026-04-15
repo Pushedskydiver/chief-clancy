@@ -5,8 +5,8 @@
  * Each case dispatches to the provider-specific factory function.
  */
 import type { BoardConfig } from '~/c/schemas/env.js';
-import type { Fetcher } from '~/c/shared/http/index.js';
-import type { Board } from '~/c/types/index.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
+import type { Board } from '~/c/types/board.js';
 
 import { createAzdoBoard } from './azdo/azdo-board.js';
 import { createGitHubBoard } from './github/github-board.js';
