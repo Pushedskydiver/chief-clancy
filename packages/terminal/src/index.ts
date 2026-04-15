@@ -13,6 +13,7 @@ export type {
   InstallPaths,
   RunInstallOptions,
 } from './installer/install/install.js';
+export type { InstallSources } from './installer/install/install-shared.js';
 export {
   parseEnabledRoles,
   parseInstallFlag,

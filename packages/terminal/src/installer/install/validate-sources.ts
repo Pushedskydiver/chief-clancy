@@ -4,7 +4,7 @@
  * Guards against a corrupted npm package by checking that all required
  * source directories and bundle scripts exist before installation begins.
  */
-import type { InstallSources } from './install.js';
+import type { InstallSources } from './install-shared.js';
 
 import { join } from 'node:path';
 
@@ -13,7 +13,7 @@ import {
   validateOptionalDirs,
 } from '~/t/installer/shared/fs-guards.js';
 
-import { BUNDLE_SCRIPTS } from './install.js';
+import { BUNDLE_SCRIPTS } from './install-shared.js';
 
 // ---------------------------------------------------------------------------
 // Public API
