@@ -172,6 +172,7 @@ Workflow `.md` files in `src/{commands,workflows,agents}/` are runtime artifacts
 - [ ] `const` everywhere, no mutation (`spread`/`concat` not `push`/`splice`), no `reduce()`
 - [ ] No nested ternaries; multi-line ternaries allowed only when assigned to a named `const` and both branches are plain values (no call, no `await`)
 - [ ] No work (calls, `await`) hoisted out of a ternary guard — keep the call gated
+- [ ] Ternary empty fallback (`undefined`/`null`/`''`/`[]`) on else branch — invert condition so meaningful value comes first
 - [ ] Max 3 chained method calls — beyond 3, use named intermediates
 - [ ] Inline callbacks in chains are 1–2 lines of code — extract longer logic into named functions
 - [ ] Compound boolean conditions extracted into named `const` variables
