@@ -28,9 +28,21 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./*.js": {
-      "types": "./dist/*.d.ts",
-      "import": "./dist/*.js"
+    "./types/*.js": {
+      "types": "./dist/types/*.d.ts",
+      "import": "./dist/types/*.js"
+    },
+    "./schemas/*.js": {
+      "types": "./dist/schemas/*.d.ts",
+      "import": "./dist/schemas/*.js"
+    },
+    "./shared/*.js": {
+      "types": "./dist/shared/*.d.ts",
+      "import": "./dist/shared/*.js"
+    },
+    "./board/*.js": {
+      "types": "./dist/board/*.d.ts",
+      "import": "./dist/board/*.js"
     }
   },
   "files": [
