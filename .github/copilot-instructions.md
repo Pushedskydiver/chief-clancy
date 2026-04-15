@@ -40,7 +40,7 @@ Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash comman
 - **Name compound boolean conditions.** `const isDoubleQuoted = ...` then `if (isDoubleQuoted || isSingleQuoted)`.
 - **No nested ternaries.** Ever.
 - **TSDoc on package public API only** (see [CONVENTIONS.md §Code Style](../docs/CONVENTIONS.md#code-style) — Rule 11). Covers `src/index.ts` + `core/src/{types,schemas,shared,board}/` wildcard subtrees. Internal functions: no TSDoc unless the WHY is non-obvious. Explicit return types on exported functions. TSDoc immediately above its export, no blank line between.
-- **Options objects for 3+ parameters.**
+- **Options objects for 4+ parameters.** (ESLint `max-params: 3`.)
 - **Co-locate types with their module.** Only move to `types/` when used by 2+ modules.
 - **Co-locate helpers with their module.** Extract to `shared/` only when used by 2+ modules.
 - **`eslint-disable` is a last resort.** Look for simpler alternatives first (e.g. `.forEach()` + named function instead of `for...of`).

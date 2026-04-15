@@ -131,10 +131,12 @@ Enforced on save and pre-commit via prettier. Zero manual effort after setup.
 
 ### Code style standards
 
+> **Section superseded 2026-04-15** by `docs/CONVENTIONS.md` §Code Style (live rules). This list was the Phase-1 planning baseline; several bullets have since been tightened or changed (notably Rule 11 narrowing TSDoc to package public API, and the options-object threshold landing at 4+ parameters to match ESLint's `max-params: 3`). Retained for historical decision context; contributors should consult CONVENTIONS.md for current rules.
+
 - **No `reduce()`.** Use explicit loops or `.map()/.filter()` chains. Readability over cleverness.
 - **No long ternaries.** If it doesn't fit on one line, use `if/else` or extract a function.
 - **No nested ternaries.** Ever.
-- **JSDoc on all exported functions.** Description, `@param` for each parameter, `@returns`. Not on internal helpers where types make it obvious. <sub>**Superseded 2026-04-15** by `docs/CONVENTIONS.md` Rule 11 (TSDoc on package public API only). Retained here for historical decision context.</sub>
+- **JSDoc on all exported functions.** Description, `@param` for each parameter, `@returns`. Not on internal helpers where types make it obvious.
 - **Explicit return types on exported functions.** TypeScript inference is for internal code, not public API.
 - **No `any`.** Use `unknown` + type narrowing. `as` casts only where structurally justified with a comment explaining why.
 - **Pure functions by default.** Side effects (HTTP, git, filesystem) isolated to boundary functions. Pure logic extracted into separate functions that take data in and return data out.
