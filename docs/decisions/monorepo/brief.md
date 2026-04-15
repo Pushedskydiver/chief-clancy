@@ -134,7 +134,7 @@ Enforced on save and pre-commit via prettier. Zero manual effort after setup.
 - **No `reduce()`.** Use explicit loops or `.map()/.filter()` chains. Readability over cleverness.
 - **No long ternaries.** If it doesn't fit on one line, use `if/else` or extract a function.
 - **No nested ternaries.** Ever.
-- **JSDoc on all exported functions.** Description, `@param` for each parameter, `@returns`. Not on internal helpers where types make it obvious.
+- **JSDoc on all exported functions.** Description, `@param` for each parameter, `@returns`. Not on internal helpers where types make it obvious. <sub>**Superseded 2026-04-15** by `docs/CONVENTIONS.md` Rule 11 (TSDoc on package public API only). Retained here for historical decision context.</sub>
 - **Explicit return types on exported functions.** TypeScript inference is for internal code, not public API.
 - **No `any`.** Use `unknown` + type narrowing. `as` casts only where structurally justified with a comment explaining why.
 - **Pure functions by default.** Side effects (HTTP, git, filesystem) isolated to boundary functions. Pure logic extracted into separate functions that take data in and return data out.
@@ -275,6 +275,8 @@ chief-clancy/
   README.md
 ```
 
+> **Superseded 2026-04-15** by `docs/CONVENTIONS.md` Rule 7 (Folder Structure). The tree above depicts the original plan of an `index.ts` barrel in every module directory; Barrier ([PR #305](https://github.com/Pushedskydiver/chief-clancy/pull/305)) deleted all such internal barrels in `dev/` + `terminal/`, and `core/` migrates next via Barrier-Core. Retained here for historical decision context.
+
 ---
 
 ## Build order
@@ -345,6 +347,8 @@ Every doc from the existing Clancy repo gets one of four treatments:
 | **docs/guides/CONFIGURATION.md**   | Carry over + update | Update install commands for pnpm. Env var reference unchanged.                                                                             |
 | **docs/guides/SECURITY.md**        | Carry over + review | Security practices still apply. Review for monorepo concerns.                                                                              |
 | **docs/guides/TROUBLESHOOTING.md** | Carry over + update | Add pnpm-specific and monorepo-specific failure modes.                                                                                     |
+
+> **Superseded 2026-04-15** by `docs/CONVENTIONS.md` Rule 7 (Folder Structure) + Rule 11 (TSDoc on package public API only). Several cells above reference "barrel export" (GLOSSARY, ARCHITECTURE, SELF-REVIEW) or JSDoc-on-every-export as default behaviour; internal barrels were deleted by Barrier ([PR #305](https://github.com/Pushedskydiver/chief-clancy/pull/305)) and TSDoc now scopes to the exports-map public API. Retained for historical decision context.
 
 ---
 
@@ -443,11 +447,11 @@ Already scoped. Ship it.
 
 ### Phase 4: Core — types & schemas
 
-| PR  | What                                                                                                                                                                                          | Exit criteria                                                      |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| 4.1 | Shared types: `Board`, `FetchedTicket`, `RemoteInfo`, `GitPlatform`, `PrCreationResult`, `ProgressStatus`, status constants. Consolidate scattered definitions. JSDoc on every exported type. | Types compile, barrel export works                                 |
-| 4.2 | Env schemas: Zod validation for all 6 board configs + `detectBoard()`. TDD.                                                                                                                   | Schema validation tests pass. Property-based tests for edge cases. |
-| 4.3 | Board API schemas: Jira, GitHub, Linear, Shortcut, Notion, AzDo response schemas. TDD.                                                                                                        | All schemas validate against fixture data                          |
+| PR  | What                                                                                                                                                                                                                       | Exit criteria                                                                                     |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| 4.1 | Shared types: `Board`, `FetchedTicket`, `RemoteInfo`, `GitPlatform`, `PrCreationResult`, `ProgressStatus`, status constants. Consolidate scattered definitions. ~~JSDoc on every exported type.~~ (Superseded by Rule 11.) | Types compile, ~~barrel export works~~ types resolve via `@chief-clancy/core/types/*.js` wildcard |
+| 4.2 | Env schemas: Zod validation for all 6 board configs + `detectBoard()`. TDD.                                                                                                                                                | Schema validation tests pass. Property-based tests for edge cases.                                |
+| 4.3 | Board API schemas: Jira, GitHub, Linear, Shortcut, Notion, AzDo response schemas. TDD.                                                                                                                                     | All schemas validate against fixture data                                                         |
 
 ---
 
@@ -659,16 +663,16 @@ Not a sprint. Each phase is independently shippable. Any phase can pause without
 
 ## DA challenges addressed
 
-| DA concern                         | Response                                                                                                                                                           |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| "No user problem solved"           | Correct for day one. The rewrite is investment in codebase quality and architecture. Explicitly chosen trade-off.                                                  |
-| "Premature core extraction"        | Mitigated by building terminal first (phases 2-3), then extracting core with evidence of what terminal actually imports.                                           |
-| "10 new tools at once"             | Tools go in during phase 1 (scaffold), before any application code. Lint rules proven against real code in phase 2. Adjustable.                                    |
-| "35-55 days"                       | Acknowledged. Phased delivery means any phase can pause. No half-broken state.                                                                                     |
-| "Fresh repo is emotional"          | Acknowledged as a trade-off. Old repo archived, not deleted.                                                                                                       |
-| "Functional rules friction"        | Phase 2 is the proving ground. Rules adjusted based on real experience. Test files exempt.                                                                         |
-| "JSDoc on everything"              | Scoped to exported functions only. Internal helpers exempt where types make intent obvious.                                                                        |
-| "Over-tooling for solo maintainer" | Each tool earns its place: pnpm fixes a real CI bug, Turborepo guarantees build order, boundaries enforces architecture. Tools that prove unnecessary get removed. |
+| DA concern                         | Response                                                                                                                                                                                  |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| "No user problem solved"           | Correct for day one. The rewrite is investment in codebase quality and architecture. Explicitly chosen trade-off.                                                                         |
+| "Premature core extraction"        | Mitigated by building terminal first (phases 2-3), then extracting core with evidence of what terminal actually imports.                                                                  |
+| "10 new tools at once"             | Tools go in during phase 1 (scaffold), before any application code. Lint rules proven against real code in phase 2. Adjustable.                                                           |
+| "35-55 days"                       | Acknowledged. Phased delivery means any phase can pause. No half-broken state.                                                                                                            |
+| "Fresh repo is emotional"          | Acknowledged as a trade-off. Old repo archived, not deleted.                                                                                                                              |
+| "Functional rules friction"        | Phase 2 is the proving ground. Rules adjusted based on real experience. Test files exempt.                                                                                                |
+| "JSDoc on everything"              | ~~Scoped to exported functions only.~~ (Further restricted 2026-04-15 by CONVENTIONS.md Rule 11: TSDoc on package public API only — the exports-map surface, not all exported functions.) |
+| "Over-tooling for solo maintainer" | Each tool earns its place: pnpm fixes a real CI bug, Turborepo guarantees build order, boundaries enforces architecture. Tools that prove unnecessary get removed.                        |
 
 ---
 
