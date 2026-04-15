@@ -18,9 +18,9 @@ export type { ConsoleLike, SpawnSyncFn, StdioValue } from './types/spawn.js';
 export {
   computeTargetBranch,
   computeTicketBranch,
-} from './lifecycle/branch/branch.js';
+} from './lifecycle/branch.js';
 
-export { resolveCommitType } from './lifecycle/commit-type/commit-type.js';
+export { resolveCommitType } from './lifecycle/commit-type.js';
 
 export type { CostFs } from './lifecycle/cost/cost.js';
 export { appendCostEntry } from './lifecycle/cost/cost.js';
@@ -29,7 +29,7 @@ export { deliverEpicToBase } from './lifecycle/deliver-epic/deliver-epic.js';
 
 export { deliverViaPullRequest } from './lifecycle/deliver-ticket/deliver-ticket.js';
 
-export { ensureEpicBranch } from './lifecycle/epic/epic.js';
+export { ensureEpicBranch } from './lifecycle/epic.js';
 
 export { checkFeasibility } from './lifecycle/feasibility/feasibility.js';
 
@@ -47,34 +47,31 @@ export {
 } from './lifecycle/plan-file/plan-file.js';
 export type { ApprovalFs } from './lifecycle/plan-file/plan-file.js';
 
-export type { LockData, LockFs } from './lifecycle/lock/lock.js';
+export type { LockData, LockFs } from './lifecycle/lock.js';
 export {
   deleteLock,
   deleteVerifyAttempt,
   isLockStale,
   readLock,
   writeLock,
-} from './lifecycle/lock/lock.js';
+} from './lifecycle/lock.js';
 
-export type { FetchFn } from './lifecycle/pr-creation/pr-creation.js';
-export { attemptPrCreation } from './lifecycle/pr-creation/pr-creation.js';
+export type { FetchFn } from './lifecycle/pr-creation.js';
+export { attemptPrCreation } from './lifecycle/pr-creation.js';
 
 export type { PreflightDeps } from './lifecycle/preflight/preflight.js';
 export { runPreflight } from './lifecycle/preflight/preflight.js';
 
-export type {
-  ProgressEntry,
-  ProgressFs,
-} from './lifecycle/progress/progress.js';
+export type { ProgressEntry, ProgressFs } from './lifecycle/progress.js';
 export {
   appendProgress,
   countReworkCycles,
   findEntriesWithStatus,
   formatTimestamp,
   parseProgressFile,
-} from './lifecycle/progress/progress.js';
+} from './lifecycle/progress.js';
 
-export { buildPrBody } from './lifecycle/pull-request/pr-body/pr-body.js';
+export { buildPrBody } from './lifecycle/pull-request/pr-body.js';
 
 export type { QualityFs } from './lifecycle/quality/quality.js';
 export {
@@ -94,51 +91,42 @@ export { resolvePlatformHandlers } from './lifecycle/rework/rework-handlers.js';
 
 // ─── CLI bridge re-exports ─────────────────────────────────────────────────
 
-export {
-  invokeClaudePrint,
-  invokeClaudeSession,
-} from './cli-bridge/cli-bridge.js';
+export { invokeClaudePrint, invokeClaudeSession } from './cli-bridge.js';
 
 // ─── Notify re-exports ─────────────────────────────────────────────────────
 
-export { sendNotification } from './notify/notify.js';
+export { sendNotification } from './notify.js';
 
 // ─── Agent re-exports ──────────────────────────────────────────────────────
 
-export { aggregateVerdict } from './agents/aggregate/aggregate.js';
-export { invokeReadinessGrade } from './agents/invoke/invoke.js';
-export { safeParseVerdict } from './agents/parse-verdict/parse-verdict.js';
-export {
-  READINESS_CHECK_IDS,
-  readinessVerdictSchema,
-} from './agents/types/types.js';
+export { aggregateVerdict } from './agents/aggregate.js';
+export { invokeReadinessGrade } from './agents/invoke.js';
+export { safeParseVerdict } from './agents/parse-verdict.js';
+export { READINESS_CHECK_IDS, readinessVerdictSchema } from './agents/types.js';
 export type {
   CheckColour,
   CheckResult,
   ReadinessCheckId,
   ReadinessVerdict,
-} from './agents/types/types.js';
+} from './agents/types.js';
 
 // ─── Artifact re-exports ──────────────────────────────────────────────────
 
-export {
-  atomicWrite,
-  rotateFile,
-} from './artifacts/atomic-write/atomic-write.js';
-export type { AtomicFs } from './artifacts/atomic-write/atomic-write.js';
+export { atomicWrite, rotateFile } from './artifacts/atomic-write.js';
+export type { AtomicFs } from './artifacts/atomic-write.js';
 
-export { runPreflightBatch } from './artifacts/preflight-batch/preflight-batch.js';
+export { runPreflightBatch } from './artifacts/preflight-batch.js';
 export type {
   BatchGradeOpts,
   BatchGradeResult,
   GradeOneFn,
-} from './artifacts/preflight-batch/preflight-batch.js';
+} from './artifacts/preflight-batch.js';
 
-export { writeReadinessReport } from './artifacts/readiness-report/readiness-report.js';
+export { writeReadinessReport } from './artifacts/readiness-report.js';
 export type {
   ReportData,
   WriteReportOpts,
-} from './artifacts/readiness-report/readiness-report.js';
+} from './artifacts/readiness-report.js';
 
 // ─── Queue re-exports ─────────────────────────────────────────────────────
 
@@ -168,7 +156,7 @@ export {
   buildPrompt,
   buildReworkPrompt,
   ticketLabel,
-} from './prompt-builder/prompt-builder.js';
+} from './prompt-builder.js';
 
 // ─── Dep-factory re-exports ────────────────────────────────────────────────
 
@@ -185,28 +173,28 @@ export { createContext, RunContext } from './pipeline/context.js';
 export { runPipeline } from './pipeline/run-pipeline.js';
 export type { PipelineDeps, PipelineResult } from './pipeline/run-pipeline.js';
 
-export { branchSetup } from './pipeline/phases/branch-setup/branch-setup.js';
-export type { BranchSetupDeps } from './pipeline/phases/branch-setup/branch-setup.js';
-export { cleanupPhase } from './pipeline/phases/cleanup-phase/cleanup-phase.js';
-export type { CleanupDeps } from './pipeline/phases/cleanup-phase/cleanup-phase.js';
-export { costPhase } from './pipeline/phases/cost-phase/cost-phase.js';
-export type { CostPhaseDeps } from './pipeline/phases/cost-phase/cost-phase.js';
-export { deliverPhase } from './pipeline/phases/deliver-phase/deliver-phase.js';
-export type { DeliverPhaseDeps } from './pipeline/phases/deliver-phase/deliver-phase.js';
-export { dryRun } from './pipeline/phases/dry-run/dry-run.js';
-export { epicCompletion } from './pipeline/phases/epic-completion/epic-completion.js';
-export type { EpicCompletionDeps } from './pipeline/phases/epic-completion/epic-completion.js';
-export { feasibilityPhase } from './pipeline/phases/feasibility/feasibility.js';
-export type { FeasibilityPhaseDeps } from './pipeline/phases/feasibility/feasibility.js';
-export { lockCheck } from './pipeline/phases/lock-check/lock-check.js';
-export type { LockCheckDeps } from './pipeline/phases/lock-check/lock-check.js';
-export { prRetry } from './pipeline/phases/pr-retry/pr-retry.js';
-export type { PrRetryDeps } from './pipeline/phases/pr-retry/pr-retry.js';
-export { preflightPhase } from './pipeline/phases/preflight-phase/preflight-phase.js';
-export type { PreflightPhaseDeps } from './pipeline/phases/preflight-phase/preflight-phase.js';
-export { reworkDetection } from './pipeline/phases/rework-detection/rework-detection.js';
-export type { ReworkDetectionDeps } from './pipeline/phases/rework-detection/rework-detection.js';
-export { ticketFetch } from './pipeline/phases/ticket-fetch/ticket-fetch.js';
-export type { TicketFetchDeps } from './pipeline/phases/ticket-fetch/ticket-fetch.js';
-export { transition } from './pipeline/phases/transition/transition.js';
-export type { TransitionDeps } from './pipeline/phases/transition/transition.js';
+export { branchSetup } from './pipeline/phases/branch-setup.js';
+export type { BranchSetupDeps } from './pipeline/phases/branch-setup.js';
+export { cleanupPhase } from './pipeline/phases/cleanup-phase.js';
+export type { CleanupDeps } from './pipeline/phases/cleanup-phase.js';
+export { costPhase } from './pipeline/phases/cost-phase.js';
+export type { CostPhaseDeps } from './pipeline/phases/cost-phase.js';
+export { deliverPhase } from './pipeline/phases/deliver-phase.js';
+export type { DeliverPhaseDeps } from './pipeline/phases/deliver-phase.js';
+export { dryRun } from './pipeline/phases/dry-run.js';
+export { epicCompletion } from './pipeline/phases/epic-completion.js';
+export type { EpicCompletionDeps } from './pipeline/phases/epic-completion.js';
+export { feasibilityPhase } from './pipeline/phases/feasibility.js';
+export type { FeasibilityPhaseDeps } from './pipeline/phases/feasibility.js';
+export { lockCheck } from './pipeline/phases/lock-check.js';
+export type { LockCheckDeps } from './pipeline/phases/lock-check.js';
+export { prRetry } from './pipeline/phases/pr-retry.js';
+export type { PrRetryDeps } from './pipeline/phases/pr-retry.js';
+export { preflightPhase } from './pipeline/phases/preflight-phase.js';
+export type { PreflightPhaseDeps } from './pipeline/phases/preflight-phase.js';
+export { reworkDetection } from './pipeline/phases/rework-detection.js';
+export type { ReworkDetectionDeps } from './pipeline/phases/rework-detection.js';
+export { ticketFetch } from './pipeline/phases/ticket-fetch.js';
+export type { TicketFetchDeps } from './pipeline/phases/ticket-fetch.js';
+export { transition } from './pipeline/phases/transition.js';
+export type { TransitionDeps } from './pipeline/phases/transition.js';

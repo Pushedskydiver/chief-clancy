@@ -12,7 +12,7 @@ vi.mock('@chief-clancy/core', () => ({
   })),
 }));
 
-vi.mock('../pipeline/phases/deliver-phase/deliver-phase.js', () => ({
+vi.mock('../pipeline/phases/deliver-phase.js', () => ({
   deliverPhase: vi.fn((_ctx: unknown, deps: unknown) => deps),
 }));
 

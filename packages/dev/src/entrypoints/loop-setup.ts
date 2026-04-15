@@ -4,7 +4,7 @@
  * These functions create real Node.js adapters used by the loop
  * entrypoint. Separated from loop.ts to keep the orchestrator lean.
  */
-import type { GradeOneFn } from '../artifacts/preflight-batch/preflight-batch.js';
+import type { GradeOneFn } from '../artifacts/preflight-batch.js';
 import type { GateResult } from '../execute/readiness/readiness-gate.js';
 import type {
   BoardConfig,
@@ -16,7 +16,7 @@ import { spawnSync } from 'node:child_process';
 
 import { createBoard, detectBoard, loadClancyEnv } from '@chief-clancy/core';
 
-import { invokeReadinessGrade } from '../agents/invoke/invoke.js';
+import { invokeReadinessGrade } from '../agents/invoke.js';
 import { runReadinessGate } from '../execute/readiness/readiness-gate.js';
 import { makeEnvFs } from './adapters.js';
 

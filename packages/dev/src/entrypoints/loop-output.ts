@@ -5,7 +5,7 @@ import type { LoopOutcome } from '../index.js';
 import type { PipelineResult } from '../pipeline/run-pipeline.js';
 
 import { formatDuration } from '../lifecycle/format/format.js';
-import { sendNotification } from '../notify/notify.js';
+import { sendNotification } from '../notify.js';
 
 // ─── Result display ─────────────────────────────────────────────────────────
 

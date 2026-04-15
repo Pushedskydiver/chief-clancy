@@ -3,10 +3,10 @@ import type { PipelineResult } from '../pipeline/run-pipeline.js';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { sendNotification } from '../notify/notify.js';
+import { sendNotification } from '../notify.js';
 import { displayOutcome, notifyIfConfigured } from './loop-output.js';
 
-vi.mock('../notify/notify.js', () => ({
+vi.mock('../notify.js', () => ({
   sendNotification: vi.fn().mockResolvedValue(undefined),
 }));
 

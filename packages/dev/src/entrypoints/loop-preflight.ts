@@ -1,16 +1,16 @@
 /**
  * Loop pre-flight helpers — batch grading + report writing for AFK mode.
  */
-import type { ReadinessVerdict } from '../agents/types/types.js';
-import type { AtomicFs } from '../artifacts/atomic-write/atomic-write.js';
-import type { GradeOneFn } from '../artifacts/preflight-batch/preflight-batch.js';
+import type { ReadinessVerdict } from '../agents/types.js';
+import type { AtomicFs } from '../artifacts/atomic-write.js';
+import type { GradeOneFn } from '../artifacts/preflight-batch.js';
 import type { ConsoleLike } from '../types/spawn.js';
 
 import { join } from 'node:path';
 
-import { readinessVerdictSchema } from '../agents/types/types.js';
-import { runPreflightBatch } from '../artifacts/preflight-batch/preflight-batch.js';
-import { writeReadinessReport } from '../artifacts/readiness-report/readiness-report.js';
+import { readinessVerdictSchema } from '../agents/types.js';
+import { runPreflightBatch } from '../artifacts/preflight-batch.js';
+import { writeReadinessReport } from '../artifacts/readiness-report.js';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 

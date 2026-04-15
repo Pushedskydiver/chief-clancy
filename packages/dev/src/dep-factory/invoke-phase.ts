@@ -8,7 +8,7 @@ import type { RunContext } from '../pipeline/context.js';
 import type { SpawnSyncFn } from '../types/spawn.js';
 import type { BoardProvider } from '@chief-clancy/core';
 
-import { invokeClaudeSession } from '../cli-bridge/cli-bridge.js';
+import { invokeClaudeSession } from '../cli-bridge.js';
 
 /** Prompt builder for fresh tickets. */
 type BuildPromptFn = (opts: {

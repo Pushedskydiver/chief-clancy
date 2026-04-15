@@ -12,19 +12,19 @@ import type {
   PrCreationResult,
   RemoteInfo,
 } from '@chief-clancy/core/types/remote.js';
-import type { FetchFn } from '~/d/lifecycle/pr-creation/pr-creation.js';
-import type { ProgressFs } from '~/d/lifecycle/progress/progress.js';
-import type { EpicContext } from '~/d/lifecycle/pull-request/pr-body/pr-body.js';
+import type { FetchFn } from '~/d/lifecycle/pr-creation.js';
+import type { ProgressFs } from '~/d/lifecycle/progress.js';
+import type { EpicContext } from '~/d/lifecycle/pull-request/pr-body.js';
 
-import { resolveCommitType } from '~/d/lifecycle/commit-type/commit-type.js';
-import { buildEpicContext } from '~/d/lifecycle/epic/epic.js';
+import { resolveCommitType } from '~/d/lifecycle/commit-type.js';
+import { buildEpicContext } from '~/d/lifecycle/epic.js';
 import {
   computeDeliveryOutcome,
   progressForOutcome,
-} from '~/d/lifecycle/outcome/outcome.js';
-import { attemptPrCreation } from '~/d/lifecycle/pr-creation/pr-creation.js';
-import { appendProgress } from '~/d/lifecycle/progress/progress.js';
-import { buildPrBody } from '~/d/lifecycle/pull-request/pr-body/pr-body.js';
+} from '~/d/lifecycle/outcome.js';
+import { attemptPrCreation } from '~/d/lifecycle/pr-creation.js';
+import { appendProgress } from '~/d/lifecycle/progress.js';
+import { buildPrBody } from '~/d/lifecycle/pull-request/pr-body.js';
 
 import {
   checkout,

@@ -5,12 +5,9 @@
  * immediately. On red it fails immediately (no retry). On yellow it
  * retries until green or maxRounds exhausted.
  */
-import type {
-  CheckColour,
-  ReadinessVerdict,
-} from '../../agents/types/types.js';
+import type { CheckColour, ReadinessVerdict } from '../../agents/types.js';
 
-import { aggregateVerdict } from '../../agents/aggregate/aggregate.js';
+import { aggregateVerdict } from '../../agents/aggregate.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

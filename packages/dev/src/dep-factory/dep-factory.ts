@@ -7,12 +7,9 @@
  * core phase function.
  */
 import type { CostFs } from '../lifecycle/cost/cost.js';
-import type { LockFs } from '../lifecycle/lock/lock.js';
-import type { FetchFn } from '../lifecycle/pr-creation/pr-creation.js';
-import type {
-  ProgressEntry,
-  ProgressFs,
-} from '../lifecycle/progress/progress.js';
+import type { LockFs } from '../lifecycle/lock.js';
+import type { FetchFn } from '../lifecycle/pr-creation.js';
+import type { ProgressEntry, ProgressFs } from '../lifecycle/progress.js';
 import type { QualityFs } from '../lifecycle/quality/quality.js';
 import type { RunContext } from '../pipeline/context.js';
 import type { PipelineDeps } from '../pipeline/run-pipeline.js';
@@ -36,43 +33,43 @@ import {
   currentBranch as gitCurrentBranch,
 } from '@chief-clancy/core';
 
-import { invokeClaudePrint } from '../cli-bridge/cli-bridge.js';
+import { invokeClaudePrint } from '../cli-bridge.js';
 import {
   computeTargetBranch,
   computeTicketBranch,
-} from '../lifecycle/branch/branch.js';
-import { resolveCommitType } from '../lifecycle/commit-type/commit-type.js';
+} from '../lifecycle/branch.js';
+import { resolveCommitType } from '../lifecycle/commit-type.js';
 import { appendCostEntry } from '../lifecycle/cost/cost.js';
 import { deliverEpicToBase } from '../lifecycle/deliver-epic/deliver-epic.js';
-import { ensureEpicBranch } from '../lifecycle/epic/epic.js';
+import { ensureEpicBranch } from '../lifecycle/epic.js';
 import { checkFeasibility } from '../lifecycle/feasibility/feasibility.js';
 import {
   deleteLock,
   deleteVerifyAttempt,
   readLock,
   writeLock,
-} from '../lifecycle/lock/lock.js';
-import { attemptPrCreation } from '../lifecycle/pr-creation/pr-creation.js';
+} from '../lifecycle/lock.js';
+import { attemptPrCreation } from '../lifecycle/pr-creation.js';
 import {
   appendProgress,
   countReworkCycles,
   findEntriesWithStatus,
-} from '../lifecycle/progress/progress.js';
-import { buildPrBody } from '../lifecycle/pull-request/pr-body/pr-body.js';
+} from '../lifecycle/progress.js';
+import { buildPrBody } from '../lifecycle/pull-request/pr-body.js';
 import { detectResume, executeResume } from '../lifecycle/resume/resume.js';
 import { resolvePlatformHandlers } from '../lifecycle/rework/rework-handlers.js';
 import { fetchReworkFromPrReview } from '../lifecycle/rework/rework.js';
-import { sendNotification } from '../notify/notify.js';
-import { branchSetup } from '../pipeline/phases/branch-setup/branch-setup.js';
-import { cleanupPhase } from '../pipeline/phases/cleanup-phase/cleanup-phase.js';
-import { costPhase } from '../pipeline/phases/cost-phase/cost-phase.js';
-import { epicCompletion } from '../pipeline/phases/epic-completion/epic-completion.js';
-import { feasibilityPhase } from '../pipeline/phases/feasibility/feasibility.js';
-import { lockCheck } from '../pipeline/phases/lock-check/lock-check.js';
-import { prRetry } from '../pipeline/phases/pr-retry/pr-retry.js';
-import { reworkDetection } from '../pipeline/phases/rework-detection/rework-detection.js';
-import { ticketFetch } from '../pipeline/phases/ticket-fetch/ticket-fetch.js';
-import { transition } from '../pipeline/phases/transition/transition.js';
+import { sendNotification } from '../notify.js';
+import { branchSetup } from '../pipeline/phases/branch-setup.js';
+import { cleanupPhase } from '../pipeline/phases/cleanup-phase.js';
+import { costPhase } from '../pipeline/phases/cost-phase.js';
+import { epicCompletion } from '../pipeline/phases/epic-completion.js';
+import { feasibilityPhase } from '../pipeline/phases/feasibility.js';
+import { lockCheck } from '../pipeline/phases/lock-check.js';
+import { prRetry } from '../pipeline/phases/pr-retry.js';
+import { reworkDetection } from '../pipeline/phases/rework-detection.js';
+import { ticketFetch } from '../pipeline/phases/ticket-fetch.js';
+import { transition } from '../pipeline/phases/transition.js';
 import { wireDeliver } from './deliver-phase.js';
 import { makeInvokePhase } from './invoke-phase.js';
 import { localTicketSeed, wirePreflight } from './local-wiring.js';

@@ -5,7 +5,7 @@
  * entrypoints. Both are bundled by esbuild into self-contained ESM
  * files, so this module is inlined at build time — no runtime dep.
  */
-import type { AtomicFs } from '../artifacts/atomic-write/atomic-write.js';
+import type { AtomicFs } from '../artifacts/atomic-write.js';
 import type { CostFs, LockFs, ProgressFs, QualityFs } from '../index.js';
 import type { EnvFileSystem, ExecGit } from '@chief-clancy/core';
 import type { SpawnSyncReturns } from 'node:child_process';

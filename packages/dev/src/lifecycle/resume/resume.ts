@@ -7,13 +7,10 @@
  */
 import type { ExecGit } from '@chief-clancy/core/shared/git-ops/index.js';
 import type { PrCreationResult } from '@chief-clancy/core/types/remote.js';
-import type { LockData } from '~/d/lifecycle/lock/lock.js';
-import type { ProgressFs } from '~/d/lifecycle/progress/progress.js';
+import type { LockData } from '~/d/lifecycle/lock.js';
+import type { ProgressFs } from '~/d/lifecycle/progress.js';
 
-import {
-  appendProgress,
-  findLastEntry,
-} from '~/d/lifecycle/progress/progress.js';
+import { appendProgress, findLastEntry } from '~/d/lifecycle/progress.js';
 
 import {
   branchExists,

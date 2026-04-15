@@ -21,7 +21,7 @@ import { fileURLToPath } from 'node:url';
 
 import { createBoard, detectBoard, loadClancyEnv } from '@chief-clancy/core';
 
-import { invokeReadinessGrade } from '../agents/invoke/invoke.js';
+import { invokeReadinessGrade } from '../agents/invoke.js';
 import { loadRubric } from '../agents/rubric-loader.js';
 import { buildPipelineDeps } from '../dep-factory/dep-factory.js';
 import { runReadinessGate } from '../execute/readiness/readiness-gate.js';
@@ -29,10 +29,7 @@ import { runSingleTicketByKey } from '../execute/single.js';
 import { formatDuration } from '../lifecycle/format/format.js';
 import { createContext } from '../pipeline/context.js';
 import { runPipeline } from '../pipeline/run-pipeline.js';
-import {
-  buildPrompt,
-  buildReworkPrompt,
-} from '../prompt-builder/prompt-builder.js';
+import { buildPrompt, buildReworkPrompt } from '../prompt-builder.js';
 import {
   makeCostFs,
   makeEnvFs,

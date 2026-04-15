@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { makeInvokePhase } from './invoke-phase.js';
 
-vi.mock('../cli-bridge/cli-bridge.js', () => ({
+vi.mock('../cli-bridge.js', () => ({
   invokeClaudeSession: vi.fn(() => true),
 }));
 
@@ -47,7 +47,7 @@ describe('makeInvokePhase', () => {
       }),
     );
 
-    const { invokeClaudeSession } = await import('../cli-bridge/cli-bridge.js');
+    const { invokeClaudeSession } = await import('../cli-bridge.js');
     expect(invokeClaudeSession).toHaveBeenCalledWith({
       prompt: 'fresh-prompt',
       model: 'opus',
@@ -77,7 +77,7 @@ describe('makeInvokePhase', () => {
   });
 
   it('returns ok: false when session fails', async () => {
-    const { invokeClaudeSession } = await import('../cli-bridge/cli-bridge.js');
+    const { invokeClaudeSession } = await import('../cli-bridge.js');
     vi.mocked(invokeClaudeSession).mockReturnValueOnce(false);
 
     const spawn = vi.fn();

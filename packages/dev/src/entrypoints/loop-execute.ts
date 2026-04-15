@@ -13,10 +13,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { buildPipelineDeps } from '../dep-factory/dep-factory.js';
 import { runSingleTicketByKey } from '../execute/single.js';
 import { runPipeline } from '../pipeline/run-pipeline.js';
-import {
-  buildPrompt,
-  buildReworkPrompt,
-} from '../prompt-builder/prompt-builder.js';
+import { buildPrompt, buildReworkPrompt } from '../prompt-builder.js';
 import { executeQueue } from '../queue.js';
 import { checkStopCondition } from '../stop-condition.js';
 import {
