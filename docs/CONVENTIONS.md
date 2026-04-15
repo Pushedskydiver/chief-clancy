@@ -65,7 +65,8 @@ Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 
 - **No `reduce()`.** Use `.map()/.filter()` chains or explicit simple functions. Readability over cleverness.
 - **Max 3 chained method calls.** Beyond 3, assign intermediate results to named variables. Inline callbacks in chains must be short (1–2 lines) — extract longer logic into a named function and pass it in.
-- **No long ternaries.** If it doesn't fit on one line, use `if/else` or extract a function.
+- **No long ternaries.** If it doesn't fit on one line, early-return when one branch is empty or extract a function. When both branches are plain values (no call, no `await`), a multi-line ternary assigned to a named `const` is acceptable.
+- **Don't hoist a call out of its guard.** A call gated behind a ternary branch runs only on that branch. Hoisting it to a `const` above the ternary evaluates it unconditionally — changing semantics when the call has side effects or can throw, and paying the cost either way.
 - **No nested ternaries.** Ever.
 - **TSDoc on package public API only.** Public API = symbols exported from a path declared in `package.json` `exports` (today: the `src/index.ts` in library-publishing packages — `core`, `terminal`, `brief`, `plan`, `dev` — plus paths under `core/src/{types,schemas,shared,board}/` reachable via the wildcard subpaths). Bin-only packages (`chief-clancy`) and content-only packages (`scan`) don't expose a library surface; no TSDoc rule applies. TSDoc must add semantics beyond the signature: units, invariants, error conditions, edge-case behaviour, cross-function contracts, or _why_ the symbol exists.
   - **Migration is deferred.** Existing JSDoc stays until the file is touched for other reasons. **When editing any function in a covered file, bring that function's TSDoc up to spec. Don't refactor TSDoc you aren't otherwise changing.** New code follows the rule immediately.
