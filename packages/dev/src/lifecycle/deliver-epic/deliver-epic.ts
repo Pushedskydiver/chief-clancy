@@ -6,7 +6,7 @@
  * creates the PR, and appends progress. Returns structured results —
  * no console output. Board transitions are the caller's responsibility.
  */
-import type { BoardConfig } from '@chief-clancy/core/schemas/env/env.js';
+import type { BoardConfig } from '@chief-clancy/core/schemas/env.js';
 import type { ExecGit } from '@chief-clancy/core/shared/git-ops/index.js';
 import type {
   PrCreationResult,

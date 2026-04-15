@@ -7,7 +7,7 @@ export type {
   NotionEnv,
   SharedEnv,
   ShortcutEnv,
-} from './env/env.js';
+} from './env.js';
 
 export {
   azdoEnvSchema,
@@ -17,7 +17,7 @@ export {
   notionEnvSchema,
   sharedEnvSchema,
   shortcutEnvSchema,
-} from './env/env.js';
+} from './env.js';
 
 export type {
   AzdoProjectResponse,
@@ -46,7 +46,7 @@ export type {
   GitHubRepoPing,
   GitHubReview,
   GitHubReviewList,
-} from './github/github.js';
+} from './github.js';
 export {
   githubCommentSchema,
   githubCommentsResponseSchema,
@@ -59,7 +59,7 @@ export {
   githubRepoPingSchema,
   githubReviewListSchema,
   githubReviewSchema,
-} from './github/github.js';
+} from './github.js';
 
 export type {
   JiraIssueLabelsResponse,
@@ -67,14 +67,14 @@ export type {
   JiraProjectPing,
   JiraSearchResponse,
   JiraTransitionsResponse,
-} from './jira/jira.js';
+} from './jira.js';
 export {
   jiraIssueLabelsResponseSchema,
   jiraIssueLinksResponseSchema,
   jiraProjectPingSchema,
   jiraSearchResponseSchema,
   jiraTransitionsResponseSchema,
-} from './jira/jira.js';
+} from './jira.js';
 
 export type {
   LinearIssueChildrenResponse,
@@ -89,7 +89,7 @@ export type {
   LinearViewerResponse,
   LinearWorkflowStatesResponse,
   LinearWorkspaceLabelsResponse,
-} from './linear/linear.js';
+} from './linear.js';
 export {
   linearIssueChildrenResponseSchema,
   linearIssueLabelSearchResponseSchema,
@@ -102,19 +102,19 @@ export {
   linearViewerResponseSchema,
   linearWorkflowStatesResponseSchema,
   linearWorkspaceLabelsResponseSchema,
-} from './linear/linear.js';
+} from './linear.js';
 
 export type {
   NotionDatabaseQueryResponse,
   NotionMultiSelectOption,
   NotionPage,
   NotionUserResponse,
-} from './notion/notion.js';
+} from './notion.js';
 export {
   notionDatabaseQueryResponseSchema,
   notionPageSchema,
   notionUserResponseSchema,
-} from './notion/notion.js';
+} from './notion.js';
 
 export type {
   ShortcutEpicStoriesResponse,
@@ -126,7 +126,7 @@ export type {
   ShortcutStorySearchResponse,
   ShortcutStoryUpdateResponse,
   ShortcutWorkflowsResponse,
-} from './shortcut/shortcut.js';
+} from './shortcut.js';
 export {
   shortcutEpicStoriesResponseSchema,
   shortcutLabelCreateResponseSchema,
@@ -136,4 +136,4 @@ export {
   shortcutStorySearchResponseSchema,
   shortcutStoryUpdateResponseSchema,
   shortcutWorkflowsResponseSchema,
-} from './shortcut/shortcut.js';
+} from './shortcut.js';

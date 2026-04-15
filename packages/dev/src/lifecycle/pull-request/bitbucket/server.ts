@@ -3,7 +3,7 @@
  *
  * Auth: Bearer token (personal access token).
  */
-import type { BitbucketServerComment } from '@chief-clancy/core/schemas/bitbucket/bitbucket.js';
+import type { BitbucketServerComment } from '@chief-clancy/core/schemas/bitbucket.js';
 import type {
   PrCreationResult,
   PrReviewState,
@@ -13,7 +13,7 @@ import {
   bitbucketServerActivitiesSchema,
   bitbucketServerPrCreatedSchema,
   bitbucketServerPrListSchema,
-} from '@chief-clancy/core/schemas/bitbucket/bitbucket.js';
+} from '@chief-clancy/core/schemas/bitbucket.js';
 
 import { postPullRequest } from '../post-pr/post-pr.js';
 import {

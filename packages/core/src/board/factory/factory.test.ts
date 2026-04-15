@@ -1,4 +1,4 @@
-import type { BoardConfig } from '~/c/schemas/env/env.js';
+import type { BoardConfig } from '~/c/schemas/env.js';
 
 import { describe, expect, it, vi } from 'vitest';
 

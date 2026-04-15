@@ -20,7 +20,7 @@ import {
   githubPrCreatedSchema,
   githubPrListSchema,
   githubReviewListSchema,
-} from '@chief-clancy/core/schemas/github/github.js';
+} from '@chief-clancy/core/schemas/github.js';
 
 import { postPullRequest } from './post-pr/post-pr.js';
 import {

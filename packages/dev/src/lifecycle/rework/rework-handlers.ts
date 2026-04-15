@@ -6,7 +6,7 @@
  * duplication — callers use `handlers.checkReviewState(...)` instead
  * of switching on `remote.host`.
  */
-import type { SharedEnv } from '@chief-clancy/core/schemas/env/env.js';
+import type { SharedEnv } from '@chief-clancy/core/schemas/env.js';
 import type {
   PrReviewState,
   RemoteInfo,

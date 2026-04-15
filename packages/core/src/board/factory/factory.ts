@@ -4,7 +4,7 @@
  * Creates a Board implementation from a BoardConfig discriminated union.
  * Each case dispatches to the provider-specific factory function.
  */
-import type { BoardConfig } from '~/c/schemas/env/env.js';
+import type { BoardConfig } from '~/c/schemas/env.js';
 import type { Fetcher } from '~/c/shared/http/index.js';
 import type { Board } from '~/c/types/index.js';
 

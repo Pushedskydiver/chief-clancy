@@ -5,7 +5,7 @@
  * delegates to the appropriate platform-specific creation function.
  * Also provides {@link buildManualPrUrl} for fallback URLs.
  */
-import type { SharedEnv } from '@chief-clancy/core/schemas/env/env.js';
+import type { SharedEnv } from '@chief-clancy/core/schemas/env.js';
 import type {
   AzdoRemote,
   BitbucketRemote,

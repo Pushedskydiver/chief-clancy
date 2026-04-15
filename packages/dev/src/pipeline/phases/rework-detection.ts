@@ -5,7 +5,7 @@
  * Returns structured results — no console output.
  */
 import type { RunContext } from '../context.js';
-import type { BoardConfig } from '@chief-clancy/core/schemas/env/env.js';
+import type { BoardConfig } from '@chief-clancy/core/schemas/env.js';
 import type { FetchedTicket } from '@chief-clancy/core/types/board.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────

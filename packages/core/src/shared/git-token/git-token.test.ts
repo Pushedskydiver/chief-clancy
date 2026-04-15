@@ -1,4 +1,4 @@
-import type { SharedEnv } from '~/c/schemas/env/env.js';
+import type { SharedEnv } from '~/c/schemas/env.js';
 import type { RemoteInfo } from '~/c/types/remote.js';
 
 import { describe, expect, it } from 'vitest';

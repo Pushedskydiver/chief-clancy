@@ -3,7 +3,7 @@
  *
  * Prevents mock drift across test files when the Board type changes.
  */
-import type { BoardConfig } from '@chief-clancy/core/schemas/env/env.js';
+import type { BoardConfig } from '@chief-clancy/core/schemas/env.js';
 import type { Board } from '@chief-clancy/core/types/board.js';
 
 import { vi } from 'vitest';

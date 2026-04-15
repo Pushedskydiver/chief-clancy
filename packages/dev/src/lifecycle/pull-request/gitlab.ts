@@ -10,7 +10,7 @@
 import type {
   GitLabDiscussion,
   GitLabNote,
-} from '@chief-clancy/core/schemas/gitlab/gitlab.js';
+} from '@chief-clancy/core/schemas/gitlab.js';
 import type {
   PrCreationResult,
   PrReviewState,
@@ -20,7 +20,7 @@ import {
   gitlabDiscussionsSchema,
   gitlabMrCreatedSchema,
   gitlabMrListSchema,
-} from '@chief-clancy/core/schemas/gitlab/gitlab.js';
+} from '@chief-clancy/core/schemas/gitlab.js';
 
 import { postPullRequest } from './post-pr/post-pr.js';
 import {

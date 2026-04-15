@@ -6,7 +6,7 @@
  * phases work unchanged.
  */
 import type { EnvFileSystem } from '@chief-clancy/core';
-import type { BoardConfig } from '@chief-clancy/core/schemas/env/env.js';
+import type { BoardConfig } from '@chief-clancy/core/schemas/env.js';
 import type { Board } from '@chief-clancy/core/types/board.js';
 import type { RunContext } from '~/d/pipeline/context.js';
 

@@ -1,5 +1,5 @@
 import type { PrRetryDeps } from './pr-retry.js';
-import type { BoardConfig } from '@chief-clancy/core/schemas/env/env.js';
+import type { BoardConfig } from '@chief-clancy/core/schemas/env.js';
 import type {
   PrCreationResult,
   RemoteInfo,
