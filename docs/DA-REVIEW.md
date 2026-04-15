@@ -65,6 +65,10 @@ The other Required disciplines below are specialisations: Schema-pair check is c
 
 Measured on the 35-finding replay corpus (2026-04-14): 65.7% end-to-end recall on retrieval-addressable classes. _Motivated by PR #291 — 49 findings of which 24 were restatements of the same wrong mental model, all retrieval-addressable._
 
+### Multi-section internal-consistency pass
+
+After verifying each individual claim (Claim-extraction pass above), re-read the diff top-to-bottom and flag any absolute statement that conflicts with a claim elsewhere in the same diff. Per-commit verification catches mechanical errors; this is a distinct pass for logical self-contradiction. Rule 7 + Rule 11 in PR #306 produced 4 mutual-contradiction misses at the per-commit DA stage because each rule was drafted without re-reading the other's prose. Also: for any edit that adds supersession footnotes to pre-existing content, audit the entire surrounding block for drift — don't footnote one bullet and leave neighbours stale. _Caught by Copilot: PR #306 — 8 of 10 findings were this class._
+
 ### Wiring-claim direction audit
 
 When an extracted claim asserts absence — "X is NOT wired", "Y is deferred", "no code reads Z", "runtime enforcement is not yet implemented" — grep for callers of X/Y/Z **before** accepting the claim. The corpus measured 43% recall on these negative-proof claims vs 71% on positive-proof claims: reviewers (and hardened DA) are systematically weaker at falsifying "absence" than "presence". The fix is mechanical — the grep takes seconds, and if callers exist, the claim is the defect.
@@ -143,8 +147,16 @@ Workflow `.md` files in `src/{commands,workflows,agents}/` are runtime artifacts
 
 - [ ] No cross-package imports violating dependency direction (core ← terminal ← wrapper)
 - [ ] No boundary violations (core importing from terminal or chat)
-- [ ] Should this be exported? Who calls it? Are internal modules leaking through the package barrel?
-- [ ] Barrel export completeness: every module with external consumers has an `index.ts` barrel. New exports consumed outside the module must be added to the barrel. Unused barrel exports are flagged by knip
+- [ ] Should this be exported? Who calls it? If exported from a **package-entry `src/index.ts`**, is it genuinely cross-package public API? Internal modules consumed via `~/` deep imports should not appear in the package-entry barrel.
+- [ ] New public exports land at the correct surface: cross-package library consumers import from `src/index.ts`; `core/` additionally exposes deep paths under its wildcard subtrees. No new internal `index.ts` barrels under `src/` — see [CONVENTIONS.md §Folder Structure](CONVENTIONS.md#folder-structure).
+
+### Rule 7 — folder structure
+
+- [ ] Any new folder passes the wrapper/grouping test (≥2 source files OR ubiquitous-language concept cluster). Single-file concepts stay flat.
+- [ ] No new internal `index.ts` barrel introduced (only package entry + `core/` wildcard-exposed boundaries allow them — see [CONVENTIONS.md §Migration state](CONVENTIONS.md#migration-state--core)).
+- [ ] If a single-impl wrapper is flattened, consumer-surface grep has been run before any mechanical rewrite. SELF-REVIEW Rule 7 owns the enumerated walk (static imports, `vi.mock`, dynamic `import()`, docs deep-path refs, knip globs); this checklist owns the mandate.
+- [ ] Mode-axis splits (local/remote, online/offline) go at an adapter boundary, not as top-level folders.
+- [ ] New `shared/` entries have 2+ sibling consumers at introduction; no `utils/` junk drawers.
 
 ## Conventions & code patterns
 
@@ -162,16 +174,24 @@ Workflow `.md` files in `src/{commands,workflows,agents}/` are runtime artifacts
 - [ ] No `eslint-disable` without justification — look for simpler alternatives first
 - [ ] Naming: files/dirs kebab-case, types PascalCase, functions camelCase, constants UPPER_SNAKE_CASE
 
-## JSDoc & documentation
+## TSDoc & documentation
 
-DA owns the **comment and doc layer**: stale prose, drifted JSDoc, hardcoded values in comments. [SELF-REVIEW.md](SELF-REVIEW.md) owns the **code layer**: stale fixture values, mock URLs, and string literals in actual code. Don't duplicate the check — split the ownership.
+DA owns the **comment and doc layer**: stale prose, drifted TSDoc, hardcoded values in comments. [SELF-REVIEW.md](SELF-REVIEW.md) owns the **code layer**: stale fixture values, mock URLs, and string literals in actual code. Don't duplicate the check — split the ownership.
 
-- [ ] JSDoc on all exported functions with `@param` and `@returns`
+- [ ] TSDoc present on new public-API exports (library-publishing package `src/index.ts` or a `core/` wildcard-exposed path). TSDoc adds semantics beyond the signature; internal functions do not need TSDoc unless the WHY is non-obvious. See [CONVENTIONS.md §Code Style](CONVENTIONS.md#code-style) — Rule 11.
 - [ ] Explicit return types on exported functions
-- [ ] JSDoc block immediately above the function it documents (no helpers inserted between)
+- [ ] TSDoc block immediately above the function it documents (no helpers inserted between)
 - [ ] Comments match what the code actually does after refactoring (stale prose is the #1 doc-layer catch — _CodeRabbit caught `"optional"` in JSDoc after the field was renamed to `roleKey`_)
-- [ ] No hardcoded counts, versions, or phase numbers in **comments and JSDoc** (code-level hardcodes are self-review's beat)
+- [ ] No hardcoded counts, versions, or phase numbers in **comments and TSDoc** (code-level hardcodes are self-review's beat)
 - [ ] Doc strings reference paths and identifiers that still exist (post-restructure rename audit)
+
+### Rule 11 — TSDoc scope
+
+- [ ] New symbols on the public-API surface (library-entry or wildcard-exposed) have TSDoc that adds semantics beyond the signature.
+- [ ] When any function is edited in a TSDoc-covered file, is that function's TSDoc current? (Opportunistic migration: touched-function scope only; don't refactor TSDoc you aren't otherwise changing.)
+- [ ] Re-export sites (barrels — including nested barrels that re-export from other barrels) carry no TSDoc. Trace to the original declaration file.
+- [ ] Deep-alias paths (`~/d/foo.js`, `~/c/shared/...`) are not themselves a public-API signal — a file reachable only via aliases with no `package.json` `exports` entry is internal.
+- [ ] Signature-restating TSDoc (`@param name - The name`) is deleted when the file is touched.
 
 ## Type safety
 

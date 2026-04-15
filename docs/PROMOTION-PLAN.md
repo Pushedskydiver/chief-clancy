@@ -66,7 +66,7 @@ Add to PR6:
 
 > - When a diff adds OR modifies more than one section of a single doc, re-read each new/edited passage against every other new/edited passage in the same diff. Absolute phrases (“no X exists,” “X is the only Y,” “every package,” “for one of N reasons”) introduced in one section frequently contradict another section. Grep the diff for absolute claims and trace each against the rest of the diff. Separately, for any edit that introduces adjacent supersession footnotes on a block of pre-existing rules, audit the entire block for drift — don’t footnote one bullet and leave neighbours stale. _Caught by Copilot: PR #306 — 8 of 10 findings were this class._
 
-**DA-REVIEW.md — new bullet under `## Behaviour claims`:**
+**DA-REVIEW.md — new `### Multi-section internal-consistency pass` subsection under `## Required disciplines`:**
 
 > - **Multi-section doc PRs: cross-section internal-consistency pass.** After verifying each individual claim, re-read the diff top-to-bottom and flag any absolute statement that conflicts with a claim elsewhere in the same diff. Per-commit verification catches mechanical errors; this is a distinct pass for logical self-contradiction. Rule 7 + Rule 11 in PR5 produced 4 mutual-contradiction misses at the per-commit DA stage because each rule was drafted without re-reading the other's prose.
 
