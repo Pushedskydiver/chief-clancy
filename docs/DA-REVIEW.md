@@ -157,7 +157,7 @@ Workflow `.md` files in `src/{commands,workflows,agents}/` are runtime artifacts
 ## Folder structure
 
 - [ ] Any new **concept folder** (not a build-system/runtime boundary folder like `src/entrypoints/`) passes the wrapper/grouping test (≥2 source files OR ubiquitous-language concept cluster). Single-file concepts stay flat.
-- [ ] No new internal `index.ts` barrel introduced (only package entry + `core/` wildcard-exposed boundaries are re-export barrels — see [CONVENTIONS.md §Migration state](CONVENTIONS.md#migration-state--core)).
+- [ ] No new internal `index.ts` barrel introduced (only package-entry `src/index.ts` files are re-export barrels post-Barrier-Core — see [CONVENTIONS.md §Migration state](CONVENTIONS.md#migration-state--core)).
 - [ ] If a single-impl wrapper is flattened, consumer-surface grep has been run before any mechanical rewrite. SELF-REVIEW Folder structure owns the enumerated walk (static imports, `vi.mock`, dynamic `import()`, docs deep-path refs, knip globs); this checklist owns the mandate.
 - [ ] Mode-axis splits (local/remote, online/offline) go at an adapter boundary, not as top-level folders.
 - [ ] New `shared/` entries have 2+ sibling consumers at introduction; no `utils/` junk drawers.

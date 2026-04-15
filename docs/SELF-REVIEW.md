@@ -137,7 +137,7 @@ Workflow `.md` files are as load-bearing as TypeScript — Claude follows them s
 
 - Are new exports from a package-entry `src/index.ts` genuinely cross-package public API, or internal modules that intra-package code should consume via `~/` deep imports? (installer internals should not be in the package-entry barrel)
 - Are options types (`FetchOpts`, `TransitionOpts`) exported? They should stay internal unless consumed outside the file.
-- Are board-internal label helpers (`createLabel`, `fetchLabels`, `getStoryLabelIds`) leaking through any wildcard-exposed `core/board/<provider>/` barrel? (See [CONVENTIONS.md §Migration state](CONVENTIONS.md#migration-state--core).)
+- Are board-internal label helpers (`createLabel`, `fetchLabels`, `getStoryLabelIds`) leaking as non-barrel wildcard-exposed files under `core/board/<provider>/`? (Post-Barrier-Core, every non-barrel file under a wildcard subtree is a public boundary — see [CONVENTIONS.md §Migration state](CONVENTIONS.md#migration-state--core).)
 - If two boards export the same symbol name (e.g. `fetchBlockerStatus`), is the collision resolved at the import site (`import { fetchBlockerStatus as fetchGitHubBlockerStatus }`) or via a source-file rename? (Package-entry and wildcard-exposed barrels exist for package-boundary exports, not for collision resolution — see [CONVENTIONS.md §Export Hygiene](CONVENTIONS.md#export-hygiene).)
 
 ### Rule 11 — TSDoc scope

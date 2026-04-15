@@ -68,7 +68,7 @@ Delivery modules live in `packages/dev/src/lifecycle/`. PR creation lives in `de
 - GitHub epic completion: after creating the epic PR, Clancy adds the build label (`CLANCY_LABEL_BUILD` or `CLANCY_LABEL` fallback) to the parent GitHub issue so downstream tooling can discover it. Best-effort via `board.addLabel` (errors swallowed). Non-GitHub boards use `transitionTicket` instead
 - Single-child parent auto-close: when single-child skip is active, the child PR body includes `Closes #{parent}` (GitHub only, valid issue refs only) so the parent auto-closes on merge
 - PR retry phase: retries PR creation for tickets that were pushed but failed to create a PR (network recovery). Scans progress.txt for PUSHED entries without PR_CREATED
-- Remote detection: `parseRemote()` in `core/shared/remote/` handles GitHub, GitLab, Bitbucket Cloud/Server, Azure DevOps, GHE, and self-hosted instances
+- Remote detection: `parseRemote()` in `core/shared/remote.ts` handles GitHub, GitLab, Bitbucket Cloud/Server, Azure DevOps, GHE, and self-hosted instances
 - Git host auth: GitHub uses Bearer token, GitLab uses PRIVATE-TOKEN header, Bitbucket uses Basic Auth
 - `CLANCY_GIT_PLATFORM` and `CLANCY_GIT_API_URL` override auto-detection for custom domains
 - `CLANCY_STATUS_REVIEW` is used when creating a PR (falls back to `CLANCY_STATUS_DONE`)

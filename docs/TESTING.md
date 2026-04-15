@@ -177,7 +177,7 @@ Each package has its own `vitest.config.ts` for `pnpm test` within the package. 
 
 ### Vitest alias gotcha
 
-When aliasing package names in vitest configs, use **directory paths**, not file paths. Vite's alias system uses string prefix matching: if `@chief-clancy/core` maps to `../core/src/index.ts`, then `@chief-clancy/core/types/index.js` resolves to `../core/src/index.ts/types/index.js` (ENOTDIR). Map to the directory (`../core/src`) so subpath imports resolve correctly.
+When aliasing package names in vitest configs, use **directory paths**, not file paths. Vite's alias system uses string prefix matching: if `@chief-clancy/core` maps to `../core/src/index.ts`, then `@chief-clancy/core/types/board.js` resolves to `../core/src/index.ts/types/board.js` (ENOTDIR). Map to the directory (`../core/src`) so subpath imports resolve correctly.
 
 Any vitest config that transitively resolves `@chief-clancy/dev` source also needs a `~/d` alias — dev source uses `~/d/` path aliases internally.
 

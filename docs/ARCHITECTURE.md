@@ -198,7 +198,7 @@ All board operations go through a unified `Board` type (`core/types/`):
 | `removeLabel(issueKey, label)`                                 | Remove label from issue                        |
 | `sharedEnv()`                                                  | Board-specific env vars for downstream modules |
 
-`createBoard(config)` in `core/board/factory/` is the single switch on `config.provider`. Supports: GitHub, Jira, Linear, Shortcut, Notion, Azure DevOps.
+`createBoard(config)` in `core/board/factory.ts` is the single switch on `config.provider`. Supports: GitHub, Jira, Linear, Shortcut, Notion, Azure DevOps.
 
 ## Hook Architecture
 
