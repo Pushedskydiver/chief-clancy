@@ -34,7 +34,7 @@ Drive-by refactors mixed with feature work are harder to review, harder to rever
 
 ## Code accuracy
 
-> Comment-level and TSDoc accuracy is owned by [DA-REVIEW.md](DA-REVIEW.md#tsdoc--documentation). Self-review focuses on accuracy in **actual code values**: fixture data, mock URLs, hardcoded literals, parameter usage.
+> Comment-level and TSDoc accuracy is owned by [DA-REVIEW.md](DA-REVIEW.md#tsdoc--documentation). Self-review focuses on accuracy in **actual code values**: fixture data, mock URLs, hardcoded literals, parameter usage. The §Consistency bullet on absolute phrases and adjacent supersession footnote drift is also owned by DA via the [Multi-section internal-consistency pass](DA-REVIEW.md#multi-section-internal-consistency-pass); every other §Consistency bullet and every other SELF-REVIEW section remains author-owned.
 
 - Are all function parameters used? Remove unused params or use `_prefixed` naming if keeping for API stability
 - Do mock/test URLs match the actual production endpoints? (read the production code to verify)
