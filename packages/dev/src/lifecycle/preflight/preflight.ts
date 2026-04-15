@@ -5,10 +5,10 @@
  * required binaries, `.clancy/.env` file, git repository, and working
  * directory state. All I/O is dependency-injected for testability.
  */
-import type { EnvFileSystem } from '@chief-clancy/core/shared/env-parser/index.js';
+import type { EnvFileSystem } from '@chief-clancy/core/shared/env-parser.js';
 
-import { loadClancyEnv } from '@chief-clancy/core/shared/env-parser/index.js';
-import { hasUncommittedChanges } from '@chief-clancy/core/shared/git-ops/index.js';
+import { loadClancyEnv } from '@chief-clancy/core/shared/env-parser.js';
+import { hasUncommittedChanges } from '@chief-clancy/core/shared/git-ops.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

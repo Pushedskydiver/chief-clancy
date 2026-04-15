@@ -7,7 +7,7 @@
  */
 import type { AzdoCtx } from '../api/index.js';
 
-import { modifyLabelList, safeLabel } from '~/c/shared/label-helpers/index.js';
+import { modifyLabelList, safeLabel } from '~/c/shared/label-helpers.js';
 
 import {
   buildTagsString,

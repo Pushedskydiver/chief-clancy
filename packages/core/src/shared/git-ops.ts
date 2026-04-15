@@ -8,7 +8,7 @@
  */
 import type { GitPlatform, RemoteInfo } from '~/c/types/index.js';
 
-import { parseRemote } from '~/c/shared/remote/index.js';
+import { parseRemote } from '~/c/shared/remote.js';
 
 /** Execute a git sub-command and return stdout. Throws on non-zero exit. */
 export type ExecGit = (args: readonly string[]) => string;

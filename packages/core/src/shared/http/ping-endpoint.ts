@@ -1,7 +1,7 @@
 /**
  * Generic endpoint ping with HTTP status code mapping.
  */
-import type { Fetcher } from '../fetch-and-parse/fetch-and-parse.js';
+import type { Fetcher } from './fetch-and-parse.js';
 import type { PingResult } from '~/c/types/index.js';
 
 /** Options for {@link pingEndpoint}. */

@@ -5,10 +5,10 @@
  */
 export const PACKAGE_NAME = '@chief-clancy/core' as const;
 
-export type { EnvFileSystem } from './shared/env-parser/index.js';
-export { loadClancyEnv, parseEnvContent } from './shared/env-parser/index.js';
+export type { EnvFileSystem } from './shared/env-parser.js';
+export { loadClancyEnv, parseEnvContent } from './shared/env-parser.js';
 
-export { Cached, CachedMap } from './shared/cache/index.js';
+export { Cached, CachedMap } from './shared/cache.js';
 
 export {
   fetchAndParse,
@@ -22,8 +22,8 @@ export type {
   RetryOptions,
 } from './shared/http/index.js';
 
-export { modifyLabelList, safeLabel } from './shared/label-helpers/index.js';
-export type { ModifyLabelListOpts } from './shared/label-helpers/index.js';
+export { modifyLabelList, safeLabel } from './shared/label-helpers.js';
+export type { ModifyLabelListOpts } from './shared/label-helpers.js';
 
 export type {
   AzdoRemote,
@@ -178,14 +178,14 @@ export {
 } from './schemas/index.js';
 
 // Shared utilities (consumed by terminal dep factory for phase wiring)
-export type { ExecGit } from './shared/git-ops/index.js';
+export type { ExecGit } from './shared/git-ops.js';
 export {
   checkout,
   currentBranch,
   detectRemote,
   ensureBranch,
   fetchRemoteBranch,
-} from './shared/git-ops/index.js';
+} from './shared/git-ops.js';
 
 export { detectBoard, sharedEnv } from './board/index.js';
 export { createBoard } from './board/factory/index.js';

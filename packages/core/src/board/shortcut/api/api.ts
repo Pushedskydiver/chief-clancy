@@ -8,7 +8,7 @@ import type {
   ShortcutStoryNode,
   ShortcutWorkflowsResponse,
 } from '~/c/schemas/index.js';
-import type { Cached } from '~/c/shared/cache/index.js';
+import type { Cached } from '~/c/shared/cache.js';
 import type { Fetcher } from '~/c/shared/http/index.js';
 import type { PingResult } from '~/c/types/index.js';
 

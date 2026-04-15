@@ -5,7 +5,7 @@
  * locally with uncommitted or unpushed work. If so, the caller can
  * resume by committing, pushing, and optionally creating a PR.
  */
-import type { ExecGit } from '@chief-clancy/core/shared/git-ops/index.js';
+import type { ExecGit } from '@chief-clancy/core/shared/git-ops.js';
 import type { PrCreationResult } from '@chief-clancy/core/types/remote.js';
 import type { LockData } from '~/d/lifecycle/lock.js';
 import type { ProgressFs } from '~/d/lifecycle/progress.js';
@@ -18,7 +18,7 @@ import {
   currentBranch,
   hasUncommittedChanges,
   pushBranch,
-} from '@chief-clancy/core/shared/git-ops/index.js';
+} from '@chief-clancy/core/shared/git-ops.js';
 import { DELIVERED_STATUSES } from '@chief-clancy/core/types/progress.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────

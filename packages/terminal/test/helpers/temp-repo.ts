@@ -5,7 +5,7 @@
  * on the `main` branch. Provides an {@link ExecGit} executor scoped
  * to the repo for use with core's git-ops functions.
  */
-import type { ExecGit } from '~/c/shared/git-ops/git-ops.js';
+import type { ExecGit } from '~/c/shared/git-ops.js';
 
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';

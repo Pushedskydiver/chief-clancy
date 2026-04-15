@@ -22,8 +22,8 @@ import { createServerPullRequest as createBbServerPr } from '~/d/lifecycle/pull-
 import { createPullRequest as createGitHubPr } from '~/d/lifecycle/pull-request/github.js';
 import { createMergeRequest as createGitLabMr } from '~/d/lifecycle/pull-request/gitlab.js';
 
-import { resolveGitToken } from '@chief-clancy/core/shared/git-token/index.js';
-import { buildApiBaseUrl } from '@chief-clancy/core/shared/remote/index.js';
+import { resolveGitToken } from '@chief-clancy/core/shared/git-token.js';
+import { buildApiBaseUrl } from '@chief-clancy/core/shared/remote.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

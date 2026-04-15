@@ -5,7 +5,7 @@
  * status (via Epic: text convention + native epic stories API).
  */
 import type { ShortcutWorkflowsResponse } from '~/c/schemas/index.js';
-import type { Cached } from '~/c/shared/cache/index.js';
+import type { Cached } from '~/c/shared/cache.js';
 import type { Fetcher } from '~/c/shared/http/index.js';
 import type { ChildrenStatus } from '~/c/types/index.js';
 

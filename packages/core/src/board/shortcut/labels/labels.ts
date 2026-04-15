@@ -6,7 +6,7 @@
  * {@link Cached}. Cache is invalidated when a new label is created.
  */
 import type { ShortcutLabelsResponse } from '~/c/schemas/index.js';
-import type { Cached } from '~/c/shared/cache/index.js';
+import type { Cached } from '~/c/shared/cache.js';
 import type { Fetcher } from '~/c/shared/http/index.js';
 
 import {
@@ -15,7 +15,7 @@ import {
   shortcutStoryDetailResponseSchema,
 } from '~/c/schemas/index.js';
 import { fetchAndParse } from '~/c/shared/http/index.js';
-import { modifyLabelList, safeLabel } from '~/c/shared/label-helpers/index.js';
+import { modifyLabelList, safeLabel } from '~/c/shared/label-helpers.js';
 
 import { SHORTCUT_API, shortcutHeaders } from '../api/index.js';
 

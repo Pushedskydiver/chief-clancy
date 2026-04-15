@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { loadClancyEnv } from '~/c/shared/env-parser/env-parser.js';
+import { loadClancyEnv } from '~/c/shared/env-parser.js';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { createEnvBuilder } from './env-builder.js';

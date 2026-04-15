@@ -9,7 +9,7 @@ import type { GitHubEnv } from '~/c/schemas/index.js';
 import type { Fetcher } from '~/c/shared/http/index.js';
 import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/index.js';
 
-import { Cached } from '~/c/shared/cache/index.js';
+import { Cached } from '~/c/shared/cache.js';
 
 import {
   fetchIssues,

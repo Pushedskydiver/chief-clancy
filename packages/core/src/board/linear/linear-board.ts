@@ -8,7 +8,7 @@ import type { LinearEnv } from '~/c/schemas/index.js';
 import type { Fetcher } from '~/c/shared/http/index.js';
 import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/index.js';
 
-import { CachedMap } from '~/c/shared/cache/index.js';
+import { CachedMap } from '~/c/shared/cache.js';
 
 import { fetchIssues, isValidTeamId, pingLinear } from './api/index.js';
 import { addLabel, ensureLabel, removeLabel } from './labels/index.js';

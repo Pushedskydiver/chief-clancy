@@ -1,5 +1,5 @@
 import type { PreflightDeps, PreflightResult } from './preflight.js';
-import type { EnvFileSystem } from '@chief-clancy/core/shared/env-parser/index.js';
+import type { EnvFileSystem } from '@chief-clancy/core/shared/env-parser.js';
 
 import { describe, expect, it, vi } from 'vitest';
 

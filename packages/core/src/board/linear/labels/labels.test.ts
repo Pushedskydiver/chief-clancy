@@ -1,6 +1,6 @@
 import type { Fetcher } from '~/c/shared/http/index.js';
 
-import { CachedMap } from '~/c/shared/cache/index.js';
+import { CachedMap } from '~/c/shared/cache.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { addLabel, ensureLabel, removeLabel } from './labels.js';

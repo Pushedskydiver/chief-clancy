@@ -1,7 +1,7 @@
 import type { ShortcutLabelsResponse } from '~/c/schemas/index.js';
 import type { Fetcher } from '~/c/shared/http/index.js';
 
-import { Cached } from '~/c/shared/cache/index.js';
+import { Cached } from '~/c/shared/cache.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {

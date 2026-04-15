@@ -6,7 +6,7 @@
  */
 import type { NotionCtx } from '../api/index.js';
 
-import { modifyLabelList, safeLabel } from '~/c/shared/label-helpers/index.js';
+import { modifyLabelList, safeLabel } from '~/c/shared/label-helpers.js';
 
 import { findPageByKey, getArrayProperty, updatePage } from '../api/index.js';
 

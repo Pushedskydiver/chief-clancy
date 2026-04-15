@@ -13,8 +13,8 @@ import type {
 } from '@chief-clancy/core/types/remote.js';
 import type { FetchFn } from '~/d/lifecycle/pr-creation.js';
 
-import { resolveGitToken } from '@chief-clancy/core/shared/git-token/index.js';
-import { buildApiBaseUrl } from '@chief-clancy/core/shared/remote/index.js';
+import { resolveGitToken } from '@chief-clancy/core/shared/git-token.js';
+import { buildApiBaseUrl } from '@chief-clancy/core/shared/remote.js';
 
 import {
   azdoHandlers,
