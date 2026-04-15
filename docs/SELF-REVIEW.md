@@ -4,7 +4,7 @@ Line-level accuracy check performed after DA review but before creating a PR. Re
 
 This checklist complements [DA-REVIEW.md](DA-REVIEW.md) with explicit ownership split:
 
-- **DA-REVIEW** owns the **architectural and comment/doc layer**: imports, guards, patterns, stale prose in JSDoc and comments.
+- **DA-REVIEW** owns the **architectural and comment/doc layer**: imports, guards, patterns, stale prose in TSDoc and comments.
 - **SELF-REVIEW** owns the **code-level layer**: stale fixture values, mock URLs, wrong string literals, test isolation, copy-paste errors.
 
 The Red Flags list lives in [DA-REVIEW.md](DA-REVIEW.md#red-flags--stop-and-reassess) — read it before walking this checklist. Don't duplicate Red Flags here; cross-reference instead. When the headline meta-rationalization in [RATIONALIZATIONS.md](RATIONALIZATIONS.md#headline--the-meta-rationalization) catches you mid-review, that's the signal that you're about to skip a check while telling yourself you ran it.
@@ -34,7 +34,7 @@ Drive-by refactors mixed with feature work are harder to review, harder to rever
 
 ## Code accuracy
 
-> Comment-level and JSDoc accuracy is owned by [DA-REVIEW.md](DA-REVIEW.md#jsdoc--documentation). Self-review focuses on accuracy in **actual code values**: fixture data, mock URLs, hardcoded literals, parameter usage.
+> Comment-level and TSDoc accuracy is owned by [DA-REVIEW.md](DA-REVIEW.md#tsdoc--documentation). Self-review focuses on accuracy in **actual code values**: fixture data, mock URLs, hardcoded literals, parameter usage.
 
 - Are all function parameters used? Remove unused params or use `_prefixed` naming if keeping for API stability
 - Do mock/test URLs match the actual production endpoints? (read the production code to verify)
@@ -127,7 +127,7 @@ Workflow `.md` files are as load-bearing as TypeScript — Claude follows them s
 ### Rule 7 — folder structure
 
 - If the diff adds a new folder, does it meet the wrapper/grouping test? Wrapper = ≥2 source files implementing one concept. Grouping = multiple related concepts under a ubiquitous-language name. Single-file concepts stay flat — no `feature-name/feature-name.ts` wrappers.
-- No new internal `index.ts` barrel added. Only two of the five `index.ts` categories in [CONVENTIONS.md §Folder Structure](CONVENTIONS.md#folder-structure) are re-export barrels (**package entry** and **wildcard-exposed boundary** under `core/`'s subtrees — see [CONVENTIONS.md §Migration state](CONVENTIONS.md#migration-state--core)); the other three (multi-content folder, single-impl wrapper, boundary folder) carry no `index.ts` today.
+- No new internal `index.ts` barrel added. Only two of the five `index.ts` categories in [CONVENTIONS.md §Folder Structure](CONVENTIONS.md#folder-structure) are re-export barrels (**package entry** and **wildcard-exposed boundary** under `core/`'s subtrees — see [CONVENTIONS.md §Migration state](CONVENTIONS.md#migration-state--core)); the other three (multi-content folder, single-impl wrapper, boundary folder) are not re-export barrels.
 - If the diff flattens a single-impl wrapper, did the consumer-surface grep walk cover every call site? Enumerated walk: static imports, `vi.mock()` paths, dynamic `import()` string literals, docs deep-path refs (`foo/foo.ts` AND bare `foo/`), knip config globs. (DA-REVIEW Rule 7 owns the mandate; this line-item owns the walk.)
 - If a new folder splits by mode axis (local/remote, online/offline), is it an adapter boundary rather than a top-level folder? (Rule 7: mode is an adapter, not a phase.)
 - New entries in `shared/` have 2+ sibling consumers at introduction. No `utils/` junk drawers.
@@ -141,9 +141,9 @@ Workflow `.md` files are as load-bearing as TypeScript — Claude follows them s
 
 ### Rule 11 — TSDoc scope
 
-- New symbols exported from a public-API path (library-publishing package's `src/index.ts` or a wildcard-exposed path under `core/src/{types,schemas,shared,board}/`) have TSDoc that adds semantics beyond the signature. Internal functions do not, unless the WHY is non-obvious.
+SELF-REVIEW Rule 11 owns the **file-level walk across touched functions** (each new/edited function's TSDoc is up to spec, no signature-restating prose, immediately above its export). DA-REVIEW Rule 11 owns the **architectural gate** (is this symbol actually public API? Is TSDoc at the declaration site, not a re-export barrel? Is the WHY non-obvious enough to warrant TSDoc on an internal?).
+
 - When editing a function in a TSDoc-covered file, is that function's TSDoc brought up to spec? (Migration is opportunistic: don't refactor TSDoc you aren't otherwise changing; don't skip it for functions you ARE touching.)
-- TSDoc sits at the **declaration site**, not re-export sites. Re-export barrels — including nested barrels that re-export from other barrels — carry no TSDoc.
 - No signature-restating TSDoc (`@param name - The name`). Delete when touching a covered file.
 - TSDoc sits immediately above its `export` — no blank line between.
 

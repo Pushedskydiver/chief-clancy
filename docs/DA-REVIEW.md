@@ -153,7 +153,7 @@ Workflow `.md` files in `src/{commands,workflows,agents}/` are runtime artifacts
 ### Rule 7 — folder structure
 
 - [ ] Any new folder passes the wrapper/grouping test (≥2 source files OR ubiquitous-language concept cluster). Single-file concepts stay flat.
-- [ ] No new internal `index.ts` barrel introduced (only package entry + `core/` wildcard-exposed boundaries allow them — see [CONVENTIONS.md §Migration state](CONVENTIONS.md#migration-state--core)).
+- [ ] No new internal `index.ts` barrel introduced (only package entry + `core/` wildcard-exposed boundaries are re-export barrels — see [CONVENTIONS.md §Migration state](CONVENTIONS.md#migration-state--core)).
 - [ ] If a single-impl wrapper is flattened, consumer-surface grep has been run before any mechanical rewrite. SELF-REVIEW Rule 7 owns the enumerated walk (static imports, `vi.mock`, dynamic `import()`, docs deep-path refs, knip globs); this checklist owns the mandate.
 - [ ] Mode-axis splits (local/remote, online/offline) go at an adapter boundary, not as top-level folders.
 - [ ] New `shared/` entries have 2+ sibling consumers at introduction; no `utils/` junk drawers.
@@ -187,11 +187,11 @@ DA owns the **comment and doc layer**: stale prose, drifted TSDoc, hardcoded val
 
 ### Rule 11 — TSDoc scope
 
+DA-REVIEW Rule 11 owns the **architectural gate** (is this symbol actually public API? Is TSDoc at the declaration site, not a re-export barrel? Does a deep-alias path count as a public-API signal?). SELF-REVIEW Rule 11 owns the **file-level walk** (touched functions brought up to spec; signature-restating deleted; immediately-above-export formatting).
+
 - [ ] New symbols on the public-API surface (library-entry or wildcard-exposed) have TSDoc that adds semantics beyond the signature.
-- [ ] When any function is edited in a TSDoc-covered file, is that function's TSDoc current? (Opportunistic migration: touched-function scope only; don't refactor TSDoc you aren't otherwise changing.)
 - [ ] Re-export sites (barrels — including nested barrels that re-export from other barrels) carry no TSDoc. Trace to the original declaration file.
 - [ ] Deep-alias paths (`~/d/foo.js`, `~/c/shared/...`) are not themselves a public-API signal — a file reachable only via aliases with no `package.json` `exports` entry is internal.
-- [ ] Signature-restating TSDoc (`@param name - The name`) is deleted when the file is touched.
 
 ## Type safety
 
