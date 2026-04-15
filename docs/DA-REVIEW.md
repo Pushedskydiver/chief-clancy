@@ -170,7 +170,8 @@ Workflow `.md` files in `src/{commands,workflows,agents}/` are runtime artifacts
 - [ ] Complexity limits: cyclomatic ≤ 10, cognitive ≤ 15, max-depth ≤ 3
 - [ ] Size limits: ≤ 50 lines/function (excluding blanks/comments), ≤ 300 lines/file
 - [ ] `const` everywhere, no mutation (`spread`/`concat` not `push`/`splice`), no `reduce()`
-- [ ] No nested ternaries; multiline ternaries use `if`/`else` instead
+- [ ] No nested ternaries; multi-line ternaries allowed only when both branches are plain values (no call, no `await`)
+- [ ] No work (calls, `await`) hoisted out of a ternary guard — keep the call gated
 - [ ] Max 3 chained method calls — beyond 3, use named intermediates
 - [ ] Inline callbacks in chains are 1–2 lines of code — extract longer logic into named functions
 - [ ] Compound boolean conditions extracted into named `const` variables
