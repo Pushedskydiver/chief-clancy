@@ -10,13 +10,13 @@ import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/index.js';
 
 import { CachedMap } from '~/c/shared/cache.js';
 
-import { fetchIssues, isValidTeamId, pingLinear } from './api/index.js';
-import { addLabel, ensureLabel, removeLabel } from './labels/index.js';
+import { fetchIssues, isValidTeamId, pingLinear } from './api.js';
+import { addLabel, ensureLabel, removeLabel } from './labels.js';
 import {
   fetchBlockerStatus,
   fetchChildrenStatus,
   transitionIssue,
-} from './relations/index.js';
+} from './relations.js';
 
 /** Internal context for Linear board operations. */
 type LinearCtx = {

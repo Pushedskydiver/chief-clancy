@@ -16,11 +16,7 @@ import {
 } from '~/c/schemas/index.js';
 import { fetchAndParse } from '~/c/shared/http/index.js';
 
-import {
-  resolveDoneStateIds,
-  SHORTCUT_API,
-  shortcutHeaders,
-} from '../api/index.js';
+import { resolveDoneStateIds, SHORTCUT_API, shortcutHeaders } from './api.js';
 
 /** Options for {@link isBlockerUnresolved}. */
 type BlockerCheckOpts = {

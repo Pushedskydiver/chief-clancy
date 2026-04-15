@@ -4,11 +4,12 @@
  * Uses read-modify-write via {@link modifyLabelList}. Labels are stored
  * as multi_select options which auto-create on first PATCH.
  */
-import type { NotionCtx } from '../api/index.js';
+import type { NotionCtx } from './api/helpers.js';
 
 import { modifyLabelList, safeLabel } from '~/c/shared/label-helpers.js';
 
-import { findPageByKey, getArrayProperty, updatePage } from '../api/index.js';
+import { findPageByKey, updatePage } from './api/api.js';
+import { getArrayProperty } from './api/helpers.js';
 
 /** Options for label operations. */
 type LabelOpts = {

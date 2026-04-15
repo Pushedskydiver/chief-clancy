@@ -188,7 +188,7 @@ export {
 } from './shared/git-ops.js';
 
 export { detectBoard, sharedEnv } from './board/index.js';
-export { createBoard } from './board/factory/index.js';
+export { createBoard } from './board/factory.js';
 
 export {
   createGitHubBoard,

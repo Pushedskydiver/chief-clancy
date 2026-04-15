@@ -18,7 +18,7 @@ import {
 } from '~/c/schemas/index.js';
 import { safeLabel } from '~/c/shared/label-helpers.js';
 
-import { linearGraphql } from '../api/index.js';
+import { linearGraphql } from './api.js';
 
 /** Options for {@link ensureLabel}. */
 type EnsureLabelOpts = {

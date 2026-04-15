@@ -5,17 +5,12 @@
  * stores tags as a semicolon-delimited string field. Wrapped in
  * {@link safeLabel} for best-effort error handling.
  */
-import type { AzdoCtx } from '../api/index.js';
+import type { AzdoCtx } from './api/helpers.js';
 
 import { modifyLabelList, safeLabel } from '~/c/shared/label-helpers.js';
 
-import {
-  buildTagsString,
-  fetchWorkItem,
-  parseTags,
-  parseWorkItemId,
-  updateWorkItem,
-} from '../api/index.js';
+import { fetchWorkItem, updateWorkItem } from './api/api.js';
+import { buildTagsString, parseTags, parseWorkItemId } from './api/helpers.js';
 
 /** Fetch current tags for a work item as a string array. */
 async function fetchTags(

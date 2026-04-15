@@ -16,8 +16,8 @@ import {
   pingAzdo,
   updateWorkItem,
 } from './api/index.js';
-import { addLabel, removeLabel } from './labels/index.js';
-import { fetchBlockerStatus, fetchChildrenStatus } from './relations/index.js';
+import { addLabel, removeLabel } from './labels.js';
+import { fetchBlockerStatus, fetchChildrenStatus } from './relations.js';
 
 /** Map an AzdoTicket to the normalised FetchedTicket shape. */
 function toFetchedTicket(

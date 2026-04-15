@@ -7,7 +7,7 @@
  */
 import type { Fetcher } from '~/c/shared/http/index.js';
 
-import { GITHUB_API, githubHeaders } from '../api/index.js';
+import { GITHUB_API, githubHeaders } from './api.js';
 
 /** Context for GitHub label operations. */
 type GitHubLabelContext = {

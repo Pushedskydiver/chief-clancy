@@ -17,7 +17,7 @@ import {
 import { fetchAndParse } from '~/c/shared/http/index.js';
 import { modifyLabelList, safeLabel } from '~/c/shared/label-helpers.js';
 
-import { SHORTCUT_API, shortcutHeaders } from '../api/index.js';
+import { SHORTCUT_API, shortcutHeaders } from './api.js';
 
 /** Options for {@link fetchLabels}. */
 type FetchLabelsOpts = {

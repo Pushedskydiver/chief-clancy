@@ -8,12 +8,12 @@ import type { BoardConfig } from '~/c/schemas/env.js';
 import type { Fetcher } from '~/c/shared/http/index.js';
 import type { Board } from '~/c/types/index.js';
 
-import { createAzdoBoard } from '../azdo/azdo-board.js';
-import { createGitHubBoard } from '../github/github-board.js';
-import { createJiraBoard } from '../jira/jira-board.js';
-import { createLinearBoard } from '../linear/linear-board.js';
-import { createNotionBoard } from '../notion/notion-board.js';
-import { createShortcutBoard } from '../shortcut/shortcut-board.js';
+import { createAzdoBoard } from './azdo/azdo-board.js';
+import { createGitHubBoard } from './github/github-board.js';
+import { createJiraBoard } from './jira/jira-board.js';
+import { createLinearBoard } from './linear/linear-board.js';
+import { createNotionBoard } from './notion/notion-board.js';
+import { createShortcutBoard } from './shortcut/shortcut-board.js';
 
 /**
  * Create a Board from a detected board configuration.

@@ -10,7 +10,7 @@ import type { Fetcher } from '~/c/shared/http/index.js';
 import { jiraIssueLabelsResponseSchema } from '~/c/schemas/index.js';
 import { modifyLabelList, safeLabel } from '~/c/shared/label-helpers.js';
 
-import { isValidIssueKey, jiraHeaders } from '../api/index.js';
+import { isValidIssueKey, jiraHeaders } from './api.js';
 
 /** Context for Jira label operations. */
 type JiraLabelContext = {

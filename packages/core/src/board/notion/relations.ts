@@ -4,21 +4,23 @@
  * Checks blocker status (via "Blocked by" relation + description text)
  * and children status (dual-mode: description text + relation property).
  */
-import type { NotionCtx } from '../api/index.js';
+import type { NotionCtx } from './api/helpers.js';
 import type { NotionPage } from '~/c/schemas/index.js';
 import type { ChildrenStatus } from '~/c/types/index.js';
 
 import {
   fetchPage,
   findPageByKey,
+  queryAllPages,
+  queryDatabase,
+} from './api/api.js';
+import {
   findPropertyByName,
   getDescriptionText,
   getPageStatus,
   isCompleteStatus,
   isPageIncomplete,
-  queryAllPages,
-  queryDatabase,
-} from '../api/index.js';
+} from './api/helpers.js';
 
 /** Check whether a page has an active (non-complete) status. */
 function hasActiveStatus(page: NotionPage, statusProp: string): boolean {

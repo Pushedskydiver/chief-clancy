@@ -1,4 +1,4 @@
-import type { NotionCtx } from '../api/index.js';
+import type { NotionCtx } from './api/helpers.js';
 import type { Fetcher } from '~/c/shared/http/index.js';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';

@@ -16,7 +16,7 @@ import {
   linearWorkflowStatesResponseSchema,
 } from '~/c/schemas/index.js';
 
-import { linearGraphql } from '../api/index.js';
+import { linearGraphql } from './api.js';
 
 /** Set of Linear state types that indicate a resolved issue. */
 const DONE_TYPES = new Set(['completed', 'canceled']);

@@ -4,23 +4,21 @@
  * Checks blocker status (via dependency-reverse relations) and children
  * status (dual-mode: Epic: text convention + native hierarchy links).
  */
-import type { AzdoCtx } from '../api/index.js';
+import type { AzdoCtx } from './api/helpers.js';
 import type { AzdoWorkItem } from '~/c/schemas/index.js';
 import type { ChildrenStatus } from '~/c/types/index.js';
 
 import { azdoWiqlLinkResponseSchema } from '~/c/schemas/index.js';
 import { fetchAndParse } from '~/c/shared/http/index.js';
 
+import { fetchWorkItem, fetchWorkItems, runWiql } from './api/api.js';
 import {
   apiBase,
   AZDO_API_VERSION,
   azdoHeaders,
   extractIdFromRelationUrl,
-  fetchWorkItem,
-  fetchWorkItems,
   isSafeWiqlValue,
-  runWiql,
-} from '../api/index.js';
+} from './api/helpers.js';
 
 /** Done/Closed states — used for blocker resolution check. */
 const DONE_STATES = new Set(['Done', 'Closed', 'Completed', 'Resolved']);

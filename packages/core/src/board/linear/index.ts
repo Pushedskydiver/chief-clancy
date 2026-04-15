@@ -1,2 +1,2 @@
 export { createLinearBoard } from './linear-board.js';
-export { fetchBlockerStatus, fetchChildrenStatus } from './relations/index.js';
+export { fetchBlockerStatus, fetchChildrenStatus } from './relations.js';

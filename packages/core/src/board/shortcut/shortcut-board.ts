@@ -20,14 +20,9 @@ import {
   resolveWorkflowStateId,
   resolveWorkflowStateIdsByType,
   transitionStory,
-} from './api/index.js';
-import {
-  addLabel,
-  ensureLabel,
-  parseStoryId,
-  removeLabel,
-} from './labels/index.js';
-import { fetchBlockerStatus, fetchChildrenStatus } from './relations/index.js';
+} from './api.js';
+import { addLabel, ensureLabel, parseStoryId, removeLabel } from './labels.js';
+import { fetchBlockerStatus, fetchChildrenStatus } from './relations.js';
 
 /** Internal context for Shortcut board operations. */
 type ShortcutCtx = {

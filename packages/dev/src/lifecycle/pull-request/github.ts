@@ -13,7 +13,7 @@ import type {
 import {
   GITHUB_API,
   githubHeaders,
-} from '@chief-clancy/core/board/github/api/index.js';
+} from '@chief-clancy/core/board/github/api.js';
 import {
   githubCommentsResponseSchema,
   githubPrCommentsSchema,

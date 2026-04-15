@@ -4,7 +4,7 @@
  * Returns a plain object conforming to the Board type, delegating
  * to the GitHub API, relations, and label functions.
  */
-import type { GitHubTicket } from './api/index.js';
+import type { GitHubTicket } from './api.js';
 import type { GitHubEnv } from '~/c/schemas/index.js';
 import type { Fetcher } from '~/c/shared/http/index.js';
 import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/index.js';
@@ -16,9 +16,9 @@ import {
   isValidRepo,
   pingGitHub,
   resolveUsername,
-} from './api/index.js';
-import { addLabel, ensureLabel, removeLabel } from './labels/index.js';
-import { fetchBlockerStatus, fetchChildrenStatus } from './relations/index.js';
+} from './api.js';
+import { addLabel, ensureLabel, removeLabel } from './labels.js';
+import { fetchBlockerStatus, fetchChildrenStatus } from './relations.js';
 
 /** Pattern matching `Epic: #N` or `Parent: #N` in issue descriptions. */
 const EPIC_REF_PATTERN = /^(?:Epic|Parent): (#\d+)/m;

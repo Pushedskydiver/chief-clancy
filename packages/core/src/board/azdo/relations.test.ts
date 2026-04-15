@@ -1,4 +1,4 @@
-import type { AzdoCtx } from '../api/index.js';
+import type { AzdoCtx } from './api/helpers.js';
 import type { Fetcher } from '~/c/shared/http/index.js';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';

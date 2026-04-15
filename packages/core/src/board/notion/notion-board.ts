@@ -21,8 +21,8 @@ import {
   queryDatabase,
   updatePage,
 } from './api/index.js';
-import { addLabel, removeLabel } from './labels/index.js';
-import { fetchBlockerStatus, fetchChildrenStatus } from './relations/index.js';
+import { addLabel, removeLabel } from './labels.js';
+import { fetchBlockerStatus, fetchChildrenStatus } from './relations.js';
 
 /** Default property names for Notion databases. */
 const DEFAULTS = {

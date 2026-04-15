@@ -10,7 +10,7 @@ import type { ChildrenStatus } from '~/c/types/index.js';
 import { jiraIssueLinksResponseSchema } from '~/c/schemas/index.js';
 import { z } from 'zod/mini';
 
-import { isValidIssueKey, jiraHeaders } from '../api/index.js';
+import { isValidIssueKey, jiraHeaders } from './api.js';
 
 const jiraSearchCountSchema = z.object({ total: z.optional(z.number()) });
 

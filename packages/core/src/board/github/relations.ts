@@ -9,7 +9,7 @@ import type { ChildrenStatus } from '~/c/types/index.js';
 
 import { z } from 'zod/mini';
 
-import { GITHUB_API, githubHeaders, isValidRepo } from '../api/index.js';
+import { GITHUB_API, githubHeaders, isValidRepo } from './api.js';
 
 const issueStateSchema = z.object({ state: z.optional(z.string()) });
 const searchCountSchema = z.object({ total_count: z.optional(z.number()) });

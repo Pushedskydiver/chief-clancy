@@ -4,27 +4,27 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { createBoard } from './factory.js';
 
-vi.mock('../jira/jira-board.js', () => ({
+vi.mock('./jira/jira-board.js', () => ({
   createJiraBoard: vi.fn(() => ({ _type: 'jira' })),
 }));
 
-vi.mock('../github/github-board.js', () => ({
+vi.mock('./github/github-board.js', () => ({
   createGitHubBoard: vi.fn(() => ({ _type: 'github' })),
 }));
 
-vi.mock('../linear/linear-board.js', () => ({
+vi.mock('./linear/linear-board.js', () => ({
   createLinearBoard: vi.fn(() => ({ _type: 'linear' })),
 }));
 
-vi.mock('../shortcut/shortcut-board.js', () => ({
+vi.mock('./shortcut/shortcut-board.js', () => ({
   createShortcutBoard: vi.fn(() => ({ _type: 'shortcut' })),
 }));
 
-vi.mock('../notion/notion-board.js', () => ({
+vi.mock('./notion/notion-board.js', () => ({
   createNotionBoard: vi.fn(() => ({ _type: 'notion' })),
 }));
 
-vi.mock('../azdo/azdo-board.js', () => ({
+vi.mock('./azdo/azdo-board.js', () => ({
   createAzdoBoard: vi.fn(() => ({ _type: 'azdo' })),
 }));
 
@@ -95,7 +95,7 @@ describe('createBoard', () => {
   });
 
   it('passes jira env to createJiraBoard', async () => {
-    const { createJiraBoard } = await import('../jira/jira-board.js');
+    const { createJiraBoard } = await import('./jira/jira-board.js');
     const env = {
       JIRA_BASE_URL: 'https://example.atlassian.net',
       JIRA_USER: 'user@example.com',
@@ -108,7 +108,7 @@ describe('createBoard', () => {
   });
 
   it('passes github env to createGitHubBoard', async () => {
-    const { createGitHubBoard } = await import('../github/github-board.js');
+    const { createGitHubBoard } = await import('./github/github-board.js');
     const env = { GITHUB_TOKEN: 'ghp_test', GITHUB_REPO: 'owner/repo' };
 
     createBoard({ provider: 'github', env });
@@ -116,7 +116,7 @@ describe('createBoard', () => {
   });
 
   it('passes linear env to createLinearBoard', async () => {
-    const { createLinearBoard } = await import('../linear/linear-board.js');
+    const { createLinearBoard } = await import('./linear/linear-board.js');
     const env = { LINEAR_API_KEY: 'lin_test', LINEAR_TEAM_ID: 'team-123' };
 
     createBoard({ provider: 'linear', env });
@@ -125,7 +125,7 @@ describe('createBoard', () => {
 
   it('passes shortcut env to createShortcutBoard', async () => {
     const { createShortcutBoard } =
-      await import('../shortcut/shortcut-board.js');
+      await import('./shortcut/shortcut-board.js');
     const env = { SHORTCUT_API_TOKEN: 'sc_test' };
 
     createBoard({ provider: 'shortcut', env });
@@ -133,7 +133,7 @@ describe('createBoard', () => {
   });
 
   it('passes notion env to createNotionBoard', async () => {
-    const { createNotionBoard } = await import('../notion/notion-board.js');
+    const { createNotionBoard } = await import('./notion/notion-board.js');
     const env = { NOTION_TOKEN: 'ntn_test', NOTION_DATABASE_ID: 'db-uuid' };
 
     createBoard({ provider: 'notion', env });
@@ -141,7 +141,7 @@ describe('createBoard', () => {
   });
 
   it('passes azdo env to createAzdoBoard', async () => {
-    const { createAzdoBoard } = await import('../azdo/azdo-board.js');
+    const { createAzdoBoard } = await import('./azdo/azdo-board.js');
     const env = { AZDO_ORG: 'myorg', AZDO_PROJECT: 'proj', AZDO_PAT: 'pat' };
 
     createBoard({ provider: 'azdo', env });
