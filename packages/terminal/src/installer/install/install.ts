@@ -5,6 +5,7 @@
  * hook-installer, prompts, ui) into a single installation flow.
  * Pure helpers are exported for testing; pipeline steps are boundary functions.
  */
+import type { InstallSources } from './install-shared.js';
 import type { EnvFileSystem } from '@chief-clancy/core';
 
 import { dirname, join } from 'node:path';
@@ -25,6 +26,7 @@ import { blue, dim, green } from '~/t/shared/ansi.js';
 
 import { loadClancyEnv } from '@chief-clancy/core';
 
+import { BUNDLE_SCRIPTS } from './install-shared.js';
 import { validateSources } from './validate-sources.js';
 
 // ---------------------------------------------------------------------------
@@ -33,22 +35,6 @@ import { validateSources } from './validate-sources.js';
 
 /** The install target — global (`~/.claude`) or local (`./.claude`). */
 export type InstallMode = 'global' | 'local';
-
-/** Source directories within the npm package. */
-export type InstallSources = {
-  readonly rolesDir: string;
-  readonly hooksDir: string;
-  readonly bundleDir: string;
-  readonly agentsDir: string;
-  readonly briefCommandsDir?: string;
-  readonly briefWorkflowsDir?: string;
-  readonly briefAgentsDir?: string;
-  readonly planCommandsDir?: string;
-  readonly planWorkflowsDir?: string;
-  readonly scanAgentsDir?: string;
-  readonly scanCommandsDir?: string;
-  readonly scanWorkflowsDir?: string;
-};
 
 /** All resolved destination paths for an installation. */
 export type InstallPaths = {
@@ -95,15 +81,6 @@ export type RunInstallOptions = {
   readonly cwd: string;
   readonly now?: () => string;
 };
-
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
-export const BUNDLE_SCRIPTS = [
-  'clancy-implement.js',
-  'clancy-autopilot.js',
-] as const;
 
 // ---------------------------------------------------------------------------
 // Pure functions
