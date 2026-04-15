@@ -152,7 +152,7 @@ Workflow `.md` files in `src/{commands,workflows,agents}/` are runtime artifacts
 
 ### Rule 7 — folder structure
 
-- [ ] Any new folder passes the wrapper/grouping test (≥2 source files OR ubiquitous-language concept cluster). Single-file concepts stay flat.
+- [ ] Any new **concept folder** (not a build-system/runtime boundary folder like `src/entrypoints/`) passes the wrapper/grouping test (≥2 source files OR ubiquitous-language concept cluster). Single-file concepts stay flat.
 - [ ] No new internal `index.ts` barrel introduced (only package entry + `core/` wildcard-exposed boundaries are re-export barrels — see [CONVENTIONS.md §Migration state](CONVENTIONS.md#migration-state--core)).
 - [ ] If a single-impl wrapper is flattened, consumer-surface grep has been run before any mechanical rewrite. SELF-REVIEW Rule 7 owns the enumerated walk (static imports, `vi.mock`, dynamic `import()`, docs deep-path refs, knip globs); this checklist owns the mandate.
 - [ ] Mode-axis splits (local/remote, online/offline) go at an adapter boundary, not as top-level folders.
@@ -181,7 +181,7 @@ DA owns the **comment and doc layer**: stale prose, drifted TSDoc, hardcoded val
 - [ ] TSDoc present on new public-API exports (library-publishing package `src/index.ts` or a `core/` wildcard-exposed path). TSDoc adds semantics beyond the signature; internal functions do not need TSDoc unless the WHY is non-obvious. See [CONVENTIONS.md §Code Style](CONVENTIONS.md#code-style) — Rule 11.
 - [ ] Explicit return types on exported functions
 - [ ] TSDoc block immediately above the function it documents (no helpers inserted between)
-- [ ] Comments match what the code actually does after refactoring (stale prose is the #1 doc-layer catch — _CodeRabbit caught `"optional"` in JSDoc after the field was renamed to `roleKey`_)
+- [ ] Comments match what the code actually does after refactoring (stale prose is the #1 doc-layer catch — _CodeRabbit caught `"optional"` in a doc comment after the field was renamed to `roleKey`_)
 - [ ] No hardcoded counts, versions, or phase numbers in **comments and TSDoc** (code-level hardcodes are self-review's beat)
 - [ ] Doc strings reference paths and identifiers that still exist (post-restructure rename audit)
 

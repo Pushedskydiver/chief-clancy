@@ -126,7 +126,7 @@ Workflow `.md` files are as load-bearing as TypeScript — Claude follows them s
 
 ### Rule 7 — folder structure
 
-- If the diff adds a new folder, does it meet the wrapper/grouping test? Wrapper = ≥2 source files implementing one concept. Grouping = multiple related concepts under a ubiquitous-language name. Single-file concepts stay flat — no `feature-name/feature-name.ts` wrappers.
+- If the diff adds a new **concept folder** (one that groups source code by domain concept, not a build-system/runtime boundary folder like `src/entrypoints/`), does it meet the wrapper/grouping test? Wrapper = ≥2 source files implementing one concept. Grouping = multiple related concepts under a ubiquitous-language name. Single-file concepts stay flat — no `feature-name/feature-name.ts` wrappers.
 - No new internal `index.ts` barrel added. Only two of the five `index.ts` categories in [CONVENTIONS.md §Folder Structure](CONVENTIONS.md#folder-structure) are re-export barrels (**package entry** and **wildcard-exposed boundary** under `core/`'s subtrees — see [CONVENTIONS.md §Migration state](CONVENTIONS.md#migration-state--core)); the other three (multi-content folder, single-impl wrapper, boundary folder) are not re-export barrels.
 - If the diff flattens a single-impl wrapper, did the consumer-surface grep walk cover every call site? Enumerated walk: static imports, `vi.mock()` paths, dynamic `import()` string literals, docs deep-path refs (`foo/foo.ts` AND bare `foo/`), knip config globs. (DA-REVIEW Rule 7 owns the mandate; this line-item owns the walk.)
 - If a new folder splits by mode axis (local/remote, online/offline), is it an adapter boundary rather than a top-level folder? (Rule 7: mode is an adapter, not a phase.)
