@@ -4,7 +4,7 @@ Line-level accuracy check performed after DA review but before creating a PR. Re
 
 This checklist complements [DA-REVIEW.md](DA-REVIEW.md) with explicit ownership split:
 
-- **DA-REVIEW** owns the **architectural and comment/doc layer**: imports, guards, patterns, stale prose in JSDoc and comments.
+- **DA-REVIEW** owns the **architectural and comment/doc layer**: imports, guards, patterns, stale prose in TSDoc and comments.
 - **SELF-REVIEW** owns the **code-level layer**: stale fixture values, mock URLs, wrong string literals, test isolation, copy-paste errors.
 
 The Red Flags list lives in [DA-REVIEW.md](DA-REVIEW.md#red-flags--stop-and-reassess) — read it before walking this checklist. Don't duplicate Red Flags here; cross-reference instead. When the headline meta-rationalization in [RATIONALIZATIONS.md](RATIONALIZATIONS.md#headline--the-meta-rationalization) catches you mid-review, that's the signal that you're about to skip a check while telling yourself you ran it.
@@ -34,7 +34,7 @@ Drive-by refactors mixed with feature work are harder to review, harder to rever
 
 ## Code accuracy
 
-> Comment-level and JSDoc accuracy is owned by [DA-REVIEW.md](DA-REVIEW.md#jsdoc--documentation). Self-review focuses on accuracy in **actual code values**: fixture data, mock URLs, hardcoded literals, parameter usage.
+> Comment-level and TSDoc accuracy is owned by [DA-REVIEW.md](DA-REVIEW.md#tsdoc--documentation). Self-review focuses on accuracy in **actual code values**: fixture data, mock URLs, hardcoded literals, parameter usage.
 
 - Are all function parameters used? Remove unused params or use `_prefixed` naming if keeping for API stability
 - Do mock/test URLs match the actual production endpoints? (read the production code to verify)
@@ -109,6 +109,8 @@ Workflow `.md` files are as load-bearing as TypeScript — Claude follows them s
 - When referencing files in prose, do path prefixes match other references to the same file in the same document? (e.g. don't write `CONVENTIONS.md:182` in one paragraph when other paragraphs in the same file use `docs/CONVENTIONS.md`) — grep every file reference in the diff. _Caught by Copilot: PR #296._
 - Are labels/identifiers used as grep anchors unique within the file? (session numbers in PROGRESS.md, heading IDs, PR numbers in status tables — duplicates break `grep`-based navigation.) _Caught by Copilot: PR #296._
 - After renaming a config key or constant, are all references updated? (not just the definition)
+- When a diff adds OR modifies more than one section of a single doc, re-read each new/edited passage against every other new/edited passage in the same diff. Absolute phrases ("no X exists," "X is the only Y," "every package," "for one of N reasons") introduced in one section frequently contradict another section. Grep the diff for absolute claims and trace each against the rest of the diff. Separately, for any edit that introduces adjacent supersession footnotes on a block of pre-existing rules, audit the entire block for drift — don't footnote one bullet and leave neighbours stale. _Caught by Copilot: PR #306 — 8 of 10 findings were this class._
+- When a PR adds a new consistency/cross-section rule, apply that rule to the PR's own draft before opening — exhaustively, as a pre-commit step. Authoring a rule and then passing the draft through it manually catches the self-referential misses that retroactive DA + Copilot will otherwise find. Companion: [DA-REVIEW §Cross-doc consistency sweep](DA-REVIEW.md#cross-doc-consistency-sweep) covers the CONVENTIONS → review-gate cascade. _Caught by Copilot: PR #308 — multiple findings were the PR's own new rules being violated by the PR's own prose (Rule 7 boundary-folder overclaim on both sides)._
 
 ## Lint-staged safety
 
@@ -118,18 +120,34 @@ Workflow `.md` files are as load-bearing as TypeScript — Claude follows them s
 ## Monorepo-specific
 
 - Are cross-package imports using the package name (`@chief-clancy/core`), not relative paths (`../../core/`)?
-- Are new exported functions/types added to the package's barrel export (`index.ts`)?
+- If the diff adds a cross-package export, is it added to the package-entry `src/index.ts`? (Internal consumers use deep `~/` imports — no new internal barrels under `src/`; see [Folder structure](#folder-structure) below.)
 - Does changing a shared type in core break downstream packages? Run `pnpm build` to verify
 - Are `workspace:*` dependencies correct? (core has no workspace deps, terminal depends on core)
 - Do new modules respect the dependency direction? (core ← terminal ← wrapper)
 
+## Folder structure
+
+- If the diff adds a new **concept folder** (one that groups source code by domain concept, not a build-system/runtime boundary folder like `src/entrypoints/`), does it meet the wrapper/grouping test? Wrapper = ≥2 source files implementing one concept. Grouping = multiple related concepts under a ubiquitous-language name. Single-file concepts stay flat — no `feature-name/feature-name.ts` wrappers.
+- No new internal `index.ts` barrel added. Only two of the five `index.ts` categories in [CONVENTIONS.md §Folder Structure](CONVENTIONS.md#folder-structure) are re-export barrels (**package entry** and **wildcard-exposed boundary** under `core/`'s subtrees — see [CONVENTIONS.md §Migration state](CONVENTIONS.md#migration-state--core)); the other three (multi-content folder, single-impl wrapper, boundary folder) are not re-export barrels.
+- If the diff flattens a single-impl wrapper, did the consumer-surface grep walk cover every call site? Enumerated walk: static imports, `vi.mock()` paths, dynamic `import()` string literals, docs deep-path refs (`foo/foo.ts` AND bare `foo/`), knip config globs. (DA-REVIEW Folder structure owns the mandate; this line-item owns the walk.)
+- If a new folder splits by mode axis (local/remote, online/offline), is it an adapter boundary rather than a top-level folder? (Mode is an adapter, not a phase — see [CONVENTIONS.md §Folder Structure](CONVENTIONS.md#folder-structure).)
+- New entries in `shared/` have 2+ sibling consumers at introduction. No `utils/` junk drawers.
+
 ## Public API surface
 
-- Are new barrel exports genuinely public API, or internal modules that intra-package code consumes via `~/` imports? (installer internals should not be in the package barrel)
-- Are options types (`FetchOpts`, `TransitionOpts`) exported? They should stay internal unless consumed outside the file
-- Are board-internal label helpers (`createLabel`, `fetchLabels`, `getStoryLabelIds`) leaking through the barrel? (audit caught Shortcut exporting these)
-- Does core `index.ts` alias colliding names? (e.g. `transitionIssue` needs `transitionJiraIssue` alias)
-- Does a new module with external consumers have a barrel `index.ts`? Do external imports use the barrel path (`/index.js`) not the direct file path? (Phase 8 audit found 11 modules missing barrels)
+- Are new exports from a package-entry `src/index.ts` genuinely cross-package public API, or internal modules that intra-package code should consume via `~/` deep imports? (installer internals should not be in the package-entry barrel)
+- Are options types (`FetchOpts`, `TransitionOpts`) exported? They should stay internal unless consumed outside the file.
+- Are board-internal label helpers (`createLabel`, `fetchLabels`, `getStoryLabelIds`) leaking through any wildcard-exposed `core/board/<provider>/` barrel? (See [CONVENTIONS.md §Migration state](CONVENTIONS.md#migration-state--core).)
+- If two boards export the same symbol name (e.g. `fetchBlockerStatus`), is the collision resolved at the import site (`import { fetchBlockerStatus as fetchGitHubBlockerStatus }`) or via a source-file rename? (Package-entry and wildcard-exposed barrels exist for package-boundary exports, not for collision resolution — see [CONVENTIONS.md §Export Hygiene](CONVENTIONS.md#export-hygiene).)
+
+### Rule 11 — TSDoc scope
+
+SELF-REVIEW Rule 11 owns the **file-level walk across touched functions** (each new/edited function's TSDoc is up to spec, no signature-restating prose, immediately above its export). DA-REVIEW Rule 11 owns the **architectural gate** (is this symbol actually public API? Is TSDoc at the declaration site, not a re-export barrel? Is the WHY non-obvious enough to warrant TSDoc on an internal?).
+
+- When editing a function in a TSDoc-covered file, is that function's TSDoc brought up to spec? (Migration is opportunistic: don't refactor TSDoc you aren't otherwise changing; don't skip it for functions you ARE touching.)
+- The **mandatory** TSDoc requirement scopes to exported symbols on the public-API surface. Private helpers in the same file don't inherit the mandate — though they may still warrant TSDoc when the WHY is non-obvious.
+- No signature-restating TSDoc (`@param name - The name`). Delete when touching a covered file.
+- TSDoc sits immediately above its `export` — no blank line between.
 
 ## Board patterns
 
