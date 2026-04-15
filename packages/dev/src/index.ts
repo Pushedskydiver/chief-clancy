@@ -162,10 +162,8 @@ export {
 
 export type { InvokePhaseDeps } from './dep-factory/invoke-phase.js';
 export { makeInvokePhase } from './dep-factory/invoke-phase.js';
-export {
-  buildPipelineDeps,
-  resolveBuildLabel,
-} from './dep-factory/dep-factory.js';
+export { buildPipelineDeps } from './dep-factory/dep-factory.js';
+export { resolveBuildLabel } from './dep-factory/build-label.js';
 
 // ─── Pipeline re-exports ──────────────────────────────────────────────────
 

@@ -70,6 +70,7 @@ import { prRetry } from '../pipeline/phases/pr-retry.js';
 import { reworkDetection } from '../pipeline/phases/rework-detection.js';
 import { ticketFetch } from '../pipeline/phases/ticket-fetch.js';
 import { transition } from '../pipeline/phases/transition.js';
+import { resolveBuildLabel } from './build-label.js';
 import { wireDeliver } from './deliver-phase.js';
 import { makeInvokePhase } from './invoke-phase.js';
 import { localTicketSeed, wirePreflight } from './local-wiring.js';
@@ -94,20 +95,6 @@ function makeAppendProgress(
   projectRoot: string,
 ): AppendFn {
   return (opts) => appendProgress(progressFs, projectRoot, opts);
-}
-
-/** Default build-queue label when no env var is configured. */
-const DEFAULT_BUILD_LABEL = 'clancy:build';
-
-/**
- * Resolve the build label: CLANCY_LABEL_BUILD → CLANCY_LABEL → default.
- *
- * @param ctx - Pipeline context (config may be undefined before preflight).
- * @returns The resolved build label string.
- */
-export function resolveBuildLabel(ctx: RunContext): string {
-  const env = ctx.config?.env;
-  return env?.CLANCY_LABEL_BUILD ?? env?.CLANCY_LABEL ?? DEFAULT_BUILD_LABEL;
 }
 
 function hasParent(
