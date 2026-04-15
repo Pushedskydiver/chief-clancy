@@ -6,11 +6,9 @@
  * duplication — callers use `handlers.checkReviewState(...)` instead
  * of switching on `remote.host`.
  */
+import type { PlatformReworkHandlers, ReworkCtx } from './rework-types.js';
 import type { SharedEnv } from '@chief-clancy/core/schemas/env.js';
-import type {
-  PrReviewState,
-  RemoteInfo,
-} from '@chief-clancy/core/types/remote.js';
+import type { RemoteInfo } from '@chief-clancy/core/types/remote.js';
 import type { FetchFn } from '~/d/lifecycle/pr-creation.js';
 
 import { resolveGitToken } from '@chief-clancy/core/shared/git-token.js';
@@ -25,47 +23,6 @@ import {
 } from './rework-builders.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-
-/** Uniform interface for platform-specific rework operations. */
-export type PlatformReworkHandlers = {
-  /** Check the review state of a PR on the given branch. */
-  readonly checkReviewState: (
-    branch: string,
-    since?: string,
-  ) => Promise<PrReviewState | undefined>;
-
-  /** Fetch review comments from a PR. */
-  readonly fetchComments: (
-    prNumber: number,
-    since?: string,
-  ) => Promise<{
-    readonly comments: readonly string[];
-    readonly discussionIds?: readonly string[];
-  }>;
-
-  /** Post a comment on a PR. */
-  readonly postComment: (prNumber: number, comment: string) => Promise<boolean>;
-
-  /** Resolve discussion threads (GitLab-only, no-op on other platforms). */
-  readonly resolveThreads: (
-    prNumber: number,
-    discussionIds: readonly string[],
-  ) => Promise<number>;
-
-  /** Re-request review (GitHub-only, no-op on other platforms). */
-  readonly reRequestReview: (
-    prNumber: number,
-    reviewers: readonly string[],
-  ) => Promise<boolean>;
-};
-
-/** Shared context passed to every platform builder. */
-export type ReworkCtx = {
-  readonly fetchFn: FetchFn;
-  readonly token: string;
-  readonly apiBase: string;
-  readonly username?: string;
-};
 
 /** Options for {@link resolvePlatformHandlers}. */
 type ResolveHandlersOpts = {

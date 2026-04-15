@@ -18,7 +18,7 @@ import { recordDelivery, recordRework } from '../lifecycle/quality/quality.js';
 import { resolvePlatformHandlers } from '../lifecycle/rework/rework-handlers.js';
 import { postReworkActions } from '../lifecycle/rework/rework.js';
 import { deliverPhase } from '../pipeline/phases/deliver-phase.js';
-import { resolveBuildLabel } from './dep-factory.js';
+import { resolveBuildLabel } from './build-label.js';
 
 type DeliverOpts = {
   readonly projectRoot: string;

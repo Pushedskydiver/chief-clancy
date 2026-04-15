@@ -86,7 +86,7 @@ export {
   fetchReworkFromPrReview,
   postReworkActions,
 } from './lifecycle/rework/rework.js';
-export type { PlatformReworkHandlers } from './lifecycle/rework/rework-handlers.js';
+export type { PlatformReworkHandlers } from './lifecycle/rework/rework-types.js';
 export { resolvePlatformHandlers } from './lifecycle/rework/rework-handlers.js';
 
 // ─── CLI bridge re-exports ─────────────────────────────────────────────────
@@ -162,10 +162,8 @@ export {
 
 export type { InvokePhaseDeps } from './dep-factory/invoke-phase.js';
 export { makeInvokePhase } from './dep-factory/invoke-phase.js';
-export {
-  buildPipelineDeps,
-  resolveBuildLabel,
-} from './dep-factory/dep-factory.js';
+export { buildPipelineDeps } from './dep-factory/dep-factory.js';
+export { resolveBuildLabel } from './dep-factory/build-label.js';
 
 // ─── Pipeline re-exports ──────────────────────────────────────────────────
 

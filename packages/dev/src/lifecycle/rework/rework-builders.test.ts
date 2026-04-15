@@ -1,4 +1,4 @@
-import type { ReworkCtx } from './rework-handlers.js';
+import type { ReworkCtx } from './rework-types.js';
 import type {
   AzdoRemote,
   BitbucketRemote,

@@ -5,7 +5,7 @@
  * orchestrates rework comment posting, thread resolution, and review
  * re-requests. All operations are best-effort.
  */
-import type { PlatformReworkHandlers } from './rework-handlers.js';
+import type { PlatformReworkHandlers } from './rework-types.js';
 import type {
   BoardProvider,
   FetchedTicket,
