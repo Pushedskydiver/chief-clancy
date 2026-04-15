@@ -85,6 +85,10 @@ When two sections describe the same accept/reject set (parser/validator, Step N 
 
 After any rewrite that changes a load-bearing model (column order, write ordering, gate semantics, install-mode classification), grep the WHOLE file for the load-bearing concept and re-read every hit. The PR #216 R2/R3 rounds were almost entirely downstream of one missed grep after an M1 column-order restructure. One sweep would have caught all of them.
 
+### Cross-doc consistency sweep
+
+When CONVENTIONS.md adds a new category, distinction, or carve-out, sweep every downstream review-gate doc (SELF-REVIEW, DA-REVIEW, copilot-instructions) for existing checklist items that now need the new distinction. Distinct from the intra-file §Post-restructure consistency sweep above; this covers the CONVENTIONS → downstream cascade. Companion: [SELF-REVIEW §Consistency](SELF-REVIEW.md#consistency) covers the apply-rule-to-own-draft companion discipline. A Boundary-folder row added to CONVENTIONS Rule 7 in PR #306 left SELF-REVIEW + DA-REVIEW Rule 7 bullets silently overclaiming ("every new folder passes the wrapper/grouping test") — Copilot caught this on PR #308, but one grep across `docs/{SELF,DA}-REVIEW.md` + `.github/copilot-instructions.md` at CONVENTIONS-edit time would have closed it pre-PR.
+
 ### Stale forward-reference sweep
 
 Run BOTH regexes on every PR:
@@ -148,13 +152,13 @@ Workflow `.md` files in `src/{commands,workflows,agents}/` are runtime artifacts
 - [ ] No cross-package imports violating dependency direction (core ← terminal ← wrapper)
 - [ ] No boundary violations (core importing from terminal or chat)
 - [ ] Should this be exported? Who calls it? If exported from a **package-entry `src/index.ts`**, is it genuinely cross-package public API? Internal modules consumed via `~/` deep imports should not appear in the package-entry barrel.
-- [ ] New public exports land at the correct surface: cross-package library consumers import from `src/index.ts`; `core/` additionally exposes deep paths under its wildcard subtrees. No new internal `index.ts` barrels under `src/` — see [CONVENTIONS.md §Folder Structure](CONVENTIONS.md#folder-structure).
+- [ ] New public exports land at the correct surface: cross-package library consumers import from `src/index.ts`; `core/` additionally exposes deep paths under its wildcard subtrees. No new internal `index.ts` barrels under `src/` — see [Folder structure](#folder-structure) below.
 
-### Rule 7 — folder structure
+## Folder structure
 
 - [ ] Any new **concept folder** (not a build-system/runtime boundary folder like `src/entrypoints/`) passes the wrapper/grouping test (≥2 source files OR ubiquitous-language concept cluster). Single-file concepts stay flat.
 - [ ] No new internal `index.ts` barrel introduced (only package entry + `core/` wildcard-exposed boundaries are re-export barrels — see [CONVENTIONS.md §Migration state](CONVENTIONS.md#migration-state--core)).
-- [ ] If a single-impl wrapper is flattened, consumer-surface grep has been run before any mechanical rewrite. SELF-REVIEW Rule 7 owns the enumerated walk (static imports, `vi.mock`, dynamic `import()`, docs deep-path refs, knip globs); this checklist owns the mandate.
+- [ ] If a single-impl wrapper is flattened, consumer-surface grep has been run before any mechanical rewrite. SELF-REVIEW Folder structure owns the enumerated walk (static imports, `vi.mock`, dynamic `import()`, docs deep-path refs, knip globs); this checklist owns the mandate.
 - [ ] Mode-axis splits (local/remote, online/offline) go at an adapter boundary, not as top-level folders.
 - [ ] New `shared/` entries have 2+ sibling consumers at introduction; no `utils/` junk drawers.
 
@@ -190,6 +194,7 @@ DA owns the **comment and doc layer**: stale prose, drifted TSDoc, hardcoded val
 DA-REVIEW Rule 11 owns the **architectural gate** (is this symbol actually public API? Is TSDoc at the declaration site, not a re-export barrel? Is the WHY non-obvious enough to warrant TSDoc on an internal?). SELF-REVIEW Rule 11 owns the **file-level walk** (touched functions brought up to spec; signature-restating deleted; immediately-above-export formatting).
 
 - [ ] New symbols on the public-API surface (library-entry or wildcard-exposed) have TSDoc that adds semantics beyond the signature.
+- [ ] The **mandatory** TSDoc requirement scopes to exported symbols on the public-API surface. Private helpers in the same file don't inherit the mandate — though internals still warrant TSDoc when the WHY is non-obvious (see §TSDoc & documentation above).
 - [ ] Re-export sites (barrels — including nested barrels that re-export from other barrels) carry no TSDoc. Trace to the original declaration file.
 - [ ] Deep-alias paths (`~/d/foo.js`, `~/c/shared/...`) are not themselves a public-API signal — a file reachable only via aliases with no `package.json` `exports` entry is internal.
 
