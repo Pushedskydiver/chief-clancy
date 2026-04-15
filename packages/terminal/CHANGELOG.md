@@ -1,5 +1,11 @@
 # @chief-clancy/terminal
 
+## 0.2.3
+
+### Patch Changes
+
+- [#317](https://github.com/Pushedskydiver/chief-clancy/pull/317) [`127adf7`](https://github.com/Pushedskydiver/chief-clancy/commit/127adf749f3a8ff65872ccd07140401727742706) Thanks [@Pushedskydiver](https://github.com/Pushedskydiver)! - Break the last pre-existing madge cycle in `packages/terminal/src` by extracting `InstallSources` + `BUNDLE_SCRIPTS` from `installer/install/install.ts` to a new `installer/install/install-shared.ts`. `InstallSources` added to the public type surface. No runtime behaviour change.
+
 ## 0.2.2
 
 ### Patch Changes
