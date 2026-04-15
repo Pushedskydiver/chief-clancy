@@ -5,19 +5,17 @@
  * Pure helpers (headers, property extraction) are in `helpers.ts`.
  */
 import type { NotionCtx } from './helpers.js';
-import type { NotionPage } from '~/c/schemas/index.js';
-import type { Fetcher } from '~/c/shared/http/index.js';
-import type { PingResult } from '~/c/types/index.js';
+import type { NotionPage } from '~/c/schemas/notion.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
+import type { PingResult } from '~/c/types/board.js';
 
 import {
   notionDatabaseQueryResponseSchema,
   notionPageSchema,
-} from '~/c/schemas/index.js';
-import {
-  fetchAndParse,
-  pingEndpoint,
-  retryFetch,
-} from '~/c/shared/http/index.js';
+} from '~/c/schemas/notion.js';
+import { fetchAndParse } from '~/c/shared/http/fetch-and-parse.js';
+import { pingEndpoint } from '~/c/shared/http/ping-endpoint.js';
+import { retryFetch } from '~/c/shared/http/retry-fetch.js';
 
 import { NOTION_API, notionHeaders } from './helpers.js';
 

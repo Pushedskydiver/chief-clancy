@@ -46,7 +46,7 @@ Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash comman
 - **`eslint-disable` is a last resort.** Look for simpler alternatives first (e.g. `.forEach()` + named function instead of `for...of`).
 - **Cross-platform paths:** Use `node:path` join, never string concatenation. Support Windows.
 - **Symlink guards:** Use `lstatSync` with ENOENT-only catch, not `existsSync` + `lstatSync` (dangling symlink bypass).
-- **Internal modules don't use `index.ts` barrels.** Import direct source files (e.g. `./foo/foo.js` or flat `./foo.js`). Only the package-level `src/index.ts` and wildcard-exposed boundaries (under `core`'s wildcard `exports`) use this pattern. See [CONVENTIONS.md §Folder Structure](../docs/CONVENTIONS.md#folder-structure) for the five-category model.
+- **Internal modules don't use `index.ts` barrels.** Import direct source files (e.g. `./foo.js`). Only the package-level `src/index.ts` uses this pattern. Post-Barrier-Core, `core`'s wildcard-exposed subtrees (`./types/*.js`, `./schemas/*.js`, `./shared/*.js`, `./board/*.js`) contain no barrel `index.ts` files — only declaration files. See [CONVENTIONS.md §Folder Structure](../docs/CONVENTIONS.md#folder-structure) for the five-category model.
 
 ## Complexity limits (enforced by ESLint)
 

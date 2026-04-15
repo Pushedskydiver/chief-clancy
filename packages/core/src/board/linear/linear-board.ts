@@ -4,19 +4,19 @@
  * Returns a plain object conforming to the Board type, delegating
  * to the Linear API, relations, and label functions.
  */
-import type { LinearEnv } from '~/c/schemas/index.js';
-import type { Fetcher } from '~/c/shared/http/index.js';
-import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/index.js';
+import type { LinearEnv } from '~/c/schemas/env.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
+import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/board.js';
 
-import { CachedMap } from '~/c/shared/cache/index.js';
+import { CachedMap } from '~/c/shared/cache.js';
 
-import { fetchIssues, isValidTeamId, pingLinear } from './api/index.js';
-import { addLabel, ensureLabel, removeLabel } from './labels/index.js';
+import { fetchIssues, isValidTeamId, pingLinear } from './api.js';
+import { addLabel, ensureLabel, removeLabel } from './labels.js';
 import {
   fetchBlockerStatus,
   fetchChildrenStatus,
   transitionIssue,
-} from './relations/index.js';
+} from './relations.js';
 
 /** Internal context for Linear board operations. */
 type LinearCtx = {

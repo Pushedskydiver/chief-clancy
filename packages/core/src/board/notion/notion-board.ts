@@ -7,22 +7,21 @@
  * Key format: `notion-{first-8-chars-of-uuid}` (e.g., `notion-ab12cd34`)
  * Full UUID stored in `issueId` for API calls.
  */
-import type { NotionCtx } from './api/index.js';
-import type { NotionEnv, NotionPage } from '~/c/schemas/index.js';
-import type { Fetcher } from '~/c/shared/http/index.js';
-import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/index.js';
+import type { NotionCtx } from './api/helpers.js';
+import type { NotionEnv } from '~/c/schemas/env.js';
+import type { NotionPage } from '~/c/schemas/notion.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
+import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/board.js';
 
+import { pingNotion, queryDatabase, updatePage } from './api/api.js';
 import {
   buildNotionKey,
   getArrayProperty,
   getDescriptionText,
   getPageTitle,
-  pingNotion,
-  queryDatabase,
-  updatePage,
-} from './api/index.js';
-import { addLabel, removeLabel } from './labels/index.js';
-import { fetchBlockerStatus, fetchChildrenStatus } from './relations/index.js';
+} from './api/helpers.js';
+import { addLabel, removeLabel } from './labels.js';
+import { fetchBlockerStatus, fetchChildrenStatus } from './relations.js';
 
 /** Default property names for Notion databases. */
 const DEFAULTS = {

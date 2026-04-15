@@ -6,15 +6,15 @@
  * duplication — callers use `handlers.checkReviewState(...)` instead
  * of switching on `remote.host`.
  */
-import type { SharedEnv } from '@chief-clancy/core/schemas/env/env.js';
+import type { SharedEnv } from '@chief-clancy/core/schemas/env.js';
 import type {
   PrReviewState,
   RemoteInfo,
 } from '@chief-clancy/core/types/remote.js';
 import type { FetchFn } from '~/d/lifecycle/pr-creation.js';
 
-import { resolveGitToken } from '@chief-clancy/core/shared/git-token/index.js';
-import { buildApiBaseUrl } from '@chief-clancy/core/shared/remote/index.js';
+import { resolveGitToken } from '@chief-clancy/core/shared/git-token.js';
+import { buildApiBaseUrl } from '@chief-clancy/core/shared/remote.js';
 
 import {
   azdoHandlers,

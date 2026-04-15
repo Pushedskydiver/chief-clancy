@@ -5,7 +5,7 @@
  * ticket keys, summaries, and statuses. Filesystem access is
  * dependency-injected for testability.
  */
-import type { ProgressStatus } from '@chief-clancy/core/types/index.js';
+import type { ProgressStatus } from '@chief-clancy/core/types/progress.js';
 
 import { join } from 'node:path';
 

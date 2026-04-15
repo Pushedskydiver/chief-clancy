@@ -6,8 +6,8 @@
  * creates the PR, and appends progress. Returns structured results —
  * no console output. Board transitions are the caller's responsibility.
  */
-import type { BoardConfig } from '@chief-clancy/core/schemas/env/env.js';
-import type { ExecGit } from '@chief-clancy/core/shared/git-ops/index.js';
+import type { BoardConfig } from '@chief-clancy/core/schemas/env.js';
+import type { ExecGit } from '@chief-clancy/core/shared/git-ops.js';
 import type {
   PrCreationResult,
   RemoteInfo,
@@ -25,7 +25,7 @@ import { attemptPrCreation } from '~/d/lifecycle/pr-creation.js';
 import { appendProgress } from '~/d/lifecycle/progress.js';
 import { buildEpicPrBody } from '~/d/lifecycle/pull-request/pr-body.js';
 
-import { detectRemote } from '@chief-clancy/core/shared/git-ops/index.js';
+import { detectRemote } from '@chief-clancy/core/shared/git-ops.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

@@ -8,19 +8,19 @@
 import type {
   PrCreationResult,
   PrReviewState,
-} from '@chief-clancy/core/types/index.js';
+} from '@chief-clancy/core/types/remote.js';
 
 import {
   GITHUB_API,
   githubHeaders,
-} from '@chief-clancy/core/board/github/api/index.js';
+} from '@chief-clancy/core/board/github/api.js';
 import {
   githubCommentsResponseSchema,
   githubPrCommentsSchema,
   githubPrCreatedSchema,
   githubPrListSchema,
   githubReviewListSchema,
-} from '@chief-clancy/core/schemas/github/github.js';
+} from '@chief-clancy/core/schemas/github.js';
 
 import { postPullRequest } from './post-pr/post-pr.js';
 import {

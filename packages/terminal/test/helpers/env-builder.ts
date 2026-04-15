@@ -4,7 +4,7 @@
  * Creates a temporary `.clancy/.env` file with the given key-value pairs
  * and provides an {@link EnvFileSystem} for use with `loadClancyEnv`.
  */
-import type { EnvFileSystem } from '~/c/shared/env-parser/env-parser.js';
+import type { EnvFileSystem } from '~/c/shared/env-parser.js';
 
 import {
   existsSync,

@@ -4,20 +4,16 @@
  * Returns a plain object conforming to the Board type, delegating
  * to the Azure DevOps API, relations, and label functions.
  */
-import type { AzdoCtx, AzdoTicket } from './api/index.js';
-import type { AzdoEnv } from '~/c/schemas/index.js';
-import type { Fetcher } from '~/c/shared/http/index.js';
-import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/index.js';
+import type { AzdoTicket } from './api/api.js';
+import type { AzdoCtx } from './api/helpers.js';
+import type { AzdoEnv } from '~/c/schemas/env.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
+import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/board.js';
 
-import {
-  fetchTickets,
-  isSafeWiqlValue,
-  parseWorkItemId,
-  pingAzdo,
-  updateWorkItem,
-} from './api/index.js';
-import { addLabel, removeLabel } from './labels/index.js';
-import { fetchBlockerStatus, fetchChildrenStatus } from './relations/index.js';
+import { fetchTickets, pingAzdo, updateWorkItem } from './api/api.js';
+import { isSafeWiqlValue, parseWorkItemId } from './api/helpers.js';
+import { addLabel, removeLabel } from './labels.js';
+import { fetchBlockerStatus, fetchChildrenStatus } from './relations.js';
 
 /** Map an AzdoTicket to the normalised FetchedTicket shape. */
 function toFetchedTicket(

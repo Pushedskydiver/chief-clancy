@@ -9,15 +9,14 @@ import type {
   PrReviewState,
   RemoteInfo,
   Ticket,
-} from './index.js';
-
-import { describe, expect, it } from 'vitest';
+} from '~/c/index.js';
 
 import {
   COMPLETED_STATUSES,
   DELIVERED_STATUSES,
   FAILED_STATUSES,
-} from './index.js';
+} from '~/c/index.js';
+import { describe, expect, it } from 'vitest';
 
 describe('BoardProvider', () => {
   it('accepts all six providers', () => {

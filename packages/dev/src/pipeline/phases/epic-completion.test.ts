@@ -1,5 +1,5 @@
 import type { EpicCompletionDeps } from './epic-completion.js';
-import type { BoardConfig } from '@chief-clancy/core/schemas/env/env.js';
+import type { BoardConfig } from '@chief-clancy/core/schemas/env.js';
 
 import { describe, expect, it, vi } from 'vitest';
 

@@ -5,7 +5,7 @@
  * handles display. Decomposed into helpers to stay under 50-line limit.
  */
 import type { RunContext } from '../context.js';
-import type { ExecGit } from '@chief-clancy/core/shared/git-ops/index.js';
+import type { ExecGit } from '@chief-clancy/core/shared/git-ops.js';
 import type { LockData, LockFs } from '~/d/lifecycle/lock.js';
 import type { ProgressFs } from '~/d/lifecycle/progress.js';
 

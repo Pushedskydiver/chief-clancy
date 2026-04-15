@@ -4,15 +4,15 @@
  * Returns a plain object conforming to the Board type, delegating
  * to the Shortcut API, relations, and label functions.
  */
+import type { ShortcutEnv } from '~/c/schemas/env.js';
 import type {
-  ShortcutEnv,
   ShortcutLabelsResponse,
   ShortcutWorkflowsResponse,
-} from '~/c/schemas/index.js';
-import type { Fetcher } from '~/c/shared/http/index.js';
-import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/index.js';
+} from '~/c/schemas/shortcut.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
+import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/board.js';
 
-import { Cached } from '~/c/shared/cache/index.js';
+import { Cached } from '~/c/shared/cache.js';
 
 import {
   fetchStories,
@@ -20,14 +20,9 @@ import {
   resolveWorkflowStateId,
   resolveWorkflowStateIdsByType,
   transitionStory,
-} from './api/index.js';
-import {
-  addLabel,
-  ensureLabel,
-  parseStoryId,
-  removeLabel,
-} from './labels/index.js';
-import { fetchBlockerStatus, fetchChildrenStatus } from './relations/index.js';
+} from './api.js';
+import { addLabel, ensureLabel, parseStoryId, removeLabel } from './labels.js';
+import { fetchBlockerStatus, fetchChildrenStatus } from './relations.js';
 
 /** Internal context for Shortcut board operations. */
 type ShortcutCtx = {

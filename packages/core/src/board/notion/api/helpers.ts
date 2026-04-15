@@ -4,8 +4,8 @@
  * Headers, property extraction, key parsing, and status checks.
  * All pure — no I/O.
  */
-import type { NotionPage } from '~/c/schemas/index.js';
-import type { Fetcher } from '~/c/shared/http/index.js';
+import type { NotionPage } from '~/c/schemas/notion.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
 
 /** Notion REST API base URL. */
 export const NOTION_API = 'https://api.notion.com/v1';

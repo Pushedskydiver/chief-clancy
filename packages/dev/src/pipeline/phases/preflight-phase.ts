@@ -5,7 +5,7 @@
  * — no console output. The terminal layer handles display.
  */
 import type { RunContext } from '../context.js';
-import type { BoardConfig } from '@chief-clancy/core/schemas/env/env.js';
+import type { BoardConfig } from '@chief-clancy/core/schemas/env.js';
 import type { Board } from '@chief-clancy/core/types/board.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────

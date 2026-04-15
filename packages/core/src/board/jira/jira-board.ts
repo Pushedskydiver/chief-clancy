@@ -4,10 +4,10 @@
  * Returns a plain object conforming to the Board type, delegating
  * to the Jira API, relations, and label functions.
  */
-import type { JiraTicket } from './api/index.js';
-import type { JiraEnv } from '~/c/schemas/index.js';
-import type { Fetcher } from '~/c/shared/http/index.js';
-import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/index.js';
+import type { JiraTicket } from './api.js';
+import type { JiraEnv } from '~/c/schemas/env.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
+import type { Board, FetchedTicket, FetchTicketOpts } from '~/c/types/board.js';
 
 import {
   buildAuthHeader,
@@ -15,9 +15,9 @@ import {
   isSafeJqlValue,
   pingJira,
   transitionIssue,
-} from './api/index.js';
-import { addLabel, removeLabel } from './labels/index.js';
-import { fetchBlockerStatus, fetchChildrenStatus } from './relations/index.js';
+} from './api.js';
+import { addLabel, removeLabel } from './labels.js';
+import { fetchBlockerStatus, fetchChildrenStatus } from './relations.js';
 
 /** Map a JiraTicket to the normalised FetchedTicket shape. */
 function toFetchedTicket(

@@ -1,5 +1,5 @@
-import type { LinearEnv } from '~/c/schemas/index.js';
-import type { Fetcher } from '~/c/shared/http/index.js';
+import type { LinearEnv } from '~/c/schemas/env.js';
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 

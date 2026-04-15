@@ -5,8 +5,8 @@
  * progress. No console output — returns structured results for the
  * terminal layer to display.
  */
-import type { BoardConfig } from '@chief-clancy/core/schemas/env/env.js';
-import type { ExecGit } from '@chief-clancy/core/shared/git-ops/index.js';
+import type { BoardConfig } from '@chief-clancy/core/schemas/env.js';
+import type { ExecGit } from '@chief-clancy/core/shared/git-ops.js';
 import type { FetchedTicket } from '@chief-clancy/core/types/board.js';
 import type {
   PrCreationResult,
@@ -30,7 +30,7 @@ import {
   checkout,
   detectRemote,
   pushBranch,
-} from '@chief-clancy/core/shared/git-ops/index.js';
+} from '@chief-clancy/core/shared/git-ops.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

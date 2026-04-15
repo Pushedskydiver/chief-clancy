@@ -1,4 +1,4 @@
-import type { BoardConfig } from '@chief-clancy/core/schemas/env/env.js';
+import type { BoardConfig } from '@chief-clancy/core/schemas/env.js';
 import type { FetchedTicket } from '@chief-clancy/core/types/board.js';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';

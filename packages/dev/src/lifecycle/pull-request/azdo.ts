@@ -7,7 +7,7 @@ import type { AzdoThread } from '@chief-clancy/core/schemas/azdo/azdo-pr.js';
 import type {
   PrCreationResult,
   PrReviewState,
-} from '@chief-clancy/core/types/index.js';
+} from '@chief-clancy/core/types/remote.js';
 
 import {
   azdoPrCreatedSchema,
