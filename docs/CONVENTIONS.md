@@ -109,7 +109,7 @@ Single-file concepts stay flat. No `feature-name/feature-name.ts` wrappers — t
 
 ### Barrels (`index.ts`)
 
-Four categories of `index.ts` exist today; only two are barrels in the re-export sense.
+Five categories cover every `index.ts` across the monorepo; only two are re-export barrels (the first two rows). Single-impl wrapper rows are zero today — Barrier flattened them all — but kept as a category so the rule has a name for what future refactors must not re-introduce.
 
 | Category                           | Where it lives                                                                                                                                                            | Status                                                                                               |
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
