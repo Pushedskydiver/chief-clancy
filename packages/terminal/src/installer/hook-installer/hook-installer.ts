@@ -9,9 +9,9 @@
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { hasErrorCode } from '~/t/installer/shared/fs-errors/index.js';
-import { rejectSymlink } from '~/t/installer/shared/fs-guards/index.js';
-import { isPlainObject } from '~/t/installer/shared/type-guards/index.js';
+import { hasErrorCode } from '~/t/installer/shared/fs-errors/fs-errors.js';
+import { rejectSymlink } from '~/t/installer/shared/fs-guards/fs-guards.js';
+import { isPlainObject } from '~/t/installer/shared/type-guards/type-guards.js';
 
 /** A command hook entry in Claude's settings.json. */
 type CommandHook = { readonly type: 'command'; readonly command: string };

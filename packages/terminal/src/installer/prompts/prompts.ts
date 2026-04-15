@@ -5,7 +5,7 @@
  * side effects. The caller creates and owns the readline lifecycle.
  */
 
-import { blue, cyan } from '~/t/shared/ansi/index.js';
+import { blue, cyan } from '~/t/shared/ansi/ansi.js';
 
 /**
  * Minimal readline interface required by the prompts module.

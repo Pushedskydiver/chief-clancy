@@ -10,7 +10,7 @@
  */
 import { execFileSync } from 'node:child_process';
 
-import { readAsyncInput } from '../shared/stdin-reader/index.js';
+import { readAsyncInput } from '../shared/stdin-reader/stdin-reader.js';
 import { extractMessage, sendNotification } from './send-notification.js';
 
 const DISABLED = process.env.CLANCY_DESKTOP_NOTIFY === 'false';

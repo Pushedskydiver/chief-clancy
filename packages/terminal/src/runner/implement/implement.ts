@@ -27,7 +27,7 @@ import {
   formatDuration,
 } from '@chief-clancy/dev';
 
-import { dim, green, red } from '../../shared/ansi/index.js';
+import { dim, green, red } from '../../shared/ansi/ansi.js';
 import { buildPipelineDeps } from '../dep-factory/index.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────

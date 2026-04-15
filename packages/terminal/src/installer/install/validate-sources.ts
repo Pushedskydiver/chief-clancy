@@ -11,7 +11,7 @@ import { join } from 'node:path';
 import {
   requirePath,
   validateOptionalDirs,
-} from '~/t/installer/shared/fs-guards/index.js';
+} from '~/t/installer/shared/fs-guards/fs-guards.js';
 
 import { BUNDLE_SCRIPTS } from './install.js';
 

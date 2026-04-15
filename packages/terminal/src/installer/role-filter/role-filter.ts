@@ -9,7 +9,7 @@ import { mkdirSync, readdirSync, rmSync, unlinkSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { copyDir } from '~/t/installer/file-ops/file-ops.js';
-import { hasErrorCode } from '~/t/installer/shared/fs-errors/index.js';
+import { hasErrorCode } from '~/t/installer/shared/fs-errors/fs-errors.js';
 
 /** Roles that are always installed regardless of CLANCY_ROLES. */
 const CORE_ROLES = new Set(['implementer', 'reviewer', 'setup']);

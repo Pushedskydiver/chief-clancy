@@ -6,28 +6,28 @@
  */
 export const PACKAGE_NAME = '@chief-clancy/terminal' as const;
 
-export { copyDir, inlineWorkflows } from './installer/file-ops/index.js';
-export { installHooks } from './installer/hook-installer/index.js';
+export { copyDir, inlineWorkflows } from './installer/file-ops/file-ops.js';
+export { installHooks } from './installer/hook-installer/hook-installer.js';
 export type {
   InstallMode,
   InstallPaths,
   RunInstallOptions,
-} from './installer/install/index.js';
+} from './installer/install/install.js';
 export {
   parseEnabledRoles,
   parseInstallFlag,
   resolveInstallPaths,
   runInstall,
-  validateSources,
-} from './installer/install/index.js';
+} from './installer/install/install.js';
+export { validateSources } from './installer/install/validate-sources.js';
 export {
   backupModifiedFiles,
   buildManifest,
   detectModifiedFiles,
-} from './installer/manifest/index.js';
-export { createPrompts } from './installer/prompts/index.js';
-export { copyRoleFiles } from './installer/role-filter/index.js';
-export { printBanner, printSuccess } from './installer/ui/index.js';
+} from './installer/manifest/manifest.js';
+export { createPrompts } from './installer/prompts/prompts.js';
+export { copyRoleFiles } from './installer/role-filter/role-filter.js';
+export { printBanner, printSuccess } from './installer/ui/ui.js';
 
 export {
   blue,
@@ -37,9 +37,9 @@ export {
   green,
   red,
   yellow,
-} from './shared/ansi/index.js';
+} from './shared/ansi/ansi.js';
 
-export { runAutopilot } from './runner/autopilot/index.js';
+export { runAutopilot } from './runner/autopilot/autopilot.js';
 export {
   buildPipelineDeps,
   buildPrompt,
@@ -48,8 +48,8 @@ export {
   invokeClaudeSession,
   sendNotification,
 } from '@chief-clancy/dev';
-export { runImplement } from './runner/implement/index.js';
+export { runImplement } from './runner/implement/implement.js';
 export {
   buildSessionReport,
   generateSessionReport,
-} from './runner/session-report/index.js';
+} from './runner/session-report/session-report.js';

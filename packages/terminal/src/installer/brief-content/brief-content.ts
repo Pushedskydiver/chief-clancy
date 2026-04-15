@@ -7,8 +7,8 @@
  */
 import { join } from 'node:path';
 
-import { hasErrorCode } from '~/t/installer/shared/fs-errors/index.js';
-import { rejectSymlink } from '~/t/installer/shared/fs-guards/index.js';
+import { hasErrorCode } from '~/t/installer/shared/fs-errors/fs-errors.js';
+import { rejectSymlink } from '~/t/installer/shared/fs-guards/fs-guards.js';
 
 // ---------------------------------------------------------------------------
 // Types

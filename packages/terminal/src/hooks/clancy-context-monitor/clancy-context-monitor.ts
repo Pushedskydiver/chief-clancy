@@ -14,10 +14,10 @@ import type { DebounceState, GuardResult } from './monitor-guards.js';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 
-import { contextOutput } from '../shared/hook-output/index.js';
-import { readLockFile } from '../shared/lock-file/index.js';
-import { readAsyncInput } from '../shared/stdin-reader/index.js';
-import { bridgePath, debouncePath } from '../shared/tmpdir/index.js';
+import { contextOutput } from '../shared/hook-output/hook-output.js';
+import { readLockFile } from '../shared/lock-file/lock-file.js';
+import { readAsyncInput } from '../shared/stdin-reader/stdin-reader.js';
+import { bridgePath, debouncePath } from '../shared/tmpdir/tmpdir.js';
 import {
   EMPTY_DEBOUNCE,
   parseBridgeMetrics,
