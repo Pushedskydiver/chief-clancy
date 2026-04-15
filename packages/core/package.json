@@ -1,6 +1,6 @@
 {
   "name": "@chief-clancy/core",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Board integrations, schemas, types, and shared utilities",
   "author": "Alex Clapperton",
   "license": "MIT",
