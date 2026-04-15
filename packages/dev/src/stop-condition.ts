@@ -5,7 +5,7 @@
  * Fatal abort phases (lock-check, preflight, ticket-fetch, branch-setup)
  * stop immediately; non-fatal aborts allow the next ticket.
  */
-import type { PipelineResult } from './pipeline/index.js';
+import type { PipelineResult } from './pipeline/run-pipeline.js';
 import type { QueueStopCondition } from './queue.js';
 
 /** Phases where an abort should stop the entire autopilot loop. */

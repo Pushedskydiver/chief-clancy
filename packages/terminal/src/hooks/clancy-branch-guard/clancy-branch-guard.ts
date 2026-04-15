@@ -11,8 +11,8 @@
  */
 import { readFileSync } from 'node:fs';
 
-import { approve, block } from '../shared/hook-output/index.js';
-import { readPreToolUseInput } from '../shared/stdin-reader/index.js';
+import { approve, block } from '../shared/hook-output.js';
+import { readPreToolUseInput } from '../shared/stdin-reader.js';
 import { buildProtectedBranches, checkCommand } from './check-command.js';
 
 try {

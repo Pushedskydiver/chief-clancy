@@ -9,9 +9,9 @@
  */
 import { readFileSync } from 'node:fs';
 
-import { contextOutput } from '../shared/hook-output/index.js';
-import { readLockFile } from '../shared/lock-file/index.js';
-import { readAsyncInput } from '../shared/stdin-reader/index.js';
+import { contextOutput } from '../shared/hook-output.js';
+import { readLockFile } from '../shared/lock-file.js';
+import { readAsyncInput } from '../shared/stdin-reader.js';
 import { buildCompactContext } from './build-context.js';
 
 readAsyncInput({ stdin: process.stdin })

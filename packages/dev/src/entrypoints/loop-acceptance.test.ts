@@ -4,9 +4,9 @@
  * Tests `runLoop(deps)` with fully mocked deps (DI pattern, no vi.mock).
  * Each case asserts which artifact files are written and their contents.
  */
-import type { CheckColour, ReadinessVerdict } from '../agents/types/index.js';
-import type { AtomicFs } from '../artifacts/atomic-write/index.js';
-import type { PipelineResult } from '../pipeline/index.js';
+import type { CheckColour, ReadinessVerdict } from '../agents/types.js';
+import type { AtomicFs } from '../artifacts/atomic-write.js';
+import type { PipelineResult } from '../pipeline/run-pipeline.js';
 import type { LoopOutcome } from '../queue.js';
 import type { FetchedTicket } from '@chief-clancy/core';
 

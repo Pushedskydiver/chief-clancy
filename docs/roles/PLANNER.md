@@ -8,8 +8,8 @@ The planner is a **virtual role** — there is no `packages/terminal/src/roles/p
 
 The role-key concept lives on in two places in terminal:
 
-- [`packages/terminal/src/installer/ui/ui.ts`](../../packages/terminal/src/installer/ui/ui.ts) `COMMAND_GROUPS` includes a Planner entry with `roleKey: 'planner'` so the UI can show / hide the planner command surface during install
-- [`packages/terminal/src/installer/plan-content/plan-content.ts`](../../packages/terminal/src/installer/plan-content/plan-content.ts) gates `enabledRoles.has('planner')` so the terminal installer knows whether to copy plan files from `@chief-clancy/plan` into a terminal-mode install
+- [`packages/terminal/src/installer/ui.ts`](../../packages/terminal/src/installer/ui.ts) `COMMAND_GROUPS` includes a Planner entry with `roleKey: 'planner'` so the UI can show / hide the planner command surface during install
+- [`packages/terminal/src/installer/plan-content.ts`](../../packages/terminal/src/installer/plan-content.ts) gates `enabledRoles.has('planner')` so the terminal installer knows whether to copy plan files from `@chief-clancy/plan` into a terminal-mode install
 
 This is the same shape as the strategist role — see [STRATEGIST.md](./STRATEGIST.md). Both are virtual roles whose files live in standalone packages.
 

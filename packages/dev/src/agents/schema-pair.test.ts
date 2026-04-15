@@ -10,7 +10,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { READINESS_CHECK_IDS } from './types/index.js';
+import { READINESS_CHECK_IDS } from './types.js';
 
 const RUBRIC_PATH = join(import.meta.dirname, 'readiness.md');
 

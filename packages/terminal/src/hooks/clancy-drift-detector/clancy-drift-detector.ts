@@ -10,9 +10,9 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 
-import { contextOutput } from '../shared/hook-output/index.js';
-import { readAsyncInput } from '../shared/stdin-reader/index.js';
-import { driftFlagPath } from '../shared/tmpdir/index.js';
+import { contextOutput } from '../shared/hook-output.js';
+import { readAsyncInput } from '../shared/stdin-reader.js';
+import { driftFlagPath } from '../shared/tmpdir.js';
 import {
   buildDriftWarning,
   readInstalledVersion,

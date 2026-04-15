@@ -6,17 +6,13 @@
  * what a real Claude grading would produce — it's a sanity check that
  * the rubric checks are discriminating, not a substitute for live grading.
  */
-import type {
-  CheckColour,
-  CheckResult,
-  ReadinessCheckId,
-} from './types/index.js';
+import type { CheckColour, CheckResult, ReadinessCheckId } from './types.js';
 
 import { describe, expect, it } from 'vitest';
 
-import { aggregateVerdict } from './aggregate/index.js';
+import { aggregateVerdict } from './aggregate.js';
 import { BAD_TICKETS, GOOD_TICKETS } from './fixtures/tickets.js';
-import { READINESS_CHECK_IDS } from './types/index.js';
+import { READINESS_CHECK_IDS } from './types.js';
 
 // ─── Mock grader (pure functions, one per check) ────────────────────────────
 

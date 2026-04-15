@@ -10,13 +10,10 @@ import type {
   BoardProvider,
   FetchedTicket,
 } from '@chief-clancy/core/types/board.js';
-import type {
-  ProgressEntry,
-  ProgressFs,
-} from '~/d/lifecycle/progress/index.js';
+import type { ProgressEntry, ProgressFs } from '~/d/lifecycle/progress.js';
 
-import { computeTicketBranch } from '~/d/lifecycle/branch/index.js';
-import { findEntriesWithStatus } from '~/d/lifecycle/progress/index.js';
+import { computeTicketBranch } from '~/d/lifecycle/branch.js';
+import { findEntriesWithStatus } from '~/d/lifecycle/progress.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

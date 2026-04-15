@@ -46,7 +46,7 @@ Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash comman
 - **`eslint-disable` is a last resort.** Look for simpler alternatives first (e.g. `.forEach()` + named function instead of `for...of`).
 - **Cross-platform paths:** Use `node:path` join, never string concatenation. Support Windows.
 - **Symlink guards:** Use `lstatSync` with ENOENT-only catch, not `existsSync` + `lstatSync` (dangling symlink bypass).
-- **Internal modules stay out of the package barrel.** Only public API goes in `src/index.ts`.
+- **Internal modules don't use `index.ts` barrels.** Import direct source files (e.g. `./foo/foo.js` or flat `./foo.js`). Only the package-level `src/index.ts` and published-export-boundary barrels (under core's wildcard `exports`) use this pattern.
 
 ## Complexity limits (enforced by ESLint)
 

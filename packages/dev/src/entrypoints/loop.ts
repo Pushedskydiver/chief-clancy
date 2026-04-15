@@ -7,12 +7,12 @@
  *
  * Built by esbuild into a self-contained ESM bundle with zero npm deps.
  */
-import type { AtomicFs } from '../artifacts/atomic-write/index.js';
-import type { GradeOneFn } from '../artifacts/preflight-batch/index.js';
-import type { GateResult } from '../execute/readiness/index.js';
-import type { PipelineResult } from '../pipeline/index.js';
+import type { AtomicFs } from '../artifacts/atomic-write.js';
+import type { GradeOneFn } from '../artifacts/preflight-batch.js';
+import type { GateResult } from '../execute/readiness/readiness-gate.js';
+import type { PipelineResult } from '../pipeline/run-pipeline.js';
 import type { LoopOutcome } from '../queue.js';
-import type { ConsoleLike } from '../types/index.js';
+import type { ConsoleLike } from '../types/spawn.js';
 import type { PreflightDecision } from './loop-preflight.js';
 import type { EnvFileSystem, FetchedTicket } from '@chief-clancy/core';
 
@@ -21,9 +21,9 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { loadRubric } from '../agents/rubric-loader.js';
-import { writeDeferred } from '../artifacts/deferred/index.js';
-import { writeDriftIfPossible } from '../artifacts/drift/index.js';
-import { writeRunSummary } from '../artifacts/run-summary/index.js';
+import { writeDeferred } from '../artifacts/deferred.js';
+import { writeDriftIfPossible } from '../artifacts/drift.js';
+import { writeRunSummary } from '../artifacts/run-summary.js';
 import { makeAtomicFs, makeExecGit } from './adapters.js';
 import { runAndReport } from './loop-execute.js';
 import { runPreflightIfNeeded } from './loop-preflight.js';

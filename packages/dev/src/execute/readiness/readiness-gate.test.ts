@@ -1,10 +1,7 @@
 /**
  * Tests for the readiness gate — grade ticket, retry on yellow, refuse on red.
  */
-import type {
-  CheckResult,
-  ReadinessVerdict,
-} from '../../agents/types/index.js';
+import type { CheckResult, ReadinessVerdict } from '../../agents/types.js';
 
 import { describe, expect, it, vi } from 'vitest';
 

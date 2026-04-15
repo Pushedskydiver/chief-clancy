@@ -18,7 +18,7 @@ import type {
   ExecuteQueueOpts,
   QueueStopCondition,
 } from './queue.js';
-import type { ConsoleLike } from './types/index.js';
+import type { ConsoleLike } from './types/spawn.js';
 
 import { describe, expect, it, vi } from 'vitest';
 

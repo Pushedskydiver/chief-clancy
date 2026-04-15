@@ -5,7 +5,7 @@
  * with ticket pre-set, then run the pipeline (which skips ticket-fetch
  * because ctx.ticket is already populated).
  */
-import type { PipelineDeps, PipelineResult } from '../pipeline/index.js';
+import type { PipelineDeps, PipelineResult } from '../pipeline/run-pipeline.js';
 import type { FetchedTicket } from '@chief-clancy/core';
 
 import { describe, expect, it, vi } from 'vitest';

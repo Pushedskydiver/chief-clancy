@@ -24,7 +24,7 @@ import {
   resolveInstallPaths,
   runInstall,
 } from '~/t/installer/install/install.js';
-import { hasErrorCode } from '~/t/installer/shared/fs-errors/index.js';
+import { hasErrorCode } from '~/t/installer/shared/fs-errors.js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // ---------------------------------------------------------------------------

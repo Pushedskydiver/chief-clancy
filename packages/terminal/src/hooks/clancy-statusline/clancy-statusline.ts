@@ -15,8 +15,8 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { cwd } from 'node:process';
 
-import { readAsyncInput } from '../shared/stdin-reader/index.js';
-import { bridgePath } from '../shared/tmpdir/index.js';
+import { readAsyncInput } from '../shared/stdin-reader.js';
+import { bridgePath } from '../shared/tmpdir.js';
 import {
   buildBridgeData,
   buildStatusline,

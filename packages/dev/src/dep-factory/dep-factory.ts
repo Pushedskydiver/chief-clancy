@@ -7,12 +7,14 @@
  * core phase function.
  */
 import type { CostFs } from '../lifecycle/cost/cost.js';
-import type { LockFs } from '../lifecycle/lock/index.js';
-import type { FetchFn } from '../lifecycle/pr-creation/index.js';
-import type { ProgressEntry, ProgressFs } from '../lifecycle/progress/index.js';
+import type { LockFs } from '../lifecycle/lock.js';
+import type { FetchFn } from '../lifecycle/pr-creation.js';
+import type { ProgressEntry, ProgressFs } from '../lifecycle/progress.js';
 import type { QualityFs } from '../lifecycle/quality/quality.js';
-import type { PipelineDeps, RunContext } from '../pipeline/index.js';
-import type { AppendFn, SpawnSyncFn } from '../types/index.js';
+import type { RunContext } from '../pipeline/context.js';
+import type { PipelineDeps } from '../pipeline/run-pipeline.js';
+import type { AppendFn } from '../types/progress.js';
+import type { SpawnSyncFn } from '../types/spawn.js';
 import type { InvokePhaseDeps } from './invoke-phase.js';
 import type {
   Board,
@@ -31,45 +33,43 @@ import {
   currentBranch as gitCurrentBranch,
 } from '@chief-clancy/core';
 
-import { invokeClaudePrint } from '../cli-bridge/index.js';
+import { invokeClaudePrint } from '../cli-bridge.js';
 import {
   computeTargetBranch,
   computeTicketBranch,
-} from '../lifecycle/branch/index.js';
-import { resolveCommitType } from '../lifecycle/commit-type/index.js';
+} from '../lifecycle/branch.js';
+import { resolveCommitType } from '../lifecycle/commit-type.js';
 import { appendCostEntry } from '../lifecycle/cost/cost.js';
 import { deliverEpicToBase } from '../lifecycle/deliver-epic/deliver-epic.js';
-import { ensureEpicBranch } from '../lifecycle/epic/epic.js';
+import { ensureEpicBranch } from '../lifecycle/epic.js';
 import { checkFeasibility } from '../lifecycle/feasibility/feasibility.js';
 import {
   deleteLock,
   deleteVerifyAttempt,
   readLock,
   writeLock,
-} from '../lifecycle/lock/index.js';
-import { attemptPrCreation } from '../lifecycle/pr-creation/index.js';
+} from '../lifecycle/lock.js';
+import { attemptPrCreation } from '../lifecycle/pr-creation.js';
 import {
   appendProgress,
   countReworkCycles,
   findEntriesWithStatus,
-} from '../lifecycle/progress/index.js';
-import { buildPrBody } from '../lifecycle/pull-request/pr-body/pr-body.js';
+} from '../lifecycle/progress.js';
+import { buildPrBody } from '../lifecycle/pull-request/pr-body.js';
 import { detectResume, executeResume } from '../lifecycle/resume/resume.js';
 import { resolvePlatformHandlers } from '../lifecycle/rework/rework-handlers.js';
 import { fetchReworkFromPrReview } from '../lifecycle/rework/rework.js';
-import { sendNotification } from '../notify/index.js';
-import {
-  branchSetup,
-  cleanupPhase,
-  costPhase,
-  epicCompletion,
-  feasibilityPhase,
-  lockCheck,
-  prRetry,
-  reworkDetection,
-  ticketFetch,
-  transition,
-} from '../pipeline/index.js';
+import { sendNotification } from '../notify.js';
+import { branchSetup } from '../pipeline/phases/branch-setup.js';
+import { cleanupPhase } from '../pipeline/phases/cleanup-phase.js';
+import { costPhase } from '../pipeline/phases/cost-phase.js';
+import { epicCompletion } from '../pipeline/phases/epic-completion.js';
+import { feasibilityPhase } from '../pipeline/phases/feasibility.js';
+import { lockCheck } from '../pipeline/phases/lock-check.js';
+import { prRetry } from '../pipeline/phases/pr-retry.js';
+import { reworkDetection } from '../pipeline/phases/rework-detection.js';
+import { ticketFetch } from '../pipeline/phases/ticket-fetch.js';
+import { transition } from '../pipeline/phases/transition.js';
 import { wireDeliver } from './deliver-phase.js';
 import { makeInvokePhase } from './invoke-phase.js';
 import { localTicketSeed, wirePreflight } from './local-wiring.js';

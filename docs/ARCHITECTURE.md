@@ -173,12 +173,12 @@ The Claude session invocation (prompt building, CLI bridge) lives in `terminal/r
 
 The terminal package provides two runner entry points:
 
-| Runner         | Entry               | Purpose                                                                  |
-| -------------- | ------------------- | ------------------------------------------------------------------------ |
-| `runImplement` | `runner/implement/` | Single ticket — fetch, implement, deliver, exit                          |
-| `runAutopilot` | `runner/autopilot/` | Loop — repeat implement until no tickets remain, generate session report |
+| Runner         | Entry                 | Purpose                                                                  |
+| -------------- | --------------------- | ------------------------------------------------------------------------ |
+| `runImplement` | `runner/implement/`   | Single ticket — fetch, implement, deliver, exit                          |
+| `runAutopilot` | `runner/autopilot.ts` | Loop — repeat implement until no tickets remain, generate session report |
 
-Both use `buildPipelineDeps` (`runner/dep-factory/`) to wire real dependencies (fs, git, Claude CLI) into the pipeline phases.
+Both use `buildPipelineDeps` (`runner/dep-factory.ts`) to wire real dependencies (fs, git, Claude CLI) into the pipeline phases.
 
 ## Board Type Abstraction
 
