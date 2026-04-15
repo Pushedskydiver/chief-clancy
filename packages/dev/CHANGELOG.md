@@ -1,5 +1,16 @@
 # @chief-clancy/dev
 
+## 0.4.1
+
+### Patch Changes
+
+- [#312](https://github.com/Pushedskydiver/chief-clancy/pull/312) [`08b9906`](https://github.com/Pushedskydiver/chief-clancy/commit/08b99061f928ee29b0601bbe841b62e52182d247) Thanks [@Pushedskydiver](https://github.com/Pushedskydiver)! - Internal: rewrite deep-path imports to `@chief-clancy/core` per Barrier-Core
+
+  Updates all `@chief-clancy/core/<subpath>/index.js` imports to resolve against declaration files directly, following the core 0.3.0 deletion of internal barrels. No behaviour change for `@chief-clancy/dev` consumers.
+
+- Updated dependencies [[`08b9906`](https://github.com/Pushedskydiver/chief-clancy/commit/08b99061f928ee29b0601bbe841b62e52182d247)]:
+  - @chief-clancy/core@1.0.0
+
 ## 0.4.0
 
 ### Minor Changes
