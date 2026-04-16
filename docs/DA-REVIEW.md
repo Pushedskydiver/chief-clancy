@@ -179,6 +179,7 @@ Workflow `.md` files in `src/{commands,workflows,agents}/` are runtime artifacts
 - [ ] Compound boolean conditions extracted into named `const` variables
 - [ ] Functions with 3+ parameters use options objects (not individual params)
 - [ ] Max one level of function nesting — no functions defined inside functions defined inside functions
+- [ ] Function bodies use beat spacing: related statements grouped, single blank line between distinct concerns, no unbroken walls or staccato every-other-line spacing
 - [ ] `type` used over `interface` (unless declaration merging needed)
 - [ ] Types and helpers co-located with their module — extract to `shared/` only at 2+ consumers
 - [ ] Extraction depth matches reading mode: composition code (factories, DI, assembly) names each piece at the top level; logic code (algorithms, data transforms, business rules) stays inline — extraction triggered by intent, not length

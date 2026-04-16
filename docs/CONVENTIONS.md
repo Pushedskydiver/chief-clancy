@@ -87,6 +87,7 @@ Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 - **Options objects for 4+ parameters.** 3 is the ESLint limit. 4+ must use an options object with named properties.
 - **Unused parameters:** prefix with `_` (e.g. `_unused`) if keeping for API stability. Otherwise remove.
 - **Max one level of function nesting.** No functions defined inside functions defined inside functions.
+- **Beat spacing.** Separate distinct concerns within a function body with one blank line — never more than one. A guard clause and its early return are one concern (no blank line between). Consecutive assignments building the same value are one concern. A single-purpose function needs no internal blank lines regardless of length. Anti-patterns: multiple concerns run together with no separation (reader discovers structure instead of seeing it), and blank lines scattered after every few statements (staccato spacing that drowns the signal).
 - **`type` over `interface`.** Use `type` by default. Only use `interface` when you need declaration merging or `extends` for object hierarchies. Consistency over convention — one fewer decision to make.
 - **Co-locate types with their module.** Types used by a single module live in that module's file. Types used across multiple modules go in `types/`. Types start local and only migrate when there's actual reuse.
 - **Name compound boolean conditions.** Extract multi-part conditions into named `const` variables (e.g. `const isDoubleQuoted = first === '"' && last === '"'`). The `if` statement should read like prose.

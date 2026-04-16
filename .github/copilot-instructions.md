@@ -47,6 +47,7 @@ Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash comman
 - **Options objects for 4+ parameters.** (ESLint `max-params: 3`.)
 - **Co-locate types with their module.** Only move to `types/` when used by 2+ modules.
 - **Co-locate helpers with their module.** Extract to `shared/` only when used by 2+ modules.
+- **Beat spacing in function bodies.** Separate distinct concerns with one blank line. Guard + early return = one unit. Single-purpose functions need no internal blank lines. No walls of unbroken code; no staccato every-other-line spacing.
 - **`eslint-disable` is a last resort.** Look for simpler alternatives first (e.g. `.forEach()` + named function instead of `for...of`).
 - **Cross-platform paths:** Use `node:path` join, never string concatenation. Support Windows.
 - **Symlink guards:** Use `lstatSync` with ENOENT-only catch, not `existsSync` + `lstatSync` (dangling symlink bypass).
