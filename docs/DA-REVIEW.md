@@ -190,6 +190,7 @@ Workflow `.md` files in `src/{commands,workflows,agents}/` are runtime artifacts
 - [ ] Boolean variables and boolean-returning predicates use `is*/has*/can*/should*` prefix
 - [ ] Type suffixes follow project dialect (`*Opts`, `*Result`, `*Ctx`/`*Context`, `*Deps`, `*Fn`) as category markers on a semantic base name — not mechanical `FooOpts`; no `I` prefix on interfaces, no `T` prefix on generics
 - [ ] Abbreviations from the allowlist (`ctx`, `opts`, `fs`, `fn`, `env`, `id`, `url`, `args`, `argv`, `i`) or unambiguous domain terms
+- [ ] Expected failures return a Result-shaped discriminated union (`{ ok: true, ...data } | { ok: false, error: { kind, ...context } }`), not thrown exceptions or bare `error: string` — see [CONVENTIONS.md §Error Handling](CONVENTIONS.md#error-handling)
 
 ## TSDoc & documentation
 
