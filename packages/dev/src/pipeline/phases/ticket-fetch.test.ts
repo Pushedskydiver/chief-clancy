@@ -162,7 +162,7 @@ describe('ticketFetch', () => {
     expect(result.reason).toBe('max-rework');
   });
 
-  it('computes branches and sets them on context', async () => {
+  it('resolves branches and sets them on context', async () => {
     const ctx = makeCtx();
     const deps = makeDeps({
       ticketBranch: vi.fn(() => 'feature/issue-42'),

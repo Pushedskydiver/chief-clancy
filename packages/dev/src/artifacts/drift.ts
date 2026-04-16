@@ -107,7 +107,7 @@ type WriteDriftIfPossibleOpts = {
   readonly console: { readonly log: (message: string) => void };
 };
 
-/** Run git diff from pre-execution baseline, resolve drift, write drift.json. No-op on git failure. */
+/** Run git diff from pre-execution baseline, produce drift report, write drift.json. No-op on git failure. */
 function writeDriftIfPossible(opts: WriteDriftIfPossibleOpts): void {
   try {
     const stdout = opts.exec(['diff', '--name-only', `${opts.baseSha}...HEAD`]);
