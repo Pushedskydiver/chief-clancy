@@ -32,12 +32,16 @@ Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash comman
 - **Test co-location:** `<name>/<name>.ts` + `<name>/<name>.test.ts`
 - **Imports:** Use `~/` path alias for local imports, `@chief-clancy/core` for cross-package
 - **Types:** No `any` — use `unknown` + type narrowing. Prefer `type` over `interface`.
+- **Prefer annotations and `satisfies` over `as`.** `as const` is fine. `as unknown as X` is almost always wrong in production.
 - **Error handling:** Hooks and notifications are best-effort (never throw)
+- **Expected failures return Result-shaped discriminated unions** (`{ ok: true, ...data } | { ok: false, error: { kind, ...context } }`), not thrown exceptions — see [CONVENTIONS.md §Error Handling](../docs/CONVENTIONS.md#error-handling).
 - **Security:** Use `execFileSync` (argument arrays), never `execSync` with string interpolation
 - **Pure functions by default.** Side effects isolated to boundary functions.
 - **No `reduce()`.** Use `.map()/.filter()` or explicit functions.
 - **Max 3 chained method calls.** Beyond 3, assign to named variables. Inline callbacks must be short — extract longer logic into a named function.
+- **No bare function references in array callbacks.** Always wrap: `.map((x) => fn(x))`. Type-guard predicates and built-in constructors (e.g. `Boolean`, `Number`) are exempt. Enforced by `unicorn/no-array-callback-reference`.
 - **Name compound boolean conditions.** `const isDoubleQuoted = ...` then `if (isDoubleQuoted || isSingleQuoted)`.
+- **Boolean naming: `is*/has*/can*/should*` prefix.** Variables and predicate functions.
 - **No nested ternaries.** Ever.
 - **TSDoc on package public API only** (see [CONVENTIONS.md §Code Style](../docs/CONVENTIONS.md#code-style) — Rule 11). Covers `src/index.ts` + `core/src/{types,schemas,shared,board}/` wildcard subtrees. Internal functions: no TSDoc unless the WHY is non-obvious. Explicit return types on exported functions. TSDoc immediately above its export, no blank line between.
 - **Options objects for 4+ parameters.** (ESLint `max-params: 3`.)
