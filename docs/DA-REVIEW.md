@@ -185,7 +185,7 @@ Workflow `.md` files in `src/{commands,workflows,agents}/` are runtime artifacts
 - [ ] Type declarations: 1-property always inline; 2-property inline when fits on one line, otherwise name; 3+ / nested / reused earn a named type; no new `// ─── Types ───` dividers
 - [ ] No `eslint-disable` without justification — look for simpler alternatives first
 - [ ] Naming: files/dirs kebab-case, types PascalCase, functions camelCase, constants UPPER_SNAKE_CASE
-- [ ] Function names follow the verb vocabulary: standard verbs per their semantic category; no `compute*/calculate*` (noun-phrase instead), no `attempt*/try*` (appropriate verb + return type encodes failure), no generic `get*/set*` (domain-specific accessors are fine); new code only — existing migration is deferred
+- [ ] Function names follow the verb vocabulary: standard verbs per their semantic category; no `compute*/calculate*` (noun-phrase instead), no `attempt*/try*` (appropriate verb + return type encodes failure or not-attempted), no generic `get*/set*` (domain-specific accessors are fine); new code only — existing migration is deferred
 
 ## TSDoc & documentation
 
