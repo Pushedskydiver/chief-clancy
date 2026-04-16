@@ -65,6 +65,7 @@ Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 
 - **No `reduce()`.** Use `.map()/.filter()` chains or explicit simple functions. Readability over cleverness.
 - **Max 3 chained method calls.** Beyond 3, assign intermediate results to named variables. Inline callbacks in chains must be short (1–2 lines) — extract longer logic into a named function and pass it in.
+- **No bare function references in array callbacks.** Always wrap: `.map((x) => fn(x))`, not `.map(fn)`. Array iteration methods pass `(value, index, array)` — extra arguments cause silent bugs when the function accepts optional parameters, uses `this`, has overloads, or depends on generic inference. Enforced by `unicorn/no-array-callback-reference`. Type-guard predicates (`.filter(isDefined)`) and built-in constructors (`.filter(Boolean)`, `.map(Number)`) are exempt.
 - **No long ternaries.** If it doesn't fit on one line, early-return when one branch is empty or extract a function. When both branches are plain values (no call, no `await`), a multi-line ternary assigned to a named `const` is acceptable.
 - **Don't hoist a call out of its guard.** A call gated behind a ternary branch runs only on that branch. Hoisting it to a `const` above the ternary evaluates it unconditionally — changing semantics when the call has side effects or can throw, and paying the cost either way.
 - **No nested ternaries.** Ever.
