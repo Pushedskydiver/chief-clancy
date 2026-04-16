@@ -1,5 +1,15 @@
 # @chief-clancy/core
 
+## 1.0.1
+
+### Patch Changes
+
+- [#331](https://github.com/Pushedskydiver/chief-clancy/pull/331) [`ea68f87`](https://github.com/Pushedskydiver/chief-clancy/commit/ea68f876b7026bbff582c039b9feea119912715f) Thanks [@Pushedskydiver](https://github.com/Pushedskydiver)! - Rename `compute*` and `attempt*` functions per verb vocabulary convention.
+
+  **Breaking (dev):** `computeTicketBranch` → `ticketBranch`, `computeTargetBranch` → `targetBranch`, `attemptPrCreation` → `createPr`. Internal: `computeDeliveryOutcome` → `deliveryOutcome`, `computeDrift` → `drift`.
+
+  **Internal (core):** `attemptFetch` → `fetchLoop` (private, not exported).
+
 ## 1.0.0
 
 ### Major Changes
