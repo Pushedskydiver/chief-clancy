@@ -144,7 +144,7 @@ export function printSuccess(enabledRoles: ReadonlySet<string> | null): void {
   const visibleGroups = COMMAND_GROUPS.filter((g) =>
     isGroupVisible(g, enabledRoles),
   );
-  visibleGroups.forEach(printGroup);
+  visibleGroups.forEach((group) => printGroup(group));
 
   console.log('');
 }

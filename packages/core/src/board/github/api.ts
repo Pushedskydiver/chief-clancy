@@ -209,7 +209,7 @@ export async function fetchIssues(
       )
     : withoutPrs;
 
-  return filtered.slice(0, limit).map(toGitHubTicket);
+  return filtered.slice(0, limit).map((issue) => toGitHubTicket(issue));
 }
 
 /** Options for {@link closeIssue}. */

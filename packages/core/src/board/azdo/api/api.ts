@@ -281,7 +281,7 @@ export async function fetchTickets(
   const limitedIds = ids.slice(0, limit * 2);
   const items = await fetchWorkItems(ctx, limitedIds);
 
-  const tickets = items.map(workItemToTicket);
+  const tickets = items.map((item) => workItemToTicket(item));
 
   const hitlFiltered = excludeHitl
     ? tickets.filter((t) => !t.labels?.includes('clancy:hitl'))

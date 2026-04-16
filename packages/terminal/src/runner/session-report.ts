@@ -233,7 +233,11 @@ function buildTicketSection(
     return ['', '## Tickets', '', 'No tickets were processed in this session.'];
   }
 
-  return ['', '## Tickets', ...tickets.flatMap(formatTicket)];
+  return [
+    '',
+    '## Tickets',
+    ...tickets.flatMap((ticket) => formatTicket(ticket)),
+  ];
 }
 
 function formatTicket(ticket: SessionTicket): readonly string[] {

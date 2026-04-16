@@ -144,11 +144,11 @@ export function extractAdfText(adf: unknown): string {
 /** Recursively collect all string values from a nested structure. */
 function collectStrings(node: unknown): readonly string[] {
   if (typeof node === 'string') return [node];
-  if (Array.isArray(node)) return node.flatMap(collectStrings);
+  if (Array.isArray(node)) return node.flatMap((n) => collectStrings(n));
   if (node && typeof node === 'object') {
     // Safe: the guard above confirms `node` is a non-null object
-    return Object.values(node as Record<string, unknown>).flatMap(
-      collectStrings,
+    return Object.values(node as Record<string, unknown>).flatMap((n) =>
+      collectStrings(n),
     );
   }
   return [];
@@ -215,7 +215,7 @@ export async function fetchTickets(
 
   if (!data) return [];
 
-  return data.issues.map(mapIssueToTicket);
+  return data.issues.map((issue) => mapIssueToTicket(issue));
 }
 
 /** Shape of a Jira issue from the search response. */

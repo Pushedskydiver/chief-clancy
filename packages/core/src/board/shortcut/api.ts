@@ -309,7 +309,7 @@ export async function fetchStories(
       )
     : stateFiltered;
 
-  return hitlFiltered.slice(0, limit).map(toShortcutTicket);
+  return hitlFiltered.slice(0, limit).map((story) => toShortcutTicket(story));
 }
 
 /** Options for {@link transitionStory}. */

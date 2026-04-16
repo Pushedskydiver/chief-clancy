@@ -261,5 +261,5 @@ export async function fetchIssues(
     ? allNodes.filter((n) => !isHitlIssue(n))
     : allNodes;
 
-  return filtered.slice(0, limit).map(toLinearTicket);
+  return filtered.slice(0, limit).map((issue) => toLinearTicket(issue));
 }
