@@ -44,7 +44,8 @@ Drive-by refactors mixed with feature work are harder to review, harder to rever
 
 ## Type safety (line-level)
 
-- Are `as` casts justified with an inline comment? Could type narrowing (`typeof`, `in`, `Array.isArray`) be used instead?
+- Could an annotation (`const x: T = ...`) or `satisfies` replace this `as` cast? If `as` is necessary, is there a justification comment? Is `as unknown as X` avoided in production (tests: prefer `makeX()` builders)?
+- Is `!` (non-null assertion) locally provable? Could an early return or explicit null check replace it?
 - After a type guard (`typeof x === 'string'`), is the narrowed variable used correctly downstream?
 - Are `??` (nullish coalescing) and `||` (falsy check) used correctly for the intended semantics?
 
