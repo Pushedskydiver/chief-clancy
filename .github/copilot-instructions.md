@@ -34,7 +34,7 @@ Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash comman
 - **Types:** No `any` — use `unknown` + type narrowing. Prefer `type` over `interface`.
 - **Prefer annotations and `satisfies` over `as`.** `as const` is fine. `as unknown as X` is almost always wrong in production.
 - **Error handling:** Hooks and notifications are best-effort (never throw)
-- **Expected failures return Result-shaped discriminated unions** (`{ ok, error: { kind } }`), not thrown exceptions — see [CONVENTIONS.md §Error Handling](../docs/CONVENTIONS.md#error-handling).
+- **Expected failures return Result-shaped discriminated unions** (`{ ok: true, ...data } | { ok: false, error: { kind, ...context } }`), not thrown exceptions — see [CONVENTIONS.md §Error Handling](../docs/CONVENTIONS.md#error-handling).
 - **Security:** Use `execFileSync` (argument arrays), never `execSync` with string interpolation
 - **Pure functions by default.** Side effects isolated to boundary functions.
 - **No `reduce()`.** Use `.map()/.filter()` or explicit functions.
