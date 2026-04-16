@@ -114,15 +114,15 @@ export async function fetchReworkFromPrReview(
 export async function postReworkActions(opts: PostReworkOpts): Promise<void> {
   const { handlers, prNumber, feedback, discussionIds, reviewers } = opts;
 
-  await tryPostComment(handlers, prNumber, feedback);
-  await tryResolveThreads(handlers, prNumber, discussionIds);
-  await tryReRequestReview(handlers, prNumber, reviewers);
+  await postReworkComment(handlers, prNumber, feedback);
+  await resolveAddressedThreads(handlers, prNumber, discussionIds);
+  await requestReReviews(handlers, prNumber, reviewers);
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 /** Best-effort: post a rework comment on the PR. */
-async function tryPostComment(
+async function postReworkComment(
   handlers: PlatformReworkHandlers,
   prNumber: number,
   feedback: readonly string[],
@@ -137,7 +137,7 @@ async function tryPostComment(
 }
 
 /** Best-effort: resolve addressed discussion threads (GitLab). */
-async function tryResolveThreads(
+async function resolveAddressedThreads(
   handlers: PlatformReworkHandlers,
   prNumber: number,
   discussionIds?: readonly string[],
@@ -156,7 +156,7 @@ async function tryResolveThreads(
 }
 
 /** Best-effort: re-request review from reviewers (GitHub). */
-async function tryReRequestReview(
+async function requestReReviews(
   handlers: PlatformReworkHandlers,
   prNumber: number,
   reviewers?: readonly string[],
