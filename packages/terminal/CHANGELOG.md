@@ -1,5 +1,15 @@
 # @chief-clancy/terminal
 
+## 0.2.5
+
+### Patch Changes
+
+- [#334](https://github.com/Pushedskydiver/chief-clancy/pull/334) [`32145ac`](https://github.com/Pushedskydiver/chief-clancy/commit/32145ac81b16bf30d1fea0cf6d2c84650f2830d1) Thanks [@Pushedskydiver](https://github.com/Pushedskydiver)! - Conventions compliance sweep — expression-level fixes (Rules 2, 3, 8).
+  Invert 3 empty-fallback ternaries, inline 3 tautological `result`
+  variables, and remove 8 section dividers from touched files.
+- Updated dependencies [[`32145ac`](https://github.com/Pushedskydiver/chief-clancy/commit/32145ac81b16bf30d1fea0cf6d2c84650f2830d1)]:
+  - @chief-clancy/dev@0.5.1
+
 ## 0.2.4
 
 ### Patch Changes
