@@ -88,6 +88,7 @@ Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 - **Co-locate types with their module.** Types used by a single module live in that module's file. Types used across multiple modules go in `types/`. Types start local and only migrate when there's actual reuse.
 - **Name compound boolean conditions.** Extract multi-part conditions into named `const` variables (e.g. `const isDoubleQuoted = first === '"' && last === '"'`). The `if` statement should read like prose.
 - **Co-locate helpers with their module.** Helper functions used by a single module stay in that module's file. Extract to `shared/` only when used by 2+ modules. No premature `utils/` junk drawers.
+- **Match extraction depth to reading mode.** Composition code (factories, DI wiring, module assembly) extracts aggressively — the top level reads as composition, each piece named via helper, lambda, or bare reference as the case warrants. Logic code (algorithms, data transforms, business rules) keeps logic inline — readers trace execution order, and each navigation jump taxes working memory. If a file does substantial amounts of both, split it. The extraction trigger is intent (the name conveys meaning the code didn't), not length.
 
 ---
 
