@@ -318,5 +318,5 @@ export function getQualityData(
   projectRoot: string,
 ): QualityData | undefined {
   const data = readQualityData(fs, projectRoot);
-  return Object.keys(data.tickets).length === 0 ? undefined : data;
+  return Object.keys(data.tickets).length > 0 ? data : undefined;
 }

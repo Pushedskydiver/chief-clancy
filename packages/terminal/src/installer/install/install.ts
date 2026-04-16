@@ -389,7 +389,7 @@ export async function runInstall(options: RunInstallOptions): Promise<void> {
   }
 
   const envFs = { exists: fs.exists, readFile: fs.readFile };
-  const enabledRoles = mode === 'global' ? null : parseEnabledRoles(cwd, envFs);
+  const enabledRoles = mode !== 'global' ? parseEnabledRoles(cwd, envFs) : null;
 
   installContent({ mode, paths, sources, version, enabledRoles, fs });
   setupProjectRuntime({ paths, sources, version, fs, now });
