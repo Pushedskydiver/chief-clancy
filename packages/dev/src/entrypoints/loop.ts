@@ -39,8 +39,6 @@ import {
 
 export { resolveBuildLabelFromEnv };
 
-// ─── Types ──────────────────────────────────────────────────────────────────
-
 type LoopArgs = {
   readonly isAfk: boolean;
   readonly isAfkStrict: boolean;

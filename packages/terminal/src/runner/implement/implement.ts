@@ -30,8 +30,6 @@ import {
 import { dim, green, red } from '../../shared/ansi.js';
 import { buildPipelineDeps } from '../dep-factory.js';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 type RunPipelineFn = (
   ctx: RunContext,
   deps: PipelineDeps,
@@ -55,8 +53,6 @@ type ImplementOpts = {
   readonly now?: number;
   readonly clock?: () => number;
 };
-
-// ─── Display ─────────────────────────────────────────────────────────────────
 
 function displayResult(
   result: PipelineResult,
@@ -98,8 +94,6 @@ function displayResult(
     }
   }
 }
-
-// ─── Entry point ─────────────────────────────────────────────────────────────
 
 /**
  * Implement a single ticket — full lifecycle from pickup to PR delivery.
