@@ -22,4 +22,4 @@ Key disciplines:
 - Verify every cited file:line before using it as evidence — see `docs/DA-REVIEW.md §Verify subagent claims`.
 - Distinguish finding from fabrication — if prior rounds assert X exists, grep for X before repeating the claim.
 - Report speculative claims as speculative.
-- Verification rounds can legitimately return zero (per `docs/DEVELOPMENT.md:278`) — a zero in verification means the nit-floor is real, not that the round failed.
+- Verification rounds can legitimately return zero (per `docs/DEVELOPMENT.md` §Two-phase grill discipline) — a zero in verification means the nit-floor is real, not that the round failed.

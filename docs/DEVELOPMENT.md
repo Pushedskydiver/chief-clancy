@@ -170,7 +170,7 @@ If a session switches between unrelated work (e.g. fixing a config issue then st
 
 ### DA reviews use fresh context
 
-The DA review agent runs as a subagent — it reviews code in a separate context, not biased by having just written it. This is the writer/reviewer pattern: the agent that wrote the code should not be the same context that reviews it. Dispatch as `@agent-da-review` (see `.claude/agents/da-review.md`) — the project subagent's system prompt instructs it to read the rule-bearing docs (`docs/DA-REVIEW.md`, targeted `docs/CONVENTIONS.md` sections, `docs/RATIONALIZATIONS.md`, `docs/REVIEW-PATTERNS.md`). The built-in `general-purpose` agent does not read these docs without explicit inline instructions.
+The DA review agent runs as a subagent — it reviews code in a separate context, not biased by having just written it. This is the writer/reviewer pattern: the agent that wrote the code should not be the same context that reviews it. Dispatch as `@agent-da-review` (see `.claude/agents/da-review.md`) — the project subagent's system prompt instructs it to read the rule-bearing docs: `docs/DA-REVIEW.md` targeted sections, `docs/CONVENTIONS.md` sections the diff touches, and `docs/REVIEW-PATTERNS.md` as part of the standard brief; `docs/RATIONALIZATIONS.md` is consulted only when about to dismiss a finding. The built-in `general-purpose` agent does not read these docs without explicit inline instructions.
 
 ---
 
