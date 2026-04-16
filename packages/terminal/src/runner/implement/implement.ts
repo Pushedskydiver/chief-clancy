@@ -129,8 +129,9 @@ export async function runImplement(opts: ImplementOpts): Promise<void> {
     buildReworkPrompt,
   });
 
-  const result = await opts.runPipeline(ctx, deps);
-
   const clock = opts.clock ?? Date.now;
-  displayResult(result, ctx.startTime, { out: opts.console, clock });
+  displayResult(await opts.runPipeline(ctx, deps), ctx.startTime, {
+    out: opts.console,
+    clock,
+  });
 }

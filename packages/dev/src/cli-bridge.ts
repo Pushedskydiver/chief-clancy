@@ -66,11 +66,11 @@ export function invokeClaudeSession(options: ClaudeInvokeOptions): boolean {
   const base = ['--dangerously-skip-permissions'] as const;
   const args = buildArgs(base, model);
 
-  const result = spawn('claude', args, {
-    input: prompt,
-    stdio: ['pipe', 'inherit', 'inherit'],
-    encoding: 'utf8',
-  });
-
-  return isSuccess(result);
+  return isSuccess(
+    spawn('claude', args, {
+      input: prompt,
+      stdio: ['pipe', 'inherit', 'inherit'],
+      encoding: 'utf8',
+    }),
+  );
 }
