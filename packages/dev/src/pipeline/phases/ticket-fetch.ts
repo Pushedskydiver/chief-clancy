@@ -1,8 +1,8 @@
 /**
  * Ticket fetch — fresh ticket fetch (or use rework ticket),
- * max rework guard, and branch name computation.
+ * max rework guard, and branch name resolution.
  *
- * Sets `ctx.ticket` and computed branch names on the context.
+ * Sets `ctx.ticket` and resolved branch names on the context.
  * Returns structured results — no console output.
  */
 import type { RunContext } from '../context.js';
@@ -38,13 +38,10 @@ export type TicketFetchDeps = {
   readonly countReworkCycles: (key: string) => number;
   /** Append a progress entry. Pre-wired with progressFs + projectRoot. */
   readonly appendProgress: AppendFn;
-  /** Compute feature branch name from provider + key. */
-  readonly computeTicketBranch: (
-    provider: BoardProvider,
-    key: string,
-  ) => string;
-  /** Compute target branch from provider + baseBranch + optional parent. */
-  readonly computeTargetBranch: (
+  /** Feature branch name from provider + key. */
+  readonly ticketBranch: (provider: BoardProvider, key: string) => string;
+  /** Target branch from provider + baseBranch + optional parent. */
+  readonly targetBranch: (
     provider: BoardProvider,
     baseBranch: string,
     parent?: string,
@@ -55,7 +52,7 @@ export type TicketFetchDeps = {
 
 /**
  * Fetch a ticket (or use existing rework ticket), guard max rework,
- * and compute branch names.
+ * and resolve branch names.
  *
  * @param ctx - Pipeline context (requires config + board from preflight).
  * @param deps - Injected dependencies.
@@ -83,8 +80,8 @@ export async function ticketFetch(
     if (guardResult) return guardResult;
   }
 
-  // Compute and store branch names
-  const branches = computeBranches(ctx, deps);
+  // Resolve and store branch names
+  const branches = resolveBranches(ctx, deps);
   ctx.setTicketBranches(branches);
 
   return { ok: true, ticketKey: ticket.key };
@@ -119,8 +116,8 @@ function parseMaxRework(value: string | undefined): number {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : 3;
 }
 
-/** Compute ticket and target branch names from ticket metadata. */
-function computeBranches(
+/** Ticket and target branch names from ticket metadata. */
+function resolveBranches(
   ctx: RunContext,
   deps: TicketFetchDeps,
 ): {
@@ -135,12 +132,8 @@ function computeBranches(
   const baseBranch = config.env.CLANCY_BASE_BRANCH ?? 'main';
   const hasParent = ticket.parentInfo !== 'none';
   const parent = hasParent ? ticket.parentInfo : undefined;
-  const ticketBranch = deps.computeTicketBranch(config.provider, ticket.key);
-  const targetBranch = deps.computeTargetBranch(
-    config.provider,
-    baseBranch,
-    parent,
-  );
+  const ticketBranch = deps.ticketBranch(config.provider, ticket.key);
+  const targetBranch = deps.targetBranch(config.provider, baseBranch, parent);
 
   return { ticketBranch, targetBranch, baseBranch, hasParent };
 }

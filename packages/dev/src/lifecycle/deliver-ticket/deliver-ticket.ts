@@ -1,7 +1,7 @@
 /**
  * PR delivery orchestration.
  *
- * Push branch to remote, create PR/MR, compute outcome, and append
+ * Push branch to remote, create PR/MR, resolve outcome, and append
  * progress. No console output — returns structured results for the
  * terminal layer to display.
  */
@@ -18,11 +18,8 @@ import type { EpicContext } from '~/d/lifecycle/pull-request/pr-body.js';
 
 import { resolveCommitType } from '~/d/lifecycle/commit-type.js';
 import { buildEpicContext } from '~/d/lifecycle/epic.js';
-import {
-  computeDeliveryOutcome,
-  progressForOutcome,
-} from '~/d/lifecycle/outcome.js';
-import { attemptPrCreation } from '~/d/lifecycle/pr-creation.js';
+import { deliveryOutcome, progressForOutcome } from '~/d/lifecycle/outcome.js';
+import { createPr as platformCreatePr } from '~/d/lifecycle/pr-creation.js';
 import { appendProgress } from '~/d/lifecycle/progress.js';
 import { buildPrBody } from '~/d/lifecycle/pull-request/pr-body.js';
 
@@ -58,14 +55,14 @@ type DeliverOpts = {
 /** Result of a delivery attempt. */
 type DeliveryResult = {
   readonly pushed: boolean;
-  readonly outcome: ReturnType<typeof computeDeliveryOutcome>;
+  readonly outcome: ReturnType<typeof deliveryOutcome>;
   readonly prResult?: PrCreationResult;
 };
 
 // ─── Public API ──────────────────────────────────────────────────────────────
 
 /**
- * Push branch to remote, create PR/MR, compute outcome, and append progress.
+ * Push branch to remote, create PR/MR, resolve outcome, and append progress.
  *
  * Returns a structured result — no console output. The terminal layer
  * handles logging and board transitions based on the outcome.
@@ -86,7 +83,7 @@ export async function deliverViaPullRequest(
 
   const remote = detectRemote(exec, opts.config.env.CLANCY_GIT_PLATFORM);
   const prResult = await createPr(opts, remote);
-  const outcome = computeDeliveryOutcome({
+  const outcome = deliveryOutcome({
     pr: prResult,
     remote,
     sourceBranch: ticketBranch,
@@ -147,7 +144,7 @@ async function createPr(
     epicContext,
   });
 
-  return attemptPrCreation({
+  return platformCreatePr({
     fetchFn,
     env: config.env,
     remote,
@@ -188,7 +185,7 @@ function readVerificationWarning(opts: DeliverOpts): string | undefined {
 /** Append delivery progress based on outcome. */
 function appendDeliveryProgress(
   opts: DeliverOpts,
-  outcome: ReturnType<typeof computeDeliveryOutcome>,
+  outcome: ReturnType<typeof deliveryOutcome>,
 ): void {
   if (opts.skipLog) return;
 

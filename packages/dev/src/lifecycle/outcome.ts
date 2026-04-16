@@ -1,5 +1,5 @@
 /**
- * Pure outcome computation for delivery results.
+ * Pure outcome resolution for delivery results.
  *
  * Replaces if/else chains in delivery orchestration with a
  * discriminated union. The orchestrator switches on `type` for
@@ -44,8 +44,8 @@ type DeliveryOutcome =
   | { readonly type: 'local' }
   | { readonly type: 'unsupported' };
 
-/** Options for {@link computeDeliveryOutcome}. */
-type ComputeOutcomeOpts = {
+/** Options for {@link deliveryOutcome}. */
+type DeliveryOutcomeOpts = {
   readonly pr: PrCreationResult | undefined;
   readonly remote: RemoteInfo;
   readonly sourceBranch: string;
@@ -55,7 +55,7 @@ type ComputeOutcomeOpts = {
 // ─── Public API ──────────────────────────────────────────────────────────────
 
 /**
- * Compute the delivery outcome from a PR creation result and remote info.
+ * Delivery outcome from a PR creation result and remote info.
  *
  * Pure function — no side effects, no I/O. The caller handles logging
  * and progress based on the returned outcome type.
@@ -63,9 +63,7 @@ type ComputeOutcomeOpts = {
  * @param opts - The PR result, remote info, and branch names.
  * @returns The delivery outcome.
  */
-export function computeDeliveryOutcome(
-  opts: ComputeOutcomeOpts,
-): DeliveryOutcome {
+export function deliveryOutcome(opts: DeliveryOutcomeOpts): DeliveryOutcome {
   const { pr, remote, sourceBranch, targetBranch } = opts;
 
   if (remote.host === 'none') return { type: 'local' };

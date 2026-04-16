@@ -30,8 +30,8 @@ import { buildApiBaseUrl } from '@chief-clancy/core/shared/remote.js';
 /** Minimal fetch signature for platform API calls. */
 export type FetchFn = (url: string, init: RequestInit) => Promise<Response>;
 
-/** Options for {@link attemptPrCreation}. */
-type AttemptPrOpts = {
+/** Options for {@link createPr}. */
+type CreatePrOpts = {
   readonly fetchFn: FetchFn;
   readonly env: SharedEnv;
   readonly remote: RemoteInfo;
@@ -44,7 +44,7 @@ type AttemptPrOpts = {
 // ─── Public API ──────────────────────────────────────────────────────────────
 
 /**
- * Attempt to create a PR/MR on the detected remote platform.
+ * Create a PR/MR on the detected remote platform.
  *
  * Resolves credentials and API base URL, then dispatches to the
  * platform-specific creation function. Returns `undefined` if
@@ -54,8 +54,8 @@ type AttemptPrOpts = {
  * @param opts - PR creation options with DI dependencies.
  * @returns The PR creation result, or `undefined` if not attempted.
  */
-export async function attemptPrCreation(
-  opts: AttemptPrOpts,
+export async function createPr(
+  opts: CreatePrOpts,
 ): Promise<PrCreationResult | undefined> {
   const { env, remote } = opts;
 
@@ -125,13 +125,13 @@ export function buildManualPrUrl(
 
 // ─── Platform dispatchers ────────────────────────────────────────────────────
 
-/** Shared context built once in {@link attemptPrCreation}. */
+/** Shared context built once in {@link createPr}. */
 type DispatchCtx = {
   readonly fetchFn: FetchFn;
   readonly creds: { readonly token: string; readonly username?: string };
   readonly apiBase: string;
   readonly branch: Pick<
-    AttemptPrOpts,
+    CreatePrOpts,
     'sourceBranch' | 'targetBranch' | 'title' | 'body'
   >;
 };

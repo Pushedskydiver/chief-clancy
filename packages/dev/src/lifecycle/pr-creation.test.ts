@@ -11,7 +11,7 @@ import type {
 import fc from 'fast-check';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { attemptPrCreation, buildManualPrUrl } from './pr-creation.js';
+import { buildManualPrUrl, createPr } from './pr-creation.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -23,7 +23,7 @@ const mockFetchFn = vi.fn((url: string, _init: RequestInit) =>
   ),
 );
 
-type EnvParam = Parameters<typeof attemptPrCreation>[0]['env'];
+type EnvParam = Parameters<typeof createPr>[0]['env'];
 
 function githubEnv(): EnvParam {
   return {
@@ -100,15 +100,15 @@ const branchOpts = {
   body: '## Summary\n\nAdds login page.',
 };
 
-// ─── attemptPrCreation ───────────────────────────────────────────────────────
+// ─── createPr ───────────────────────────────────────────────────────
 
-describe('attemptPrCreation', () => {
+describe('createPr', () => {
   beforeEach(() => {
     mockFetchFn.mockClear();
   });
 
   it('dispatches to GitHub and returns success result shape', async () => {
-    const result = await attemptPrCreation({
+    const result = await createPr({
       fetchFn: mockFetchFn,
       env: githubEnv(),
       remote: githubRemote,
@@ -123,7 +123,7 @@ describe('attemptPrCreation', () => {
   });
 
   it('dispatches to GitLab', async () => {
-    const result = await attemptPrCreation({
+    const result = await createPr({
       fetchFn: mockFetchFn,
       env: gitlabEnv(),
       remote: gitlabRemote,
@@ -136,7 +136,7 @@ describe('attemptPrCreation', () => {
   });
 
   it('dispatches to Bitbucket Cloud', async () => {
-    const result = await attemptPrCreation({
+    const result = await createPr({
       fetchFn: mockFetchFn,
       env: bitbucketEnv(),
       remote: bbCloudRemote,
@@ -149,7 +149,7 @@ describe('attemptPrCreation', () => {
   });
 
   it('dispatches to Bitbucket Server', async () => {
-    const result = await attemptPrCreation({
+    const result = await createPr({
       fetchFn: mockFetchFn,
       env: bitbucketEnv(),
       remote: bbServerRemote,
@@ -162,7 +162,7 @@ describe('attemptPrCreation', () => {
   });
 
   it('dispatches to Azure DevOps', async () => {
-    const result = await attemptPrCreation({
+    const result = await createPr({
       fetchFn: mockFetchFn,
       env: azdoEnv(),
       remote: azdoRemote,
@@ -175,7 +175,7 @@ describe('attemptPrCreation', () => {
   });
 
   it('returns undefined when credentials are missing', async () => {
-    const result = await attemptPrCreation({
+    const result = await createPr({
       fetchFn: mockFetchFn,
       env: emptyEnv(),
       remote: githubRemote,
@@ -187,7 +187,7 @@ describe('attemptPrCreation', () => {
 
   it('returns undefined for unknown remote', async () => {
     const remote: GenericRemote = { host: 'unknown', url: 'x' };
-    const result = await attemptPrCreation({
+    const result = await createPr({
       fetchFn: mockFetchFn,
       env: githubEnv(),
       remote,
@@ -199,7 +199,7 @@ describe('attemptPrCreation', () => {
 
   it('returns undefined for none remote', async () => {
     const remote: NoRemote = { host: 'none' };
-    const result = await attemptPrCreation({
+    const result = await createPr({
       fetchFn: mockFetchFn,
       env: githubEnv(),
       remote,
@@ -213,7 +213,7 @@ describe('attemptPrCreation', () => {
     const failFetch = vi.fn(() =>
       Promise.resolve(new Response('Validation Failed', { status: 422 })),
     );
-    const result = await attemptPrCreation({
+    const result = await createPr({
       fetchFn: failFetch,
       env: githubEnv(),
       remote: githubRemote,

@@ -29,8 +29,8 @@ function makeDeps(overrides: Partial<TicketFetchDeps> = {}): TicketFetchDeps {
     fetchTicket: vi.fn(() => Promise.resolve(TICKET)),
     countReworkCycles: vi.fn(() => 0),
     appendProgress: vi.fn(),
-    computeTicketBranch: vi.fn(() => 'feature/issue-42'),
-    computeTargetBranch: vi.fn(() => 'epic/100'),
+    ticketBranch: vi.fn(() => 'feature/issue-42'),
+    targetBranch: vi.fn(() => 'epic/100'),
     ...overrides,
   };
 }
@@ -162,11 +162,11 @@ describe('ticketFetch', () => {
     expect(result.reason).toBe('max-rework');
   });
 
-  it('computes branches and sets them on context', async () => {
+  it('resolves branches and sets them on context', async () => {
     const ctx = makeCtx();
     const deps = makeDeps({
-      computeTicketBranch: vi.fn(() => 'feature/issue-42'),
-      computeTargetBranch: vi.fn(() => 'epic/100'),
+      ticketBranch: vi.fn(() => 'feature/issue-42'),
+      targetBranch: vi.fn(() => 'epic/100'),
     });
 
     await ticketFetch(ctx, deps);
@@ -203,36 +203,28 @@ describe('ticketFetch', () => {
     expect(ctx.hasParent).toBe(true);
   });
 
-  it('passes parent to computeTargetBranch only when present', async () => {
+  it('passes parent to targetBranch only when present', async () => {
     const ctx = makeCtx();
-    const computeTargetBranch = vi.fn(() => 'main');
+    const targetBranch = vi.fn(() => 'main');
     const deps = makeDeps({
       fetchTicket: vi.fn(() => Promise.resolve(NO_PARENT_TICKET)),
-      computeTargetBranch,
+      targetBranch,
     });
 
     await ticketFetch(ctx, deps);
 
-    expect(computeTargetBranch).toHaveBeenCalledWith(
-      'github',
-      'main',
-      undefined,
-    );
+    expect(targetBranch).toHaveBeenCalledWith('github', 'main', undefined);
   });
 
   it('uses CLANCY_BASE_BRANCH from config env', async () => {
     const ctx = makeCtx({ configEnv: { CLANCY_BASE_BRANCH: 'develop' } });
-    const computeTargetBranch = vi.fn(() => 'develop');
-    const deps = makeDeps({ computeTargetBranch });
+    const targetBranch = vi.fn(() => 'develop');
+    const deps = makeDeps({ targetBranch });
 
     await ticketFetch(ctx, deps);
 
     expect(ctx.baseBranch).toBe('develop');
-    expect(computeTargetBranch).toHaveBeenCalledWith(
-      'github',
-      'develop',
-      '#100',
-    );
+    expect(targetBranch).toHaveBeenCalledWith('github', 'develop', '#100');
   });
 
   it('returns ticket info in result', async () => {

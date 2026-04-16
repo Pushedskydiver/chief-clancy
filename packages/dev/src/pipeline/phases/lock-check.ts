@@ -60,8 +60,8 @@ export type LockCheckDeps = {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-/** Try resume detection and execution for a stale lock. Best-effort. */
-async function attemptResume(
+/** Resume detection and execution for a stale lock. Best-effort. */
+async function resume(
   ctx: RunContext,
   lock: LockData,
   deps: LockCheckDeps,
@@ -128,7 +128,7 @@ export async function lockCheck(
 
   // Best-effort resume
   try {
-    return await attemptResume(ctx, lock, deps);
+    return await resume(ctx, lock, deps);
   } catch {
     return { action: 'continue' };
   }

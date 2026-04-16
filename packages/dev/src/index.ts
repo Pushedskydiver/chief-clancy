@@ -15,10 +15,7 @@ export type { ConsoleLike, SpawnSyncFn, StdioValue } from './types/spawn.js';
 
 // ─── Lifecycle re-exports ───────────────────────────────────────────────────
 
-export {
-  computeTargetBranch,
-  computeTicketBranch,
-} from './lifecycle/branch.js';
+export { targetBranch, ticketBranch } from './lifecycle/branch.js';
 
 export { resolveCommitType } from './lifecycle/commit-type.js';
 
@@ -57,7 +54,7 @@ export {
 } from './lifecycle/lock.js';
 
 export type { FetchFn } from './lifecycle/pr-creation.js';
-export { attemptPrCreation } from './lifecycle/pr-creation.js';
+export { createPr } from './lifecycle/pr-creation.js';
 
 export type { PreflightDeps } from './lifecycle/preflight/preflight.js';
 export { runPreflight } from './lifecycle/preflight/preflight.js';

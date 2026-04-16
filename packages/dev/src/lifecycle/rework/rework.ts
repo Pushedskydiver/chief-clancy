@@ -12,7 +12,7 @@ import type {
 } from '@chief-clancy/core/types/board.js';
 import type { ProgressEntry, ProgressFs } from '~/d/lifecycle/progress.js';
 
-import { computeTicketBranch } from '~/d/lifecycle/branch.js';
+import { ticketBranch } from '~/d/lifecycle/branch.js';
 import { findEntriesWithStatus } from '~/d/lifecycle/progress.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -189,7 +189,7 @@ async function checkCandidates(
   if (candidates.length === 0) return undefined;
 
   const [entry, ...rest] = candidates;
-  const branch = computeTicketBranch(provider, entry.key);
+  const branch = ticketBranch(provider, entry.key);
   const since = entry.timestamp ? toIsoTimestamp(entry.timestamp) : undefined;
   const reviewState = await handlers.checkReviewState(branch, since);
 
