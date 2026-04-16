@@ -39,8 +39,6 @@ import {
 
 export { resolveBuildLabelFromEnv };
 
-// ─── Types ──────────────────────────────────────────────────────────────────
-
 type LoopArgs = {
   readonly isAfk: boolean;
   readonly isAfkStrict: boolean;
@@ -281,7 +279,7 @@ async function main(): Promise<void> {
   const { envFs, boardConfig, rawEnv } = envResult;
   const env = mergeEnv(rawEnv);
 
-  const rubric = loopArgs.bypassReadiness ? undefined : loadRubric();
+  const rubric = !loopArgs.bypassReadiness ? loadRubric() : undefined;
   const model = boardConfig.env.CLANCY_MODEL;
 
   // Shared mutable state between fetchQueue and gradeOne closures.

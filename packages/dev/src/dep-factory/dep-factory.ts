@@ -238,12 +238,13 @@ function wireTicketPhases(opts: DepFactoryOpts, progress: AppendFn) {
     feasibility: (ctx: RunContext) =>
       feasibilityPhase(ctx, {
         checkFeasibility: (ticket, model) => {
-          const result = checkFeasibility(
-            (prompt) => invokeClaudePrint({ prompt, model, spawn }),
-            ticket,
-            model,
+          return Promise.resolve(
+            checkFeasibility(
+              (prompt) => invokeClaudePrint({ prompt, model, spawn }),
+              ticket,
+              model,
+            ),
           );
-          return Promise.resolve(result);
         },
         appendProgress: progress,
       }),

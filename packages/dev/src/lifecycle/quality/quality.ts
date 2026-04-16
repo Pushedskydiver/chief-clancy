@@ -7,8 +7,6 @@
  */
 import { join } from 'node:path';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 /** Injected filesystem operations for quality data I/O. */
 export type QualityFs = {
   /** Read a file as UTF-8, throwing if missing. */
@@ -56,13 +54,9 @@ type QualityData = {
   readonly summary: QualitySummary;
 };
 
-// ─── Constants ───────────────────────────────────────────────────────────────
-
 const CLANCY_DIR = '.clancy';
 const QUALITY_FILE = 'quality.json';
 const QUALITY_PATH = `${CLANCY_DIR}/${QUALITY_FILE}`;
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const EMPTY_SUMMARY: QualitySummary = {
   totalTickets: 0,
@@ -167,8 +161,6 @@ function ensureEntry(
   const entry: QualityEntry = { reworkCycles: 0, verificationRetries: 0 };
   return [entry, { ...tickets, [ticketKey]: entry }];
 }
-
-// ─── Public API ──────────────────────────────────────────────────────────────
 
 /**
  * Read quality data from `.clancy/quality.json`.
@@ -318,5 +310,5 @@ export function getQualityData(
   projectRoot: string,
 ): QualityData | undefined {
   const data = readQualityData(fs, projectRoot);
-  return Object.keys(data.tickets).length === 0 ? undefined : data;
+  return Object.keys(data.tickets).length > 0 ? data : undefined;
 }
