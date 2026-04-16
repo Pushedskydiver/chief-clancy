@@ -207,7 +207,7 @@ DA-REVIEW Rule 11 owns the **architectural gate** (is this symbol actually publi
 ## Type safety
 
 - [ ] No `any` — use `unknown` + type narrowing
-- [ ] Unsafe `as` casts justified with inline comments explaining why
+- [ ] Annotations and `satisfies` preferred over `as`; `as` has a justification comment; no `as unknown as X` in production (tests: prefer `makeX()` builders); `!` only when locally provable
 - [ ] I/O functions (fetch, exec, fs) injected as parameters in pure logic, not imported at module level
 - [ ] Pure logic separated from side effects — boundary functions isolated
 

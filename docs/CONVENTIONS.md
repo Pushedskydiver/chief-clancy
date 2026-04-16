@@ -78,7 +78,9 @@ Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
   - **Delete TSDoc that restates the signature** (`@param name - The name`).
   - **Immediately above the export.** No blank line between TSDoc and the `export` keyword it documents.
 - **Explicit return types on exported functions.** TypeScript inference is for internal code, not public API.
-- **No `any`.** Use `unknown` + type narrowing. `as` casts only where structurally justified with a comment explaining why.
+- **No `any`.** Use `unknown` + type narrowing.
+- **Prefer annotations and `satisfies` over `as`.** `const x: T = ...` beats `const x = ... as T`; `satisfies` shape-checks object literals without widening. `as const` is fine (literal narrowing, not an assertion). When `as` is necessary (post-`JSON.parse`, DOM narrowing, deliberate widening, wrong library types), keep the unsafe region small and comment why. `as unknown as X` is almost always wrong in production — redesign the types. In tests, prefer `makeX()` builders over partial `as unknown as`.
+- **`!` non-null sparingly.** Only when locally provable. Prefer early return or explicit null check.
 - **Pure functions by default.** Side effects (HTTP, git, filesystem) isolated to boundary functions. Pure logic extracted into separate functions that take data in and return data out.
 - **Dependency injection via function parameters** for I/O. Pass `fetch`, pass `exec` — don't import live implementations in pure logic modules.
 - **Options objects for 4+ parameters.** 3 is the ESLint limit. 4+ must use an options object with named properties.
