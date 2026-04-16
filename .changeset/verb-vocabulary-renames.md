@@ -5,6 +5,6 @@
 
 Rename `compute*` and `attempt*` functions per verb vocabulary convention.
 
-**Breaking (dev):** `computeTicketBranch` → `ticketBranch`, `computeTargetBranch` → `targetBranch`, `computeDeliveryOutcome` → `deliveryOutcome`, `attemptPrCreation` → `createPr`. Internal `computeDrift` → `drift`.
+**Breaking (dev):** `computeTicketBranch` → `ticketBranch`, `computeTargetBranch` → `targetBranch`, `attemptPrCreation` → `createPr`. Internal: `computeDeliveryOutcome` → `deliveryOutcome`, `computeDrift` → `drift`.
 
 **Internal (core):** `attemptFetch` → `fetchLoop` (private, not exported).

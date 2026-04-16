@@ -80,7 +80,7 @@ export async function ticketFetch(
     if (guardResult) return guardResult;
   }
 
-  // Compute and store branch names
+  // Resolve and store branch names
   const branches = resolveBranches(ctx, deps);
   ctx.setTicketBranches(branches);
 

@@ -1,7 +1,7 @@
 /**
  * PR delivery orchestration.
  *
- * Push branch to remote, create PR/MR, compute outcome, and append
+ * Push branch to remote, create PR/MR, resolve outcome, and append
  * progress. No console output — returns structured results for the
  * terminal layer to display.
  */
@@ -62,7 +62,7 @@ type DeliveryResult = {
 // ─── Public API ──────────────────────────────────────────────────────────────
 
 /**
- * Push branch to remote, create PR/MR, compute outcome, and append progress.
+ * Push branch to remote, create PR/MR, resolve outcome, and append progress.
  *
  * Returns a structured result — no console output. The terminal layer
  * handles logging and board transitions based on the outcome.

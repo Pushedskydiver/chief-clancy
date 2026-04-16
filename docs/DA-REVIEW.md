@@ -186,7 +186,7 @@ Workflow `.md` files in `src/{commands,workflows,agents}/` are runtime artifacts
 - [ ] Type declarations: 1-property always inline; 2-property inline when fits on one line, otherwise name; 3+ / nested / reused earn a named type; no new `// ─── Types ───` dividers
 - [ ] No `eslint-disable` without justification — look for simpler alternatives first
 - [ ] Naming: files/dirs kebab-case, types PascalCase, functions camelCase, constants UPPER_SNAKE_CASE
-- [ ] Function names follow the verb vocabulary: standard verbs per their semantic category; no `compute*/calculate*` (noun-phrase instead), no `attempt*/try*` (appropriate verb + return type encodes failure or not-attempted), no generic `get*/set*` (domain-specific accessors are fine); new code only — existing migration is deferred
+- [ ] Function names follow the verb vocabulary: standard verbs per their semantic category; no `compute*/calculate*` (noun-phrase instead), no `attempt*/try*` (appropriate verb + return type encodes failure or not-attempted), no generic `get*/set*` (domain-specific accessors are fine)
 - [ ] Boolean variables and boolean-returning predicates use `is*/has*/can*/should*` prefix
 - [ ] Type suffixes follow project dialect (`*Opts`, `*Result`, `*Ctx`/`*Context`, `*Deps`, `*Fn`) as category markers on a semantic base name — not mechanical `FooOpts`; no `I` prefix on interfaces, no `T` prefix on generics
 - [ ] Abbreviations from the allowlist (`ctx`, `opts`, `fs`, `fn`, `env`, `id`, `url`, `args`, `argv`, `i`) or unambiguous domain terms
