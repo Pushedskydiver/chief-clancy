@@ -159,7 +159,7 @@ The 5-check readiness gate (running as a Devil's-Advocate-style fresh-Claude sub
 
 ### Pre-seed `ctx.ticket` (Q8 resolution)
 
-For `/clancy:dev TICKET-123` (single-ticket interactive mode), the executor pre-seeds `ctx.ticket` from a one-shot board lookup BEFORE calling `runPipeline`. The existing `if (!ctx.ticket)` guard at [`packages/dev/src/pipeline/phases/ticket-fetch.ts`](../../../packages/dev/src/pipeline/phases/ticket-fetch.ts) makes the ticket-fetch path a no-op when `ctx.ticket` is already set. `resolveBranches` still runs inside `ticketFetch` regardless, so `branchSetup` reads its computed values normally.
+For `/clancy:dev TICKET-123` (single-ticket interactive mode), the executor pre-seeds `ctx.ticket` from a one-shot board lookup BEFORE calling `runPipeline`. The existing `if (!ctx.ticket)` guard at [`packages/dev/src/pipeline/phases/ticket-fetch.ts`](../../../packages/dev/src/pipeline/phases/ticket-fetch.ts) makes the ticket-fetch path a no-op when `ctx.ticket` is already set. `resolveBranches` still runs inside `ticketFetch` regardless, so `branchSetup` reads its resolved values normally.
 
 **This is intentional and contractual.** The pre-seed pattern is documented as a public behaviour of the `ticketFetch` phase. Future pipeline changes that might remove the `if (!ctx.ticket)` guard must preserve the pre-seed escape hatch by some other means (or extend the Board API with a uniform `fetchTicketByKey()` and migrate the pre-seed pattern to the new method). Phase E PR 8c includes a regression test asserting `ctx.targetBranch` and `ctx.ticketBranch` are populated after `runPipeline` returns under the pre-seed path.
 

@@ -1,8 +1,8 @@
 /**
  * Ticket fetch — fresh ticket fetch (or use rework ticket),
- * max rework guard, and branch name computation.
+ * max rework guard, and branch name resolution.
  *
- * Sets `ctx.ticket` and computed branch names on the context.
+ * Sets `ctx.ticket` and resolved branch names on the context.
  * Returns structured results — no console output.
  */
 import type { RunContext } from '../context.js';

@@ -51,8 +51,8 @@ type DeliverEpicResult = {
 /**
  * Create the final PR from the epic branch to the base branch.
  *
- * Gathers child entries from progress, builds the PR body, attempts
- * PR creation, computes the outcome, and appends progress. Returns
+ * Gathers child entries from progress, builds the PR body, creates
+ * the PR, derives the outcome, and appends progress. Returns
  * a structured result — no console output.
  *
  * @param opts - Epic delivery options with DI dependencies.
