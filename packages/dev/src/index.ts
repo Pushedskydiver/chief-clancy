@@ -15,10 +15,7 @@ export type { ConsoleLike, SpawnSyncFn, StdioValue } from './types/spawn.js';
 
 // ─── Lifecycle re-exports ───────────────────────────────────────────────────
 
-export {
-  computeTargetBranch,
-  computeTicketBranch,
-} from './lifecycle/branch.js';
+export { targetBranch, ticketBranch } from './lifecycle/branch.js';
 
 export { resolveCommitType } from './lifecycle/commit-type.js';
 

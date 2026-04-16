@@ -9,7 +9,7 @@ import type {
 
 import { describe, expect, it } from 'vitest';
 
-import { computeDeliveryOutcome, progressForOutcome } from './outcome.js';
+import { deliveryOutcome, progressForOutcome } from './outcome.js';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -40,9 +40,9 @@ function makeOpts(overrides: {
   };
 }
 
-// ─── computeDeliveryOutcome ──────────────────────────────────────────────────
+// ─── deliveryOutcome ──────────────────────────────────────────────────
 
-describe('computeDeliveryOutcome', () => {
+describe('deliveryOutcome', () => {
   it('returns created when PR was created successfully', () => {
     const pr: PrCreationResult = {
       ok: true,
@@ -50,7 +50,7 @@ describe('computeDeliveryOutcome', () => {
       number: 5,
     };
 
-    const outcome = computeDeliveryOutcome(makeOpts({ pr }));
+    const outcome = deliveryOutcome(makeOpts({ pr }));
 
     expect(outcome).toEqual({
       type: 'created',
@@ -66,7 +66,7 @@ describe('computeDeliveryOutcome', () => {
       alreadyExists: true,
     };
 
-    const outcome = computeDeliveryOutcome(makeOpts({ pr }));
+    const outcome = deliveryOutcome(makeOpts({ pr }));
 
     expect(outcome.type).toBe('exists');
   });
@@ -77,7 +77,7 @@ describe('computeDeliveryOutcome', () => {
       error: 'validation failed',
     };
 
-    const outcome = computeDeliveryOutcome(makeOpts({ pr }));
+    const outcome = deliveryOutcome(makeOpts({ pr }));
 
     expect(outcome.type).toBe('failed');
     if (outcome.type === 'failed') {
@@ -87,7 +87,7 @@ describe('computeDeliveryOutcome', () => {
   });
 
   it('returns not_attempted with manual URL when pr is undefined', () => {
-    const outcome = computeDeliveryOutcome(makeOpts({ pr: undefined }));
+    const outcome = deliveryOutcome(makeOpts({ pr: undefined }));
 
     expect(outcome.type).toBe('not_attempted');
     if (outcome.type === 'not_attempted') {
@@ -97,14 +97,14 @@ describe('computeDeliveryOutcome', () => {
 
   it('returns local for none remote', () => {
     const remote: NoRemote = { host: 'none' };
-    const outcome = computeDeliveryOutcome(makeOpts({ pr: undefined, remote }));
+    const outcome = deliveryOutcome(makeOpts({ pr: undefined, remote }));
 
     expect(outcome.type).toBe('local');
   });
 
   it('returns unsupported for unknown remote', () => {
     const remote: GenericRemote = { host: 'unknown', url: 'x' };
-    const outcome = computeDeliveryOutcome(makeOpts({ pr: undefined, remote }));
+    const outcome = deliveryOutcome(makeOpts({ pr: undefined, remote }));
 
     expect(outcome.type).toBe('unsupported');
   });
@@ -116,9 +116,7 @@ describe('computeDeliveryOutcome', () => {
       number: 3,
     };
 
-    const outcome = computeDeliveryOutcome(
-      makeOpts({ pr, remote: azdoRemote }),
-    );
+    const outcome = deliveryOutcome(makeOpts({ pr, remote: azdoRemote }));
 
     expect(outcome).toEqual({
       type: 'created',
@@ -130,9 +128,7 @@ describe('computeDeliveryOutcome', () => {
   it('returns failed with Azure manual URL on PR failure', () => {
     const pr: PrCreationResult = { ok: false, error: 'server error' };
 
-    const outcome = computeDeliveryOutcome(
-      makeOpts({ pr, remote: azdoRemote }),
-    );
+    const outcome = deliveryOutcome(makeOpts({ pr, remote: azdoRemote }));
 
     expect(outcome.type).toBe('failed');
     if (outcome.type === 'failed') {
@@ -141,7 +137,7 @@ describe('computeDeliveryOutcome', () => {
   });
 
   it('returns not_attempted with Azure manual URL when no creds', () => {
-    const outcome = computeDeliveryOutcome(
+    const outcome = deliveryOutcome(
       makeOpts({ pr: undefined, remote: azdoRemote }),
     );
 

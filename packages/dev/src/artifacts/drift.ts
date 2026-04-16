@@ -70,9 +70,9 @@ function extractPredictedPaths(
   ];
 }
 
-// ─── Compute drift ────────────────────────────────────────────────────────
+// ─── Drift ───────────────────────────────────────────────────────────────
 
-function computeDrift(
+function drift(
   verdicts: readonly ReadinessVerdict[],
   changedFiles: readonly string[],
 ): DriftResult {
@@ -107,7 +107,7 @@ type WriteDriftIfPossibleOpts = {
   readonly console: { readonly log: (message: string) => void };
 };
 
-/** Run git diff from pre-execution baseline, compute drift, write drift.json. No-op on git failure. */
+/** Run git diff from pre-execution baseline, resolve drift, write drift.json. No-op on git failure. */
 function writeDriftIfPossible(opts: WriteDriftIfPossibleOpts): void {
   try {
     const stdout = opts.exec(['diff', '--name-only', `${opts.baseSha}...HEAD`]);
@@ -115,8 +115,8 @@ function writeDriftIfPossible(opts: WriteDriftIfPossibleOpts): void {
       .split('\n')
       .map((l) => l.trim())
       .filter(Boolean);
-    const drift = computeDrift(opts.verdicts, changedFiles);
-    writeDrift({ fs: opts.fs, dir: opts.dir, drift });
+    const result = drift(opts.verdicts, changedFiles);
+    writeDrift({ fs: opts.fs, dir: opts.dir, drift: result });
   } catch {
     opts.console.log('Drift detection skipped (git diff failed).');
   }
@@ -124,4 +124,4 @@ function writeDriftIfPossible(opts: WriteDriftIfPossibleOpts): void {
 
 // ─── Exports ──────────────────────────────────────────────────────────────
 
-export { computeDrift, writeDrift, writeDriftIfPossible };
+export { drift, writeDrift, writeDriftIfPossible };

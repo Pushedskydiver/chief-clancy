@@ -70,7 +70,7 @@ export type DeliverPhaseDeps = {
  * Deliver the ticket via PR (rework or fresh path).
  *
  * Decomposed into {@link deliverRework} and {@link deliverFresh} based on
- * `ctx.isRework`. Parent key computation is shared via {@link computeParentKeys}.
+ * `ctx.isRework`. Parent key computation is shared via {@link parentKeys}.
  *
  * @param ctx - Pipeline context (requires ticket + branches + rework state).
  * @param deps - Injected dependencies.
@@ -96,7 +96,7 @@ async function deliverRework(
   const ticket = ctx.ticket!;
   const ticketBranch = ctx.ticketBranch!;
   const effectiveTarget = ctx.effectiveTarget!;
-  const { parentKey } = computeParentKeys(ctx);
+  const { parentKey } = parentKeys(ctx);
 
   const result = await deps.deliverViaPullRequest({
     ticketBranch,
@@ -151,7 +151,7 @@ async function deliverFresh(
   const ticket = ctx.ticket!;
   const ticketBranch = ctx.ticketBranch!;
   const effectiveTarget = ctx.effectiveTarget!;
-  const { parentKey, singleChildParent } = computeParentKeys(ctx);
+  const { parentKey, singleChildParent } = parentKeys(ctx);
 
   const result = await deps.deliverViaPullRequest({
     ticketBranch,
@@ -188,8 +188,8 @@ async function safeRemoveBuildLabel(
   }
 }
 
-/** Compute parentKey and singleChildParent from context. */
-function computeParentKeys(ctx: RunContext): {
+/** Parent key and single-child parent from context. */
+function parentKeys(ctx: RunContext): {
   readonly parentKey: string | undefined;
   readonly singleChildParent: string | undefined;
 } {

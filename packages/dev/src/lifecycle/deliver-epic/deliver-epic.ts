@@ -17,10 +17,7 @@ import type { ProgressFs } from '~/d/lifecycle/progress.js';
 
 import { resolveCommitType } from '~/d/lifecycle/commit-type.js';
 import { gatherChildEntries } from '~/d/lifecycle/epic.js';
-import {
-  computeDeliveryOutcome,
-  progressForOutcome,
-} from '~/d/lifecycle/outcome.js';
+import { deliveryOutcome, progressForOutcome } from '~/d/lifecycle/outcome.js';
 import { attemptPrCreation } from '~/d/lifecycle/pr-creation.js';
 import { appendProgress } from '~/d/lifecycle/progress.js';
 import { buildEpicPrBody } from '~/d/lifecycle/pull-request/pr-body.js';
@@ -46,7 +43,7 @@ type DeliverEpicOpts = {
 /** Result of an epic delivery attempt. */
 type DeliverEpicResult = {
   readonly ok: boolean;
-  readonly outcome: ReturnType<typeof computeDeliveryOutcome>;
+  readonly outcome: ReturnType<typeof deliveryOutcome>;
 };
 
 // ─── Public API ──────────────────────────────────────────────────────────────
@@ -74,7 +71,7 @@ export async function deliverEpicToBase(
 
   const remote = detectRemote(exec, config.env.CLANCY_GIT_PLATFORM);
   const prResult = await createEpicPr(opts, remote, childEntries);
-  const outcome = computeDeliveryOutcome({
+  const outcome = deliveryOutcome({
     pr: prResult,
     remote,
     sourceBranch: epicBranch,
@@ -119,7 +116,7 @@ async function createEpicPr(
 /** Append epic progress based on outcome. */
 function appendEpicProgress(
   opts: DeliverEpicOpts,
-  outcome: ReturnType<typeof computeDeliveryOutcome>,
+  outcome: ReturnType<typeof deliveryOutcome>,
 ): void {
   const { status, prNumber } = progressForOutcome(outcome);
   const epicStatus = status === 'PR_CREATED' ? 'EPIC_PR_CREATED' : status;
@@ -134,7 +131,7 @@ function appendEpicProgress(
 
 /** Map outcome to result — created/exists are ok, all others are not. */
 function resolveResult(
-  outcome: ReturnType<typeof computeDeliveryOutcome>,
+  outcome: ReturnType<typeof deliveryOutcome>,
 ): DeliverEpicResult {
   const ok = outcome.type === 'created' || outcome.type === 'exists';
   return { ok, outcome };

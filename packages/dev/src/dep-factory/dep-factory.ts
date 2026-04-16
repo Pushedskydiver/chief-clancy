@@ -35,8 +35,8 @@ import {
 
 import { invokeClaudePrint } from '../cli-bridge.js';
 import {
-  computeTargetBranch,
-  computeTicketBranch,
+  targetBranch as resolveTargetBranch,
+  ticketBranch as resolveTicketBranch,
 } from '../lifecycle/branch.js';
 import { resolveCommitType } from '../lifecycle/commit-type.js';
 import { appendCostEntry } from '../lifecycle/cost/cost.js';
@@ -120,8 +120,8 @@ function makeRetryEntry(fetchFn: FetchFn) {
     const baseBranch = config.env.CLANCY_BASE_BRANCH ?? 'main';
     const parent = hasParent(entry) ? entry.parent : undefined;
 
-    const ticketBranch = computeTicketBranch(config.provider, entry.key);
-    const targetBranch = computeTargetBranch(
+    const ticketBranch = resolveTicketBranch(config.provider, entry.key);
+    const targetBranch = resolveTargetBranch(
       config.provider,
       baseBranch,
       parent,
@@ -229,10 +229,10 @@ function wireTicketPhases(opts: DepFactoryOpts, progress: AppendFn) {
         countReworkCycles: (key: string) =>
           countReworkCycles(progressFs, projectRoot, key),
         appendProgress: progress,
-        computeTicketBranch: (provider: BoardProvider, key: string) =>
-          computeTicketBranch(provider, key),
-        computeTargetBranch: (p: BoardProvider, b: string, par?: string) =>
-          computeTargetBranch(p, b, par),
+        ticketBranch: (provider: BoardProvider, key: string) =>
+          resolveTicketBranch(provider, key),
+        targetBranch: (p: BoardProvider, b: string, par?: string) =>
+          resolveTargetBranch(p, b, par),
       });
     },
     feasibility: (ctx: RunContext) =>

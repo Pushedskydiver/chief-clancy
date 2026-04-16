@@ -1,13 +1,13 @@
 /**
- * Branch name computation for ticket workflows.
+ * Branch name resolution for ticket workflows.
  *
- * Pure functions that compute feature and target branch names
+ * Pure functions that resolve feature and target branch names
  * based on the board provider and ticket metadata.
  */
 import type { BoardProvider } from '@chief-clancy/core/types/board.js';
 
 /**
- * Compute the feature branch name for a ticket.
+ * Feature branch name for a ticket.
  *
  * - GitHub: `feature/issue-{number}` (e.g., `feature/issue-42`)
  * - All others: `feature/{key-lowercase}` (e.g., `feature/proj-123`)
@@ -16,10 +16,7 @@ import type { BoardProvider } from '@chief-clancy/core/types/board.js';
  * @param key - The ticket key (e.g., `'PROJ-123'`, `'#42'`, `'ENG-123'`).
  * @returns The feature branch name.
  */
-export function computeTicketBranch(
-  provider: BoardProvider,
-  key: string,
-): string {
+export function ticketBranch(provider: BoardProvider, key: string): string {
   if (provider === 'github') {
     const number = key.replace('#', '');
     return `feature/issue-${number}`;
@@ -29,7 +26,7 @@ export function computeTicketBranch(
 }
 
 /**
- * Compute the target branch for merging.
+ * Target branch for merging.
  *
  * If the ticket has a parent (epic/milestone), branches from that parent's
  * branch. Otherwise falls back to the base branch.
@@ -43,7 +40,7 @@ export function computeTicketBranch(
  * @param parent - Optional parent identifier (epic key, milestone title, parent ID).
  * @returns The target branch name.
  */
-export function computeTargetBranch(
+export function targetBranch(
   provider: BoardProvider,
   baseBranch: string,
   parent?: string,

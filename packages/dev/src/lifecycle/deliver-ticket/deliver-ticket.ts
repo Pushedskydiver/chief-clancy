@@ -18,10 +18,7 @@ import type { EpicContext } from '~/d/lifecycle/pull-request/pr-body.js';
 
 import { resolveCommitType } from '~/d/lifecycle/commit-type.js';
 import { buildEpicContext } from '~/d/lifecycle/epic.js';
-import {
-  computeDeliveryOutcome,
-  progressForOutcome,
-} from '~/d/lifecycle/outcome.js';
+import { deliveryOutcome, progressForOutcome } from '~/d/lifecycle/outcome.js';
 import { attemptPrCreation } from '~/d/lifecycle/pr-creation.js';
 import { appendProgress } from '~/d/lifecycle/progress.js';
 import { buildPrBody } from '~/d/lifecycle/pull-request/pr-body.js';
@@ -58,7 +55,7 @@ type DeliverOpts = {
 /** Result of a delivery attempt. */
 type DeliveryResult = {
   readonly pushed: boolean;
-  readonly outcome: ReturnType<typeof computeDeliveryOutcome>;
+  readonly outcome: ReturnType<typeof deliveryOutcome>;
   readonly prResult?: PrCreationResult;
 };
 
@@ -86,7 +83,7 @@ export async function deliverViaPullRequest(
 
   const remote = detectRemote(exec, opts.config.env.CLANCY_GIT_PLATFORM);
   const prResult = await createPr(opts, remote);
-  const outcome = computeDeliveryOutcome({
+  const outcome = deliveryOutcome({
     pr: prResult,
     remote,
     sourceBranch: ticketBranch,
@@ -188,7 +185,7 @@ function readVerificationWarning(opts: DeliverOpts): string | undefined {
 /** Append delivery progress based on outcome. */
 function appendDeliveryProgress(
   opts: DeliverOpts,
-  outcome: ReturnType<typeof computeDeliveryOutcome>,
+  outcome: ReturnType<typeof deliveryOutcome>,
 ): void {
   if (opts.skipLog) return;
 

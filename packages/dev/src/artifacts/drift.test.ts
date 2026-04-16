@@ -3,7 +3,7 @@ import type { AtomicFs } from './atomic-write.js';
 
 import { describe, expect, it, vi } from 'vitest';
 
-import { computeDrift, writeDrift, writeDriftIfPossible } from './drift.js';
+import { drift, writeDrift, writeDriftIfPossible } from './drift.js';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
 
@@ -59,9 +59,9 @@ function makeFs(): TestFs {
   };
 }
 
-// ─── computeDrift ─────────────────────────────────────────────────────────
+// ─── drift ─────────────────────────────────────────────────────────
 
-describe('computeDrift', () => {
+describe('drift', () => {
   it('extracts expectedFiles from touch-bounded evidence', () => {
     const verdicts = [
       makeVerdict('T-1', 'green', {
@@ -71,13 +71,13 @@ describe('computeDrift', () => {
       }),
     ];
 
-    const drift = computeDrift(verdicts, ['src/foo.ts', 'src/baz.ts']);
+    const result = drift(verdicts, ['src/foo.ts', 'src/baz.ts']);
 
-    expect(drift.predicted).toContain('src/foo.ts');
-    expect(drift.predicted).toContain('src/bar.ts');
-    expect(drift.actual).toEqual(['src/foo.ts', 'src/baz.ts']);
-    expect(drift.unpredicted).toEqual(['src/baz.ts']);
-    expect(drift.missed).toEqual(['src/bar.ts']);
+    expect(result.predicted).toContain('src/foo.ts');
+    expect(result.predicted).toContain('src/bar.ts');
+    expect(result.actual).toEqual(['src/foo.ts', 'src/baz.ts']);
+    expect(result.unpredicted).toEqual(['src/baz.ts']);
+    expect(result.missed).toEqual(['src/bar.ts']);
   });
 
   it('extracts file paths from reason strings as fallback', () => {
@@ -88,11 +88,11 @@ describe('computeDrift', () => {
       }),
     ];
 
-    const drift = computeDrift(verdicts, ['packages/dev/src/queue.ts']);
+    const result = drift(verdicts, ['packages/dev/src/queue.ts']);
 
-    expect(drift.predicted).toContain('packages/dev/src/queue.ts');
-    expect(drift.predicted).toContain('packages/dev/src/index.ts');
-    expect(drift.missed).toEqual(['packages/dev/src/index.ts']);
+    expect(result.predicted).toContain('packages/dev/src/queue.ts');
+    expect(result.predicted).toContain('packages/dev/src/index.ts');
+    expect(result.missed).toEqual(['packages/dev/src/index.ts']);
   });
 
   it('returns empty predicted when no paths extractable', () => {
@@ -102,10 +102,10 @@ describe('computeDrift', () => {
       }),
     ];
 
-    const drift = computeDrift(verdicts, ['src/foo.ts']);
+    const result = drift(verdicts, ['src/foo.ts']);
 
-    expect(drift.predicted).toEqual([]);
-    expect(drift.unpredicted).toEqual(['src/foo.ts']);
+    expect(result.predicted).toEqual([]);
+    expect(result.unpredicted).toEqual(['src/foo.ts']);
   });
 
   it('deduplicates predicted paths across multiple verdicts', () => {
@@ -118,18 +118,18 @@ describe('computeDrift', () => {
       }),
     ];
 
-    const drift = computeDrift(verdicts, ['src/a.ts']);
+    const result = drift(verdicts, ['src/a.ts']);
 
-    expect(drift.predicted).toEqual(['src/a.ts', 'src/b.ts']);
+    expect(result.predicted).toEqual(['src/a.ts', 'src/b.ts']);
   });
 
   it('handles empty verdicts and empty changed files', () => {
-    const drift = computeDrift([], []);
+    const result = drift([], []);
 
-    expect(drift.predicted).toEqual([]);
-    expect(drift.actual).toEqual([]);
-    expect(drift.unpredicted).toEqual([]);
-    expect(drift.missed).toEqual([]);
+    expect(result.predicted).toEqual([]);
+    expect(result.actual).toEqual([]);
+    expect(result.unpredicted).toEqual([]);
+    expect(result.missed).toEqual([]);
   });
 });
 
