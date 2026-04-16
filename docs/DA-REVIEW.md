@@ -175,6 +175,7 @@ Workflow `.md` files in `src/{commands,workflows,agents}/` are runtime artifacts
 - [ ] Ternary empty fallback (`undefined`/`null`/`''`/`[]`) on else branch — invert condition so meaningful value comes first
 - [ ] Max 3 chained method calls — beyond 3, use named intermediates
 - [ ] Inline callbacks in chains are 1–2 lines of code — extract longer logic into named functions
+- [ ] No bare function references in array callbacks (`.map(fn)` → `.map((x) => fn(x))`) — enforced by `unicorn/no-array-callback-reference`; type-guard predicates and built-in constructors like `Boolean` and `Number` are exempt
 - [ ] Compound boolean conditions extracted into named `const` variables
 - [ ] Functions with 3+ parameters use options objects (not individual params)
 - [ ] Max one level of function nesting — no functions defined inside functions defined inside functions
