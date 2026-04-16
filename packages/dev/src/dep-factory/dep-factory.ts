@@ -49,7 +49,7 @@ import {
   readLock,
   writeLock,
 } from '../lifecycle/lock.js';
-import { attemptPrCreation } from '../lifecycle/pr-creation.js';
+import { createPr } from '../lifecycle/pr-creation.js';
 import {
   appendProgress,
   countReworkCycles,
@@ -141,7 +141,7 @@ function makeRetryEntry(fetchFn: FetchFn) {
       targetBranch,
     });
 
-    return attemptPrCreation({
+    return createPr({
       fetchFn,
       env: config.env,
       remote,

@@ -84,7 +84,7 @@ function delay(ms: number): Promise<void> {
 }
 
 /** Recursive retry implementation. */
-async function attemptFetch(
+async function fetchLoop(
   config: RetryConfig,
   attempt: number,
 ): Promise<Response> {
@@ -98,14 +98,14 @@ async function attemptFetch(
     await response.arrayBuffer().catch(() => {});
     await delay(ms);
 
-    return attemptFetch(config, attempt + 1);
+    return fetchLoop(config, attempt + 1);
   } catch (err) {
     if (attempt >= config.maxRetries) throw err;
 
     const ms = backoffDelay(attempt, config.baseDelayMs, config.maxDelayMs);
     await delay(ms);
 
-    return attemptFetch(config, attempt + 1);
+    return fetchLoop(config, attempt + 1);
   }
 }
 
@@ -137,5 +137,5 @@ export async function retryFetch(
     maxDelayMs: opts?.maxDelayMs ?? 10_000,
   };
 
-  return attemptFetch(config, 0);
+  return fetchLoop(config, 0);
 }

@@ -19,7 +19,7 @@ import type { EpicContext } from '~/d/lifecycle/pull-request/pr-body.js';
 import { resolveCommitType } from '~/d/lifecycle/commit-type.js';
 import { buildEpicContext } from '~/d/lifecycle/epic.js';
 import { deliveryOutcome, progressForOutcome } from '~/d/lifecycle/outcome.js';
-import { attemptPrCreation } from '~/d/lifecycle/pr-creation.js';
+import { createPr as platformCreatePr } from '~/d/lifecycle/pr-creation.js';
 import { appendProgress } from '~/d/lifecycle/progress.js';
 import { buildPrBody } from '~/d/lifecycle/pull-request/pr-body.js';
 
@@ -144,7 +144,7 @@ async function createPr(
     epicContext,
   });
 
-  return attemptPrCreation({
+  return platformCreatePr({
     fetchFn,
     env: config.env,
     remote,
