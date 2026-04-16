@@ -1,6 +1,6 @@
 # Review Patterns
 
-Recurring findings from Copilot, DA review, and self-review across sessions. The DA subagent reads this file as additional review context. When the same class of issue is caught 2+ times, add it here with the PR citation.
+Recurring findings from Copilot, DA review, and self-review across sessions. When dispatched via `@agent-da-review`, the project subagent's system prompt (`.claude/agents/da-review.md`) instructs it to Read this file as part of its review brief. Compliance is best-effort, not mechanically enforced. When the same class of issue is caught 2+ times, add it here with the PR citation.
 
 This is a **living document** — add patterns from real catches, not hypotheticals.
 
@@ -121,6 +121,6 @@ _Caught: PR #277 (Copilot) — ">10 rows" was ambiguous about header/separator l
 
 ## How this file is used
 
-- The DA subagent reads `docs/` files as context before reviewing — this file is automatically included
+- When dispatched via `@agent-da-review`, the project subagent's system prompt instructs it to read `docs/DA-REVIEW.md` targeted sections, `docs/CONVENTIONS.md` sections the diff touches, and this file as part of the standard brief; `docs/RATIONALIZATIONS.md` is consulted only when about to dismiss a finding. Compliance is best-effort, not mechanically enforced (see `.claude/agents/da-review.md`)
 - When a new pattern emerges (2+ catches of the same class), add it here with the PR citation
 - Patterns that become repo conventions should be promoted to `CONVENTIONS.md`, `DA-REVIEW.md`, or `SELF-REVIEW.md` and removed from this file

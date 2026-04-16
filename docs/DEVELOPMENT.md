@@ -170,7 +170,7 @@ If a session switches between unrelated work (e.g. fixing a config issue then st
 
 ### DA reviews use fresh context
 
-The DA review agent runs as a subagent — it reviews code in a separate context, not biased by having just written it. This is the writer/reviewer pattern: the agent that wrote the code should not be the same context that reviews it.
+The DA review agent runs as a subagent — it reviews code in a separate context, not biased by having just written it. This is the writer/reviewer pattern: the agent that wrote the code should not be the same context that reviews it. Dispatch as `@agent-da-review` (see `.claude/agents/da-review.md`) — the project subagent's system prompt instructs it to read the rule-bearing docs: `docs/DA-REVIEW.md` targeted sections, `docs/CONVENTIONS.md` sections the diff touches, and `docs/REVIEW-PATTERNS.md` as part of the standard brief; `docs/RATIONALIZATIONS.md` is consulted only when about to dismiss a finding. The built-in `general-purpose` agent does not read these docs without explicit inline instructions.
 
 ---
 
@@ -264,7 +264,7 @@ Clancy runs three active process rules (P1-P3). Each has a target ownership mode
 - **Trigger:** completion of a `Write` / `Edit` / `MultiEdit` that writes any `focus.md`.
 - **Mechanism (target):** reminder-level, not gate-level. Claude Code hooks cannot spawn subagents directly; the `PostToolUse` hook injects `additionalContext` that Claude sees on the next turn and acts on. Escalation path: wrap grill invocation as an MCP tool.
 
-Applies to new specs, ruleset drafts, PR-level specs for non-trivial PRs, and rationale docs. The writer spawns a grill-subagent — same writer-≠-reviewer discipline as the DA step of the Review Gate above, scoped to specs instead of PRs. The subagent iterates per the [Two-phase grill discipline](#two-phase-grill-discipline) below — discovery rounds until findings converge to nits, then a verification round that confirms the nit-floor. P1 covers both limbs: adversarial review of the draft and upstream research into prior art. See [GLOSSARY.md](GLOSSARY.md) "Spec grilling".
+Applies to new specs, ruleset drafts, PR-level specs for non-trivial PRs, and rationale docs. The writer dispatches `@agent-spec-grill` (see `.claude/agents/spec-grill.md`) — same writer-≠-reviewer discipline as the DA step of the Review Gate above, scoped to specs instead of PRs. The subagent iterates per the [Two-phase grill discipline](#two-phase-grill-discipline) below — discovery rounds until findings converge to nits, then a verification round that confirms the nit-floor. P1 covers both limbs: adversarial review of the draft and upstream research into prior art. See [GLOSSARY.md](GLOSSARY.md) "Spec grilling".
 
 #### Two-phase grill discipline
 
