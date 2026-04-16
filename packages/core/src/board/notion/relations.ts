@@ -122,7 +122,7 @@ async function checkDescriptionBlockers(
     return candidate != null && hasActiveStatus(candidate, statusProp);
   };
 
-  return blockerMatch.some(isBlockedByActive);
+  return blockerMatch.some((match) => isBlockedByActive(match));
 }
 
 // ─── Children status ─────────────────────────────────────────────────────────

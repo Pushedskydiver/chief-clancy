@@ -172,7 +172,7 @@ function mergeEventEntries(
   desired: readonly HookEntry[],
 ): readonly HookEntry[] {
   const newEntries = filterNewEntries(existing, desired);
-  const patched = existing.map(ensureMatcher);
+  const patched = existing.map((entry) => ensureMatcher(entry));
 
   return [...patched, ...newEntries];
 }

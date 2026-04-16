@@ -81,7 +81,7 @@ async function fetchGitHubTickets(
     limit: opts.limit,
     fetcher: ctx.fetcher,
   });
-  return tickets.map(toFetchedTicket);
+  return tickets.map((ticket) => toFetchedTicket(ticket));
 }
 
 /**

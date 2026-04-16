@@ -68,7 +68,7 @@ function renderCheck(check: CheckResult): string {
 
 function renderVerdict(v: ReadinessVerdict): string {
   const header = `### ${v.ticketId} — ${COLOUR_EMOJI[v.overall]} ${v.overall}`;
-  const checks = v.checks.map(renderCheck).join('\n');
+  const checks = v.checks.map((check) => renderCheck(check)).join('\n');
   return `${header}\n\n${checks}\n`;
 }
 
@@ -79,7 +79,7 @@ function renderBucket(
   if (verdicts.length === 0) return '';
   const label = `${colour.charAt(0).toUpperCase()}${colour.slice(1)}`;
   const header = `## ${label} (${verdicts.length})`;
-  const body = verdicts.map(renderVerdict).join('\n');
+  const body = verdicts.map((verdict) => renderVerdict(verdict)).join('\n');
   return `${header}\n\n${body}`;
 }
 

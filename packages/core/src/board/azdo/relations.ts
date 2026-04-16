@@ -33,7 +33,7 @@ function isIncomplete(item: AzdoWorkItem): boolean {
 function countStatus(items: readonly AzdoWorkItem[]): ChildrenStatus {
   return {
     total: items.length,
-    incomplete: items.filter(isIncomplete).length,
+    incomplete: items.filter((item) => isIncomplete(item)).length,
   };
 }
 
@@ -68,7 +68,7 @@ export async function fetchBlockerStatus(
     if (!predIds.length) return false;
 
     const predItems = await fetchWorkItems(ctx, predIds);
-    return predItems.some(isIncomplete);
+    return predItems.some((item) => isIncomplete(item));
   } catch {
     return false;
   }

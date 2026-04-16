@@ -143,7 +143,7 @@ export function extractContent(
 
     if (!Array.isArray(edits)) return null;
 
-    const strings = edits.map(extractNewString).filter(Boolean);
+    const strings = edits.map((edit) => extractNewString(edit)).filter(Boolean);
 
     return strings.join('\n');
   }

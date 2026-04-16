@@ -4,6 +4,7 @@ import prettier from 'eslint-config-prettier';
 import * as _boundaries from 'eslint-plugin-boundaries';
 import functional from 'eslint-plugin-functional';
 import sonarjs from 'eslint-plugin-sonarjs';
+import unicorn from 'eslint-plugin-unicorn';
 import { defineConfig } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 
@@ -37,6 +38,7 @@ export default defineConfig(
       functional,
       sonarjs,
       boundaries,
+      unicorn,
     },
     settings: {
       'boundaries/elements': [
@@ -85,6 +87,9 @@ export default defineConfig(
       ],
       'functional/prefer-readonly-type': ['warn', { allowLocalMutation: true }],
       'functional/no-loop-statements': 'warn',
+
+      // ── Array callback safety ─────────────────────────────
+      'unicorn/no-array-callback-reference': 'error',
 
       // ── Architecture boundaries ─────────────────────────────
       'boundaries/dependencies': [

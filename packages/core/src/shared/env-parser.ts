@@ -78,7 +78,7 @@ const isDefined = (
  */
 export const parseEnvContent = (content: string): Record<string, string> => {
   const lines = content.split('\n');
-  const entries = lines.map(parseLine).filter(isDefined);
+  const entries = lines.map((line) => parseLine(line)).filter(isDefined);
 
   return Object.fromEntries(entries);
 };

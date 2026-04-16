@@ -136,7 +136,7 @@ async function retryAll(
     };
   };
 
-  const results = await Promise.all(retryable.map(retryOne));
+  const results = await Promise.all(retryable.map((entry) => retryOne(entry)));
 
   return { results };
 }

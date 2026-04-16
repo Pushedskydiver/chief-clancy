@@ -63,7 +63,7 @@ async function fetchLinearTickets(
     fetcher: ctx.fetcher,
   });
 
-  return tickets.map(toFetchedTicket);
+  return tickets.map((ticket) => toFetchedTicket(ticket));
 }
 
 /** Transition a Linear issue and log on success. */
