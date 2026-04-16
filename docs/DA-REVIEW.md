@@ -181,6 +181,8 @@ Workflow `.md` files in `src/{commands,workflows,agents}/` are runtime artifacts
 - [ ] `type` used over `interface` (unless declaration merging needed)
 - [ ] Types and helpers co-located with their module — extract to `shared/` only at 2+ consumers
 - [ ] Extraction depth matches reading mode: composition code (factories, DI, assembly) names each piece at the top level; logic code (algorithms, data transforms, business rules) stays inline — extraction triggered by intent, not length
+- [ ] Variable extraction earns its name: `result`, `data`, `foo`, or tautological restatement → inline instead
+- [ ] Type declarations: 1-property always inline; 2-property inline when fits on one line, otherwise name; 3+ / nested / reused earn a named type; no new `// ─── Types ───` dividers
 - [ ] No `eslint-disable` without justification — look for simpler alternatives first
 - [ ] Naming: files/dirs kebab-case, types PascalCase, functions camelCase, constants UPPER_SNAKE_CASE
 
