@@ -111,11 +111,11 @@ function isPidAlive(pid: number): boolean {
     process.kill(pid, 0);
     return true;
   } catch (err: unknown) {
-    // EPERM = process exists but we can't signal it — still alive
-    if (err instanceof Error && 'code' in err && err.code === 'EPERM') {
-      return true;
-    }
-    return false;
+    // EPERM means the process exists but we lack permission to signal it —
+    // treat as alive.
+    const isPermissionError =
+      err instanceof Error && 'code' in err && err.code === 'EPERM';
+    return isPermissionError;
   }
 }
 

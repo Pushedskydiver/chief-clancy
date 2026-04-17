@@ -300,9 +300,9 @@ function safeRead(readFile: (path: string) => string, path: string): string {
   try {
     return readFile(path);
   } catch (err: unknown) {
-    if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
-      return '';
-    }
+    const isNotFound =
+      err instanceof Error && 'code' in err && err.code === 'ENOENT';
+    if (isNotFound) return '';
     throw err;
   }
 }
