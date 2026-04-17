@@ -26,7 +26,7 @@ type GateResult =
   | {
       readonly passed: false;
       readonly overall?: string;
-      readonly error?: string;
+      readonly error?: { readonly kind: 'unknown'; readonly message: string };
     };
 
 /** Dependencies injected into the single-ticket executor. */
@@ -97,7 +97,8 @@ function checkReadiness(
   const gate = deps.readinessGate(ticket);
 
   if (!gate.passed) {
-    const reason = gate.error ?? `Readiness gate: ${gate.overall ?? 'failed'}`;
+    const reason =
+      gate.error?.message ?? `Readiness gate: ${gate.overall ?? 'failed'}`;
     return { status: 'aborted', phase: 'readiness', error: reason };
   }
 

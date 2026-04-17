@@ -25,7 +25,7 @@ type GateFailed = {
   readonly passed: false;
   readonly overall?: CheckColour;
   readonly verdict?: ReadinessVerdict;
-  readonly error?: string;
+  readonly error?: { readonly kind: 'unknown'; readonly message: string };
 };
 
 type GateResult = GatePassed | GateFailed;
@@ -57,13 +57,16 @@ function gradeRound(
   maxRounds: number,
 ): GateResult {
   if (round >= maxRounds) {
-    return { passed: false, error: 'No grading rounds executed' };
+    return {
+      passed: false,
+      error: { kind: 'unknown', message: 'No grading rounds executed' },
+    };
   }
 
   const result = grade();
 
   if (!result.ok) {
-    return { passed: false, error: result.error.message };
+    return { passed: false, error: result.error };
   }
 
   const { verdict } = result;
