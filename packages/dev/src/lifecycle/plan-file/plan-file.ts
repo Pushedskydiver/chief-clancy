@@ -84,6 +84,40 @@ function parseSize(raw: string): string {
 
 // ─── parsePlanFile ───────────────────────────────────────────────────────────
 
+type HeaderInfo = {
+  readonly key: string;
+  readonly title: string;
+  readonly planned: string;
+  readonly headerFormat: 'board' | 'local';
+};
+
+// Regex captures use `[^\n]*` (not `\s*.+`) so no quantifier overlaps another
+// on whitespace — structurally eliminates the polynomial-backtracking class
+// CodeQL flags.
+const TICKET_HEADER = /^\*\*Ticket:\*\*\s*\[([^\]]+)\]([^\n]*)$/m;
+const ROW_HEADER = /^\*\*Row:\*\*\s*#\d+\s*—([^\n]*)$/m;
+const PLANNED_HEADER = /^\*\*Planned:\*\*([^\n]*)$/m;
+
+/** Extract board-mode key + title if the Ticket header is present with a non-empty title. */
+function parseBoardHeader(
+  headerBlock: string,
+): { readonly key: string; readonly title: string } | undefined {
+  const match = TICKET_HEADER.exec(headerBlock);
+  const title = match?.[2]?.trim() ?? '';
+  if (!match || !title) return undefined;
+  return { key: match[1].trim(), title };
+}
+
+/** Parse the header block into key, title, planned date, and format. */
+function parseHeader(headerBlock: string, slug: string): HeaderInfo {
+  const planned = PLANNED_HEADER.exec(headerBlock)?.[1]?.trim() ?? '';
+  const board = parseBoardHeader(headerBlock);
+  if (board) return { ...board, planned, headerFormat: 'board' };
+
+  const rowTitle = ROW_HEADER.exec(headerBlock)?.[1]?.trim() ?? slug;
+  return { key: slug, title: rowTitle, planned, headerFormat: 'local' };
+}
+
 /**
  * Parse a Clancy implementation plan file into structured fields.
  *
@@ -109,35 +143,14 @@ export function parsePlanFile(content: string, slug: string): ParsePlanResult {
   const headerBlock =
     firstSection >= 0 ? content.slice(0, firstSection) : content;
 
-  // Detect header format from the header block only.
-  // Use `\s+(\S.*)` (not `\s*(.+)`) to avoid the \s*/.+ overlap CodeQL
-  // flags as polynomial-time backtracking on pathological trailing-space inputs.
-  const ticketMatch = /^\*\*Ticket:\*\*\s*\[([^\]]+)\]\s+(\S.*)$/m.exec(
-    headerBlock,
-  );
-  const headerFormat: 'board' | 'local' = ticketMatch ? 'board' : 'local';
-
-  const { key, title } = ticketMatch
-    ? { key: ticketMatch[1].trim(), title: ticketMatch[2].trim() }
-    : {
-        key: slug,
-        title:
-          // Same \s+/\S anchor as the Ticket regex above to avoid polynomial backtracking.
-          /^\*\*Row:\*\*\s*#\d+\s*—\s+(\S.*)$/m
-            .exec(headerBlock)?.[1]
-            ?.trim() ?? slug,
-      };
-
-  const plannedMatch = /^\*\*Planned:\*\*\s*(.+)$/m.exec(headerBlock);
-  const planned = plannedMatch ? plannedMatch[1].trim() : '';
-
+  const header = parseHeader(headerBlock, slug);
   const sizeRaw = extractSection(content, 'Size Estimate');
 
   return {
     ok: true,
     plan: {
-      key,
-      title,
+      key: header.key,
+      title: header.title,
       summary: extractSection(content, 'Summary'),
       affectedFiles: extractSection(content, 'Affected Files'),
       approach: extractSection(content, 'Implementation Approach'),
@@ -146,8 +159,8 @@ export function parsePlanFile(content: string, slug: string): ParsePlanResult {
       dependencies: extractSection(content, 'Dependencies'),
       risks: extractSection(content, 'Risks / Considerations'),
       size: parseSize(sizeRaw),
-      planned,
-      headerFormat,
+      planned: header.planned,
+      headerFormat: header.headerFormat,
     },
   };
 }
