@@ -100,7 +100,7 @@ describe('runPipeline — happy path', () => {
         order.push('feasibility');
         return { ok: true };
       }),
-      branchSetup: vi.fn(async () => {
+      branchSetup: vi.fn<PipelineDeps['branchSetup']>(async () => {
         order.push('branchSetup');
         return { ok: true };
       }),
@@ -224,12 +224,16 @@ describe('runPipeline — early exits', () => {
 
   it('stops after branch-setup failure', async () => {
     const deps = makeDeps({
-      branchSetup: vi.fn().mockResolvedValue({ ok: false }),
+      branchSetup: vi.fn<PipelineDeps['branchSetup']>().mockResolvedValue({
+        ok: false,
+        error: { kind: 'unknown', message: 'branch setup failed' },
+      }),
     });
     const result = await runPipeline(makeCtx(), deps);
 
     expect(result.status).toBe('aborted');
     expect(result.phase).toBe('branch-setup');
+    expect(result.error).toBe('branch setup failed');
     expect(deps.transition).not.toHaveBeenCalled();
   });
 

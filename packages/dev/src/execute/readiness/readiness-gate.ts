@@ -11,7 +11,10 @@ import { aggregateVerdict } from '../../agents/aggregate.js';
 
 type GradeResult =
   | { readonly ok: true; readonly verdict: ReadinessVerdict }
-  | { readonly ok: false; readonly error: string };
+  | {
+      readonly ok: false;
+      readonly error: { readonly kind: 'unknown'; readonly message: string };
+    };
 
 type GatePassed = {
   readonly passed: true;
@@ -60,7 +63,7 @@ function gradeRound(
   const result = grade();
 
   if (!result.ok) {
-    return { passed: false, error: result.error };
+    return { passed: false, error: result.error.message };
   }
 
   const { verdict } = result;

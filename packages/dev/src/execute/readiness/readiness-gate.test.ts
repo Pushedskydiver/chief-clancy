@@ -99,7 +99,7 @@ describe('runReadinessGate', () => {
   it('returns fail when grader returns error', () => {
     const grade = vi.fn(() => ({
       ok: false as const,
-      error: 'Claude crashed',
+      error: { kind: 'unknown' as const, message: 'Claude crashed' },
     }));
 
     const result = runReadinessGate({ grade, maxRounds: 3 });

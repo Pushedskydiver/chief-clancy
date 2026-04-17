@@ -52,7 +52,13 @@ function makeGrader(
     const v = results.get(ticketId);
     return v
       ? { ok: true as const, verdict: v }
-      : { ok: false as const, error: `Grading failed for ${ticketId}` };
+      : {
+          ok: false as const,
+          error: {
+            kind: 'unknown' as const,
+            message: `Grading failed for ${ticketId}`,
+          },
+        };
   });
 }
 
@@ -175,7 +181,7 @@ describe('runPreflightBatch', () => {
   it('counts grading failure as red with error reason', () => {
     const grade = vi.fn().mockReturnValue({
       ok: false,
-      error: 'Claude spawn failed: timeout',
+      error: { kind: 'unknown', message: 'Claude spawn failed: timeout' },
     });
 
     const result = runPreflightBatch(

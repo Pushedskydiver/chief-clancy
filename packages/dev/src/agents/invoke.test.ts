@@ -103,8 +103,8 @@ describe('invokeReadinessGrade', () => {
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error).toContain('Claude spawn failed');
-      expect(result.error).toContain('ENOENT');
+      expect(result.error.message).toContain('Claude spawn failed');
+      expect(result.error.message).toContain('ENOENT');
     }
   });
 
@@ -115,7 +115,7 @@ describe('invokeReadinessGrade', () => {
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error).toContain('Claude process failed');
+      expect(result.error.message).toContain('Claude process failed');
     }
   });
 
@@ -126,7 +126,7 @@ describe('invokeReadinessGrade', () => {
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error).toContain('No fenced JSON block');
+      expect(result.error.message).toContain('No fenced JSON block');
     }
   });
 
@@ -137,7 +137,7 @@ describe('invokeReadinessGrade', () => {
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error).toContain('Schema validation failed');
+      expect(result.error.message).toContain('Schema validation failed');
     }
   });
 

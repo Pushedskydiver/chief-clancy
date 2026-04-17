@@ -44,11 +44,12 @@ type CreateResumePr = (
 ) => Promise<PrCreationResult | undefined>;
 
 /** Result of executing a resume. */
-type ResumeExecResult = {
-  readonly ok: boolean;
-  readonly prResult?: PrCreationResult;
-  readonly error?: string;
-};
+type ResumeExecResult =
+  | { readonly ok: true; readonly prResult?: PrCreationResult }
+  | {
+      readonly ok: false;
+      readonly error: { readonly kind: 'unknown'; readonly message: string };
+    };
 
 /** Options for {@link executeResume}. */
 type ExecuteResumeOpts = {
@@ -111,11 +112,20 @@ export async function executeResume(
     checkout(exec, resumeInfo.branch);
 
     if (resumeInfo.hasUncommitted && !commitResumableWork(exec, lock)) {
-      return { ok: false, error: 'Could not commit in-progress work' };
+      return {
+        ok: false,
+        error: {
+          kind: 'unknown',
+          message: 'Could not commit in-progress work',
+        },
+      };
     }
 
     if (!pushBranch(exec, resumeInfo.branch)) {
-      return { ok: false, error: 'Could not push branch' };
+      return {
+        ok: false,
+        error: { kind: 'unknown', message: 'Could not push branch' },
+      };
     }
 
     const prResult = createPr
@@ -127,9 +137,10 @@ export async function executeResume(
 
     return { ok: true, prResult };
   } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
     return {
       ok: false,
-      error: err instanceof Error ? err.message : String(err),
+      error: { kind: 'unknown', message },
     };
   }
 }

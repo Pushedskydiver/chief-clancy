@@ -30,7 +30,9 @@ function makeDeps(overrides: Partial<BranchSetupDeps> = {}): BranchSetupDeps {
     checkout: vi.fn(),
     fetchRemoteBranch: vi.fn(() => false),
     ensureBranch: vi.fn(),
-    ensureEpicBranch: vi.fn(() => ({ ok: true })),
+    ensureEpicBranch: vi.fn<BranchSetupDeps['ensureEpicBranch']>(() => ({
+      ok: true,
+    })),
     fetchChildrenStatus: vi.fn(() => Promise.resolve(undefined)),
     writeLock: vi.fn(),
     ...overrides,
@@ -181,16 +183,18 @@ describe('branchSetup', () => {
       fetchChildrenStatus: vi.fn(() =>
         Promise.resolve({ total: 2, incomplete: 1 }),
       ),
-      ensureEpicBranch: vi.fn(() => ({
+      ensureEpicBranch: vi.fn<BranchSetupDeps['ensureEpicBranch']>(() => ({
         ok: false,
-        error: 'remote fetch failed',
+        error: { kind: 'unknown', message: 'remote fetch failed' },
       })),
     });
 
     const result = await branchSetup(ctx, deps);
 
-    expect(result.ok).toBe(false);
-    expect(result.error).toBe('remote fetch failed');
+    expect(result).toMatchObject({
+      ok: false,
+      error: { kind: 'unknown', message: 'remote fetch failed' },
+    });
   });
 
   it('restores original branch on epic branch failure', async () => {
@@ -200,7 +204,10 @@ describe('branchSetup', () => {
       fetchChildrenStatus: vi.fn(() =>
         Promise.resolve({ total: 2, incomplete: 1 }),
       ),
-      ensureEpicBranch: vi.fn(() => ({ ok: false })),
+      ensureEpicBranch: vi.fn<BranchSetupDeps['ensureEpicBranch']>(() => ({
+        ok: false,
+        error: { kind: 'unknown', message: 'fetch failed' },
+      })),
     });
 
     await branchSetup(ctx, deps);
@@ -246,7 +253,10 @@ describe('branchSetup', () => {
   it('returns ok: false when epic branch fails during rework', async () => {
     const ctx = setupCtx({ isRework: true });
     const deps = makeDeps({
-      ensureEpicBranch: vi.fn(() => ({ ok: false, error: 'failed' })),
+      ensureEpicBranch: vi.fn<BranchSetupDeps['ensureEpicBranch']>(() => ({
+        ok: false,
+        error: { kind: 'unknown', message: 'failed' },
+      })),
     });
 
     const result = await branchSetup(ctx, deps);

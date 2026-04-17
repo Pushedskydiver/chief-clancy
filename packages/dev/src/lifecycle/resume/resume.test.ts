@@ -382,8 +382,10 @@ describe('executeResume', () => {
       resumeInfo: baseResumeInfo,
     });
 
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('push');
+    expect(result).toMatchObject({
+      ok: false,
+      error: { kind: 'unknown', message: expect.stringContaining('push') },
+    });
   });
 
   it('returns failure when commit fails', async () => {
@@ -395,8 +397,10 @@ describe('executeResume', () => {
       resumeInfo: { ...baseResumeInfo, hasUncommitted: true },
     });
 
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('commit');
+    expect(result).toMatchObject({
+      ok: false,
+      error: { kind: 'unknown', message: expect.stringContaining('commit') },
+    });
   });
 
   it('calls createPr and includes result', async () => {
@@ -415,11 +419,13 @@ describe('executeResume', () => {
       createPr,
     });
 
-    expect(result.ok).toBe(true);
-    expect(result.prResult).toEqual({
+    expect(result).toMatchObject({
       ok: true,
-      url: 'https://github.com/o/r/pull/5',
-      number: 5,
+      prResult: {
+        ok: true,
+        url: 'https://github.com/o/r/pull/5',
+        number: 5,
+      },
     });
     expect(createPr).toHaveBeenCalledWith(
       expect.objectContaining({ ticketKey: 'PROJ-42' }),
@@ -441,8 +447,7 @@ describe('executeResume', () => {
       createPr,
     });
 
-    expect(result.ok).toBe(true);
-    expect(result.prResult?.ok).toBe(false);
+    expect(result).toMatchObject({ ok: true, prResult: { ok: false } });
   });
 
   it('succeeds without PR when createPr not provided', async () => {
@@ -454,8 +459,8 @@ describe('executeResume', () => {
       resumeInfo: baseResumeInfo,
     });
 
-    expect(result.ok).toBe(true);
-    expect(result.prResult).toBeUndefined();
+    expect(result).toMatchObject({ ok: true });
+    if (result.ok) expect(result.prResult).toBeUndefined();
   });
 
   it('appends RESUMED progress with PR number', async () => {
@@ -542,7 +547,9 @@ describe('executeResume', () => {
       resumeInfo: baseResumeInfo,
     });
 
-    expect(result.ok).toBe(false);
-    expect(result.error).toBeDefined();
+    expect(result).toMatchObject({
+      ok: false,
+      error: { kind: 'unknown', message: expect.any(String) },
+    });
   });
 });

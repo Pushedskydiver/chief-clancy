@@ -15,7 +15,7 @@ type ParseSuccess = {
 
 type ParseFailure = {
   readonly ok: false;
-  readonly error: string;
+  readonly error: { readonly kind: 'unknown'; readonly message: string };
 };
 
 type ParseResult = ParseSuccess | ParseFailure;
@@ -54,7 +54,13 @@ export function safeParseVerdict(text: string): ParseResult {
   const jsonContent = extractFencedJson(text);
 
   if (jsonContent === undefined) {
-    return { ok: false, error: 'No fenced JSON block found in output' };
+    return {
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: 'No fenced JSON block found in output',
+      },
+    };
   }
 
   const parsed = (() => {
@@ -66,7 +72,10 @@ export function safeParseVerdict(text: string): ParseResult {
   })();
 
   if (!parsed.ok) {
-    return { ok: false, error: 'Invalid JSON in fenced block' };
+    return {
+      ok: false,
+      error: { kind: 'unknown', message: 'Invalid JSON in fenced block' },
+    };
   }
 
   const result = readinessVerdictSchema.safeParse(parsed.data);
@@ -74,7 +83,10 @@ export function safeParseVerdict(text: string): ParseResult {
   if (!result.success) {
     return {
       ok: false,
-      error: `Schema validation failed: ${result.error.message}`,
+      error: {
+        kind: 'unknown',
+        message: `Schema validation failed: ${result.error.message}`,
+      },
     };
   }
 
