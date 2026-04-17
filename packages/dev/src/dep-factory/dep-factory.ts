@@ -203,10 +203,10 @@ async function runTicketFetch(
   ctx: RunContext,
   opts: DepFactoryOpts,
   progress: AppendFn,
-) {
+): ReturnType<PipelineDeps['ticketFetch']> {
   if (ctx.fromPath) {
     const seed = localTicketSeed(ctx, ctx.fromPath, opts.envFs.readFile);
-    if (!seed.ok) return { ok: false, error: seed.error.message };
+    if (!seed.ok) return { ok: false, error: seed.error };
   }
   return ticketFetch(ctx, {
     fetchTicket: (board: Board) =>

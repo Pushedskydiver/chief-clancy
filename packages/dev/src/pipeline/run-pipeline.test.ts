@@ -197,13 +197,31 @@ describe('runPipeline — early exits', () => {
 
   it('stops after ticket-fetch failure', async () => {
     const deps = makeDeps({
-      ticketFetch: vi.fn().mockResolvedValue({ ok: false }),
+      ticketFetch: vi.fn<PipelineDeps['ticketFetch']>().mockResolvedValue({
+        ok: false,
+        reason: 'no-tickets',
+      }),
     });
     const result = await runPipeline(makeCtx(), deps);
 
     expect(result.status).toBe('aborted');
     expect(result.phase).toBe('ticket-fetch');
+    expect(result.error).toBe('no-tickets');
     expect(deps.feasibility).not.toHaveBeenCalled();
+  });
+
+  it('stops after ticket-fetch seed failure with tagged error', async () => {
+    const deps = makeDeps({
+      ticketFetch: vi.fn<PipelineDeps['ticketFetch']>().mockResolvedValue({
+        ok: false,
+        error: { kind: 'unknown', message: 'plan parse failed' },
+      }),
+    });
+    const result = await runPipeline(makeCtx(), deps);
+
+    expect(result.status).toBe('aborted');
+    expect(result.phase).toBe('ticket-fetch');
+    expect(result.error).toBe('plan parse failed');
   });
 
   it('stops after dry-run gate', async () => {

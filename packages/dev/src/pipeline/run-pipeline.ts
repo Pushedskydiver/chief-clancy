@@ -56,11 +56,14 @@ export type PipelineDeps = {
     ctx: RunContext,
   ) => Promise<{ readonly isDetected: boolean; readonly ticketKey?: string }>;
   /** Ticket fetch — fetch ticket + resolve branches. */
-  readonly ticketFetch: (ctx: RunContext) => Promise<{
-    readonly ok: boolean;
-    readonly error?: string;
-    readonly reason?: string;
-  }>;
+  readonly ticketFetch: (ctx: RunContext) => Promise<
+    | { readonly ok: true; readonly reason?: string }
+    | {
+        readonly ok: false;
+        readonly reason?: string;
+        readonly error?: { readonly kind: 'unknown'; readonly message: string };
+      }
+  >;
   // Dry-run (phase 5) is an inline ctx.dryRun check — no dependency needed.
   /** Feasibility — Claude feasibility check. */
   readonly feasibility: (ctx: RunContext) => Promise<{
@@ -164,7 +167,7 @@ async function runPhases(
     return {
       status: 'aborted',
       phase: 'ticket-fetch',
-      error: ticket.error ?? ticket.reason,
+      error: ticketErrorMessage(ticket),
     };
 
   // Dry-run gate
@@ -208,6 +211,21 @@ async function runPhases(
   await deps.cleanup(ctx);
 
   return { status: 'completed' };
+}
+
+/**
+ * Flatten a failed ticket-fetch result to a display string.
+ *
+ * Seed failures (from `runTicketFetch`'s `localTicketSeed` path) carry a
+ * tagged `error`; phase reason-exits (`no-tickets`, `max-rework`) carry a
+ * bare `reason`. The outer `PipelineResult.error` is a display surface, so
+ * extract whichever is present.
+ */
+function ticketErrorMessage(ticket: {
+  readonly reason?: string;
+  readonly error?: { readonly message: string };
+}): string | undefined {
+  return ticket.error?.message ?? ticket.reason;
 }
 
 /** Best-effort: restore the branch the user was on before Clancy started. */
