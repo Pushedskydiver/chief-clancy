@@ -26,12 +26,17 @@ export type PreflightDeps = {
 };
 
 /** Result of running preflight checks. */
-export type PreflightResult = {
-  readonly ok: boolean;
-  readonly error: string | undefined;
-  readonly warning: string | undefined;
-  readonly env: Record<string, string> | undefined;
-};
+export type PreflightResult =
+  | {
+      readonly ok: true;
+      readonly warning?: string;
+      readonly env?: Record<string, string>;
+    }
+  | {
+      readonly ok: false;
+      readonly error: { readonly kind: 'unknown'; readonly message: string };
+      readonly warning?: string;
+    };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -115,11 +120,9 @@ export function runPreflight(
   projectRoot: string,
   deps: PreflightDeps,
 ): PreflightResult {
-  const fail = (error: string): PreflightResult => ({
+  const fail = (message: string): PreflightResult => ({
     ok: false,
-    error,
-    warning: undefined,
-    env: undefined,
+    error: { kind: 'unknown', message },
   });
 
   // Check required binaries
@@ -145,5 +148,5 @@ export function runPreflight(
   // Collect non-blocking warnings
   const warning = collectWarnings(deps.exec);
 
-  return { ok: true, env, error: undefined, warning };
+  return { ok: true, env, warning };
 }

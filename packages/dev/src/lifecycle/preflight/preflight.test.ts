@@ -37,12 +37,13 @@ describe('runPreflight', () => {
   it('returns ok with env when all checks pass', () => {
     const result = runPreflight('/project', makeDeps());
 
-    expect(result.ok).toBe(true);
-    expect(result.env).toEqual({
-      CLANCY_BOARD: 'github',
-      CLANCY_BOARD_TOKEN: 'tok',
+    expect(result).toMatchObject({
+      ok: true,
+      env: {
+        CLANCY_BOARD: 'github',
+        CLANCY_BOARD_TOKEN: 'tok',
+      },
     });
-    expect(result.error).toBeUndefined();
   });
 
   it('probes binaries with --version (cross-platform)', () => {
@@ -63,8 +64,13 @@ describe('runPreflight', () => {
 
     const result = runPreflight('/project', makeDeps({ exec }));
 
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('claude');
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('claude'),
+      },
+    });
   });
 
   it('returns error when git binary is missing', () => {
@@ -76,8 +82,13 @@ describe('runPreflight', () => {
 
     const result = runPreflight('/project', makeDeps({ exec }));
 
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('git');
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('git'),
+      },
+    });
   });
 
   it('returns error when .env file does not exist', () => {
@@ -89,8 +100,13 @@ describe('runPreflight', () => {
 
     const result = runPreflight('/project', makeDeps({ envFs }));
 
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('.env');
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('.env'),
+      },
+    });
   });
 
   it('returns error when not inside a git repository', () => {
@@ -104,8 +120,13 @@ describe('runPreflight', () => {
 
     const result = runPreflight('/project', makeDeps({ exec }));
 
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('git repository');
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('git repository'),
+      },
+    });
   });
 
   it('returns warning when remote is unreachable', () => {
@@ -120,7 +141,7 @@ describe('runPreflight', () => {
     const result = runPreflight('/project', makeDeps({ exec }));
 
     expect(result.ok).toBe(true);
-    expect(result.warning).toContain('origin');
+    if (result.ok) expect(result.warning).toContain('origin');
   });
 
   it('returns warning when working directory has uncommitted changes', () => {
@@ -135,7 +156,7 @@ describe('runPreflight', () => {
     const result = runPreflight('/project', makeDeps({ exec }));
 
     expect(result.ok).toBe(true);
-    expect(result.warning).toContain('uncommitted');
+    if (result.ok) expect(result.warning).toContain('uncommitted');
   });
 
   it('combines multiple warnings', () => {
@@ -149,8 +170,10 @@ describe('runPreflight', () => {
     const result = runPreflight('/project', makeDeps({ exec }));
 
     expect(result.ok).toBe(true);
-    expect(result.warning).toContain('origin');
-    expect(result.warning).toContain('uncommitted');
+    if (result.ok) {
+      expect(result.warning).toContain('origin');
+      expect(result.warning).toContain('uncommitted');
+    }
   });
 
   it('checks binaries before env or git state', () => {
@@ -162,8 +185,13 @@ describe('runPreflight', () => {
 
     const result = runPreflight('/project', makeDeps({ exec, envFs }));
 
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('claude');
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('claude'),
+      },
+    });
     expect(envFs.exists).not.toHaveBeenCalled();
   });
 
@@ -181,8 +209,6 @@ describe('runPreflight', () => {
     expect(result).toEqual({
       ok: true,
       env: { CLANCY_BOARD: 'github', CLANCY_BOARD_TOKEN: 'tok' },
-      error: undefined,
-      warning: undefined,
     });
   });
 });
