@@ -62,7 +62,7 @@ describe('deliveryOutcome', () => {
   it('returns exists when PR already exists', () => {
     const pr: PrCreationResult = {
       ok: false,
-      error: 'already exists',
+      error: { kind: 'unknown', message: 'already exists' },
       alreadyExists: true,
     };
 
@@ -74,7 +74,7 @@ describe('deliveryOutcome', () => {
   it('returns failed with manual URL when PR creation failed', () => {
     const pr: PrCreationResult = {
       ok: false,
-      error: 'validation failed',
+      error: { kind: 'unknown', message: 'validation failed' },
     };
 
     const outcome = deliveryOutcome(makeOpts({ pr }));
@@ -126,7 +126,10 @@ describe('deliveryOutcome', () => {
   });
 
   it('returns failed with Azure manual URL on PR failure', () => {
-    const pr: PrCreationResult = { ok: false, error: 'server error' };
+    const pr: PrCreationResult = {
+      ok: false,
+      error: { kind: 'unknown', message: 'server error' },
+    };
 
     const outcome = deliveryOutcome(makeOpts({ pr, remote: azdoRemote }));
 
