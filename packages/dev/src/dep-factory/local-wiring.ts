@@ -44,6 +44,7 @@ function runPreflightTagged(
   | {
       readonly ok: false;
       readonly error: { readonly kind: 'unknown'; readonly message: string };
+      readonly warning?: string;
     } {
   const result = runPreflight(root, {
     exec: (file, args) => opts.exec([file, ...args]),
@@ -88,7 +89,7 @@ export function wirePreflight(opts: {
         return Promise.resolve({
           ok: false,
           error: {
-            kind: 'unknown' as const,
+            kind: 'unknown',
             message: 'Not inside a git repository',
           },
         });
