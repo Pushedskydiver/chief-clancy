@@ -149,7 +149,9 @@ function parseTime(
   const minutes = parseInt(minStr, 10);
 
   if (Number.isNaN(hours) || Number.isNaN(minutes)) return undefined;
-  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return undefined;
+
+  const isOutOfRange = hours < 0 || hours > 23 || minutes < 0 || minutes > 59;
+  if (isOutOfRange) return undefined;
 
   return { hours, minutes };
 }

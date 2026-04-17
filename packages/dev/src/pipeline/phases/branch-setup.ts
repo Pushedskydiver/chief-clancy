@@ -118,6 +118,10 @@ export async function branchSetup(
 
 // ─── Internal helpers ────────────────────────────────────────────────────────
 
+function shouldBranchFromEpic(ctx: RunContext): boolean {
+  return ctx.hasParent === true && ctx.skipEpicBranch !== true;
+}
+
 // Safe: called only from branchSetup after fields are populated
 /** Check if the parent has exactly 1 child, meaning we skip the epic branch. */
 async function checkSingleChild(
@@ -141,7 +145,7 @@ function setupReworkBranch(
   const effectiveTarget = ctx.effectiveTarget!;
   const baseBranch = ctx.baseBranch!;
 
-  if (ctx.hasParent === true && ctx.skipEpicBranch !== true) {
+  if (shouldBranchFromEpic(ctx)) {
     const epic = deps.ensureEpicBranch(ctx.targetBranch!, baseBranch);
     if (!epic.ok) return { ok: false, error: epic.error };
   } else {
@@ -166,7 +170,7 @@ function setupFreshBranch(
   ctx: RunContext,
   deps: BranchSetupDeps,
 ): BranchSetupResult {
-  if (ctx.hasParent === true && ctx.skipEpicBranch !== true) {
+  if (shouldBranchFromEpic(ctx)) {
     return setupEpicBranch(ctx, deps);
   }
 
