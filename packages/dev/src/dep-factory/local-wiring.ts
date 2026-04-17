@@ -77,21 +77,35 @@ export function wirePreflight(opts: {
 }
 
 /**
- * Parse the plan file at `ctx.fromPath` and pre-seed `ctx.ticket`.
+ * Parse the plan file at `fromPath` and pre-seed `ctx.ticket`.
  *
- * Derives slug from the plan filename (minus `.md` extension).
- *
- * @param ctx - Pipeline context to seed the ticket on.
- * @param fromPath - Path to the plan file.
- * @param readFile - Filesystem read for the plan file.
+ * Derives slug from the plan filename (minus `.md` extension). Returns a
+ * tagged Result — a malformed plan is user-triggerable (the caller supplies
+ * the path via `--from`), so failure propagates through the caller's own
+ * Result channel rather than an unstructured throw.
  */
 export function localTicketSeed(
   ctx: RunContext,
   fromPath: string,
   readFile: (path: string) => string,
-): void {
+):
+  | { readonly ok: true }
+  | {
+      readonly ok: false;
+      readonly error: { readonly kind: 'unknown'; readonly message: string };
+    } {
   const slug = basename(fromPath, '.md');
   const content = readFile(fromPath);
-  const plan = parsePlanFile(content, slug);
-  ctx.setTicket(toSyntheticTicket(plan));
+  const result = parsePlanFile(content, slug);
+  if (!result.ok) {
+    return {
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: `Failed to parse plan file ${fromPath}: ${result.error.message}`,
+      },
+    };
+  }
+  ctx.setTicket(toSyntheticTicket(result.plan));
+  return { ok: true };
 }

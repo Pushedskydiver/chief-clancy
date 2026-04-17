@@ -199,6 +199,28 @@ function wireEarlyPhases(opts: DepFactoryOpts, progress: AppendFn) {
   };
 }
 
+async function runTicketFetch(
+  ctx: RunContext,
+  opts: DepFactoryOpts,
+  progress: AppendFn,
+) {
+  if (ctx.fromPath) {
+    const seed = localTicketSeed(ctx, ctx.fromPath, opts.envFs.readFile);
+    if (!seed.ok) return { ok: false, error: seed.error.message };
+  }
+  return ticketFetch(ctx, {
+    fetchTicket: (board: Board) =>
+      board.fetchTicket({ buildLabel: resolveBuildLabel(ctx) }),
+    countReworkCycles: (key: string) =>
+      countReworkCycles(opts.progressFs, opts.projectRoot, key),
+    appendProgress: progress,
+    ticketBranch: (provider: BoardProvider, key: string) =>
+      resolveTicketBranch(provider, key),
+    targetBranch: (p: BoardProvider, b: string, par?: string) =>
+      resolveTargetBranch(p, b, par),
+  });
+}
+
 function wireTicketPhases(opts: DepFactoryOpts, progress: AppendFn) {
   const { projectRoot, exec, progressFs, spawn, fetch: fetchFn } = opts;
   return {
@@ -221,20 +243,7 @@ function wireTicketPhases(opts: DepFactoryOpts, progress: AppendFn) {
         },
       }),
 
-    ticketFetch: async (ctx: RunContext) => {
-      if (ctx.fromPath) localTicketSeed(ctx, ctx.fromPath, opts.envFs.readFile);
-      return ticketFetch(ctx, {
-        fetchTicket: (board: Board) =>
-          board.fetchTicket({ buildLabel: resolveBuildLabel(ctx) }),
-        countReworkCycles: (key: string) =>
-          countReworkCycles(progressFs, projectRoot, key),
-        appendProgress: progress,
-        ticketBranch: (provider: BoardProvider, key: string) =>
-          resolveTicketBranch(provider, key),
-        targetBranch: (p: BoardProvider, b: string, par?: string) =>
-          resolveTargetBranch(p, b, par),
-      });
-    },
+    ticketFetch: (ctx: RunContext) => runTicketFetch(ctx, opts, progress),
     feasibility: (ctx: RunContext) =>
       feasibilityPhase(ctx, {
         checkFeasibility: (ticket, model) => {

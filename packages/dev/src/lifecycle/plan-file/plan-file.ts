@@ -26,6 +26,19 @@ type ParsedPlan = {
   readonly headerFormat: 'board' | 'local';
 };
 
+/**
+ * Result of parsing a plan file. Tagged discriminated union per
+ * CONVENTIONS.md §Error Handling — `parsePlanFile` can fail on
+ * user-provided content (missing header), so it reports failure
+ * through a Result instead of throwing.
+ */
+type ParsePlanResult =
+  | { readonly ok: true; readonly plan: ParsedPlan }
+  | {
+      readonly ok: false;
+      readonly error: { readonly kind: 'unknown'; readonly message: string };
+    };
+
 type ApprovalStatus =
   | { readonly status: 'approved'; readonly approvedAt: string }
   | { readonly status: 'modified'; readonly approvedAt: string }
@@ -71,21 +84,58 @@ function parseSize(raw: string): string {
 
 // ─── parsePlanFile ───────────────────────────────────────────────────────────
 
+type HeaderInfo = {
+  readonly key: string;
+  readonly title: string;
+  readonly planned: string;
+  readonly headerFormat: 'board' | 'local';
+};
+
+// Regex captures use `[^\n]*` (not `\s*.+`) so no quantifier overlaps another
+// on whitespace — structurally eliminates the polynomial-backtracking class
+// CodeQL flags.
+const TICKET_HEADER = /^\*\*Ticket:\*\*\s*\[([^\]]+)\]([^\n]*)$/m;
+const ROW_HEADER = /^\*\*Row:\*\*\s*#\d+\s*—([^\n]*)$/m;
+const PLANNED_HEADER = /^\*\*Planned:\*\*([^\n]*)$/m;
+
+/** Extract board-mode key + title if the Ticket header is present with a non-empty title. */
+function parseBoardHeader(
+  headerBlock: string,
+): { readonly key: string; readonly title: string } | undefined {
+  const match = TICKET_HEADER.exec(headerBlock);
+  const title = match?.[2]?.trim() ?? '';
+  if (!match || !title) return undefined;
+  return { key: match[1].trim(), title };
+}
+
+/** Parse the header block into key, title, planned date, and format. */
+function parseHeader(headerBlock: string, slug: string): HeaderInfo {
+  const planned = PLANNED_HEADER.exec(headerBlock)?.[1]?.trim() ?? '';
+  const board = parseBoardHeader(headerBlock);
+  if (board) return { ...board, planned, headerFormat: 'board' };
+
+  const rowTitle = ROW_HEADER.exec(headerBlock)?.[1]?.trim() ?? slug;
+  return { key: slug, title: rowTitle, planned, headerFormat: 'local' };
+}
+
 /**
  * Parse a Clancy implementation plan file into structured fields.
  *
  * Supports both board-mode (`**Ticket:** [{KEY}] Title`) and local-mode
- * (`**Source:** / **Row:**`) header formats.
- *
- * @param content - Raw markdown content of the plan file.
- * @param slug - Plan slug used as the key in local-mode (e.g. `add-dark-mode-3`).
- * @returns Parsed plan with all sections extracted.
+ * (`**Source:** / **Row:**`) header formats. Returns a tagged Result —
+ * the only expected failure is a missing plan header, which is a
+ * user-facing condition (malformed `.clancy/plans/*.md` file).
  */
-export function parsePlanFile(content: string, slug: string): ParsedPlan {
+export function parsePlanFile(content: string, slug: string): ParsePlanResult {
   if (!content.includes(PLAN_HEADER)) {
-    throw new Error(
-      "Could not parse plan file. Expected '## Clancy Implementation Plan' header.",
-    );
+    return {
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message:
+          "Could not parse plan file. Expected '## Clancy Implementation Plan' header.",
+      },
+    };
   }
 
   // Scope header detection to the block before the first ### section
@@ -93,39 +143,25 @@ export function parsePlanFile(content: string, slug: string): ParsedPlan {
   const headerBlock =
     firstSection >= 0 ? content.slice(0, firstSection) : content;
 
-  // Detect header format from the header block only
-  const ticketMatch = /^\*\*Ticket:\*\*\s*\[([^\]]+)\]\s*(.+)$/m.exec(
-    headerBlock,
-  );
-  const headerFormat: 'board' | 'local' = ticketMatch ? 'board' : 'local';
-
-  const { key, title } = ticketMatch
-    ? { key: ticketMatch[1].trim(), title: ticketMatch[2].trim() }
-    : {
-        key: slug,
-        title:
-          /^\*\*Row:\*\*\s*#\d+\s*—\s*(.+)$/m.exec(headerBlock)?.[1]?.trim() ??
-          slug,
-      };
-
-  const plannedMatch = /^\*\*Planned:\*\*\s*(.+)$/m.exec(headerBlock);
-  const planned = plannedMatch ? plannedMatch[1].trim() : '';
-
+  const header = parseHeader(headerBlock, slug);
   const sizeRaw = extractSection(content, 'Size Estimate');
 
   return {
-    key,
-    title,
-    summary: extractSection(content, 'Summary'),
-    affectedFiles: extractSection(content, 'Affected Files'),
-    approach: extractSection(content, 'Implementation Approach'),
-    testStrategy: extractSection(content, 'Test Strategy'),
-    acceptance: extractSection(content, 'Acceptance Criteria'),
-    dependencies: extractSection(content, 'Dependencies'),
-    risks: extractSection(content, 'Risks / Considerations'),
-    size: parseSize(sizeRaw),
-    planned,
-    headerFormat,
+    ok: true,
+    plan: {
+      key: header.key,
+      title: header.title,
+      summary: extractSection(content, 'Summary'),
+      affectedFiles: extractSection(content, 'Affected Files'),
+      approach: extractSection(content, 'Implementation Approach'),
+      testStrategy: extractSection(content, 'Test Strategy'),
+      acceptance: extractSection(content, 'Acceptance Criteria'),
+      dependencies: extractSection(content, 'Dependencies'),
+      risks: extractSection(content, 'Risks / Considerations'),
+      size: parseSize(sizeRaw),
+      planned: header.planned,
+      headerFormat: header.headerFormat,
+    },
   };
 }
 
