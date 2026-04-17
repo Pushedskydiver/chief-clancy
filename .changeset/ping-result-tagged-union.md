@@ -4,7 +4,7 @@
 '@chief-clancy/terminal': patch
 ---
 
-**BREAKING** — `PingResult` in `@chief-clancy/core/types/board` is now a proper discriminated union:
+**BREAKING** — `PingResult` in `@chief-clancy/core/types/board.js` is now a proper discriminated union:
 
 ```ts
 // Before
