@@ -16,7 +16,7 @@ import { makeExecCmd } from './adapters.js';
 
 describe('makeExecCmd', () => {
   it('spawns the file argument directly — does NOT prepend git', () => {
-    // Regression guard: runPreflightTagged used to adapt makeExecGit into an
+    // Regression guard: an earlier adapter wrapped makeExecGit as an
     // arbitrary-binary executor by prepending `git`, turning `claude --version`
     // into `git claude --version`. The separation between ExecGit + ExecCmd
     // fixes that.

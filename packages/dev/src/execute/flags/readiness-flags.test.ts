@@ -31,10 +31,13 @@ describe('parseReadinessFlags', () => {
   it('returns error when --bypass-readiness without --reason', () => {
     const result = parseReadinessFlags(['--bypass-readiness'], false);
 
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.error).toContain('--reason');
-    }
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('--reason'),
+      },
+    });
   });
 
   it('returns error when --bypass-readiness combined with afk mode', () => {
@@ -43,10 +46,13 @@ describe('parseReadinessFlags', () => {
       true,
     );
 
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.error).toContain('--afk');
-    }
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('--afk'),
+      },
+    });
   });
 
   it('parses --reason with equals sign', () => {
@@ -81,10 +87,13 @@ describe('parseReadinessFlags', () => {
       false,
     );
 
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.error).toContain('--reason');
-    }
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('--reason'),
+      },
+    });
   });
 
   it('ignores unrelated flags', () => {

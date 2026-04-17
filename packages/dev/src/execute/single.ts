@@ -13,20 +13,13 @@ import type { FetchedTicket } from '@chief-clancy/core';
 import { createContext } from '../pipeline/context.js';
 import { parseReadinessFlags } from './flags/readiness-flags.js';
 
-// TODO(legacy-error-shape-sweep): migrate the 4 remaining legacy `error: string`
-// sites to the tagged `{ kind: 'unknown'; message }` house shape per CONVENTIONS.md
-// §Error Handling. Deferred from PR-β (pipeline sweep). Peer sites:
-//   - `execute/single.ts` (GateResult, below)
-//   - `execute/readiness/readiness-gate.ts` (GateFailed)
-//   - `execute/flags/readiness-flags.ts` (readiness-flags returned literal)
-//   - `lifecycle/preflight/preflight.ts` (PreflightResult)
 /** Result from the readiness gate. */
 type GateResult =
   | { readonly passed: true }
   | {
       readonly passed: false;
       readonly overall?: string;
-      readonly error?: string;
+      readonly error?: { readonly kind: 'unknown'; readonly message: string };
     };
 
 /** Dependencies injected into the single-ticket executor. */
@@ -86,7 +79,7 @@ function checkReadiness(
   const flags = parseReadinessFlags(deps.argv, deps.isAfk);
 
   if (!flags.ok) {
-    return { status: 'error', error: flags.error };
+    return { status: 'error', error: flags.error.message };
   }
 
   if (flags.bypass) {
@@ -97,7 +90,8 @@ function checkReadiness(
   const gate = deps.readinessGate(ticket);
 
   if (!gate.passed) {
-    const reason = gate.error ?? `Readiness gate: ${gate.overall ?? 'failed'}`;
+    const reason =
+      gate.error?.message ?? `Readiness gate: ${gate.overall ?? 'failed'}`;
     return { status: 'aborted', phase: 'readiness', error: reason };
   }
 

@@ -323,7 +323,7 @@ function setupLocalPipeline(opts: LocalSetupOpts = {}): LocalPipelineSetup {
     );
   };
 
-  // Local mode routes through runLocalPreflight — runPreflightTagged (the only
+  // Local mode routes through runLocalPreflight — runPreflight (the only
   // execCmd caller) is bypassed. If that invariant regresses, this throw makes
   // the test fail loudly rather than silently pass on a `''` stub.
   const execCmd = () => {

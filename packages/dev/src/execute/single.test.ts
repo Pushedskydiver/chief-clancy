@@ -251,6 +251,24 @@ describe('runSingleTicketByKey', () => {
     expect(deps.runPipeline).not.toHaveBeenCalled();
   });
 
+  it('flattens tagged gate error to the display string', async () => {
+    const deps = {
+      ...makeDeps(),
+      readinessGate: vi.fn().mockReturnValue({
+        passed: false,
+        error: { kind: 'unknown', message: 'Claude crashed' },
+      }),
+    };
+
+    const result = await runSingleTicketByKey('PROJ-42', deps);
+
+    expect(result).toMatchObject({
+      status: 'aborted',
+      phase: 'readiness',
+      error: 'Claude crashed',
+    });
+  });
+
   it('skips readiness gate when not provided', async () => {
     const deps = makeDeps();
 

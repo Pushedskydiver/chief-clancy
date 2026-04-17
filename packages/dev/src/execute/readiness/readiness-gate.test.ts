@@ -104,10 +104,13 @@ describe('runReadinessGate', () => {
 
     const result = runReadinessGate({ grade, maxRounds: 3 });
 
-    expect(result.passed).toBe(false);
-    if (!result.passed) {
-      expect(result.error).toBe('Claude crashed');
-    }
+    expect(result).toMatchObject({
+      passed: false,
+      error: {
+        kind: 'unknown',
+        message: 'Claude crashed',
+      },
+    });
   });
 
   it('caps retries at maxRounds', () => {
