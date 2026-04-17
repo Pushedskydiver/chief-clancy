@@ -1,5 +1,14 @@
 # @chief-clancy/terminal
 
+## 0.2.7
+
+### Patch Changes
+
+- [#338](https://github.com/Pushedskydiver/chief-clancy/pull/338) [`061b473`](https://github.com/Pushedskydiver/chief-clancy/commit/061b473c41456ab013046efa15fecf9ddcecd208) Thanks [@Pushedskydiver](https://github.com/Pushedskydiver)! - Extract four compound boolean conditions into named constants per CONVENTIONS.md §Code Style "Name compound boolean conditions". `shouldBranchFromEpic` helper in `branch-setup.ts` replaces two duplicate uses of `hasParent && !skipEpicBranch`. Named `const`s replace inline three-part `instanceof`/`'code' in err` checks in `session-report.ts` (ENOENT) and `lock.ts` (EPERM), and the 4-part hours/minutes range check in `queue.ts`.
+
+- Updated dependencies [[`061b473`](https://github.com/Pushedskydiver/chief-clancy/commit/061b473c41456ab013046efa15fecf9ddcecd208)]:
+  - @chief-clancy/dev@0.5.3
+
 ## 0.2.6
 
 ### Patch Changes
