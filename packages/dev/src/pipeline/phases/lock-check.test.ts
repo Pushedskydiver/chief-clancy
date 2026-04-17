@@ -45,7 +45,10 @@ function makeDeps(overrides: Partial<LockCheckDeps> = {}): LockCheckDeps {
       mkdir: vi.fn(),
     },
     detectResume: vi.fn(() => undefined),
-    executeResume: vi.fn(async () => ({ ok: false })),
+    executeResume: vi.fn<LockCheckDeps['executeResume']>(async () => ({
+      ok: false,
+      error: { kind: 'unknown', message: 'default' },
+    })),
     ...overrides,
   };
 }
@@ -123,7 +126,9 @@ describe('lockCheck', () => {
       hasUnpushed: false,
       isAlreadyDelivered: false,
     }));
-    const executeResume = vi.fn(async () => ({ ok: true }));
+    const executeResume = vi.fn<LockCheckDeps['executeResume']>(async () => ({
+      ok: true,
+    }));
 
     const result = await lockCheck(
       makeCtx({ isAfk: true }),
@@ -145,7 +150,10 @@ describe('lockCheck', () => {
       hasUnpushed: false,
       isAlreadyDelivered: false,
     }));
-    const executeResume = vi.fn(async () => ({ ok: false }));
+    const executeResume = vi.fn<LockCheckDeps['executeResume']>(async () => ({
+      ok: false,
+      error: { kind: 'unknown', message: 'resume failed' },
+    }));
 
     const result = await lockCheck(
       makeCtx({ isAfk: true }),
@@ -166,7 +174,10 @@ describe('lockCheck', () => {
       hasUnpushed: true,
       isAlreadyDelivered: false,
     }));
-    const executeResume = vi.fn(async () => ({ ok: false }));
+    const executeResume = vi.fn<LockCheckDeps['executeResume']>(async () => ({
+      ok: false,
+      error: { kind: 'unknown', message: 'resume failed' },
+    }));
 
     const result = await lockCheck(
       makeCtx({ isAfk: false }),

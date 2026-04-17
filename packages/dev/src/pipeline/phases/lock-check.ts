@@ -41,9 +41,12 @@ type DetectResumeOpts = {
 };
 
 /** Resume execution result. */
-type ResumeExecResult = {
-  readonly ok: boolean;
-};
+type ResumeExecResult =
+  | { readonly ok: true }
+  | {
+      readonly ok: false;
+      readonly error: { readonly kind: 'unknown'; readonly message: string };
+    };
 
 /** Injected dependencies for lock-check. */
 export type LockCheckDeps = {
