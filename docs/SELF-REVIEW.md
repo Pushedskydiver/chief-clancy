@@ -149,7 +149,7 @@ Workflow `.md` files are as load-bearing as TypeScript — Claude follows them s
 
 SELF-REVIEW Rule 11 owns the **file-level walk across touched functions** (each new/edited function's TSDoc is up to spec, no signature-restating prose, immediately above its export). DA-REVIEW Rule 11 owns the **architectural gate** (is this symbol actually public API? Is TSDoc at the declaration site, not a re-export barrel? Is the WHY non-obvious enough to warrant TSDoc on an internal?).
 
-- When editing a function in a TSDoc-covered file, is that function's TSDoc brought up to spec? (Migration is opportunistic: don't refactor TSDoc you aren't otherwise changing; don't skip it for functions you ARE touching.)
+- When editing a function in a TSDoc-covered file, is that function's TSDoc brought up to spec? Don't skip it for functions you ARE touching.
 - The **mandatory** TSDoc requirement scopes to exported symbols on the public-API surface. Private helpers in the same file don't inherit the mandate — though they may still warrant TSDoc when the WHY is non-obvious.
 - No signature-restating TSDoc (`@param name - The name`). Delete when touching a covered file.
 - TSDoc sits immediately above its `export` — no blank line between.
