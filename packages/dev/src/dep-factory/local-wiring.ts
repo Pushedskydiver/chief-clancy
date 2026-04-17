@@ -6,6 +6,7 @@
  * calls when `ctx.fromPath` is set.
  */
 import type { FetchFn } from '../lifecycle/pr-creation.js';
+import type { ExecCmd } from '../lifecycle/preflight/preflight.js';
 import type { RunContext } from '../pipeline/context.js';
 import type { EnvFileSystem, ExecGit } from '@chief-clancy/core';
 
@@ -33,7 +34,7 @@ function isGitRepo(exec: ExecGit): boolean {
 
 /** Adapt the legacy {@link runPreflight} shape to the tagged-error contract. */
 function runPreflightTagged(
-  opts: { readonly envFs: EnvFileSystem; readonly exec: ExecGit },
+  opts: { readonly envFs: EnvFileSystem; readonly execCmd: ExecCmd },
   root: string,
 ):
   | {
@@ -47,7 +48,7 @@ function runPreflightTagged(
       readonly warning?: string;
     } {
   const result = runPreflight(root, {
-    exec: (file, args) => opts.exec([file, ...args]),
+    exec: opts.execCmd,
     envFs: opts.envFs,
   });
   if (!result.ok) {
@@ -75,6 +76,7 @@ export function wirePreflight(opts: {
   readonly envFs: EnvFileSystem;
   readonly projectRoot: string;
   readonly exec: ExecGit;
+  readonly execCmd: ExecCmd;
   readonly fetch: FetchFn;
 }): (ctx: RunContext) => Promise<
   | { readonly ok: true }
@@ -103,7 +105,7 @@ export function wirePreflight(opts: {
 
     return preflightPhase(ctx, {
       runPreflight: (root) =>
-        runPreflightTagged({ envFs: opts.envFs, exec: opts.exec }, root),
+        runPreflightTagged({ envFs: opts.envFs, execCmd: opts.execCmd }, root),
       detectBoard: (env) => detectBoard(env),
       createBoard: (config) =>
         createBoard(config, (url, init) => opts.fetch(url, init ?? {})),

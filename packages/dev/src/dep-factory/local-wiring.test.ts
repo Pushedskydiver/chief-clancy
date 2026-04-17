@@ -34,6 +34,7 @@ describe('wirePreflight (local path)', () => {
     envFs: noopEnvFs,
     projectRoot: '/repo',
     exec: vi.fn(() => ''),
+    execCmd: vi.fn(() => ''),
     fetch: vi.fn(),
   });
 
@@ -64,6 +65,7 @@ describe('wirePreflight (local path)', () => {
       exec: vi.fn(() => {
         throw new Error('not a git repo');
       }),
+      execCmd: vi.fn(() => ''),
       fetch: vi.fn(),
     });
     const ctx = makeCtx('plan.md');

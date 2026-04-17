@@ -13,8 +13,6 @@ import type { FetchedTicket } from '@chief-clancy/core';
 import { createContext } from '../pipeline/context.js';
 import { parseReadinessFlags } from './flags/readiness-flags.js';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 // TODO(legacy-error-shape-sweep): migrate the 4 remaining legacy `error: string`
 // sites to the tagged `{ kind: 'unknown'; message }` house shape per CONVENTIONS.md
 // §Error Handling. Deferred from PR-β (pipeline sweep). Peer sites:

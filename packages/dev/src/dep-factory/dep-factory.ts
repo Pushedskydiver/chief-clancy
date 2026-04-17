@@ -9,6 +9,7 @@
 import type { CostFs } from '../lifecycle/cost/cost.js';
 import type { LockFs } from '../lifecycle/lock.js';
 import type { FetchFn } from '../lifecycle/pr-creation.js';
+import type { ExecCmd } from '../lifecycle/preflight/preflight.js';
 import type { ProgressEntry, ProgressFs } from '../lifecycle/progress.js';
 import type { QualityFs } from '../lifecycle/quality/quality.js';
 import type { RunContext } from '../pipeline/context.js';
@@ -79,6 +80,7 @@ import { localTicketSeed, wirePreflight } from './local-wiring.js';
 type DepFactoryOpts = {
   readonly projectRoot: string;
   readonly exec: ExecGit;
+  readonly execCmd: ExecCmd;
   readonly lockFs: LockFs;
   readonly progressFs: ProgressFs;
   readonly costFs: CostFs;
@@ -170,6 +172,7 @@ function wireEarlyPhases(opts: DepFactoryOpts, progress: AppendFn) {
       envFs: opts.envFs,
       projectRoot,
       exec,
+      execCmd: opts.execCmd,
       fetch: opts.fetch,
     }),
 

@@ -17,7 +17,7 @@ import { hasUncommittedChanges } from '@chief-clancy/core/shared/git-ops.js';
  * Throws on non-zero exit. Unlike `ExecGit` (git-ops), this is not
  * scoped to git — it can run any binary.
  */
-type ExecCmd = (file: string, args: readonly string[]) => string;
+export type ExecCmd = (file: string, args: readonly string[]) => string;
 
 /** Injected dependencies for preflight checks. */
 export type PreflightDeps = {

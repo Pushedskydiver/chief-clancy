@@ -8,7 +8,7 @@
  *
  * Built by esbuild into a self-contained ESM bundle with zero npm deps.
  */
-import type { PipelineResult } from '../pipeline/run-pipeline.js';
+import type { PipelineDeps, PipelineResult } from '../pipeline/run-pipeline.js';
 import type {
   BoardConfig,
   EnvFileSystem,
@@ -33,6 +33,7 @@ import { buildPrompt, buildReworkPrompt } from '../prompt-builder.js';
 import {
   makeCostFs,
   makeEnvFs,
+  makeExecCmd,
   makeExecGit,
   makeLockFs,
   makeProgressFs,
@@ -160,6 +161,30 @@ function checkFromFlag(argv: readonly string[]): 'valid' | 'bare' | false {
   return value !== undefined && !value.startsWith('--') ? 'valid' : 'bare';
 }
 
+// ─── Pipeline-deps factory ─────────────────────────────────────────────────
+
+/** Assemble the default Node.js-backed PipelineDeps for dev entrypoints. */
+function makePipelineDeps(
+  projectRoot: string,
+  envFs: EnvFileSystem,
+): PipelineDeps {
+  return buildPipelineDeps({
+    projectRoot,
+    exec: makeExecGit(projectRoot),
+    execCmd: makeExecCmd(projectRoot),
+    lockFs: makeLockFs(),
+    progressFs: makeProgressFs(),
+    costFs: makeCostFs(),
+    envFs,
+    qualityFs: makeQualityFs(),
+    spawn: (cmd, args, opts) =>
+      spawnSync(cmd, [...args], { ...opts, stdio: [...opts.stdio] }),
+    fetch: globalThis.fetch.bind(globalThis),
+    buildPrompt,
+    buildReworkPrompt,
+  });
+}
+
 // ─── Local mode ─────────────────────────────────────────────────────────────
 
 /**
@@ -171,22 +196,7 @@ async function runLocalMode(
   argv: readonly string[],
 ): Promise<void> {
   const ctx = createContext({ projectRoot, argv, isAfk: false });
-
-  const pipelineDeps = buildPipelineDeps({
-    projectRoot,
-    exec: makeExecGit(projectRoot),
-    lockFs: makeLockFs(),
-    progressFs: makeProgressFs(),
-    costFs: makeCostFs(),
-    envFs: makeEnvFs(),
-    qualityFs: makeQualityFs(),
-    spawn: (cmd, args, opts) =>
-      spawnSync(cmd, [...args], { ...opts, stdio: [...opts.stdio] }),
-    fetch: globalThis.fetch.bind(globalThis),
-    buildPrompt,
-    buildReworkPrompt,
-  });
-
+  const pipelineDeps = makePipelineDeps(projectRoot, makeEnvFs());
   const startTime = Date.now();
   const result = await runPipeline(ctx, pipelineDeps);
   displayResult(result, formatDuration(Date.now() - startTime));
@@ -221,20 +231,7 @@ async function main(): Promise<void> {
     globalThis.fetch(url, init),
   );
 
-  const pipelineDeps = buildPipelineDeps({
-    projectRoot,
-    exec: makeExecGit(projectRoot),
-    lockFs: makeLockFs(),
-    progressFs: makeProgressFs(),
-    costFs: makeCostFs(),
-    envFs,
-    qualityFs: makeQualityFs(),
-    spawn: (cmd, args, opts) =>
-      spawnSync(cmd, [...args], { ...opts, stdio: [...opts.stdio] }),
-    fetch: globalThis.fetch.bind(globalThis),
-    buildPrompt,
-    buildReworkPrompt,
-  });
+  const pipelineDeps = makePipelineDeps(projectRoot, envFs);
 
   const startTime = Date.now();
 

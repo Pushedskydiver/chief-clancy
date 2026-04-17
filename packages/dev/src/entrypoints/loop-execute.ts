@@ -18,6 +18,7 @@ import { executeQueue } from '../queue.js';
 import { checkStopCondition } from '../stop-condition.js';
 import {
   makeCostFs,
+  makeExecCmd,
   makeExecGit,
   makeLockFs,
   makeProgressFs,
@@ -56,6 +57,7 @@ function buildRunTicket(
     const pipelineDeps = buildPipelineDeps({
       projectRoot: opts.projectRoot,
       exec: makeExecGit(opts.projectRoot),
+      execCmd: makeExecCmd(opts.projectRoot),
       lockFs: makeLockFs(),
       progressFs: makeProgressFs(),
       costFs: makeCostFs(),
