@@ -40,8 +40,6 @@ import { runPipeline } from '@chief-clancy/dev';
 import { runImplementBatch } from '../runner/implement/batch.js';
 import { runImplement } from '../runner/implement/implement.js';
 
-// ─── Types ──────────────────────────────────────────────────────────────────
-
 type GitSpawnFn = (
   command: string,
   args: readonly string[],

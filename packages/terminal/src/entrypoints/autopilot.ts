@@ -50,8 +50,6 @@ import {
   makeQualityFs,
 } from './implement.js';
 
-// ─── Types ──────────────────────────────────────────────────────────────────
-
 type RunPipelineFn = (
   ctx: RunContext,
   deps: PipelineDeps,

@@ -40,8 +40,6 @@ import {
   makeQualityFs,
 } from './adapters.js';
 
-// ─── Types ──────────────────────────────────────────────────────────────────
-
 type LoadEnvResult =
   | { readonly envFs: EnvFileSystem; readonly boardConfig: BoardConfig }
   | undefined;

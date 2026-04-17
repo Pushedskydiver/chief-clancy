@@ -10,8 +10,6 @@ import type { EnvFileSystem } from '@chief-clancy/core/shared/env-parser.js';
 import { loadClancyEnv } from '@chief-clancy/core/shared/env-parser.js';
 import { hasUncommittedChanges } from '@chief-clancy/core/shared/git-ops.js';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 /**
  * Execute a command by file name and return stdout.
  * Throws on non-zero exit. Unlike `ExecGit` (git-ops), this is not

@@ -23,8 +23,6 @@ import {
   writeFileSync,
 } from 'node:fs';
 
-// ─── Types ──────────────────────────────────────────────────────────────────
-
 type GitSpawnFn = (
   command: string,
   args: readonly string[],
