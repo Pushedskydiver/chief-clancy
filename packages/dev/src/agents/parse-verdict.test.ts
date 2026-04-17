@@ -49,7 +49,7 @@ describe('safeParseVerdict', () => {
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error).toContain('No fenced JSON block found');
+      expect(result.error.message).toContain('No fenced JSON block found');
     }
   });
 
@@ -58,7 +58,7 @@ describe('safeParseVerdict', () => {
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error).toContain('Invalid JSON');
+      expect(result.error.message).toContain('Invalid JSON');
     }
   });
 
@@ -67,7 +67,7 @@ describe('safeParseVerdict', () => {
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error).toContain('Schema validation failed');
+      expect(result.error.message).toContain('Schema validation failed');
     }
   });
 

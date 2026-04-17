@@ -22,10 +22,12 @@ import { DELIVERED_STATUSES } from '@chief-clancy/core/types/progress.js';
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 /** Result of ensuring an epic branch. */
-type EnsureEpicResult = {
-  readonly ok: boolean;
-  readonly error?: string;
-};
+type EnsureEpicResult =
+  | { readonly ok: true }
+  | {
+      readonly ok: false;
+      readonly error: { readonly kind: 'unknown'; readonly message: string };
+    };
 
 /** Options for {@link ensureEpicBranch}. */
 type EnsureEpicOpts = {
@@ -71,15 +73,23 @@ export function ensureEpicBranch(opts: EnsureEpicOpts): EnsureEpicResult {
 
   if (existsOnRemote) {
     const fetched = fetchRemoteBranch(exec, epicBranch);
-    return fetched
-      ? { ok: true }
-      : { ok: false, error: `Could not fetch ${epicBranch} from remote` };
+    if (fetched) return { ok: true };
+    return {
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: `Could not fetch ${epicBranch} from remote`,
+      },
+    };
   }
 
   if (existsLocally) {
     return {
       ok: false,
-      error: `${epicBranch} exists locally but not on remote — push manually: git push -u origin ${epicBranch}`,
+      error: {
+        kind: 'unknown',
+        message: `${epicBranch} exists locally but not on remote — push manually: git push -u origin ${epicBranch}`,
+      },
     };
   }
 
@@ -142,16 +152,22 @@ function createFreshEpic(
     exec(['fetch', 'origin', baseBranch]);
     exec(['checkout', '-b', epicBranch, `origin/${baseBranch}`]);
     const pushed = pushBranch(exec, epicBranch);
-    return pushed
-      ? { ok: true }
-      : {
-          ok: false,
-          error: `Created ${epicBranch} locally but could not push`,
-        };
-  } catch (err) {
+    if (pushed) return { ok: true };
     return {
       ok: false,
-      error: `Could not create epic branch: ${err instanceof Error ? err.message : String(err)}`,
+      error: {
+        kind: 'unknown',
+        message: `Created ${epicBranch} locally but could not push`,
+      },
+    };
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err);
+    return {
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: `Could not create epic branch: ${detail}`,
+      },
     };
   }
 }

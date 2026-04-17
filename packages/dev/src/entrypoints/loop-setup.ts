@@ -107,7 +107,13 @@ function makeGradeOneFn(opts: {
   return (ticketId: string) => {
     const ticket = opts.ticketMap.get(ticketId);
     if (!ticket)
-      return { ok: false as const, error: `Ticket ${ticketId} not found` };
+      return {
+        ok: false as const,
+        error: {
+          kind: 'unknown' as const,
+          message: `Ticket ${ticketId} not found`,
+        },
+      };
     return invokeReadinessGrade({
       rubric: opts.rubric,
       ticketId: ticket.key,

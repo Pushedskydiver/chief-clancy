@@ -33,7 +33,10 @@ const PARTIAL_FILE = 'readiness-report.partial.json';
 
 type GradeResult =
   | { readonly ok: true; readonly verdict: ReadinessVerdict }
-  | { readonly ok: false; readonly error: string };
+  | {
+      readonly ok: false;
+      readonly error: { readonly kind: 'unknown'; readonly message: string };
+    };
 
 type GradeOneFn = (ticketId: string) => GradeResult;
 
@@ -186,7 +189,7 @@ function runPreflightBatch(opts: BatchGradeOpts): BatchGradeResult {
     const result = grade(id);
     const verdict = result.ok
       ? result.verdict
-      : syntheticRedVerdict(id, result.error, timestamp());
+      : syntheticRedVerdict(id, result.error.message, timestamp());
     // eslint-disable-next-line functional/immutable-data
     graded.push(verdict);
     writePartialCheckpoint(fs, dir, graded);

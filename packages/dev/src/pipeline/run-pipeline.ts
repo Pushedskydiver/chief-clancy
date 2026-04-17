@@ -60,9 +60,13 @@ export type PipelineDeps = {
     readonly reason?: string;
   }>;
   /** Branch setup — git branch operations + lock write. */
-  readonly branchSetup: (
-    ctx: RunContext,
-  ) => Promise<{ readonly ok: boolean; readonly error?: string }>;
+  readonly branchSetup: (ctx: RunContext) => Promise<
+    | { readonly ok: true }
+    | {
+        readonly ok: false;
+        readonly error: { readonly kind: 'unknown'; readonly message: string };
+      }
+  >;
   /** Transition — move ticket to In Progress. */
   readonly transition: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
   /** Invoke — run Claude session. */
@@ -165,7 +169,11 @@ async function runPhases(
   // Branch setup
   const branch = await deps.branchSetup(ctx);
   if (!branch.ok)
-    return { status: 'aborted', phase: 'branch-setup', error: branch.error };
+    return {
+      status: 'aborted',
+      phase: 'branch-setup',
+      error: branch.error.message,
+    };
 
   // Transition (best-effort — never aborts)
   await deps.transition(ctx);

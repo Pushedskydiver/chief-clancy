@@ -31,7 +31,10 @@ type InvokeOpts = {
 
 type InvokeResult =
   | { readonly ok: true; readonly verdict: ReadinessVerdict }
-  | { readonly ok: false; readonly error: string };
+  | {
+      readonly ok: false;
+      readonly error: { readonly kind: 'unknown'; readonly message: string };
+    };
 
 // ─── Prompt builder ─────────────────────────────────────────────────────────
 
@@ -72,13 +75,22 @@ export function invokeReadinessGrade(opts: InvokeOpts): InvokeResult {
   });
 
   if (result.error) {
-    return { ok: false, error: `Claude spawn failed: ${result.error.message}` };
+    return {
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: `Claude spawn failed: ${result.error.message}`,
+      },
+    };
   }
 
   if (result.signal) {
     return {
       ok: false,
-      error: `Claude process killed by signal ${result.signal}`,
+      error: {
+        kind: 'unknown',
+        message: `Claude process killed by signal ${result.signal}`,
+      },
     };
   }
 
@@ -88,7 +100,7 @@ export function invokeReadinessGrade(opts: InvokeOpts): InvokeResult {
     const message = detail
       ? `Claude process failed (${exitInfo}): ${detail}`
       : `Claude process failed (${exitInfo})`;
-    return { ok: false, error: message };
+    return { ok: false, error: { kind: 'unknown', message } };
   }
 
   return safeParseVerdict(result.stdout ?? '');

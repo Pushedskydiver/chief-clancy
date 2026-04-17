@@ -267,6 +267,11 @@ export async function runLoop(deps: LoopDeps): Promise<void> {
   });
 }
 
+const NO_RUBRIC_GRADE_ERROR = {
+  ok: false as const,
+  error: { kind: 'unknown' as const, message: 'No rubric loaded' },
+};
+
 // ─── Main (I/O wiring) ────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
@@ -303,7 +308,7 @@ async function main(): Promise<void> {
           projectRoot,
           model,
         })(ticketId)
-    : () => ({ ok: false as const, error: 'No rubric loaded' });
+    : () => NO_RUBRIC_GRADE_ERROR;
 
   const readinessGate =
     rubric && !loopArgs.bypassReadiness

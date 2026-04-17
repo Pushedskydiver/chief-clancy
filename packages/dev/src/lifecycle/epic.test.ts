@@ -102,8 +102,13 @@ describe('ensureEpicBranch', () => {
       baseBranch: 'main',
     });
 
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('Could not fetch');
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('Could not fetch'),
+      },
+    });
   });
 
   it('returns error when branch exists locally but not on remote', () => {
@@ -113,8 +118,13 @@ describe('ensureEpicBranch', () => {
       baseBranch: 'main',
     });
 
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('exists locally but not on remote');
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('exists locally but not on remote'),
+      },
+    });
   });
 
   it('creates fresh branch when it does not exist anywhere', () => {
@@ -134,8 +144,13 @@ describe('ensureEpicBranch', () => {
       baseBranch: 'main',
     });
 
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('could not push');
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('could not push'),
+      },
+    });
   });
 
   it('returns error when branch creation throws', () => {
@@ -145,8 +160,13 @@ describe('ensureEpicBranch', () => {
       baseBranch: 'main',
     });
 
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('Could not create');
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('Could not create'),
+      },
+    });
   });
 });
 

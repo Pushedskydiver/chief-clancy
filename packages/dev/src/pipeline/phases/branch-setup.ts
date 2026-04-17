@@ -14,10 +14,12 @@ import type {
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 /** Result of ensureEpicBranch operation. */
-type EnsureEpicResult = {
-  readonly ok: boolean;
-  readonly error?: string;
-};
+type EnsureEpicResult =
+  | { readonly ok: true }
+  | {
+      readonly ok: false;
+      readonly error: { readonly kind: 'unknown'; readonly message: string };
+    };
 
 /** Lock data written to `.clancy/lock.json`. */
 type WriteLockData = {
@@ -31,10 +33,12 @@ type WriteLockData = {
 };
 
 /** Structured result of the branch-setup phase. */
-type BranchSetupResult = {
-  readonly ok: boolean;
-  readonly error?: string;
-};
+type BranchSetupResult =
+  | { readonly ok: true }
+  | {
+      readonly ok: false;
+      readonly error: { readonly kind: 'unknown'; readonly message: string };
+    };
 
 /** Injected dependencies for branch-setup. */
 export type BranchSetupDeps = {
