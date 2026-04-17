@@ -74,6 +74,82 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 
 **Session 95 (2026-04-17) — Rule 4 promoted + conventions compliance sweep (2 PRs shipped, 1 dropped).** **Rule 4 beat spacing:** PR [#333](https://github.com/Pushedskydiver/chief-clancy/pull/333) merged. One CONVENTIONS.md bullet, one DA-REVIEW.md checkbox, one copilot-instructions.md line. Spec grilled through R1 (3 MATERIAL: insertion point, threshold, fuzz risk) + R_n verification (all confirmed closed). Zero Copilot findings. **Conventions compliance sweep:** full audit of CONVENTIONS.md §Code Style against all source files. Plan grilled through R1 (4 MATERIAL + 3 LOW) + R_n verification (all confirmed closed). 3 PRs planned (expression-level → naming → taste-shaped); 2 shipped, 1 dropped. **PR-A [#334](https://github.com/Pushedskydiver/chief-clancy/pull/334):** Rule 2 empty-fallback inversions (3) + Rule 3 variable inlining (3) + 8 divider removals. Zero Copilot findings. Rule 1 ternary hoisting had 0 real violations (initial audit overestimated ~6 — all flagged cases were calls producing the guard condition itself). **PR-B [#336](https://github.com/Pushedskydiver/chief-clancy/pull/336):** Rule 9 try\* renames (3 in rework.ts) + Rule 13 boolean prefix additions (5 fields across 16 files including tests) + 8 divider removals. 1 Copilot finding (PipelineDeps.reworkDetection return type narrower than actual — pre-existing, fixed). `changesRequested` deferred (shadows exported core PrReviewState). **PR-C dropped:** Rule 4 beat spacing + Rule 6 extraction depth had 0 real violations on close inspection — monitor-guards.ts is well-spaced (not staccato), hook-installer.ts helpers are correct composition extraction, session-report.ts recursion is idiomatic given no-reduce + no-let constraints. **Audit corrections:** Rule 1: 0 real (was ~6). Rule 3: 3 real (was 46). Rule 4+6: 0 real (was 7). Codebase cleaner than initial audit suggested. **Versions:** `@chief-clancy/dev@0.5.1`, `@chief-clancy/terminal@0.2.5`, `chief-clancy@0.9.30`.
 
+**Session 97 (2026-04-17) — Session 96 locked plan executed end-to-end + 1 deferred follow-up.** 9 PRs shipped: PR-D (compound booleans #338), PR-E (TSDoc deletions #340), PR-F (TSDoc additions #342), PR-G (PingResult tagged union, core 2.0.0 #344), PR-G2 (hasChangesRequested rename, core 3.0.0 #345), PR-H (PrCreationFailure tagged union, core 4.0.0 #348), PR-I (dev internal error shapes, dev 0.6.0 #350), PR-J (parsePlanFile Result, dev 0.7.0 + inline CodeQL ReDoS fix #352), PR-K (CONVENTIONS cleanup #354), and follow-up #355 (postPullRequest `&&` → `||` guard fix). 4 core majors + 2 dev minors published to npm (2.0.0, 3.0.0, 4.0.0, 0.6.0, 0.7.0 — version-packages PRs were Alex-merged after each Session 96 rule: merge core-breaking PRs one-at-a-time with publish gates). **Protocol discipline improved mid-session:** after Alex flagged skipped per-commit DA on PR-I, subsequent PRs (-J, -K, #355) ran the full two-stage discipline (per-commit DA on each commit + final verification DA on combined diff + self-review) per `docs/DEVELOPMENT.md:307`. Final verification DAs caught non-trivial defects Copilot-alone missed: PR-I FV-DA flagged a "patch → minor" semver miss + a deferred-scope note living only in the changeset (added TODO anchor at code layer). Copilot finding tally across the 10 PRs: ~12 total, mostly reader-precision + terminology — consistent with Phase 5 pattern. **One pre-existing ReDoS** surfaced by CodeQL while scanning PR-J's diff (polynomial regex in `plan-file.ts`) — fixed inline with structural `[^\n]*` captures (no quantifier overlap). **Copilot-caught pre-existing bug** in `postPullRequest` guard (`&&` instead of `||` for missing URL/number) deferred from PR-H and shipped as #355. **Session 97 handoff triggered on context load.** One final cleanup item — PipelineDeps peer error-shape sweep — planned to nit-floor and parked for the next session (see "Locked plan for next session" below).
+
+**Locked plan for next session — PipelineDeps peer error-shape sweep (PR-β + PR-γ).**
+
+Plan-grilled R1 (discovery, 3 BLOCKING + 2 MATERIAL surfaced) + R_n (verification, 6 CONFIRMED + 2 PARTIAL notes) in Session 97. TODO anchor: `packages/dev/src/pipeline/run-pipeline.ts:33` — `TODO(error-shape-sweep)`.
+
+**Key discovery from R1**: the sweep is NOT mechanical. Of the 5 `PipelineDeps` inline contracts flagged (preflight, ticketFetch, feasibility, invoke, deliver):
+
+- **2 are real migrations** — preflight (has `PreflightPhaseResult` + `PreflightCheckResult` with `error?: string` that the phase really populates) and ticketFetch (the error comes from dep-factory's `runTicketFetch` wrapper via `localTicketSeed`, not the phase itself).
+- **3 have unreachable `error?` fields on the inline contract** — feasibility's phase-alias `FeasibilityPhaseResult`, invoke's `makeInvokePhase` return type, and deliver's `DeliverPhaseResult` all have NO `error` field at all. The `invoke.error` / `deliver.error` / `feasibility.error ?? feasibility.reason` reads in run-pipeline.ts evaluate to `undefined` today.
+
+Alex's decision (Session 97): **Option C** — delete the 3 dead fields (no phase-impl refactor), migrate preflight + ticketFetch as real tagged-shape migrations, defer peer sites to PR-γ, and keep the "plumb real error channels through invoke/deliver/feasibility" question as an open design decision for the fresh session to make with the grill evidence in hand.
+
+### PR-β — 4 commits, dev minor
+
+| Commit                        | Scope                                                                                                                                                                                                                                                                                                                                                                                            | Files                                                                                                                                                                                                                         |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C1 preflight real migration   | Migrate `PreflightPhaseResult` + `PreflightCheckResult` to tagged union `{ ok: true; warning?; env? } \| { ok: false; error: { kind: 'unknown'; message }; warning? }`; update `wirePreflight` in `local-wiring.ts`; update `PipelineDeps.preflight` inline at `run-pipeline.ts:39-41`; consumer at `run-pipeline.ts:148-153` extracts `.message`                                                | `pipeline/phases/preflight-phase.ts`, `dep-factory/local-wiring.ts`, `pipeline/run-pipeline.ts`, `pipeline/phases/preflight-phase.test.ts`, `pipeline/run-pipeline.test.ts`, `dep-factory/local-wiring.test.ts` (if impacted) |
+| C2 ticketFetch real migration | Migrate `PipelineDeps.ticketFetch` inline at `run-pipeline.ts:55-59` to tagged shape; update `runTicketFetch` wrapper in `dep-factory.ts:202-222` to forward tagged `seed.error` DIRECTLY (not unwrap to string); update consumer at `run-pipeline.ts:160-170`. `TicketFetchResult` phase alias at `ticket-fetch.ts:20-24` stays untouched — has no `error` field, error comes only from wrapper | `pipeline/run-pipeline.ts`, `dep-factory/dep-factory.ts`, `pipeline/run-pipeline.test.ts`                                                                                                                                     |
+| C3 dead-field deletion        | Drop `error?: string` from feasibility/invoke/deliver inline contracts at `run-pipeline.ts:62-66, 78-80, 82-84`. Drop dead `.error` reads at lines 171, 189, 194 (all always-undefined today). No phase-impl changes. Verified no test constructs `{ ok: false, error: 'foo' }` literals for these                                                                                               | `pipeline/run-pipeline.ts` only                                                                                                                                                                                               |
+| C4 housekeeping               | Remove `TODO(error-shape-sweep)` at `run-pipeline.ts:33-37`. Add new `TODO(legacy-error-shape-sweep)` at `execute/single.ts` naming the 4 peer sites deferred to PR-γ. Changeset: `@chief-clancy/dev: minor` (PipelineDeps shape change, observable via `dev/src/index.ts:169` re-export)                                                                                                        | `pipeline/run-pipeline.ts`, `execute/single.ts`, `.changeset/pipeline-deps-error-shape.md`                                                                                                                                    |
+
+### Execution protocol (non-negotiable)
+
+Per `docs/DEVELOPMENT.md:307`: per-commit DA on EACH commit → final verification DA on combined diff → self-review → push → Copilot. No shortcuts. C3's "no phase-impl changes" claim must be re-verified in the per-commit DA since it's the riskiest claim (cross-module type-inference collapse is the failure mode).
+
+### Test pattern (follow precedent)
+
+`toMatchObject({ error: { kind: 'unknown', message: expect.stringContaining(...) } })` for error-branch assertions — verified precedent in PR-I (`run-pipeline.test.ts:229`, `branch-setup.test.ts:188+196+209+258`, `preflight-phase.test.ts:109`, `pr-creation.test.ts:225`, `readiness-gate.test.ts:102`, `pr-retry.test.ts:113+127+180+199`). Do NOT invent a different pattern.
+
+### Precedent anchors
+
+- **`branchSetup` is already the tagged shape** (`run-pipeline.ts:68-74`) — PR-I's only real migration. Use this inline contract as the C1/C2 copy-paste template.
+- **`PipelineResult.error` stays bare `string` at `run-pipeline.ts:18`** per PR-I final-verification DA rationale — the outer pipeline result is a display/boundary layer that flattens tagged errors to their `.message`. The C1/C2 consumer updates must extract `.message` for that outer field, not propagate the tagged shape up.
+
+### Mock-pattern gotcha
+
+`run-pipeline.test.ts` mocks at lines 185, 196, 216, 242, 253 currently construct `{ ok: false }` literals (no `error` field) for phases whose inline contract has `error?` — TS accepts because `error?` is optional. After C1 migration, `PipelineDeps.branchSetup`-style contract requires `error: { kind; message }` on the `ok: false` branch. Any mock that was relying on the optional-error loophole must be updated to supply the tagged shape — otherwise the tests stop compiling. Search for `{ ok: false }` literals in test files during C1 execution.
+
+### PR-γ — peer-site sweep (follow-up, separate PR after PR-β)
+
+4 legacy `error: string` sites still on the pre-sweep shape, all on execute/lifecycle code paths that don't import from pipeline-phase types (verified orthogonal to PR-β's design question in R_n target 8):
+
+- `packages/dev/src/execute/single.ts:18-25` — inline `GateResult`
+- `packages/dev/src/execute/readiness/readiness-gate.ts:24-29` — `GateFailed`
+- `packages/dev/src/execute/flags/readiness-flags.ts:23, 66, 75` — readiness-flags returned literal
+- `packages/dev/src/lifecycle/preflight/preflight.ts:31-36` — `PreflightResult`
+
+Dev minor (breaking — `GateResult` is consumed across execute/single.ts + readiness-gate + readiness-flags; at least some of these are re-exported). Grill + protocol same as PR-β. Remove the new `TODO(legacy-error-shape-sweep)` anchor as sweep lands.
+
+### Open design question (fresh session, after PR-β + PR-γ)
+
+**Should invoke/deliver/feasibility phases plumb real error channels?** C3 deletes dead fields because no error info is currently available to surface. If Alex wants those phases to actually report failure detail (e.g. Claude spawn failure reason, push failure detail), that requires:
+
+- `invokeClaudeSession` → return structured error not just boolean
+- `deliverPhase` → surface `deliverViaPullRequest`'s internal errors (currently only `{ isPushed: boolean }`)
+- `feasibilityPhase` → surface Claude-side failure reasons distinct from INFEASIBLE verdicts
+
+This is a DESIGN decision, not a migration. Separate future workstream if pursued.
+
+### Session 97 handoff — current state for fresh session
+
+**Last shipped:** PR #355 (post-pr guard fix, `&&` → `||`) merged 2026-04-17. Previously: PR-K (#354) merged. All 9 Session 96 plan PRs + 1 deferred follow-up complete.
+
+**Published versions pending:** version-packages PRs for PR-J (`@chief-clancy/dev@0.7.0`) and #355 (`@chief-clancy/dev@0.7.1`) may be open — check `gh pr list --state open` and wait for Alex merge + npm publish before opening PR-β. PR-β's `@chief-clancy/dev: minor` bump will layer on top.
+
+**Open TODO anchor:** `packages/dev/src/pipeline/run-pipeline.ts:33` — `TODO(error-shape-sweep)`. This is PR-β's removal target in C4.
+
+**Expected defect classes fresh session should watch for:**
+
+- Mock literal `{ ok: false }` gotcha at `run-pipeline.test.ts:185,196,216,242,253` (see C1 gotcha above).
+- Cross-module type-inference break in C3 — no changes expected, but the per-commit DA must confirm.
+- DA + Copilot's observed pattern: reader-precision on prose surfaces (changeset, PR body). Double-check semver in PR body matches the changeset; double-check "migrates 5 contracts" framing is accurate after R1 reframed it as "2 migrations + 3 deletions".
+
+---
+
 **Session 96 (2026-04-17 — audit + planning, no PRs) — comprehensive conventions compliance audit grilled to nit-floor.** Full audit of ALL remaining CONVENTIONS.md rules across core/dev/terminal/brief/plan. Four parallel research subagents audited: TSDoc coverage (Rule 11), explicit return types, compound booleans, error handling, type co-location, `type` vs `interface`, ESLint-enforced rules. **Confirmed clean (no action needed):** `type` over `interface` (zero violations), type co-location (all `types/` files have 2+ consumers), `.reduce()` (zero), `any` (zero), method chains >3 (zero), explicit return types on exported functions (all already annotated — original audit was wrong, caught in R2). **Six-round grill** (R1: 2B+4M, R2: 1B+2M, R3: 2B+6M, R4: 0B+5M, R5: 0B+2M, R6: 0B+0M — nit-floor confirmed). Key discoveries across rounds: PR-D (return types) was a no-op and dropped; compound boolean research (Fakhoury ICPC 2018, Cowan chunking, SonarSource Cognitive Complexity) classified 5 of 20 candidates as real extractions, 15 as idiomatic keep-inline; `parsePlanFile` throw is user-triggerable via `--from` (migrate to Result), `bbCloudHandlers` throw is a genuine invariant (keep); `changesRequested` rename is bundleable with PingResult 2.0.0 bump; detect-board.ts outlier is a zod `safeParse` mirror not a Clancy error shape; parse-verdict.ts and invoke.ts use bare `error: string` not tagged unions (R4 falsely claimed migrated, R5 corrected). Alex's decision: no deferral on error handling migration — remove "opportunistic" language from CONVENTIONS.md after migration lands. Accept core 2.0.0 bump (core never used standalone).
 
 **Locked plan (9 PRs, grilled R1-R6 to nit-floor):**
