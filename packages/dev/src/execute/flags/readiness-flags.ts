@@ -20,7 +20,7 @@ type NoBypassResult = {
 
 type ErrorResult = {
   readonly ok: false;
-  readonly error: string;
+  readonly error: { readonly kind: 'unknown'; readonly message: string };
 };
 
 type ReadinessFlagsResult = BypassResult | NoBypassResult | ErrorResult;
@@ -63,7 +63,10 @@ export function parseReadinessFlags(
   if (isAfk) {
     return {
       ok: false,
-      error: '--bypass-readiness cannot be combined with --afk',
+      error: {
+        kind: 'unknown',
+        message: '--bypass-readiness cannot be combined with --afk',
+      },
     };
   }
 
@@ -72,7 +75,10 @@ export function parseReadinessFlags(
   if (!reason?.trim()) {
     return {
       ok: false,
-      error: '--bypass-readiness requires --reason="<reason>"',
+      error: {
+        kind: 'unknown',
+        message: '--bypass-readiness requires --reason="<reason>"',
+      },
     };
   }
 

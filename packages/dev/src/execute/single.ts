@@ -86,7 +86,7 @@ function checkReadiness(
   const flags = parseReadinessFlags(deps.argv, deps.isAfk);
 
   if (!flags.ok) {
-    return { status: 'error', error: flags.error };
+    return { status: 'error', error: flags.error.message };
   }
 
   if (flags.bypass) {
