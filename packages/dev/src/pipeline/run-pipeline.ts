@@ -36,9 +36,13 @@ export type PipelineDeps = {
   // migrated because BranchSetupResult forced the cascade; the rest are independent
   // phase-result types and belong in a dedicated pipeline-phase sweep.
   /** Preflight — binary checks, env, board detection. */
-  readonly preflight: (
-    ctx: RunContext,
-  ) => Promise<{ readonly ok: boolean; readonly error?: string }>;
+  readonly preflight: (ctx: RunContext) => Promise<
+    | { readonly ok: true }
+    | {
+        readonly ok: false;
+        readonly error: { readonly kind: 'unknown'; readonly message: string };
+      }
+  >;
   /** Epic completion — check for completed epics. */
   readonly epicCompletion: (
     ctx: RunContext,
@@ -139,7 +143,11 @@ async function runPhases(
   // Preflight
   const preflight = await deps.preflight(ctx);
   if (!preflight.ok)
-    return { status: 'aborted', phase: 'preflight', error: preflight.error };
+    return {
+      status: 'aborted',
+      phase: 'preflight',
+      error: preflight.error.message,
+    };
 
   // Epic completion (informational — never aborts)
   await deps.epicCompletion(ctx);

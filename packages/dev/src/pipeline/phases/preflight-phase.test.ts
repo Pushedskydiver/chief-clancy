@@ -30,11 +30,9 @@ function makeDeps(
   overrides: Partial<PreflightPhaseDeps> = {},
 ): PreflightPhaseDeps {
   return {
-    runPreflight: vi.fn(() => ({
+    runPreflight: vi.fn<PreflightPhaseDeps['runPreflight']>(() => ({
       ok: true,
       env: { CLANCY_BOARD: 'github', CLANCY_BOARD_TOKEN: 'tok' },
-      error: undefined,
-      warning: undefined,
     })),
     detectBoard: vi.fn(
       () => ({ provider: 'github' as const, env: {} }) as BoardConfig,
@@ -65,18 +63,21 @@ describe('preflightPhase', () => {
 
   it('returns error when preflight fails', async () => {
     const deps = makeDeps({
-      runPreflight: vi.fn(() => ({
+      runPreflight: vi.fn<PreflightPhaseDeps['runPreflight']>(() => ({
         ok: false,
-        env: undefined,
-        error: 'git not found',
-        warning: undefined,
+        error: { kind: 'unknown', message: 'git not found' },
       })),
     });
 
     const result = await preflightPhase(makeCtx(), deps);
 
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('git not found');
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('git not found'),
+      },
+    });
   });
 
   it('returns error when detectBoard fails', async () => {
@@ -86,8 +87,13 @@ describe('preflightPhase', () => {
 
     const result = await preflightPhase(makeCtx(), deps);
 
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('Unknown board');
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('Unknown board'),
+      },
+    });
   });
 
   it('returns error when board validation fails', async () => {
@@ -98,8 +104,13 @@ describe('preflightPhase', () => {
 
     const result = await preflightPhase(makeCtx(), deps);
 
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('JIRA_BASE_URL');
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('JIRA_BASE_URL'),
+      },
+    });
   });
 
   it('returns error when board ping fails', async () => {
@@ -113,16 +124,20 @@ describe('preflightPhase', () => {
 
     const result = await preflightPhase(makeCtx(), deps);
 
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('Connection refused');
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('Connection refused'),
+      },
+    });
   });
 
   it('passes preflight warning through on success', async () => {
     const deps = makeDeps({
-      runPreflight: vi.fn(() => ({
+      runPreflight: vi.fn<PreflightPhaseDeps['runPreflight']>(() => ({
         ok: true,
         env: { CLANCY_BOARD: 'github', CLANCY_BOARD_TOKEN: 'tok' },
-        error: undefined,
         warning: 'Could not reach origin',
       })),
     });
@@ -135,28 +150,28 @@ describe('preflightPhase', () => {
 
   it('returns error when preflight passes but env is missing', async () => {
     const deps = makeDeps({
-      runPreflight: vi.fn(() => ({
+      runPreflight: vi.fn<PreflightPhaseDeps['runPreflight']>(() => ({
         ok: true,
-        env: undefined,
-        error: undefined,
-        warning: undefined,
       })),
     });
 
     const result = await preflightPhase(makeCtx(), deps);
 
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('env is missing');
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('env is missing'),
+      },
+    });
   });
 
   it('does not set ctx.config or ctx.board on failure', async () => {
     const ctx = makeCtx();
     const deps = makeDeps({
-      runPreflight: vi.fn(() => ({
+      runPreflight: vi.fn<PreflightPhaseDeps['runPreflight']>(() => ({
         ok: false,
-        env: undefined,
-        error: 'failed',
-        warning: undefined,
+        error: { kind: 'unknown', message: 'failed' },
       })),
     });
 

@@ -68,9 +68,12 @@ describe('wirePreflight (local path)', () => {
     });
     const ctx = makeCtx('plan.md');
     const result = await notGitPreflight(ctx);
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       ok: false,
-      error: 'Not inside a git repository',
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('Not inside a git repository'),
+      },
     });
   });
 });

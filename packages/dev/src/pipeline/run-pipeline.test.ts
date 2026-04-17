@@ -76,7 +76,7 @@ describe('runPipeline — happy path', () => {
         order.push('lockCheck');
         return { action: 'continue' as const };
       }),
-      preflight: vi.fn(async () => {
+      preflight: vi.fn<PipelineDeps['preflight']>(async () => {
         order.push('preflight');
         return { ok: true };
       }),
@@ -182,12 +182,16 @@ describe('runPipeline — early exits', () => {
 
   it('stops after preflight failure', async () => {
     const deps = makeDeps({
-      preflight: vi.fn().mockResolvedValue({ ok: false }),
+      preflight: vi.fn<PipelineDeps['preflight']>().mockResolvedValue({
+        ok: false,
+        error: { kind: 'unknown', message: 'preflight failed' },
+      }),
     });
     const result = await runPipeline(makeCtx(), deps);
 
     expect(result.status).toBe('aborted');
     expect(result.phase).toBe('preflight');
+    expect(result.error).toBe('preflight failed');
     expect(deps.epicCompletion).not.toHaveBeenCalled();
   });
 

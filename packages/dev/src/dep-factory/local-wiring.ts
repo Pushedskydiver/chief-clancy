@@ -31,6 +31,36 @@ function isGitRepo(exec: ExecGit): boolean {
   }
 }
 
+/** Adapt the legacy {@link runPreflight} shape to the tagged-error contract. */
+function runPreflightTagged(
+  opts: { readonly envFs: EnvFileSystem; readonly exec: ExecGit },
+  root: string,
+):
+  | {
+      readonly ok: true;
+      readonly warning?: string;
+      readonly env?: Record<string, string>;
+    }
+  | {
+      readonly ok: false;
+      readonly error: { readonly kind: 'unknown'; readonly message: string };
+    } {
+  const result = runPreflight(root, {
+    exec: (file, args) => opts.exec([file, ...args]),
+    envFs: opts.envFs,
+  });
+  if (!result.ok) {
+    return {
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: result.error ?? 'preflight failed',
+      },
+    };
+  }
+  return { ok: true, warning: result.warning, env: result.env };
+}
+
 /**
  * Build the preflight closure with local-mode branching.
  *
@@ -45,15 +75,22 @@ export function wirePreflight(opts: {
   readonly projectRoot: string;
   readonly exec: ExecGit;
   readonly fetch: FetchFn;
-}): (
-  ctx: RunContext,
-) => Promise<{ readonly ok: boolean; readonly error?: string }> {
+}): (ctx: RunContext) => Promise<
+  | { readonly ok: true }
+  | {
+      readonly ok: false;
+      readonly error: { readonly kind: 'unknown'; readonly message: string };
+    }
+> {
   return (ctx) => {
     if (ctx.fromPath) {
       if (!isGitRepo(opts.exec)) {
         return Promise.resolve({
           ok: false,
-          error: 'Not inside a git repository',
+          error: {
+            kind: 'unknown' as const,
+            message: 'Not inside a git repository',
+          },
         });
       }
       runLocalPreflight(ctx, {
@@ -65,10 +102,7 @@ export function wirePreflight(opts: {
 
     return preflightPhase(ctx, {
       runPreflight: (root) =>
-        runPreflight(root, {
-          exec: (file, args) => opts.exec([file, ...args]),
-          envFs: opts.envFs,
-        }),
+        runPreflightTagged({ envFs: opts.envFs, exec: opts.exec }, root),
       detectBoard: (env) => detectBoard(env),
       createBoard: (config) =>
         createBoard(config, (url, init) => opts.fetch(url, init ?? {})),
