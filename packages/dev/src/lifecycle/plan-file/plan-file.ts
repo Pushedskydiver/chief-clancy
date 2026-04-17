@@ -26,6 +26,19 @@ type ParsedPlan = {
   readonly headerFormat: 'board' | 'local';
 };
 
+/**
+ * Result of parsing a plan file. Tagged discriminated union per
+ * CONVENTIONS.md §Error Handling — `parsePlanFile` can fail on
+ * user-provided content (missing header), so it reports failure
+ * through a Result instead of throwing.
+ */
+type ParsePlanResult =
+  | { readonly ok: true; readonly plan: ParsedPlan }
+  | {
+      readonly ok: false;
+      readonly error: { readonly kind: 'unknown'; readonly message: string };
+    };
+
 type ApprovalStatus =
   | { readonly status: 'approved'; readonly approvedAt: string }
   | { readonly status: 'modified'; readonly approvedAt: string }
@@ -75,17 +88,20 @@ function parseSize(raw: string): string {
  * Parse a Clancy implementation plan file into structured fields.
  *
  * Supports both board-mode (`**Ticket:** [{KEY}] Title`) and local-mode
- * (`**Source:** / **Row:**`) header formats.
- *
- * @param content - Raw markdown content of the plan file.
- * @param slug - Plan slug used as the key in local-mode (e.g. `add-dark-mode-3`).
- * @returns Parsed plan with all sections extracted.
+ * (`**Source:** / **Row:**`) header formats. Returns a tagged Result —
+ * the only expected failure is a missing plan header, which is a
+ * user-surfacable condition (malformed `.clancy/plans/*.md` file).
  */
-export function parsePlanFile(content: string, slug: string): ParsedPlan {
+export function parsePlanFile(content: string, slug: string): ParsePlanResult {
   if (!content.includes(PLAN_HEADER)) {
-    throw new Error(
-      "Could not parse plan file. Expected '## Clancy Implementation Plan' header.",
-    );
+    return {
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message:
+          "Could not parse plan file. Expected '## Clancy Implementation Plan' header.",
+      },
+    };
   }
 
   // Scope header detection to the block before the first ### section
@@ -114,18 +130,21 @@ export function parsePlanFile(content: string, slug: string): ParsedPlan {
   const sizeRaw = extractSection(content, 'Size Estimate');
 
   return {
-    key,
-    title,
-    summary: extractSection(content, 'Summary'),
-    affectedFiles: extractSection(content, 'Affected Files'),
-    approach: extractSection(content, 'Implementation Approach'),
-    testStrategy: extractSection(content, 'Test Strategy'),
-    acceptance: extractSection(content, 'Acceptance Criteria'),
-    dependencies: extractSection(content, 'Dependencies'),
-    risks: extractSection(content, 'Risks / Considerations'),
-    size: parseSize(sizeRaw),
-    planned,
-    headerFormat,
+    ok: true,
+    plan: {
+      key,
+      title,
+      summary: extractSection(content, 'Summary'),
+      affectedFiles: extractSection(content, 'Affected Files'),
+      approach: extractSection(content, 'Implementation Approach'),
+      testStrategy: extractSection(content, 'Test Strategy'),
+      acceptance: extractSection(content, 'Acceptance Criteria'),
+      dependencies: extractSection(content, 'Dependencies'),
+      risks: extractSection(content, 'Risks / Considerations'),
+      size: parseSize(sizeRaw),
+      planned,
+      headerFormat,
+    },
   };
 }
 
