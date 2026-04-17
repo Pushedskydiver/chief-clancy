@@ -94,13 +94,40 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 
 Design decision, not a migration. Separate future workstream if pursued.
 
-### Next workstreams (after Session 98)
+### Next workstreams (after Session 101)
 
-Ordering set 2026-04-17:
+Ordering updated 2026-04-17:
 
-1. **Collaboration protocols workstream (Session 99+).** Audit Sessions 96-98 for friction points, review memory for doc-promotion candidates, do targeted external research (Copilot lifecycle, changesets release flow, agent checkpoint patterns, session-handoff triggers, HITL supervision), then ship protocol additions to `docs/DEVELOPMENT.md`. Goal: autonomous PR execution with human step-in only when genuinely needed. Kickoff brief: `.claude/research/collaboration-protocols/brief.md` (gitignored — load on fresh session). Estimated 2-3 sessions.
-2. **Plumb real error channels through invoke/deliver/feasibility** — the open design question above.
-3. **Phase F** — `@chief-clancy/design` (Stitch integration).
+1. **Phase 5 — ship collaboration protocols PRs.** Execute `.claude/research/collaboration-protocols/proposals.md` (gitignored — load on fresh session) in order α → β → γ → η → δ → ε → ζ. Seven PRs total. Standard discipline per PR: two-phase grill → per-commit DA → final verification DA → self-review → open PR → Copilot round(s) → merge. Session 102 starts at PR-α (publish.yml architectural fix + release.yml rename + workflow_call extraction).
+2. **Automated session handoff** (deferred — revisit after 10 post-PR-β sessions OR on trigger conditions per proposals.md §R2 follow-up). Substrate is Claude Code Routines + `PostCompact` hook; measurement protocol lives in PR-γ §γ.5 + PR-η §η.3. Not in scope for Phase 5.
+3. **Plumb real error channels through invoke/deliver/feasibility** — the open design question from Session 98.
+4. **Phase F** — `@chief-clancy/design` (Stitch integration).
+
+---
+
+**Session 101 (2026-04-17 — research-only, no PRs) — Collaboration protocols workstream Phase 4 complete.** Drafted `.claude/research/collaboration-protocols/proposals.md` (gitignored, ~840 lines) with unified-diff-ready text for 7 PRs (α → η → ζ), each anchored to specific audit / research / validation findings by file + section. Two grill rounds applied per Session 100's stopping criterion ("successive rounds produce only cosmetic deltas OR Alex says ship").
+
+**R1 grill — 5 parallel research dispatches after initial draft.** 4 evidence-backed pushbacks folded: (i) `ci.yml` push:main leg dropped (TanStack pattern: release.yml sole main-branch signal + `workflow_call` reusable workflow extraction — not Astro's duplicate-main-signal pattern); (ii) changeset gate replaced `packages/*/src/**` source-glob with `pnpm changeset status --since=origin/main` + `skip-changeset` label escape hatch (canonical per [changesets/changesets docs](https://github.com/changesets/changesets/blob/main/docs/checking-for-changesets.md); zero surveyed repos use file-globs); (iii) HITL surfacing inverted — `PushNotification` + Remote Control primary (Claude Code v2.1.110+ native, Pro/Max-included, phone-push via `/config` toggle), PR-body `## HITL flags` checklist as fallback/audit-trail (Devin/Cursor/Copilot community all converged on push-to-phone for solo-maintainer async HITL); (iv) Option D preamble dropped audience framing ("humans read it rarely") — AGENTS.md spec + PEP 12 + Rust RFC all open with purpose, not audience. Wall-clock cap locked at 30min per repo PR-timing data (typical 2-3 rounds ~20min; pathological #357 = 73min is a handoff-to-Alex signal regardless). Automated session handoff substrate identified (Claude Code Routines + `PostCompact` hook) and deferred — substrate is experimental (2026-04 beta) + Lulla 2026 evidence favours human-written PROGRESS.md over LLM-generated; measurement protocol landed in PR-γ §γ.5 with revisit triggers.
+
+**R2 grill — 14 ASKs resolved to lock.** Alex accepted recommendations on 12 with "happy unless strong evidence otherwise"; pushed back on 0. Two required fresh evidence before lock: β1 merge-policy density (one-sentence pointer in CLAUDE.md + full detail in DEVELOPMENT.md — anchored to `docs/RATIONALIZATIONS.md:99` executable-contract-bloat anti-pattern entry + CLAUDE.md's existing headline-plus-pointer architecture + Liu 2023 tail-position recall argument); γ1 label name locked as `ready` (dropped `clancy` prefix — Devin/Cursor/Copilot convention treats labels as state not actor; Dependabot/Renovate labels are all semantic-function with zero tool-name prefixes). Full decisions + evidence in proposals.md §R2 grill output.
+
+**R2 follow-up — PR-η added.** Alex raised PROGRESS.md bloat mid-grill (233 lines / 30 dense entries / ~41k tokens = 82% of the 50k handoff budget consumed just to read on session start). Dispatched research agent; Option 2 (archival compression + `docs/history/SESSIONS.md`) validated over Option 1 (policy-only, no cleanup) and Option 3 (defer entirely). Two dial pushbacks: N=5 detailed entries (not 10 — N=10 still consumes 30-50% of budget; N=5 hits 14-24% target band) with token-based cap (3 entries if any >3k tokens); separate file at `docs/history/SESSIONS.md` (not embedded table — strictly dominant on handoff-budget grounds, matches Keep-a-Changelog / Linux kernel ChangeLog-vN / agent-memory active-vs-archival convention). Honest correction logged: earlier rounds referenced "Lulla 2026's 150-200 line optimal cap" — that figure is actually from [GitHub's 2,500-repo AGENTS.md study](https://github.blog/ai-and-ml/github-copilot/how-to-write-a-great-agents-md-lessons-from-over-2500-repositories/), not Lulla 2026. Separate sources conflated; no downstream decision changes (both papers point the same direction).
+
+**7 PRs locked, dependencies set, Phase 5 order:** α `publish.yml` architectural fix + `ci.yml` re-shape + `workflow_call` extraction (hard prerequisite for β — land arch fix before dropping publish-gate process rule). β `CLAUDE.md` handoff trigger + merge policy rewrite (one-sentence pointer to γ). γ `docs/DEVELOPMENT.md` Post-PR flow + Auto-merge criteria + HITL triggers + Issue queue + Session-handoff measurement (γ.1-γ.5 new sections; γ.6-γ.9 are subsection locks within existing frames). η PROGRESS.md archival + `docs/history/SESSIONS.md` seed + DEVELOPMENT.md archival-maintenance rule (applies γ.5 retroactively to Sessions 1-95). δ memory → docs promotions (5 memories + 2 deletions). ε `docs/CONVENTIONS.md` Option D preamble + Portability section + `n/no-path-concat` lint. ζ `.github/CODEOWNERS` seed from blast-radius path list. Ordering rationale + per-PR anchors + diff-ready text all in proposals.md.
+
+**Artefact shipped:** `.claude/research/collaboration-protocols/proposals.md` — 7 PRs with unified-diff-ready text, 2 grill tables (R1 + R2) as audit trail, cross-PR dependency map, deferred-workstream marker. Stopping criterion met: successive rounds would produce cosmetic-only deltas.
+
+**Session 101 handoff triggered** per the exact rule drafted this session: phase boundary reached (Phase 4 drafting complete; proposals.md shipped = "research doc shipped" boundary condition per γ.1 phase-boundary definition), context well past the 60% pre-compaction trigger after 7 research findings + 4 validation files + 2 grill rounds + R2 follow-up research dispatch + proposals.md authoring all consumed.
+
+### Session 102 loading instructions
+
+On load:
+
+1. Read `PROGRESS.md` top-to-bottom (this Session 101 entry + Session 100 + §Next workstreams).
+2. Read `.claude/research/collaboration-protocols/proposals.md` — authoritative Phase 4 output, source of truth for Phase 5 execution.
+3. Start Phase 5 at PR-α. Standard discipline per PR: two-phase grill on the PR spec → per-commit DA → final verification DA on combined diff → self-review → open PR → Copilot round(s) → merge. PR-α is ~80 LOC across three workflow files (new `quality.yml` + renamed `release.yml` + re-shaped `ci.yml`) — small surface, but architectural. Two-phase grill is load-bearing even for small PRs per `docs/DEVELOPMENT.md` §P1.
+4. Remember: proposals.md is gitignored. It's the Phase 5 playbook. Reference by section (e.g. "per PR-α gotcha 1" or "per β.5") in PR bodies and commit messages.
+5. Branch name for PR-α: `chore/release-workflow-architecture` (or similar). Type label `chore`. Package labels: none (root config only).
 
 ---
 
