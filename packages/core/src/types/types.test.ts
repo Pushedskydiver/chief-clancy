@@ -193,7 +193,7 @@ describe('PrCreationResult', () => {
   it('satisfies the failure variant', () => {
     const result = {
       ok: false,
-      error: 'already exists',
+      error: { kind: 'unknown', message: 'already exists' },
       alreadyExists: true,
     } satisfies PrCreationResult;
     expect(result.ok).toBe(false);

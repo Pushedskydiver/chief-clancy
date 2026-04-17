@@ -110,7 +110,7 @@ describe('prRetry', () => {
     const entries = [makeEntry('PROJ-1')];
     const prResult: PrCreationResult = {
       ok: false,
-      error: 'exists',
+      error: { kind: 'unknown', message: 'exists' },
       alreadyExists: true,
     };
     const deps = makeDeps({ retryable: entries, prResult });
@@ -122,7 +122,10 @@ describe('prRetry', () => {
 
   it('records failed status when PR creation fails', async () => {
     const entries = [makeEntry('PROJ-1')];
-    const prResult: PrCreationResult = { ok: false, error: 'API error' };
+    const prResult: PrCreationResult = {
+      ok: false,
+      error: { kind: 'unknown', message: 'API error' },
+    };
     const deps = makeDeps({ retryable: entries, prResult });
 
     const result = await prRetry(makeCtx(), deps);
@@ -174,7 +177,7 @@ describe('prRetry', () => {
     const entries = [makeEntry('PROJ-1')];
     const prResult: PrCreationResult = {
       ok: false,
-      error: 'exists',
+      error: { kind: 'unknown', message: 'exists' },
       alreadyExists: true,
     };
     const deps = makeDeps({ retryable: entries, prResult });
@@ -191,7 +194,10 @@ describe('prRetry', () => {
 
   it('does not append progress on failure', async () => {
     const entries = [makeEntry('PROJ-1')];
-    const prResult: PrCreationResult = { ok: false, error: 'API error' };
+    const prResult: PrCreationResult = {
+      ok: false,
+      error: { kind: 'unknown', message: 'API error' },
+    };
     const deps = makeDeps({ retryable: entries, prResult });
 
     await prRetry(makeCtx(), deps);

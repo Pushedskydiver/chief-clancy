@@ -79,10 +79,16 @@ export type PrCreationSuccess = {
   readonly number: number;
 };
 
-/** Failed PR/MR creation. */
+/**
+ * Failed PR/MR creation.
+ *
+ * Per CONVENTIONS.md §Error Handling, the `error` channel is a tagged
+ * discriminated union. `kind: 'unknown'` covers uncategorised failures
+ * (network, auth, malformed response); variants widen on evidence.
+ */
 export type PrCreationFailure = {
   readonly ok: false;
-  readonly error: string;
+  readonly error: { readonly kind: 'unknown'; readonly message: string };
   readonly alreadyExists?: boolean;
 };
 

@@ -80,7 +80,7 @@ export function deliveryOutcome(opts: DeliveryOutcomeOpts): DeliveryOutcome {
   if (pr && !pr.ok) {
     return {
       type: 'failed',
-      error: pr.error,
+      error: pr.error.message,
       manualUrl: buildManualPrUrl(remote, sourceBranch, targetBranch),
     };
   }

@@ -64,8 +64,8 @@ describe('postPullRequest', () => {
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error).toContain('401');
-      expect(result.error).toContain('Bad credentials');
+      expect(result.error.message).toContain('401');
+      expect(result.error.message).toContain('Bad credentials');
     }
   });
 
@@ -101,7 +101,7 @@ describe('postPullRequest', () => {
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error).toContain('Connection refused');
+      expect(result.error.message).toContain('Connection refused');
     }
   });
 
@@ -119,7 +119,7 @@ describe('postPullRequest', () => {
     expect(result.ok).toBe(false);
     if (!result.ok) {
       // "HTTP 500: " + 200 chars
-      expect(result.error.length).toBeLessThanOrEqual(210);
+      expect(result.error.message.length).toBeLessThanOrEqual(210);
     }
   });
 
@@ -162,7 +162,7 @@ describe('postPullRequest', () => {
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error).toContain('missing URL and number');
+      expect(result.error.message).toContain('missing URL and number');
     }
   });
 });

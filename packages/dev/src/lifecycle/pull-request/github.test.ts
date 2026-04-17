@@ -112,7 +112,7 @@ describe('createPullRequest', () => {
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error).toContain('401');
+      expect(result.error.message).toContain('401');
     }
   });
 
@@ -130,7 +130,7 @@ describe('createPullRequest', () => {
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error).toContain('Network error');
+      expect(result.error.message).toContain('Network error');
     }
   });
 

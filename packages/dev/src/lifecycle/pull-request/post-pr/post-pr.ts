@@ -53,10 +53,11 @@ export async function postPullRequest(
     if (!response.ok) {
       const text = await response.text().catch(() => '');
       const alreadyExists = isAlreadyExists?.(response.status, text) ?? false;
+      const message = `HTTP ${response.status}${text ? `: ${text.slice(0, 200)}` : ''}`;
 
       return {
         ok: false,
-        error: `HTTP ${response.status}${text ? `: ${text.slice(0, 200)}` : ''}`,
+        error: { kind: 'unknown', message },
         alreadyExists,
       };
     }
@@ -67,15 +68,19 @@ export async function postPullRequest(
     if (!parsed.url && !parsed.number) {
       return {
         ok: false,
-        error: 'PR created but response missing URL and number',
+        error: {
+          kind: 'unknown',
+          message: 'PR created but response missing URL and number',
+        },
       };
     }
 
     return { ok: true, url: parsed.url, number: parsed.number };
   } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
     return {
       ok: false,
-      error: err instanceof Error ? err.message : String(err),
+      error: { kind: 'unknown', message },
     };
   } finally {
     clearTimeout(timeout);

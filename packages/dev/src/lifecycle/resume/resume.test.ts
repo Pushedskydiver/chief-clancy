@@ -484,7 +484,10 @@ describe('executeResume', () => {
 
   it('appends RESUMED progress without PR number on failure', async () => {
     const progressFs = makeProgressFs();
-    const createPr = vi.fn().mockResolvedValue({ ok: false, error: 'failed' });
+    const createPr = vi.fn().mockResolvedValue({
+      ok: false,
+      error: { kind: 'unknown', message: 'failed' },
+    });
 
     await executeResume({
       exec: makeExec(),

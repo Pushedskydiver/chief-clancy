@@ -222,7 +222,7 @@ describe('createPr', () => {
 
     expect(result).toEqual({
       ok: false,
-      error: expect.stringContaining('422'),
+      error: { kind: 'unknown', message: expect.stringContaining('422') },
       alreadyExists: expect.any(Boolean),
     });
   });
