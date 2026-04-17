@@ -183,7 +183,7 @@ async function checkCandidates(
   const since = entry.timestamp ? toIsoTimestamp(entry.timestamp) : undefined;
   const reviewState = await handlers.checkReviewState(branch, since);
 
-  if (reviewState?.changesRequested) {
+  if (reviewState?.hasChangesRequested) {
     const { comments, discussionIds } = await handlers.fetchComments(
       reviewState.prNumber,
       since,

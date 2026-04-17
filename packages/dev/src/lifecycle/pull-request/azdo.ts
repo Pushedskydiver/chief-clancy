@@ -195,7 +195,7 @@ export async function checkPrReviewState(
     );
 
     return {
-      changesRequested: hasInline || hasReworkConvo,
+      hasChangesRequested: hasInline || hasReworkConvo,
       prNumber: pr.pullRequestId,
       prUrl: `${AZDO_API}/${encodeURIComponent(org)}/${encodeURIComponent(project)}/_git/${encodeURIComponent(repo)}/pullrequest/${pr.pullRequestId}`,
     };

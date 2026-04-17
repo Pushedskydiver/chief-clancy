@@ -217,7 +217,7 @@ export async function checkMrReviewState(
       d.notes.some((n) => isActionableNote(n, since)),
     );
 
-    return { changesRequested: hasRework, prNumber: mr.iid, prUrl: mr.url };
+    return { hasChangesRequested: hasRework, prNumber: mr.iid, prUrl: mr.url };
   } catch {
     return undefined;
   }

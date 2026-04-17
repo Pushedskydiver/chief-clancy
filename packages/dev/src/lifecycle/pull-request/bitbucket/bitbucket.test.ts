@@ -293,7 +293,7 @@ describe('postServerPrComment', () => {
 describe('checkPrReviewState', () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it('returns changesRequested: true when inline comments exist', async () => {
+  it('returns hasChangesRequested: true when inline comments exist', async () => {
     const mockFetch = chainedFetch(
       { ok: true, json: () => Promise.resolve(CLOUD_PR) },
       {
@@ -317,10 +317,10 @@ describe('checkPrReviewState', () => {
       branch: 'feature/test',
     });
 
-    expect(result?.changesRequested).toBe(true);
+    expect(result?.hasChangesRequested).toBe(true);
   });
 
-  it('returns changesRequested: true when Rework: comment exists', async () => {
+  it('returns hasChangesRequested: true when Rework: comment exists', async () => {
     const mockFetch = chainedFetch(
       { ok: true, json: () => Promise.resolve(CLOUD_PR) },
       {
@@ -343,10 +343,10 @@ describe('checkPrReviewState', () => {
       branch: 'feature/test',
     });
 
-    expect(result?.changesRequested).toBe(true);
+    expect(result?.hasChangesRequested).toBe(true);
   });
 
-  it('returns changesRequested: false for non-Rework: comments', async () => {
+  it('returns hasChangesRequested: false for non-Rework: comments', async () => {
     const mockFetch = chainedFetch(
       { ok: true, json: () => Promise.resolve(CLOUD_PR) },
       {
@@ -369,7 +369,7 @@ describe('checkPrReviewState', () => {
       branch: 'feature/test',
     });
 
-    expect(result?.changesRequested).toBe(false);
+    expect(result?.hasChangesRequested).toBe(false);
   });
 
   it('returns undefined when no open PR', async () => {
@@ -412,7 +412,7 @@ describe('checkPrReviewState', () => {
       since: '2026-01-01T00:00:00Z',
     });
 
-    expect(result?.changesRequested).toBe(false);
+    expect(result?.hasChangesRequested).toBe(false);
   });
 });
 
@@ -499,7 +499,7 @@ describe('fetchPrReviewComments', () => {
 describe('checkServerPrReviewState', () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it('returns changesRequested: true when anchor comment exists', async () => {
+  it('returns hasChangesRequested: true when anchor comment exists', async () => {
     const mockFetch = chainedFetch(
       { ok: true, json: () => Promise.resolve(SERVER_PR) },
       {
@@ -526,10 +526,10 @@ describe('checkServerPrReviewState', () => {
       branch: 'feature/test',
     });
 
-    expect(result?.changesRequested).toBe(true);
+    expect(result?.hasChangesRequested).toBe(true);
   });
 
-  it('returns changesRequested: false for non-comment activities', async () => {
+  it('returns hasChangesRequested: false for non-comment activities', async () => {
     const mockFetch = chainedFetch(
       { ok: true, json: () => Promise.resolve(SERVER_PR) },
       {
@@ -547,7 +547,7 @@ describe('checkServerPrReviewState', () => {
       branch: 'feature/test',
     });
 
-    expect(result?.changesRequested).toBe(false);
+    expect(result?.hasChangesRequested).toBe(false);
   });
 
   it('filters by since timestamp (epoch ms)', async () => {
@@ -578,7 +578,7 @@ describe('checkServerPrReviewState', () => {
       since: '2026-01-01T00:00:00Z',
     });
 
-    expect(result?.changesRequested).toBe(false);
+    expect(result?.hasChangesRequested).toBe(false);
   });
 
   it('returns undefined when no open PR', async () => {

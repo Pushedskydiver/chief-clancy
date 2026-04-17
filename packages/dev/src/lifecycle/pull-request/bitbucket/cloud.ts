@@ -183,7 +183,7 @@ export async function checkPrReviewState(
     );
 
     return {
-      changesRequested: hasInline || hasReworkConvo,
+      hasChangesRequested: hasInline || hasReworkConvo,
       prNumber: pr.id,
       prUrl: pr.links.html?.href ?? '',
     };

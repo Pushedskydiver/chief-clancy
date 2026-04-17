@@ -203,12 +203,12 @@ describe('PrCreationResult', () => {
 describe('PrReviewState', () => {
   it('satisfies the shape', () => {
     const state = {
-      changesRequested: true,
+      hasChangesRequested: true,
       prNumber: 42,
       prUrl: 'https://github.com/org/repo/pull/42',
       reviewers: ['alice'],
     } satisfies PrReviewState;
-    expect(state.changesRequested).toBe(true);
+    expect(state.hasChangesRequested).toBe(true);
   });
 });
 

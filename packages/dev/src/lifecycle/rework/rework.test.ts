@@ -134,7 +134,7 @@ describe('fetchReworkFromPrReview', () => {
     const handlers = makeHandlers({
       checkReviewState: vi.fn(() =>
         Promise.resolve({
-          changesRequested: true,
+          hasChangesRequested: true,
           prNumber: 5,
           prUrl: 'https://github.com/acme/app/pull/5',
           reviewers: ['reviewer1'],
@@ -169,7 +169,7 @@ describe('fetchReworkFromPrReview', () => {
     const handlers = makeHandlers({
       checkReviewState: vi.fn(() =>
         Promise.resolve({
-          changesRequested: false,
+          hasChangesRequested: false,
           prNumber: 5,
           prUrl: 'https://github.com/acme/app/pull/5',
         }),
@@ -198,7 +198,7 @@ describe('fetchReworkFromPrReview', () => {
         .fn()
         .mockResolvedValueOnce(undefined)
         .mockResolvedValueOnce({
-          changesRequested: true,
+          hasChangesRequested: true,
           prNumber: 5,
           prUrl: 'https://github.com/acme/app/pull/5',
         }),
@@ -224,7 +224,7 @@ describe('fetchReworkFromPrReview', () => {
     const handlers = makeHandlers({
       checkReviewState: vi.fn(() =>
         Promise.resolve({
-          changesRequested: true,
+          hasChangesRequested: true,
           prNumber: 5,
           prUrl: 'https://github.com/acme/app/pull/5',
         }),
@@ -251,7 +251,7 @@ describe('fetchReworkFromPrReview', () => {
     const handlers = makeHandlers({
       checkReviewState: vi.fn(() =>
         Promise.resolve({
-          changesRequested: true,
+          hasChangesRequested: true,
           prNumber: 5,
           prUrl: 'https://github.com/acme/app/pull/5',
         }),
@@ -278,7 +278,7 @@ describe('fetchReworkFromPrReview', () => {
     const handlers = makeHandlers({
       checkReviewState: vi.fn(() =>
         Promise.resolve({
-          changesRequested: true,
+          hasChangesRequested: true,
           prNumber: 5,
           prUrl: 'https://github.com/acme/app/pull/5',
         }),
@@ -306,7 +306,7 @@ describe('fetchReworkFromPrReview', () => {
     const handlers = makeHandlers({
       checkReviewState: vi.fn(() =>
         Promise.resolve({
-          changesRequested: true,
+          hasChangesRequested: true,
           prNumber: 5,
           prUrl: 'https://github.com/acme/app/pull/5',
         }),

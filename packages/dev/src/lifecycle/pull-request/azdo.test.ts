@@ -247,7 +247,7 @@ describe('postPrComment', () => {
 describe('checkPrReviewState', () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it('returns changesRequested: true when inline thread exists', async () => {
+  it('returns hasChangesRequested: true when inline thread exists', async () => {
     const mockFetch = chainedFetch(
       { ok: true, json: () => Promise.resolve(AZDO_PR) },
       {
@@ -273,11 +273,11 @@ describe('checkPrReviewState', () => {
       branch: 'feature/test',
     });
 
-    expect(result?.changesRequested).toBe(true);
+    expect(result?.hasChangesRequested).toBe(true);
     expect(result?.prNumber).toBe(42);
   });
 
-  it('returns changesRequested: true when Rework: thread exists', async () => {
+  it('returns hasChangesRequested: true when Rework: thread exists', async () => {
     const mockFetch = chainedFetch(
       { ok: true, json: () => Promise.resolve(AZDO_PR) },
       {
@@ -307,10 +307,10 @@ describe('checkPrReviewState', () => {
       branch: 'feature/test',
     });
 
-    expect(result?.changesRequested).toBe(true);
+    expect(result?.hasChangesRequested).toBe(true);
   });
 
-  it('returns changesRequested: false for non-Rework: threads', async () => {
+  it('returns hasChangesRequested: false for non-Rework: threads', async () => {
     const mockFetch = chainedFetch(
       { ok: true, json: () => Promise.resolve(AZDO_PR) },
       {
@@ -335,7 +335,7 @@ describe('checkPrReviewState', () => {
       branch: 'feature/test',
     });
 
-    expect(result?.changesRequested).toBe(false);
+    expect(result?.hasChangesRequested).toBe(false);
   });
 
   it('returns undefined when no open PR', async () => {
@@ -392,7 +392,7 @@ describe('checkPrReviewState', () => {
       branch: 'feature/test',
     });
 
-    expect(result?.changesRequested).toBe(false);
+    expect(result?.hasChangesRequested).toBe(false);
   });
 
   it('excludes system threads', async () => {
@@ -421,7 +421,7 @@ describe('checkPrReviewState', () => {
       branch: 'feature/test',
     });
 
-    expect(result?.changesRequested).toBe(false);
+    expect(result?.hasChangesRequested).toBe(false);
   });
 
   it('filters by since timestamp', async () => {
@@ -451,7 +451,7 @@ describe('checkPrReviewState', () => {
       since: '2026-01-01T00:00:00Z',
     });
 
-    expect(result?.changesRequested).toBe(false);
+    expect(result?.hasChangesRequested).toBe(false);
   });
 
   it('returns correct PR URL', async () => {
