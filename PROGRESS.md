@@ -89,7 +89,7 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 - **PR-G:** PingResult → tagged union. 4 commits: (1) type change `board.ts` + `ping-endpoint.ts`, (2) all 6 board pings, (3) PreflightPhaseResult cascade `preflight-phase.ts`, (4) ~15-20 test files. Semver-major core (1.0.1 → 2.0.0), patch dev + terminal.
 - **PR-G2:** `changesRequested` → `hasChangesRequested` rename on PrReviewState. `remote.ts` property + 12 consumers (6 source + 6 test). Major changeset for core (batched with PR-G into one 2.0.0 release — must merge before version-packages PR).
 - **PR-H:** PrCreationFailure → tagged union. `remote.ts` `error: string` → `error: { kind: string; message: string }` + 5 PR creation paths + tests. Core patch on 2.0.x.
-- **PR-I:** Dev-internal error shapes. `branch-setup.ts` BranchSetupResult, `resume.ts` ResumeExecResult, `epic.ts` EnsureEpicResult, `parse-verdict.ts` ParseFailure, `invoke.ts` InvokeResult + tests. Dev patch.
+- **PR-I:** Dev-internal error shapes. `branch-setup.ts` BranchSetupResult, `resume.ts` ResumeExecResult (+ `lock-check.ts` sibling duplicate, caught by DA), `epic.ts` EnsureEpicResult, `parse-verdict.ts` ParseFailure, `invoke.ts` InvokeResult, `GradeResult` (×2) + tests. Dev minor (pre-1.0 breaking — observable via public `src/index.ts` re-exports). 5 `PipelineDeps` peer contracts (preflight/ticketFetch/feasibility/invoke/deliver) explicitly deferred with TODO comment at `run-pipeline.ts:33`.
 - **PR-J:** `parsePlanFile` throw → Result. `plan-file.ts` + `dep-factory/local-wiring.ts` caller + `local-lifecycle-contract.e2e.ts` (6 call sites) + unit tests. Dev patch.
 
 **Final:**
