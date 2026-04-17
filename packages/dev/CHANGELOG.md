@@ -1,5 +1,18 @@
 # @chief-clancy/dev
 
+## 0.5.7
+
+### Patch Changes
+
+- [#345](https://github.com/Pushedskydiver/chief-clancy/pull/345) [`a26dcd8`](https://github.com/Pushedskydiver/chief-clancy/commit/a26dcd8fe4adbed17c5b204b4e0646014d644e18) Thanks [@Pushedskydiver](https://github.com/Pushedskydiver)! - **BREAKING** — `PrReviewState.changesRequested` in `@chief-clancy/core/types/remote.js` is renamed to `PrReviewState.hasChangesRequested` per CONVENTIONS.md §Code Style Rule 13 (boolean naming: `is*/has*/can*/should*` prefix). Reads as a question at call sites (`if (reviewState?.hasChangesRequested)`).
+
+  12 consumer sites migrated across `@chief-clancy/dev` (6 source: `rework.ts`, `github.ts`, `azdo.ts`, `gitlab.ts`, `bitbucket/server.ts`, `bitbucket/cloud.ts`; 6 test files). An internal `ReviewCheckResult.changesRequested` in `github.ts` (mirrors the GitHub API's `CHANGES_REQUESTED` state) was renamed alongside for local consistency.
+
+  Paired with the `PingResult` tagged-union change — both land on the same `core@2.0.0` major release (batched via changesets).
+
+- Updated dependencies [[`a26dcd8`](https://github.com/Pushedskydiver/chief-clancy/commit/a26dcd8fe4adbed17c5b204b4e0646014d644e18)]:
+  - @chief-clancy/core@3.0.0
+
 ## 0.5.6
 
 ### Patch Changes
