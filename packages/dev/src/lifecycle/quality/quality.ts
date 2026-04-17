@@ -202,11 +202,6 @@ export function readQualityData(
  *
  * Increments the rework counter. Best-effort — filesystem errors are
  * swallowed to avoid crashing the orchestrator.
- *
- * @param fs - Injected filesystem operations.
- * @param projectRoot - Absolute path to the project root.
- * @param ticketKey - The ticket identifier.
- * @returns Nothing.
  */
 export function recordRework(
   fs: QualityFs,
@@ -234,11 +229,6 @@ export function recordRework(
  *
  * Sets the verification retry count. Best-effort — filesystem errors are
  * swallowed to avoid crashing the orchestrator.
- *
- * @param fs - Injected filesystem operations.
- * @param projectRoot - Absolute path to the project root.
- * @param opts - Verification retry options (ticket key, retry count).
- * @returns Nothing.
  */
 export function recordVerificationRetry(
   fs: QualityFs,
@@ -267,11 +257,6 @@ export function recordVerificationRetry(
  * Sets the delivery timestamp (from injected `now`) and duration.
  * Best-effort — filesystem errors are swallowed to avoid crashing
  * the orchestrator.
- *
- * @param fs - Injected filesystem operations.
- * @param projectRoot - Absolute path to the project root.
- * @param opts - Delivery options (ticket key, duration, timestamp).
- * @returns Nothing.
  */
 export function recordDelivery(
   fs: QualityFs,

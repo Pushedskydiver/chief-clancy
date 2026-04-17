@@ -2,7 +2,6 @@
  * Board-related types shared across board implementations.
  */
 
-/** Supported board providers. */
 export type BoardProvider =
   | 'jira'
   | 'github'

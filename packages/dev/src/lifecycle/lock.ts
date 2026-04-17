@@ -44,14 +44,7 @@ const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
 
 // ─── Public API ──────────────────────────────────────────────────────────────
 
-/**
- * Write lock data to `.clancy/lock.json`.
- *
- * @param fs - Injected filesystem operations.
- * @param projectRoot - The root directory of the project.
- * @param data - Lock data to persist.
- * @returns Nothing. Creates the `.clancy` directory if needed.
- */
+/** Write lock data to `.clancy/lock.json`. Creates the `.clancy` directory if needed. */
 export function writeLock(
   fs: LockFs,
   projectRoot: string,
@@ -61,13 +54,7 @@ export function writeLock(
   fs.writeFile(join(projectRoot, LOCK_PATH), JSON.stringify(data, null, 2));
 }
 
-/**
- * Read lock data from `.clancy/lock.json`.
- *
- * @param fs - Injected filesystem operations.
- * @param projectRoot - The root directory of the project.
- * @returns Parsed lock data, or `undefined` if missing/corrupt/invalid.
- */
+/** Read lock data from `.clancy/lock.json`. Returns `undefined` if missing, corrupt, or invalid. */
 export function readLock(
   fs: LockFs,
   projectRoot: string,
@@ -81,13 +68,7 @@ export function readLock(
   }
 }
 
-/**
- * Delete `.clancy/lock.json`. No-op if the file does not exist.
- *
- * @param fs - Injected filesystem operations.
- * @param projectRoot - The root directory of the project.
- * @returns Nothing.
- */
+/** Delete `.clancy/lock.json`. No-op if the file does not exist. */
 export function deleteLock(fs: LockFs, projectRoot: string): void {
   try {
     fs.deleteFile(join(projectRoot, LOCK_PATH));

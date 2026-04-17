@@ -2,7 +2,6 @@
  * Remote git hosting types shared across remote detection and PR creation.
  */
 
-/** Supported git hosting platforms. */
 export type GitPlatform =
   | 'github'
   | 'gitlab'

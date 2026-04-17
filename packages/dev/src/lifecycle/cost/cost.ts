@@ -38,11 +38,7 @@ const MS_PER_MINUTE = 60_000;
  *
  * Calculates session duration from `startedAt` to `now`, estimates token
  * usage based on the token rate, and appends a human-readable line.
- *
- * @param fs - Injected filesystem operations.
- * @param projectRoot - Absolute path to the project root.
- * @param opts - Cost entry options (ticket key, timestamps, token rate).
- * @returns Nothing. Best-effort — invalid timestamps produce `0min`.
+ * Best-effort — invalid timestamps produce `0min`.
  */
 export function appendCostEntry(
   fs: CostFs,

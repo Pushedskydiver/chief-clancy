@@ -102,8 +102,6 @@ export async function fetchReworkFromPrReview(
 /**
  * Perform post-rework actions: comment on PR, re-request review (GitHub),
  * resolve threads (GitLab). All best-effort — failures warn but don't block.
- *
- * @returns Nothing.
  */
 export async function postReworkActions(opts: PostReworkOpts): Promise<void> {
   const { handlers, prNumber, feedback, discussionIds, reviewers } = opts;
