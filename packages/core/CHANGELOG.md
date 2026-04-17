@@ -1,5 +1,11 @@
 # @chief-clancy/core
 
+## 1.0.2
+
+### Patch Changes
+
+- [#340](https://github.com/Pushedskydiver/chief-clancy/pull/340) [`b0b3d81`](https://github.com/Pushedskydiver/chief-clancy/commit/b0b3d81595590e137354decdcb883085233960ee) Thanks [@Pushedskydiver](https://github.com/Pushedskydiver)! - Remove TSDoc blocks that restate signatures, per CONVENTIONS.md §Code Style "Delete TSDoc that restates the signature." Surgical preservation where the prose adds genuine semantics (e.g. "Creates the `.clancy` directory if needed", "Bold+blue for contrast on dark backgrounds"). No behaviour change; internal type inference unaffected. Covers `core/src/schemas/env.ts`, `core/src/types/board.ts`, `core/src/types/remote.ts`, `dev/src/lifecycle/lock.ts`, `dev/src/lifecycle/rework/rework.ts`, `dev/src/lifecycle/cost/cost.ts`, `dev/src/lifecycle/quality/quality.ts`, `terminal/src/shared/ansi.ts`, `terminal/src/runner/autopilot.ts`.
+
 ## 1.0.1
 
 ### Patch Changes
