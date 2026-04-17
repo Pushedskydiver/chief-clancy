@@ -7,6 +7,7 @@ export class Cached<T> {
     return this.#value;
   }
 
+  /** Overwrites any previously stored value. */
   store(value: T): void {
     this.#value = value;
   }
@@ -24,6 +25,7 @@ export class CachedMap<K, V> {
     return this.#entries.has(key);
   }
 
+  /** Overwrites any previously stored value for `key`. */
   store(key: K, value: V): void {
     this.#entries.set(key, value);
   }

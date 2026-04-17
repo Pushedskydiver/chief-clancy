@@ -9,8 +9,6 @@ import type { CheckColour, ReadinessVerdict } from '../../agents/types.js';
 
 import { aggregateVerdict } from '../../agents/aggregate.js';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 type GradeResult =
   | { readonly ok: true; readonly verdict: ReadinessVerdict }
   | { readonly ok: false; readonly error: string };
@@ -36,11 +34,16 @@ type GateOpts = {
   readonly maxRounds: number;
 };
 
-// ─── Gate ────────────────────────────────────────────────────────────────────
-
 export type { GateResult };
 
-/** Run the readiness gate loop. */
+/**
+ * Run the readiness gate loop.
+ *
+ * Passes on green, fails immediately on red, retries on yellow up to
+ * `maxRounds` grading attempts. Overrides the subagent-reported overall
+ * colour with the locally-aggregated one to defend against inconsistent
+ * grading.
+ */
 export function runReadinessGate(opts: GateOpts): GateResult {
   return gradeRound(opts.grade, 0, opts.maxRounds);
 }
