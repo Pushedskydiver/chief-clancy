@@ -1,6 +1,6 @@
 ---
 '@chief-clancy/dev': minor
-'@chief-clancy/terminal': patch
+'@chief-clancy/terminal': minor
 ---
 
 Migrate `PipelineDeps` inline error contracts to the tagged `{ kind: 'unknown'; message: string }` house shape per `docs/CONVENTIONS.md` §Error Handling. Completes the sweep started by the `branchSetup` migration in PR-I.
@@ -15,4 +15,6 @@ Migrate `PipelineDeps` inline error contracts to the tagged `{ kind: 'unknown'; 
 
 **Remaining legacy sites (follow-up sweep):** 4 `error: string` sites on execute/lifecycle paths — `execute/single.ts` `GateResult`, `execute/readiness/readiness-gate.ts` `GateFailed`, `execute/flags/readiness-flags.ts` readiness-flags literal, `lifecycle/preflight/preflight.ts` `PreflightResult`. Tracked by the new `TODO(legacy-error-shape-sweep)` anchor at `execute/single.ts`.
 
-**Follow-up bug fix (same sweep):** Copilot flagged that `wirePreflight` was adapting a git-only `ExecGit` into `PreflightDeps.exec` (an arbitrary-binary executor) — so binary probes like `claude --version` became `git claude --version` and failed unconditionally. Fix threads a separate `execCmd: ExecCmd` dep through `DepFactoryOpts`/`wirePreflight`/terminal's pipeline-wiring; new `makeExecCmd` adapters in both `dev/entrypoints/adapters.ts` and `terminal/entrypoints/implement.ts` spawn arbitrary binaries correctly. `ExecCmd` is now re-exported from `@chief-clancy/dev` for terminal's consumption. **Terminal consumers of `buildPipelineDeps` must pass `execCmd`** (internal to this monorepo — no external `terminal` consumers exist).
+**Follow-up bug fix (same sweep):** Copilot flagged that `wirePreflight` was adapting a git-only `ExecGit` into `PreflightDeps.exec` (an arbitrary-binary executor) — so binary probes like `claude --version` became `git claude --version` and failed unconditionally. Fix threads a separate `execCmd: ExecCmd` dep through `DepFactoryOpts`/`wirePreflight`/terminal's pipeline-wiring; new `makeExecCmd` adapters in both `dev/entrypoints/adapters.ts` and `terminal/entrypoints/implement.ts` spawn arbitrary binaries correctly. `ExecCmd` is now re-exported from `@chief-clancy/dev` for terminal's consumption.
+
+**Terminal breaking surface:** `@chief-clancy/terminal` re-exports `buildPipelineDeps` from `@chief-clancy/dev` and exports `runImplement` directly — both now require `execCmd: ExecCmd` on their opts. Pre-1.0 minor bump per PR-I / PR-J precedent for breaking public-type changes.
