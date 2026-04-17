@@ -10,6 +10,7 @@
 import type { EnvFileSystem, ExecGit } from '@chief-clancy/core';
 import type {
   CostFs,
+  ExecCmd,
   FetchFn,
   ListPlansFs,
   LockFs,
@@ -72,6 +73,38 @@ export function makeExecGit(
       const message = detail
         ? `git ${cmd} failed (exit ${code}): ${detail}`
         : `git ${cmd} failed (exit ${code})`;
+
+      throw new Error(message);
+    }
+
+    return result.stdout.trim();
+  };
+}
+
+/**
+ * Build an ExecCmd adapter for arbitrary binaries (e.g. `claude`, `git`).
+ *
+ * Separate from {@link makeExecGit} — preflight probes non-git binaries,
+ * and an `ExecGit` that prepends `git` would turn `claude --version` into
+ * `git claude --version` and fail spuriously.
+ *
+ * @param cwd - Working directory for the spawned process.
+ * @param spawn - Spawn function (injected for testability).
+ * @returns An ExecCmd function that throws on failure.
+ */
+export function makeExecCmd(
+  cwd: string,
+  spawn: GitSpawnFn = spawnSync,
+): ExecCmd {
+  return (file, args) => {
+    const result = spawn(file, [...args], { cwd, encoding: 'utf8' });
+
+    if (result.status !== 0) {
+      const code = result.status ?? 'null';
+      const detail = result.stderr?.trim();
+      const message = detail
+        ? `${file} failed (exit ${code}): ${detail}`
+        : `${file} failed (exit ${code})`;
 
       throw new Error(message);
     }
@@ -173,6 +206,7 @@ async function main(): Promise<void> {
   const shared = {
     projectRoot,
     exec: makeExecGit(projectRoot),
+    execCmd: makeExecCmd(projectRoot),
     lockFs: makeLockFs(),
     progressFs: makeProgressFs(),
     costFs: makeCostFs(),

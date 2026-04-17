@@ -274,6 +274,7 @@ export function setupE2EPipeline(opts: E2ESetupOpts): E2EPipelineSetup {
   const deps = buildPipelineDeps({
     projectRoot: repo.workDir,
     exec: repo.exec,
+    execCmd: () => '',
     lockFs: fs.lockFs,
     progressFs: fs.progressFs,
     costFs: fs.costFs,

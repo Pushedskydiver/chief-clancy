@@ -12,6 +12,7 @@ import type { EnvFileSystem, ExecGit } from '@chief-clancy/core';
 import type {
   ConsoleLike,
   CostFs,
+  ExecCmd,
   FetchFn,
   LockFs,
   PipelineDeps,
@@ -42,6 +43,7 @@ import { buildSessionReport } from '../runner/session-report.js';
 import {
   makeCostFs,
   makeEnvFs,
+  makeExecCmd,
   makeExecGit,
   makeLockFs,
   makeProgressFs,
@@ -58,6 +60,7 @@ type RunPipelineFn = (
 type IterationOpts = {
   readonly projectRoot: string;
   readonly exec: ExecGit;
+  readonly execCmd: ExecCmd;
   readonly lockFs: LockFs;
   readonly progressFs: ProgressFs;
   readonly costFs: CostFs;
@@ -127,6 +130,7 @@ export function buildRunIteration(
     const deps = buildPipelineDeps({
       projectRoot: opts.projectRoot,
       exec: opts.exec,
+      execCmd: opts.execCmd,
       lockFs: opts.lockFs,
       progressFs: opts.progressFs,
       costFs: opts.costFs,
@@ -191,6 +195,7 @@ async function main(): Promise<void> {
   const env = process.env;
 
   const exec = makeExecGit(projectRoot);
+  const execCmd = makeExecCmd(projectRoot);
   const lockFs = makeLockFs();
   const progressFs = makeProgressFs();
   const costFs = makeCostFs();
@@ -206,6 +211,7 @@ async function main(): Promise<void> {
     runIteration: buildRunIteration({
       projectRoot,
       exec,
+      execCmd,
       lockFs,
       progressFs,
       costFs,

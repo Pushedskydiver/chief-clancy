@@ -9,6 +9,7 @@ import type { EnvFileSystem, ExecGit } from '@chief-clancy/core';
 import type {
   ConsoleLike,
   CostFs,
+  ExecCmd,
   FetchFn,
   ListPlansFs,
   LockFs,
@@ -46,6 +47,7 @@ type BatchOpts = {
   readonly argv: readonly string[];
   readonly projectRoot: string;
   readonly exec: ExecGit;
+  readonly execCmd: ExecCmd;
   readonly lockFs: LockFs;
   readonly progressFs: ProgressFs;
   readonly costFs: CostFs;
@@ -212,6 +214,7 @@ async function runOnePlan(
   const deps = buildPipelineDeps({
     projectRoot: opts.projectRoot,
     exec: opts.exec,
+    execCmd: opts.execCmd,
     lockFs: opts.lockFs,
     progressFs: opts.progressFs,
     costFs: opts.costFs,

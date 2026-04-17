@@ -326,6 +326,7 @@ function setupLocalPipeline(opts: LocalSetupOpts = {}): LocalPipelineSetup {
   const deps: PipelineDeps = buildPipelineDeps({
     projectRoot: workDir,
     exec,
+    execCmd: () => '',
     lockFs,
     progressFs,
     costFs,
