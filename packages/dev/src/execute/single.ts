@@ -15,6 +15,13 @@ import { parseReadinessFlags } from './flags/readiness-flags.js';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+// TODO(legacy-error-shape-sweep): migrate the 4 remaining legacy `error: string`
+// sites to the tagged `{ kind: 'unknown'; message }` house shape per CONVENTIONS.md
+// §Error Handling. Deferred from PR-β (pipeline sweep). Peer sites:
+//   - `execute/single.ts` (GateResult, below)
+//   - `execute/readiness/readiness-gate.ts` (GateFailed)
+//   - `execute/flags/readiness-flags.ts` (readiness-flags returned literal)
+//   - `lifecycle/preflight/preflight.ts` (PreflightResult)
 /** Result from the readiness gate. */
 type GateResult =
   | { readonly passed: true }

@@ -30,11 +30,6 @@ export type PipelineDeps = {
   readonly lockCheck: (
     ctx: RunContext,
   ) => Promise<{ readonly action: 'continue' | 'abort' | 'resumed' }>;
-  // TODO(error-shape-sweep): migrate preflight/ticketFetch/feasibility/invoke/deliver
-  // inline contracts below to the tagged `{ kind: 'unknown'; message }` house shape
-  // per CONVENTIONS.md §Error Handling. Deferred from PR-I (#350) — branchSetup was
-  // migrated because BranchSetupResult forced the cascade; the rest are independent
-  // phase-result types and belong in a dedicated pipeline-phase sweep.
   /** Preflight — binary checks, env, board detection. */
   readonly preflight: (ctx: RunContext) => Promise<
     | { readonly ok: true }
