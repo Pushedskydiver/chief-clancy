@@ -84,7 +84,7 @@ describe('wirePreflight (local path)', () => {
 
 describe('wirePreflight (board path) — exec vs execCmd separation', () => {
   it('routes preflight binary probes through execCmd, NOT exec', async () => {
-    // Regression guard for PR-β Copilot F1: runPreflightTagged used to wrap
+    // Regression guard for PR-β Copilot F1: an earlier adapter wrapped
     // ExecGit (git-only) into an arbitrary-binary shim, so `claude --version`
     // became `git claude --version`. Now execCmd is a first-class dep.
     const probed: string[] = [];
