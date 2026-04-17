@@ -36,7 +36,14 @@ import { validateSources } from './validate-sources.js';
 /** The install target — global (`~/.claude`) or local (`./.claude`). */
 export type InstallMode = 'global' | 'local';
 
-/** All resolved destination paths for an installation. */
+/**
+ * Resolved destination paths for an installation.
+ *
+ * Global installs target `~/.claude/`; local installs target
+ * `<cwd>/.claude/`. `clancyProjectDir` always resolves to `<cwd>/.clancy/`
+ * regardless of mode — runtime scripts run relative to the project root.
+ * See {@link resolveInstallPaths} for the canonical path shape.
+ */
 export type InstallPaths = {
   readonly commandsDest: string;
   readonly workflowsDest: string;
@@ -69,7 +76,13 @@ type InstallerFs = {
 
 type InstallerPrompts = { readonly ask: (label: string) => Promise<string> };
 
-/** Options for {@link runInstall}. */
+/**
+ * Options for {@link runInstall}.
+ *
+ * `nonInteractive` suppresses all prompts (used by `/clancy:update` for
+ * unattended updates). `now` is injected for deterministic manifest
+ * timestamps in tests; defaults to `() => new Date().toISOString()`.
+ */
 export type RunInstallOptions = {
   readonly mode: InstallMode;
   readonly paths: InstallPaths;
