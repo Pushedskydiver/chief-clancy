@@ -162,7 +162,49 @@ describe('postPullRequest', () => {
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
-      expect(result.error.message).toContain('missing URL and number');
+      expect(result.error.message).toContain('missing URL or number');
+    }
+  });
+
+  it('returns error when parseSuccess returns truthy url but zero number', async () => {
+    const mockFetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      }),
+    );
+
+    const result = await postPullRequest(
+      makeOpts({
+        fetchFn: mockFetch,
+        parseSuccess: () => ({ url: 'https://example.com/pr/1', number: 0 }),
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.message).toContain('missing URL or number');
+    }
+  });
+
+  it('returns error when parseSuccess returns truthy number but empty url', async () => {
+    const mockFetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({}),
+      }),
+    );
+
+    const result = await postPullRequest(
+      makeOpts({
+        fetchFn: mockFetch,
+        parseSuccess: () => ({ url: '', number: 42 }),
+      }),
+    );
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.message).toContain('missing URL or number');
     }
   });
 });
