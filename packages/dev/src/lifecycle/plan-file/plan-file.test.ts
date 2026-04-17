@@ -12,6 +12,13 @@ import {
   toSyntheticTicket,
 } from './plan-file.js';
 
+/** Test helper: extract the parsed plan or fail the test. */
+function parseOrFail(content: string, slug: string) {
+  const result = parsePlanFile(content, slug);
+  if (!result.ok) throw new Error(`parse failed: ${result.error.message}`);
+  return result.plan;
+}
+
 // ─── Fixtures ────────────────────────────────────────────────────────────────
 
 const BOARD_PLAN = `## Clancy Implementation Plan
@@ -203,34 +210,34 @@ https://www.figma.com/file/abc123/onboarding
 describe('parsePlanFile', () => {
   describe('board-mode header', () => {
     it('extracts key from [KEY] in Ticket line', () => {
-      const plan = parsePlanFile(BOARD_PLAN, 'ignored-slug');
+      const plan = parseOrFail(BOARD_PLAN, 'ignored-slug');
       expect(plan.key).toBe('PROJ-42');
     });
 
     it('extracts title from Ticket line', () => {
-      const plan = parsePlanFile(BOARD_PLAN, 'ignored-slug');
+      const plan = parseOrFail(BOARD_PLAN, 'ignored-slug');
       expect(plan.title).toBe('Add dark mode');
     });
 
     it('sets headerFormat to board', () => {
-      const plan = parsePlanFile(BOARD_PLAN, 'ignored-slug');
+      const plan = parseOrFail(BOARD_PLAN, 'ignored-slug');
       expect(plan.headerFormat).toBe('board');
     });
   });
 
   describe('local-mode header', () => {
     it('uses slug as key', () => {
-      const plan = parsePlanFile(LOCAL_PLAN, 'add-dark-mode-3');
+      const plan = parseOrFail(LOCAL_PLAN, 'add-dark-mode-3');
       expect(plan.key).toBe('add-dark-mode-3');
     });
 
     it('extracts title from Row line', () => {
-      const plan = parsePlanFile(LOCAL_PLAN, 'add-dark-mode-3');
+      const plan = parseOrFail(LOCAL_PLAN, 'add-dark-mode-3');
       expect(plan.title).toBe('Enable system preference detection');
     });
 
     it('sets headerFormat to local', () => {
-      const plan = parsePlanFile(LOCAL_PLAN, 'add-dark-mode-3');
+      const plan = parseOrFail(LOCAL_PLAN, 'add-dark-mode-3');
       expect(plan.headerFormat).toBe('local');
     });
 
@@ -248,7 +255,7 @@ describe('parsePlanFile', () => {
         '**Ticket:** [PROJ-42] Original auth ticket',
       ].join('\n');
 
-      const plan = parsePlanFile(content, 'migrate-auth-1');
+      const plan = parseOrFail(content, 'migrate-auth-1');
       expect(plan.headerFormat).toBe('local');
       expect(plan.key).toBe('migrate-auth-1');
       expect(plan.title).toBe('Extract middleware');
@@ -257,59 +264,59 @@ describe('parsePlanFile', () => {
 
   describe('sections', () => {
     it('parses Summary', () => {
-      const plan = parsePlanFile(BOARD_PLAN, 'x');
+      const plan = parseOrFail(BOARD_PLAN, 'x');
       expect(plan.summary).toBe(
         'Enable system-wide dark mode toggle in settings.',
       );
     });
 
     it('parses Affected Files table', () => {
-      const plan = parsePlanFile(BOARD_PLAN, 'x');
+      const plan = parseOrFail(BOARD_PLAN, 'x');
       expect(plan.affectedFiles).toContain('`src/theme.ts`');
       expect(plan.affectedFiles).toContain('Add dark palette');
     });
 
     it('parses Implementation Approach', () => {
-      const plan = parsePlanFile(BOARD_PLAN, 'x');
+      const plan = parseOrFail(BOARD_PLAN, 'x');
       expect(plan.approach).toBe(
         'Use CSS custom properties for theme switching.',
       );
     });
 
     it('parses Test Strategy', () => {
-      const plan = parsePlanFile(BOARD_PLAN, 'x');
+      const plan = parseOrFail(BOARD_PLAN, 'x');
       expect(plan.testStrategy).toContain('toggle persists across sessions');
     });
 
     it('parses Acceptance Criteria', () => {
-      const plan = parsePlanFile(BOARD_PLAN, 'x');
+      const plan = parseOrFail(BOARD_PLAN, 'x');
       expect(plan.acceptance).toContain('Dark mode toggle visible');
     });
 
     it('parses Dependencies', () => {
-      const plan = parsePlanFile(BOARD_PLAN, 'x');
+      const plan = parseOrFail(BOARD_PLAN, 'x');
       expect(plan.dependencies).toBe('None');
     });
 
     it('parses Risks / Considerations', () => {
-      const plan = parsePlanFile(BOARD_PLAN, 'x');
+      const plan = parseOrFail(BOARD_PLAN, 'x');
       expect(plan.risks).toContain('CSS variable fallback');
     });
 
     it('parses Size Estimate letter', () => {
-      const plan = parsePlanFile(BOARD_PLAN, 'x');
+      const plan = parseOrFail(BOARD_PLAN, 'x');
       expect(plan.size).toBe('M');
     });
 
     it('parses Planned date', () => {
-      const plan = parsePlanFile(BOARD_PLAN, 'x');
+      const plan = parseOrFail(BOARD_PLAN, 'x');
       expect(plan.planned).toBe('2026-04-13');
     });
   });
 
   describe('missing sections', () => {
     it('returns empty strings for absent sections', () => {
-      const plan = parsePlanFile(MINIMAL_PLAN, 'fix-typo');
+      const plan = parseOrFail(MINIMAL_PLAN, 'fix-typo');
       expect(plan.affectedFiles).toBe('');
       expect(plan.approach).toBe('');
       expect(plan.testStrategy).toBe('');
@@ -319,34 +326,44 @@ describe('parsePlanFile', () => {
     });
 
     it('still parses present sections', () => {
-      const plan = parsePlanFile(MINIMAL_PLAN, 'fix-typo');
+      const plan = parseOrFail(MINIMAL_PLAN, 'fix-typo');
       expect(plan.summary).toBe('Fix typo in README.');
       expect(plan.key).toBe('ENG-7');
     });
 
     it('returns empty size when Size Estimate section absent', () => {
-      const plan = parsePlanFile(MINIMAL_PLAN, 'fix-typo');
+      const plan = parseOrFail(MINIMAL_PLAN, 'fix-typo');
       expect(plan.size).toBe('');
     });
   });
 
   describe('malformed input', () => {
-    it('throws on missing plan header', () => {
-      expect(() => parsePlanFile('# Not a plan', 'x')).toThrow(
-        "Could not parse plan file. Expected '## Clancy Implementation Plan' header.",
-      );
+    it('returns failure Result on missing plan header', () => {
+      expect(parsePlanFile('# Not a plan', 'x')).toMatchObject({
+        ok: false,
+        error: {
+          kind: 'unknown',
+          message: expect.stringContaining(
+            "'## Clancy Implementation Plan' header",
+          ),
+        },
+      });
     });
 
-    it('throws on empty content', () => {
-      expect(() => parsePlanFile('', 'x')).toThrow(
-        '## Clancy Implementation Plan',
-      );
+    it('returns failure Result on empty content', () => {
+      expect(parsePlanFile('', 'x')).toMatchObject({
+        ok: false,
+        error: {
+          kind: 'unknown',
+          message: expect.stringContaining('## Clancy Implementation Plan'),
+        },
+      });
     });
 
     it('falls back to slug when plan header present but no Ticket or Row', () => {
       const content =
         '## Clancy Implementation Plan\n\n### Summary\n\nSome content.';
-      const plan = parsePlanFile(content, 'my-slug');
+      const plan = parseOrFail(content, 'my-slug');
       expect(plan.headerFormat).toBe('local');
       expect(plan.key).toBe('my-slug');
       expect(plan.title).toBe('my-slug');
@@ -355,7 +372,7 @@ describe('parsePlanFile', () => {
 
   describe('feedback / revision sections', () => {
     it('does not break parsing when Changes From Previous Plan present', () => {
-      const plan = parsePlanFile(PLAN_WITH_FEEDBACK, 'refactor-auth-1');
+      const plan = parseOrFail(PLAN_WITH_FEEDBACK, 'refactor-auth-1');
       expect(plan.summary).toBe(
         'Extract auth middleware into standalone module.',
       );
@@ -363,7 +380,7 @@ describe('parsePlanFile', () => {
     });
 
     it('parses all standard sections alongside revision section', () => {
-      const plan = parsePlanFile(PLAN_WITH_FEEDBACK, 'refactor-auth-1');
+      const plan = parseOrFail(PLAN_WITH_FEEDBACK, 'refactor-auth-1');
       expect(plan.approach).toContain('error boundary');
       expect(plan.acceptance).toContain('standalone');
     });
@@ -371,17 +388,17 @@ describe('parsePlanFile', () => {
 
   describe('optional Figma Link section', () => {
     it('parses Dependencies correctly when Figma Link follows', () => {
-      const plan = parsePlanFile(PLAN_WITH_FIGMA, 'x');
+      const plan = parseOrFail(PLAN_WITH_FIGMA, 'x');
       expect(plan.dependencies).toBe('None');
     });
 
     it('parses Risks correctly when Figma Link precedes it', () => {
-      const plan = parsePlanFile(PLAN_WITH_FIGMA, 'x');
+      const plan = parseOrFail(PLAN_WITH_FIGMA, 'x');
       expect(plan.risks).toContain('mobile UX');
     });
 
     it('parses Size correctly after Figma Link plan', () => {
-      const plan = parsePlanFile(PLAN_WITH_FIGMA, 'x');
+      const plan = parseOrFail(PLAN_WITH_FIGMA, 'x');
       expect(plan.size).toBe('L');
     });
   });
@@ -415,7 +432,7 @@ describe('parsePlanFile', () => {
               deps,
             ].join('\n');
 
-            const plan = parsePlanFile(content, 'test');
+            const plan = parseOrFail(content, 'test');
             expect(plan.key).toBe('X-1');
             expect(typeof plan.summary).toBe('string');
             expect(typeof plan.approach).toBe('string');
@@ -438,7 +455,7 @@ describe('parsePlanFile', () => {
               '**Planned:** 2026-01-01',
             ].join('\n');
 
-            const plan = parsePlanFile(content, slug);
+            const plan = parseOrFail(content, slug);
             expect(plan.key).toBe(slug);
             expect(plan.headerFormat).toBe('local');
           },
@@ -519,14 +536,14 @@ describe('checkApprovalStatus', () => {
 
 describe('toSyntheticTicket', () => {
   it('maps key and title', () => {
-    const plan = parsePlanFile(BOARD_PLAN, 'x');
+    const plan = parseOrFail(BOARD_PLAN, 'x');
     const ticket = toSyntheticTicket(plan);
     expect(ticket.key).toBe('PROJ-42');
     expect(ticket.title).toBe('Add dark mode');
   });
 
   it('joins plan sections into description', () => {
-    const plan = parsePlanFile(BOARD_PLAN, 'x');
+    const plan = parseOrFail(BOARD_PLAN, 'x');
     const ticket = toSyntheticTicket(plan);
     expect(ticket.description).toContain(plan.summary);
     expect(ticket.description).toContain(plan.affectedFiles);
@@ -536,14 +553,14 @@ describe('toSyntheticTicket', () => {
   });
 
   it('sets parentInfo and blockers to none', () => {
-    const plan = parsePlanFile(BOARD_PLAN, 'x');
+    const plan = parseOrFail(BOARD_PLAN, 'x');
     const ticket = toSyntheticTicket(plan);
     expect(ticket.parentInfo).toBe('none');
     expect(ticket.blockers).toBe('None');
   });
 
   it('satisfies FetchedTicket type', () => {
-    const plan = parsePlanFile(LOCAL_PLAN, 'add-dark-mode-3');
+    const plan = parseOrFail(LOCAL_PLAN, 'add-dark-mode-3');
     const ticket: FetchedTicket = toSyntheticTicket(plan);
     expect(ticket.key).toBe('add-dark-mode-3');
   });

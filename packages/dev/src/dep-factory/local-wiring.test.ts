@@ -78,15 +78,32 @@ describe('wirePreflight (local path)', () => {
 // ─── localTicketSeed ─────────────────────────────────────────────────────────
 
 describe('localTicketSeed', () => {
-  it('sets ctx.ticket from plan file content', () => {
+  it('sets ctx.ticket from plan file content and returns ok: true', () => {
     const ctx = makeCtx('.clancy/plans/add-dark-mode-1.md');
     const readFile = vi.fn(() => PLAN_CONTENT);
 
-    localTicketSeed(ctx, ctx.fromPath!, readFile);
+    const result = localTicketSeed(ctx, ctx.fromPath!, readFile);
 
+    expect(result).toEqual({ ok: true });
     expect(ctx.ticket).toBeDefined();
     expect(ctx.ticket!.key).toBe('PROJ-42');
     expect(ctx.ticket!.title).toBe('Add dark mode');
+  });
+
+  it('returns tagged failure Result when plan file is malformed', () => {
+    const ctx = makeCtx('.clancy/plans/broken.md');
+    const readFile = vi.fn(() => '# Not a plan');
+
+    const result = localTicketSeed(ctx, ctx.fromPath!, readFile);
+
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('.clancy/plans/broken.md'),
+      },
+    });
+    expect(ctx.ticket).toBeUndefined();
   });
 
   it('derives slug from plan filename', () => {

@@ -136,11 +136,18 @@ None identified.
 **S** — Small
 `;
 
+/** Test helper: extract the parsed plan or fail the test. */
+function parseOrFail(content: string, slug: string) {
+  const result = parsePlanFile(content, slug);
+  if (!result.ok) throw new Error(`parse failed: ${result.error.message}`);
+  return result.plan;
+}
+
 // ─── Plan → Parser contract ─────────────────────────────────────────────────
 
 describe('Lifecycle contract — plan parser', () => {
   it('parses local-mode plan with all sections', () => {
-    const plan = parsePlanFile(DEFAULT_PLAN, 'test-plan-1');
+    const plan = parseOrFail(DEFAULT_PLAN, 'test-plan-1');
 
     expect(plan.headerFormat).toBe('local');
     expect(plan.key).toBe('test-plan-1');
@@ -155,7 +162,7 @@ describe('Lifecycle contract — plan parser', () => {
   });
 
   it('parses board-mode plan with ticket key', () => {
-    const plan = parsePlanFile(BOARD_MODE_PLAN, 'ignored-slug');
+    const plan = parseOrFail(BOARD_MODE_PLAN, 'ignored-slug');
 
     expect(plan.headerFormat).toBe('board');
     expect(plan.key).toBe('PROJ-42');
@@ -163,7 +170,7 @@ describe('Lifecycle contract — plan parser', () => {
   });
 
   it('handles Feedback and Changes sections without breaking', () => {
-    const plan = parsePlanFile(PLAN_WITH_FEEDBACK, 'feedback-plan');
+    const plan = parseOrFail(PLAN_WITH_FEEDBACK, 'feedback-plan');
 
     expect(plan.key).toBe('feedback-plan');
     expect(plan.title).toBe('Improved error handling');
@@ -263,7 +270,7 @@ describe('Lifecycle contract — approval marker', () => {
 
 describe('Lifecycle contract — synthetic ticket', () => {
   it('maps local-mode plan to synthetic ticket with correct fields', () => {
-    const plan = parsePlanFile(DEFAULT_PLAN, 'my-feature-1');
+    const plan = parseOrFail(DEFAULT_PLAN, 'my-feature-1');
     const ticket = toSyntheticTicket(plan);
 
     expect(ticket.key).toBe('my-feature-1');
@@ -276,7 +283,7 @@ describe('Lifecycle contract — synthetic ticket', () => {
   });
 
   it('maps board-mode plan to synthetic ticket with ticket key', () => {
-    const plan = parsePlanFile(BOARD_MODE_PLAN, 'ignored');
+    const plan = parseOrFail(BOARD_MODE_PLAN, 'ignored');
     const ticket = toSyntheticTicket(plan);
 
     expect(ticket.key).toBe('PROJ-42');
@@ -284,7 +291,7 @@ describe('Lifecycle contract — synthetic ticket', () => {
   });
 
   it('includes all content sections in description', () => {
-    const plan = parsePlanFile(DEFAULT_PLAN, 'content-check');
+    const plan = parseOrFail(DEFAULT_PLAN, 'content-check');
     const ticket = toSyntheticTicket(plan);
 
     // description = summary + affectedFiles + approach + testStrategy + acceptance
