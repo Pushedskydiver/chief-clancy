@@ -111,25 +111,18 @@ export const azdoEnvSchema = z.extend(sharedEnvSchema, {
 
 // ─── Inferred types ──────────────────────────────────────────────────────────
 
-/** Inferred shared env type. */
 export type SharedEnv = z.infer<typeof sharedEnvSchema>;
 
-/** Inferred Jira env type. */
 export type JiraEnv = z.infer<typeof jiraEnvSchema>;
 
-/** Inferred GitHub env type. */
 export type GitHubEnv = z.infer<typeof githubEnvSchema>;
 
-/** Inferred Linear env type. */
 export type LinearEnv = z.infer<typeof linearEnvSchema>;
 
-/** Inferred Shortcut env type. */
 export type ShortcutEnv = z.infer<typeof shortcutEnvSchema>;
 
-/** Inferred Notion env type. */
 export type NotionEnv = z.infer<typeof notionEnvSchema>;
 
-/** Inferred Azure DevOps env type. */
 export type AzdoEnv = z.infer<typeof azdoEnvSchema>;
 
 // ─── Board config discriminated union ────────────────────────────────────────

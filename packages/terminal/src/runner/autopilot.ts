@@ -38,12 +38,7 @@ type AutopilotOpts = {
 
 // ─── Loop orchestrator ───────────────────────────────────────────────────────
 
-/**
- * Run the autopilot loop — delegates iteration to {@link executeFixedCount}.
- *
- * @param opts - Injected I/O resources and configuration.
- * @returns Resolves when the loop ends.
- */
+/** Run the autopilot loop — delegates iteration to {@link executeFixedCount}. */
 export async function runAutopilot(opts: AutopilotOpts): Promise<void> {
   printBanner(opts.console);
 
