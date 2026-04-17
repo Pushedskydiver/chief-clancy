@@ -62,7 +62,7 @@ export type ChildrenStatus = {
 /** Standardised board abstraction. */
 export type Board = {
   readonly ping: () => Promise<PingResult>;
-  /** Validate board-specific inputs (project keys, IDs) — shape, emptiness, unsafe characters. Returns an error message, or `undefined` if valid. */
+  /** Optional validation of board-specific inputs (project keys, IDs, query strings). Returns an error message, or `undefined` if inputs pass or the provider defines no validation (e.g. Shortcut). */
   readonly validateInputs: () => string | undefined;
   readonly fetchTicket: (
     opts: FetchTicketOpts,
