@@ -9,8 +9,6 @@ import type { CheckColour, ReadinessVerdict } from '../../agents/types.js';
 
 import { aggregateVerdict } from '../../agents/aggregate.js';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 type GradeResult =
   | { readonly ok: true; readonly verdict: ReadinessVerdict }
   | { readonly ok: false; readonly error: string };
@@ -35,8 +33,6 @@ type GateOpts = {
   /** Maximum grading rounds including the initial grade. */
   readonly maxRounds: number;
 };
-
-// ─── Gate ────────────────────────────────────────────────────────────────────
 
 export type { GateResult };
 
