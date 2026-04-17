@@ -94,6 +94,14 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 
 Design decision, not a migration. Separate future workstream if pursued.
 
+### Next workstreams (after Session 98)
+
+Ordering set 2026-04-17:
+
+1. **Collaboration protocols workstream (Session 99+).** Audit Sessions 96-98 for friction points, review memory for doc-promotion candidates, do targeted external research (Copilot lifecycle, changesets release flow, agent checkpoint patterns, session-handoff triggers, HITL supervision), then ship protocol additions to `docs/DEVELOPMENT.md`. Goal: autonomous PR execution with human step-in only when genuinely needed. Kickoff brief: `.claude/research/collaboration-protocols/brief.md` (gitignored — load on fresh session). Estimated 2-3 sessions.
+2. **Plumb real error channels through invoke/deliver/feasibility** — the open design question above.
+3. **Phase F** — `@chief-clancy/design` (Stitch integration).
+
 ---
 
 **Session 97 (2026-04-17) — Session 96 locked plan executed end-to-end + 1 deferred follow-up.** 9 PRs shipped: PR-D (compound booleans #338), PR-E (TSDoc deletions #340), PR-F (TSDoc additions #342), PR-G (PingResult tagged union, core 2.0.0 #344), PR-G2 (hasChangesRequested rename, core 3.0.0 #345), PR-H (PrCreationFailure tagged union, core 4.0.0 #348), PR-I (dev internal error shapes, dev 0.6.0 #350), PR-J (parsePlanFile Result, dev 0.7.0 + inline CodeQL ReDoS fix #352), PR-K (CONVENTIONS cleanup #354), and follow-up #355 (postPullRequest `&&` → `||` guard fix). 4 core majors + 2 dev minors published to npm (2.0.0, 3.0.0, 4.0.0, 0.6.0, 0.7.0 — version-packages PRs were Alex-merged after each Session 96 rule: merge core-breaking PRs one-at-a-time with publish gates). **Protocol discipline improved mid-session:** after Alex flagged skipped per-commit DA on PR-I, subsequent PRs (-J, -K, #355) ran the full two-stage discipline (per-commit DA on each commit + final verification DA on combined diff + self-review) per `docs/DEVELOPMENT.md:307`. Final verification DAs caught non-trivial defects Copilot-alone missed: PR-I FV-DA flagged a "patch → minor" semver miss + a deferred-scope note living only in the changeset (added TODO anchor at code layer). Copilot finding tally across the 10 PRs: ~12 total, mostly reader-precision + terminology — consistent with Phase 5 pattern. **One pre-existing ReDoS** surfaced by CodeQL while scanning PR-J's diff (polynomial regex in `plan-file.ts`) — fixed inline with structural `[^\n]*` captures (no quantifier overlap). **Copilot-caught pre-existing bug** in `postPullRequest` guard (`&&` instead of `||` for missing URL/number) deferred from PR-H and shipped as #355. **Session 97 handoff triggered on context load.** One final cleanup item — PipelineDeps peer error-shape sweep — was planned to nit-floor and parked for Session 98 (shipped above as PR-β + PR-γ).
