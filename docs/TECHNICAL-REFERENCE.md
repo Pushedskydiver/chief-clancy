@@ -114,5 +114,5 @@ Used by resume, deliver, and session report modules.
 - Changesets manage versioning — `pnpm changeset` creates a changeset file, `changeset version` bumps versions
 - `@changesets/changelog-github` generates changelog entries with PR links and author attribution
 - `scripts/group-changelog.ts` post-processes changelogs to group entries under gitmoji category headers
-- Publish workflow (`.github/workflows/publish.yml`) triggers after CI success via `workflow_run`, creates version PRs, and publishes to npm
+- Release workflow (`.github/workflows/release.yml`) runs on every push to `main`, creates version PRs, and publishes to npm
 - `NPM_TOKEN` secret required in repo settings for npm publish auth
