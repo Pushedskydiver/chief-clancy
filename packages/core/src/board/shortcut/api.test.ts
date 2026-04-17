@@ -92,16 +92,23 @@ describe('pingShortcut', () => {
       .mockResolvedValue({ ok: false, status: 401 } as Response);
 
     const result = await pingShortcut('tok', mockFetch);
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('auth failed');
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('auth failed'),
+      },
+    });
   });
 
   it('returns network error on fetch failure', async () => {
     const mockFetch = vi.fn<Fetcher>().mockRejectedValue(new Error('offline'));
 
     const result = await pingShortcut('tok', mockFetch);
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('network');
+    expect(result).toMatchObject({
+      ok: false,
+      error: { kind: 'unknown', message: expect.stringContaining('network') },
+    });
   });
 });
 

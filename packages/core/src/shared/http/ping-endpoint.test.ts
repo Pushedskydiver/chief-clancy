@@ -43,7 +43,10 @@ describe('pingEndpoint', () => {
       fetcher: mockFetch,
     });
 
-    expect(result).toEqual({ ok: false, error: '✗ Auth failed' });
+    expect(result).toEqual({
+      ok: false,
+      error: { kind: 'unknown', message: '✗ Auth failed' },
+    });
   });
 
   it('returns generic HTTP status for unmapped status codes', async () => {
@@ -57,7 +60,10 @@ describe('pingEndpoint', () => {
       fetcher: mockFetch,
     });
 
-    expect(result).toEqual({ ok: false, error: '✗ HTTP 500' });
+    expect(result).toEqual({
+      ok: false,
+      error: { kind: 'unknown', message: '✗ HTTP 500' },
+    });
   });
 
   it('returns network error message when fetch throws', async () => {
@@ -73,7 +79,10 @@ describe('pingEndpoint', () => {
       fetcher: mockFetch,
     });
 
-    expect(result).toEqual({ ok: false, error: '✗ Could not reach API' });
+    expect(result).toEqual({
+      ok: false,
+      error: { kind: 'unknown', message: '✗ Could not reach API' },
+    });
   });
 
   it('passes an AbortSignal to fetch', async () => {

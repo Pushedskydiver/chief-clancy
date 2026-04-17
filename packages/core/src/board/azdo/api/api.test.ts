@@ -100,8 +100,13 @@ describe('azdo api', () => {
         pat: 'bad',
         fetcher: mockFetch,
       });
-      expect(result.ok).toBe(false);
-      expect(result.error).toContain('auth failed');
+      expect(result).toMatchObject({
+        ok: false,
+        error: {
+          kind: 'unknown',
+          message: expect.stringContaining('auth failed'),
+        },
+      });
     });
 
     it('returns error on network failure', async () => {
@@ -110,8 +115,13 @@ describe('azdo api', () => {
         .mockRejectedValue(new Error('ECONNREFUSED'));
 
       const result = await pingAzdo({ ...baseCtx, fetcher: mockFetch });
-      expect(result.ok).toBe(false);
-      expect(result.error).toContain('Could not reach');
+      expect(result).toMatchObject({
+        ok: false,
+        error: {
+          kind: 'unknown',
+          message: expect.stringContaining('Could not reach'),
+        },
+      });
     });
   });
 
