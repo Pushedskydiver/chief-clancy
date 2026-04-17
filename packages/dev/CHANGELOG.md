@@ -1,5 +1,14 @@
 # @chief-clancy/dev
 
+## 0.5.2
+
+### Patch Changes
+
+- [#336](https://github.com/Pushedskydiver/chief-clancy/pull/336) [`4ebae37`](https://github.com/Pushedskydiver/chief-clancy/commit/4ebae3700d7aede540410a4b592b289064add443) Thanks [@Pushedskydiver](https://github.com/Pushedskydiver)! - Conventions compliance sweep — naming fixes (Rules 9, 13, 8).
+  Rename 3 internal `try*` functions per verb vocabulary, add boolean
+  prefixes to 5 internal type fields, and remove 8 section dividers
+  from touched files.
+
 ## 0.5.1
 
 ### Patch Changes
