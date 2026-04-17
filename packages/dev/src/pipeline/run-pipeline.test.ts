@@ -76,7 +76,7 @@ describe('runPipeline — happy path', () => {
         order.push('lockCheck');
         return { action: 'continue' as const };
       }),
-      preflight: vi.fn(async () => {
+      preflight: vi.fn<PipelineDeps['preflight']>(async () => {
         order.push('preflight');
         return { ok: true };
       }),
@@ -182,24 +182,46 @@ describe('runPipeline — early exits', () => {
 
   it('stops after preflight failure', async () => {
     const deps = makeDeps({
-      preflight: vi.fn().mockResolvedValue({ ok: false }),
+      preflight: vi.fn<PipelineDeps['preflight']>().mockResolvedValue({
+        ok: false,
+        error: { kind: 'unknown', message: 'preflight failed' },
+      }),
     });
     const result = await runPipeline(makeCtx(), deps);
 
     expect(result.status).toBe('aborted');
     expect(result.phase).toBe('preflight');
+    expect(result.error).toBe('preflight failed');
     expect(deps.epicCompletion).not.toHaveBeenCalled();
   });
 
   it('stops after ticket-fetch failure', async () => {
     const deps = makeDeps({
-      ticketFetch: vi.fn().mockResolvedValue({ ok: false }),
+      ticketFetch: vi.fn<PipelineDeps['ticketFetch']>().mockResolvedValue({
+        ok: false,
+        reason: 'no-tickets',
+      }),
     });
     const result = await runPipeline(makeCtx(), deps);
 
     expect(result.status).toBe('aborted');
     expect(result.phase).toBe('ticket-fetch');
+    expect(result.error).toBe('no-tickets');
     expect(deps.feasibility).not.toHaveBeenCalled();
+  });
+
+  it('stops after ticket-fetch seed failure with tagged error', async () => {
+    const deps = makeDeps({
+      ticketFetch: vi.fn<PipelineDeps['ticketFetch']>().mockResolvedValue({
+        ok: false,
+        error: { kind: 'unknown', message: 'plan parse failed' },
+      }),
+    });
+    const result = await runPipeline(makeCtx(), deps);
+
+    expect(result.status).toBe('aborted');
+    expect(result.phase).toBe('ticket-fetch');
+    expect(result.error).toBe('plan parse failed');
   });
 
   it('stops after dry-run gate', async () => {

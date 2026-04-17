@@ -10,6 +10,7 @@ import type { EnvFileSystem, ExecGit } from '@chief-clancy/core';
 import type {
   ConsoleLike,
   CostFs,
+  ExecCmd,
   FetchFn,
   LockFs,
   PipelineDeps,
@@ -41,6 +42,7 @@ type ImplementOpts = {
   readonly projectRoot: string;
   readonly isAfk: boolean;
   readonly exec: ExecGit;
+  readonly execCmd: ExecCmd;
   readonly lockFs: LockFs;
   readonly progressFs: ProgressFs;
   readonly costFs: CostFs;
@@ -112,6 +114,7 @@ export async function runImplement(opts: ImplementOpts): Promise<void> {
   const deps = buildPipelineDeps({
     projectRoot: opts.projectRoot,
     exec: opts.exec,
+    execCmd: opts.execCmd,
     lockFs: opts.lockFs,
     progressFs: opts.progressFs,
     costFs: opts.costFs,

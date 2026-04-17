@@ -56,7 +56,10 @@ export {
 export type { FetchFn } from './lifecycle/pr-creation.js';
 export { createPr } from './lifecycle/pr-creation.js';
 
-export type { PreflightDeps } from './lifecycle/preflight/preflight.js';
+export type {
+  ExecCmd,
+  PreflightDeps,
+} from './lifecycle/preflight/preflight.js';
 export { runPreflight } from './lifecycle/preflight/preflight.js';
 
 export type { ProgressEntry, ProgressFs } from './lifecycle/progress.js';

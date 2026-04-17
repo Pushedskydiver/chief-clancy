@@ -56,6 +56,7 @@ describe('buildRunIteration', () => {
     const runIteration = buildRunIteration({
       projectRoot: '/project',
       exec: vi.fn(),
+      execCmd: vi.fn(),
       lockFs: {
         readFile: vi.fn(),
         writeFile: vi.fn(),

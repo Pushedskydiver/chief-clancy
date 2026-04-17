@@ -6,6 +6,7 @@
  * calls when `ctx.fromPath` is set.
  */
 import type { FetchFn } from '../lifecycle/pr-creation.js';
+import type { ExecCmd } from '../lifecycle/preflight/preflight.js';
 import type { RunContext } from '../pipeline/context.js';
 import type { EnvFileSystem, ExecGit } from '@chief-clancy/core';
 
@@ -31,6 +32,37 @@ function isGitRepo(exec: ExecGit): boolean {
   }
 }
 
+/** Adapt the legacy {@link runPreflight} shape to the tagged-error contract. */
+function runPreflightTagged(
+  opts: { readonly envFs: EnvFileSystem; readonly execCmd: ExecCmd },
+  root: string,
+):
+  | {
+      readonly ok: true;
+      readonly warning?: string;
+      readonly env?: Record<string, string>;
+    }
+  | {
+      readonly ok: false;
+      readonly error: { readonly kind: 'unknown'; readonly message: string };
+      readonly warning?: string;
+    } {
+  const result = runPreflight(root, {
+    exec: opts.execCmd,
+    envFs: opts.envFs,
+  });
+  if (!result.ok) {
+    return {
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: result.error ?? 'preflight failed',
+      },
+    };
+  }
+  return { ok: true, warning: result.warning, env: result.env };
+}
+
 /**
  * Build the preflight closure with local-mode branching.
  *
@@ -44,16 +76,24 @@ export function wirePreflight(opts: {
   readonly envFs: EnvFileSystem;
   readonly projectRoot: string;
   readonly exec: ExecGit;
+  readonly execCmd: ExecCmd;
   readonly fetch: FetchFn;
-}): (
-  ctx: RunContext,
-) => Promise<{ readonly ok: boolean; readonly error?: string }> {
+}): (ctx: RunContext) => Promise<
+  | { readonly ok: true }
+  | {
+      readonly ok: false;
+      readonly error: { readonly kind: 'unknown'; readonly message: string };
+    }
+> {
   return (ctx) => {
     if (ctx.fromPath) {
       if (!isGitRepo(opts.exec)) {
         return Promise.resolve({
           ok: false,
-          error: 'Not inside a git repository',
+          error: {
+            kind: 'unknown',
+            message: 'Not inside a git repository',
+          },
         });
       }
       runLocalPreflight(ctx, {
@@ -65,10 +105,7 @@ export function wirePreflight(opts: {
 
     return preflightPhase(ctx, {
       runPreflight: (root) =>
-        runPreflight(root, {
-          exec: (file, args) => opts.exec([file, ...args]),
-          envFs: opts.envFs,
-        }),
+        runPreflightTagged({ envFs: opts.envFs, execCmd: opts.execCmd }, root),
       detectBoard: (env) => detectBoard(env),
       createBoard: (config) =>
         createBoard(config, (url, init) => opts.fetch(url, init ?? {})),

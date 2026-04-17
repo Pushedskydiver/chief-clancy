@@ -30,15 +30,14 @@ export type PipelineDeps = {
   readonly lockCheck: (
     ctx: RunContext,
   ) => Promise<{ readonly action: 'continue' | 'abort' | 'resumed' }>;
-  // TODO(error-shape-sweep): migrate preflight/ticketFetch/feasibility/invoke/deliver
-  // inline contracts below to the tagged `{ kind: 'unknown'; message }` house shape
-  // per CONVENTIONS.md §Error Handling. Deferred from PR-I (#350) — branchSetup was
-  // migrated because BranchSetupResult forced the cascade; the rest are independent
-  // phase-result types and belong in a dedicated pipeline-phase sweep.
   /** Preflight — binary checks, env, board detection. */
-  readonly preflight: (
-    ctx: RunContext,
-  ) => Promise<{ readonly ok: boolean; readonly error?: string }>;
+  readonly preflight: (ctx: RunContext) => Promise<
+    | { readonly ok: true }
+    | {
+        readonly ok: false;
+        readonly error: { readonly kind: 'unknown'; readonly message: string };
+      }
+  >;
   /** Epic completion — check for completed epics. */
   readonly epicCompletion: (
     ctx: RunContext,
@@ -52,16 +51,18 @@ export type PipelineDeps = {
     ctx: RunContext,
   ) => Promise<{ readonly isDetected: boolean; readonly ticketKey?: string }>;
   /** Ticket fetch — fetch ticket + resolve branches. */
-  readonly ticketFetch: (ctx: RunContext) => Promise<{
-    readonly ok: boolean;
-    readonly error?: string;
-    readonly reason?: string;
-  }>;
+  readonly ticketFetch: (ctx: RunContext) => Promise<
+    | { readonly ok: true; readonly reason?: string }
+    | {
+        readonly ok: false;
+        readonly reason?: string;
+        readonly error?: { readonly kind: 'unknown'; readonly message: string };
+      }
+  >;
   // Dry-run (phase 5) is an inline ctx.dryRun check — no dependency needed.
   /** Feasibility — Claude feasibility check. */
   readonly feasibility: (ctx: RunContext) => Promise<{
     readonly ok: boolean;
-    readonly error?: string;
     readonly reason?: string;
   }>;
   /** Branch setup — git branch operations + lock write. */
@@ -75,13 +76,9 @@ export type PipelineDeps = {
   /** Transition — move ticket to In Progress. */
   readonly transition: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
   /** Invoke — run Claude session. */
-  readonly invoke: (
-    ctx: RunContext,
-  ) => Promise<{ readonly ok: boolean; readonly error?: string }>;
+  readonly invoke: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
   /** Deliver — push + PR creation. */
-  readonly deliver: (
-    ctx: RunContext,
-  ) => Promise<{ readonly ok: boolean; readonly error?: string }>;
+  readonly deliver: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
   /** Cost — log estimated token cost. */
   readonly cost: (ctx: RunContext) => { readonly ok: boolean };
   /** Cleanup — completion data + notification. */
@@ -139,7 +136,11 @@ async function runPhases(
   // Preflight
   const preflight = await deps.preflight(ctx);
   if (!preflight.ok)
-    return { status: 'aborted', phase: 'preflight', error: preflight.error };
+    return {
+      status: 'aborted',
+      phase: 'preflight',
+      error: preflight.error.message,
+    };
 
   // Epic completion (informational — never aborts)
   await deps.epicCompletion(ctx);
@@ -156,7 +157,7 @@ async function runPhases(
     return {
       status: 'aborted',
       phase: 'ticket-fetch',
-      error: ticket.error ?? ticket.reason,
+      error: ticketErrorMessage(ticket),
     };
 
   // Dry-run gate
@@ -168,7 +169,7 @@ async function runPhases(
     return {
       status: 'aborted',
       phase: 'feasibility',
-      error: feasibility.error ?? feasibility.reason,
+      error: feasibility.reason,
     };
 
   // Branch setup
@@ -185,13 +186,11 @@ async function runPhases(
 
   // Invoke Claude session
   const invoke = await deps.invoke(ctx);
-  if (!invoke.ok)
-    return { status: 'aborted', phase: 'invoke', error: invoke.error };
+  if (!invoke.ok) return { status: 'aborted', phase: 'invoke' };
 
   // Deliver
   const deliver = await deps.deliver(ctx);
-  if (!deliver.ok)
-    return { status: 'aborted', phase: 'deliver', error: deliver.error };
+  if (!deliver.ok) return { status: 'aborted', phase: 'deliver' };
 
   // Cost (best-effort — never aborts)
   deps.cost(ctx);
@@ -200,6 +199,21 @@ async function runPhases(
   await deps.cleanup(ctx);
 
   return { status: 'completed' };
+}
+
+/**
+ * Flatten a failed ticket-fetch result to a display string.
+ *
+ * Seed failures (from `runTicketFetch`'s `localTicketSeed` path) carry a
+ * tagged `error`; phase reason-exits (`no-tickets`, `max-rework`) carry a
+ * bare `reason`. The outer `PipelineResult.error` is a display surface, so
+ * extract whichever is present.
+ */
+function ticketErrorMessage(ticket: {
+  readonly reason?: string;
+  readonly error?: { readonly message: string };
+}): string | undefined {
+  return ticket.error?.message ?? ticket.reason;
 }
 
 /** Best-effort: restore the branch the user was on before Clancy started. */

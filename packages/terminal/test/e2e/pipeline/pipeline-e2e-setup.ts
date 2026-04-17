@@ -120,6 +120,7 @@ function createRealFs(): {
 type E2ERepo = {
   readonly workDir: string;
   readonly exec: (args: readonly string[]) => string;
+  readonly execCmd: (file: string, args: readonly string[]) => string;
   readonly cleanup: () => void;
 };
 
@@ -179,17 +180,19 @@ function createE2ERepo(
   git(['add', '-A']);
   git(['commit', '-m', 'chore: add clancy scaffold']);
 
-  // Exec helper for dep factory — same dual-mode as integration
-  const STUBBED_BINARIES: Record<string, string> = {
-    claude: '1.0.0 (stub)',
-  };
-  const REAL_BINARIES = new Set(['git', 'node', 'pnpm', 'npm']);
-  const exec = (args: readonly string[]) => {
-    if (args[0] in STUBBED_BINARIES) return STUBBED_BINARIES[args[0]];
-    const isReal = REAL_BINARIES.has(args[0]);
-    const cmd = isReal ? args[0] : 'git';
-    const cmdArgs = isReal ? args.slice(1) : args;
-    return execFileSync(cmd, cmdArgs, {
+  const exec = (args: readonly string[]) =>
+    execFileSync('git', [...args], {
+      cwd: workDir,
+      stdio: 'pipe',
+      encoding: 'utf8',
+    });
+
+  // Preflight probes non-git binaries via execCmd. Stub `claude` for CI
+  // where Claude isn't installed; real binaries pass through.
+  const STUBBED_BINARIES: Record<string, string> = { claude: '1.0.0 (stub)' };
+  const execCmd = (file: string, args: readonly string[]) => {
+    if (file in STUBBED_BINARIES) return STUBBED_BINARIES[file];
+    return execFileSync(file, [...args], {
       cwd: workDir,
       stdio: 'pipe',
       encoding: 'utf8',
@@ -198,7 +201,7 @@ function createE2ERepo(
 
   const cleanup = () => rmSync(base, { recursive: true, force: true });
 
-  return { workDir, exec, cleanup };
+  return { workDir, exec, execCmd, cleanup };
 }
 
 // ── Claude simulator with commit side effects ───────────────────
@@ -274,6 +277,7 @@ export function setupE2EPipeline(opts: E2ESetupOpts): E2EPipelineSetup {
   const deps = buildPipelineDeps({
     projectRoot: repo.workDir,
     exec: repo.exec,
+    execCmd: repo.execCmd,
     lockFs: fs.lockFs,
     progressFs: fs.progressFs,
     costFs: fs.costFs,

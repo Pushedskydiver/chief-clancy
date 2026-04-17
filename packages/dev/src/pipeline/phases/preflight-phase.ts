@@ -9,19 +9,26 @@ import type { BoardConfig } from '@chief-clancy/core/schemas/env.js';
 import type { Board } from '@chief-clancy/core/types/board.js';
 
 /** Structured result of the preflight phase. */
-type PreflightPhaseResult = {
-  readonly ok: boolean;
-  readonly error?: string;
-  readonly warning?: string;
-};
+type PreflightPhaseResult =
+  | { readonly ok: true; readonly warning?: string }
+  | {
+      readonly ok: false;
+      readonly error: { readonly kind: 'unknown'; readonly message: string };
+      readonly warning?: string;
+    };
 
 /** Preflight check result (subset of full PreflightResult). */
-type PreflightCheckResult = {
-  readonly ok: boolean;
-  readonly error?: string;
-  readonly warning?: string;
-  readonly env?: Record<string, string>;
-};
+type PreflightCheckResult =
+  | {
+      readonly ok: true;
+      readonly warning?: string;
+      readonly env?: Record<string, string>;
+    }
+  | {
+      readonly ok: false;
+      readonly error: { readonly kind: 'unknown'; readonly message: string };
+      readonly warning?: string;
+    };
 
 /** Injected dependencies for the preflight phase. */
 export type PreflightPhaseDeps = {
@@ -54,13 +61,22 @@ export async function preflightPhase(
 
   // 2. Detect board from env
   if (!preflight.env) {
-    return { ok: false, error: 'Preflight passed but env is missing' };
+    return {
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: 'Preflight passed but env is missing',
+      },
+    };
   }
 
   const boardResult = deps.detectBoard(preflight.env);
 
   if (typeof boardResult === 'string') {
-    return { ok: false, error: boardResult };
+    return {
+      ok: false,
+      error: { kind: 'unknown', message: boardResult },
+    };
   }
 
   // 3. Create board and validate
@@ -68,14 +84,20 @@ export async function preflightPhase(
   const validationError = board.validateInputs();
 
   if (validationError) {
-    return { ok: false, error: validationError };
+    return {
+      ok: false,
+      error: { kind: 'unknown', message: validationError },
+    };
   }
 
   // 4. Ping board
   const ping = await board.ping();
 
   if (!ping.ok) {
-    return { ok: false, error: ping.error.message };
+    return {
+      ok: false,
+      error: { kind: 'unknown', message: ping.error.message },
+    };
   }
 
   // Success — populate context

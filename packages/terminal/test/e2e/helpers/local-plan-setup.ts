@@ -323,9 +323,19 @@ function setupLocalPipeline(opts: LocalSetupOpts = {}): LocalPipelineSetup {
     );
   };
 
+  // Local mode routes through runLocalPreflight — runPreflightTagged (the only
+  // execCmd caller) is bypassed. If that invariant regresses, this throw makes
+  // the test fail loudly rather than silently pass on a `''` stub.
+  const execCmd = () => {
+    throw new Error(
+      'execCmd called in local mode — no shell command probes expected',
+    );
+  };
+
   const deps: PipelineDeps = buildPipelineDeps({
     projectRoot: workDir,
     exec,
+    execCmd,
     lockFs,
     progressFs,
     costFs,

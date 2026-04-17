@@ -15,6 +15,7 @@ vi.mock('@chief-clancy/core', () => ({
 vi.mock('./adapters.js', () => ({
   makeEnvFs: vi.fn(() => ({ readFile: vi.fn() })),
   makeExecGit: vi.fn(),
+  makeExecCmd: vi.fn(),
   makeLockFs: vi.fn(),
   makeProgressFs: vi.fn(),
   makeCostFs: vi.fn(),

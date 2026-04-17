@@ -10,6 +10,7 @@
 import type { EnvFileSystem, ExecGit } from '@chief-clancy/core';
 import type {
   CostFs,
+  ExecCmd,
   FetchFn,
   ListPlansFs,
   LockFs,
@@ -39,9 +40,7 @@ import { runPipeline } from '@chief-clancy/dev';
 import { runImplementBatch } from '../runner/implement/batch.js';
 import { runImplement } from '../runner/implement/implement.js';
 
-// ─── Types ──────────────────────────────────────────────────────────────────
-
-type GitSpawnFn = (
+type SpawnFn = (
   command: string,
   args: readonly string[],
   options: { readonly cwd: string; readonly encoding: 'utf8' },
@@ -58,10 +57,7 @@ type GitSpawnFn = (
  * @param spawn - Spawn function (injected for testability).
  * @returns An ExecGit function that throws on failure.
  */
-export function makeExecGit(
-  cwd: string,
-  spawn: GitSpawnFn = spawnSync,
-): ExecGit {
+export function makeExecGit(cwd: string, spawn: SpawnFn = spawnSync): ExecGit {
   return (args) => {
     const result = spawn('git', [...args], { cwd, encoding: 'utf8' });
 
@@ -72,6 +68,35 @@ export function makeExecGit(
       const message = detail
         ? `git ${cmd} failed (exit ${code}): ${detail}`
         : `git ${cmd} failed (exit ${code})`;
+
+      throw new Error(message);
+    }
+
+    return result.stdout.trim();
+  };
+}
+
+/**
+ * Build an ExecCmd adapter for arbitrary binaries (e.g. `claude`, `git`).
+ *
+ * Separate from {@link makeExecGit} — preflight probes non-git binaries,
+ * and an `ExecGit` that prepends `git` would turn `claude --version` into
+ * `git claude --version` and fail spuriously.
+ *
+ * @param cwd - Working directory for the spawned process.
+ * @param spawn - Spawn function (injected for testability).
+ * @returns An ExecCmd function that throws on failure.
+ */
+export function makeExecCmd(cwd: string, spawn: SpawnFn = spawnSync): ExecCmd {
+  return (file, args) => {
+    const result = spawn(file, [...args], { cwd, encoding: 'utf8' });
+
+    if (result.status !== 0) {
+      const code = result.status ?? 'null';
+      const detail = result.stderr?.trim();
+      const message = detail
+        ? `${file} failed (exit ${code}): ${detail}`
+        : `${file} failed (exit ${code})`;
 
       throw new Error(message);
     }
@@ -173,6 +198,7 @@ async function main(): Promise<void> {
   const shared = {
     projectRoot,
     exec: makeExecGit(projectRoot),
+    execCmd: makeExecCmd(projectRoot),
     lockFs: makeLockFs(),
     progressFs: makeProgressFs(),
     costFs: makeCostFs(),

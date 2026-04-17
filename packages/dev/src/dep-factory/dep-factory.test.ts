@@ -9,6 +9,7 @@ function createMockOpts() {
   return {
     projectRoot: '/tmp/test',
     exec: vi.fn(),
+    execCmd: vi.fn(),
     lockFs: {
       readFile: vi.fn(),
       writeFile: vi.fn(),

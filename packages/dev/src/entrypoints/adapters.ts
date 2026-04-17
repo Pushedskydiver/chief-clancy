@@ -7,6 +7,7 @@
  */
 import type { AtomicFs } from '../artifacts/atomic-write.js';
 import type { CostFs, LockFs, ProgressFs, QualityFs } from '../index.js';
+import type { ExecCmd } from '../lifecycle/preflight/preflight.js';
 import type { EnvFileSystem, ExecGit } from '@chief-clancy/core';
 import type { SpawnSyncReturns } from 'node:child_process';
 
@@ -22,9 +23,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 
-// ─── Types ──────────────────────────────────────────────────────────────────
-
-type GitSpawnFn = (
+type SpawnFn = (
   command: string,
   args: readonly string[],
   options: { readonly cwd: string; readonly encoding: 'utf8' },
@@ -33,10 +32,7 @@ type GitSpawnFn = (
 // ─── Adapter factories ──────────────────────────────────────────────────────
 
 /** Create a synchronous git executor bound to the given working directory. Throws on non-zero exit. */
-export function makeExecGit(
-  cwd: string,
-  spawn: GitSpawnFn = spawnSync,
-): ExecGit {
+export function makeExecGit(cwd: string, spawn: SpawnFn = spawnSync): ExecGit {
   return (args) => {
     const result = spawn('git', [...args], { cwd, encoding: 'utf8' });
 
@@ -47,6 +43,32 @@ export function makeExecGit(
       const message = detail
         ? `git ${cmd} failed (exit ${code}): ${detail}`
         : `git ${cmd} failed (exit ${code})`;
+
+      throw new Error(message);
+    }
+
+    return result.stdout.trim();
+  };
+}
+
+/**
+ * Create a synchronous arbitrary-binary executor bound to the given working
+ * directory. Throws on non-zero exit.
+ *
+ * Separate from {@link makeExecGit} because preflight probes non-git binaries
+ * (`claude --version`, `git --version`) — an `ExecGit` that prepends `git`
+ * would turn those into `git claude --version` and fail spuriously.
+ */
+export function makeExecCmd(cwd: string, spawn: SpawnFn = spawnSync): ExecCmd {
+  return (file, args) => {
+    const result = spawn(file, [...args], { cwd, encoding: 'utf8' });
+
+    if (result.status !== 0) {
+      const code = result.status ?? 'null';
+      const detail = result.stderr?.trim();
+      const message = detail
+        ? `${file} failed (exit ${code}): ${detail}`
+        : `${file} failed (exit ${code})`;
 
       throw new Error(message);
     }

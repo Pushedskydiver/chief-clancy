@@ -10,14 +10,12 @@ import type { EnvFileSystem } from '@chief-clancy/core/shared/env-parser.js';
 import { loadClancyEnv } from '@chief-clancy/core/shared/env-parser.js';
 import { hasUncommittedChanges } from '@chief-clancy/core/shared/git-ops.js';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 /**
  * Execute a command by file name and return stdout.
  * Throws on non-zero exit. Unlike `ExecGit` (git-ops), this is not
  * scoped to git — it can run any binary.
  */
-type ExecCmd = (file: string, args: readonly string[]) => string;
+export type ExecCmd = (file: string, args: readonly string[]) => string;
 
 /** Injected dependencies for preflight checks. */
 export type PreflightDeps = {

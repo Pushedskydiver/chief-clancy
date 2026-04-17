@@ -120,6 +120,7 @@ function createRealFs(): RealFs {
 type RepoWithRemote = {
   readonly workDir: string;
   readonly exec: (args: readonly string[]) => string;
+  readonly execCmd: (file: string, args: readonly string[]) => string;
   readonly cleanup: () => void;
 };
 
@@ -173,18 +174,19 @@ function createRepoWithRemote(envVars: Record<string, string>): RepoWithRemote {
     .join('\n');
   writeFileSync(join(clancyDir, '.env'), envContent);
 
-  // Dual-mode exec: the dep factory's preflight wiring calls
-  // (file, args) => exec([file, ...args]), so the first arg may be
-  // a binary name (claude, git) or a git subcommand (rev-parse, etc.).
-  // Stub `claude` so preflight passes even when Claude isn't installed (CI).
+  const exec = (args: readonly string[]) =>
+    execFileSync('git', [...args], {
+      cwd: workDir,
+      stdio: 'pipe',
+      encoding: 'utf8',
+    });
+
+  // Preflight probes non-git binaries via execCmd. Stub `claude` so preflight
+  // passes on CI where Claude isn't installed; real binaries pass through.
   const STUBBED_BINARIES: Record<string, string> = { claude: '1.0.0 (stub)' };
-  const REAL_BINARIES = new Set(['git', 'node', 'pnpm', 'npm']);
-  const exec = (args: readonly string[]) => {
-    if (args[0] in STUBBED_BINARIES) return STUBBED_BINARIES[args[0]];
-    const isReal = REAL_BINARIES.has(args[0]);
-    const cmd = isReal ? args[0] : 'git';
-    const cmdArgs = isReal ? args.slice(1) : args;
-    return execFileSync(cmd, cmdArgs, {
+  const execCmd = (file: string, args: readonly string[]) => {
+    if (file in STUBBED_BINARIES) return STUBBED_BINARIES[file];
+    return execFileSync(file, [...args], {
       cwd: workDir,
       stdio: 'pipe',
       encoding: 'utf8',
@@ -193,7 +195,7 @@ function createRepoWithRemote(envVars: Record<string, string>): RepoWithRemote {
 
   const cleanup = () => rmSync(base, { recursive: true, force: true });
 
-  return { workDir, exec, cleanup };
+  return { workDir, exec, execCmd, cleanup };
 }
 
 // ─── Pipeline setup ──────────────────────────────────────────────────────────
@@ -228,6 +230,7 @@ export function setupPipeline(opts: SetupOpts): PipelineSetup {
   const deps = buildPipelineDeps({
     projectRoot: repo.workDir,
     exec: repo.exec,
+    execCmd: repo.execCmd,
     lockFs: fs.lockFs,
     progressFs: fs.progressFs,
     costFs: fs.costFs,

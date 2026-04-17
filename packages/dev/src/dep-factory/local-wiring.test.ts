@@ -34,6 +34,7 @@ describe('wirePreflight (local path)', () => {
     envFs: noopEnvFs,
     projectRoot: '/repo',
     exec: vi.fn(() => ''),
+    execCmd: vi.fn(() => ''),
     fetch: vi.fn(),
   });
 
@@ -64,14 +65,56 @@ describe('wirePreflight (local path)', () => {
       exec: vi.fn(() => {
         throw new Error('not a git repo');
       }),
+      execCmd: vi.fn(() => ''),
       fetch: vi.fn(),
     });
     const ctx = makeCtx('plan.md');
     const result = await notGitPreflight(ctx);
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       ok: false,
-      error: 'Not inside a git repository',
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('Not inside a git repository'),
+      },
     });
+  });
+});
+
+// ─── wirePreflight (board path) ─────────────────────────────────────────────
+
+describe('wirePreflight (board path) — exec vs execCmd separation', () => {
+  it('routes preflight binary probes through execCmd, NOT exec', async () => {
+    // Regression guard for PR-β Copilot F1: runPreflightTagged used to wrap
+    // ExecGit (git-only) into an arbitrary-binary shim, so `claude --version`
+    // became `git claude --version`. Now execCmd is a first-class dep.
+    const probed: string[] = [];
+    const exec = vi.fn(() => '');
+    const execCmd = vi.fn((file: string) => {
+      probed.push(file);
+      // Fail preflight fast by throwing on the first binary probe — we just
+      // want to confirm that probing reached execCmd at all, not exec.
+      throw new Error('binary not found');
+    });
+    const envFs = { readFile: vi.fn(() => '') };
+
+    const preflight = wirePreflight({
+      envFs,
+      projectRoot: '/repo',
+      exec,
+      execCmd,
+      fetch: vi.fn(),
+    });
+
+    const ctx = new RunContext({ projectRoot: '/repo', argv: [] });
+    const result = await preflight(ctx);
+
+    expect(result.ok).toBe(false);
+    // The binary probe MUST have hit execCmd with the binary name as the
+    // file argument. If exec were still being wrapped, execCmd would never
+    // be called and the test would catch the regression.
+    expect(probed).toContain('claude');
+    expect(execCmd).toHaveBeenCalledWith('claude', ['--version']);
+    expect(exec).not.toHaveBeenCalled();
   });
 });
 
