@@ -1,6 +1,6 @@
 {
   "name": "@chief-clancy/dev",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "private": false,
   "description": "Autonomous Ralph Wiggum execution surface for Claude Code — pick up tickets and execute them with judgment",
   "author": "Alex Clapperton",
