@@ -90,7 +90,7 @@ function parseSize(raw: string): string {
  * Supports both board-mode (`**Ticket:** [{KEY}] Title`) and local-mode
  * (`**Source:** / **Row:**`) header formats. Returns a tagged Result —
  * the only expected failure is a missing plan header, which is a
- * user-surfacable condition (malformed `.clancy/plans/*.md` file).
+ * user-facing condition (malformed `.clancy/plans/*.md` file).
  */
 export function parsePlanFile(content: string, slug: string): ParsePlanResult {
   if (!content.includes(PLAN_HEADER)) {
@@ -109,8 +109,10 @@ export function parsePlanFile(content: string, slug: string): ParsePlanResult {
   const headerBlock =
     firstSection >= 0 ? content.slice(0, firstSection) : content;
 
-  // Detect header format from the header block only
-  const ticketMatch = /^\*\*Ticket:\*\*\s*\[([^\]]+)\]\s*(.+)$/m.exec(
+  // Detect header format from the header block only.
+  // Use `\s+(\S.*)` (not `\s*(.+)`) to avoid the \s*/.+ overlap CodeQL
+  // flags as polynomial-time backtracking on pathological trailing-space inputs.
+  const ticketMatch = /^\*\*Ticket:\*\*\s*\[([^\]]+)\]\s+(\S.*)$/m.exec(
     headerBlock,
   );
   const headerFormat: 'board' | 'local' = ticketMatch ? 'board' : 'local';
@@ -120,8 +122,10 @@ export function parsePlanFile(content: string, slug: string): ParsePlanResult {
     : {
         key: slug,
         title:
-          /^\*\*Row:\*\*\s*#\d+\s*—\s*(.+)$/m.exec(headerBlock)?.[1]?.trim() ??
-          slug,
+          // Same \s+/\S anchor as the Ticket regex above to avoid polynomial backtracking.
+          /^\*\*Row:\*\*\s*#\d+\s*—\s+(\S.*)$/m
+            .exec(headerBlock)?.[1]
+            ?.trim() ?? slug,
       };
 
   const plannedMatch = /^\*\*Planned:\*\*\s*(.+)$/m.exec(headerBlock);
