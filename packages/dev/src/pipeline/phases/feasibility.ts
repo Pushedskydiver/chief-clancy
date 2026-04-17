@@ -8,8 +8,6 @@
 import type { RunContext } from '../context.js';
 import type { ProgressStatus } from '@chief-clancy/core/types/progress.js';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 /** Ticket metadata passed to the feasibility check. */
 type FeasibilityTicket = {
   readonly key: string;
@@ -47,8 +45,6 @@ export type FeasibilityPhaseDeps = {
   /** Append a progress entry. Pre-wired with progressFs + projectRoot. */
   readonly appendProgress: AppendFn;
 };
-
-// ─── Phase ───────────────────────────────────────────────────────────────────
 
 /**
  * Evaluate whether a ticket is feasible as pure code changes.

@@ -21,8 +21,6 @@ import {
 } from '@chief-clancy/core/shared/git-ops.js';
 import { DELIVERED_STATUSES } from '@chief-clancy/core/types/progress.js';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 /** Detection result for a resumable stale lock. */
 type ResumeInfo = {
   readonly branch: string;
@@ -62,8 +60,6 @@ type ExecuteResumeOpts = {
   readonly createPr?: CreateResumePr;
 };
 
-// ─── Detection ───────────────────────────────────────────────────────────────
-
 /**
  * Check if the ticket branch from a stale lock has recoverable work.
  *
@@ -98,8 +94,6 @@ export function detectResume(opts: DetectResumeOpts): ResumeInfo | undefined {
 
   return { branch, ...state, isAlreadyDelivered: false };
 }
-
-// ─── Execution ───────────────────────────────────────────────────────────────
 
 /**
  * Resume a crashed session: commit uncommitted changes, push, and
@@ -139,8 +133,6 @@ export async function executeResume(
     };
   }
 }
-
-// ─── Internal helpers ────────────────────────────────────────────────────────
 
 /** Get current branch, returning `undefined` on failure. */
 function safeCurrent(exec: ExecGit): string | undefined {

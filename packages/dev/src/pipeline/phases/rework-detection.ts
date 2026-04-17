@@ -8,8 +8,6 @@ import type { RunContext } from '../context.js';
 import type { BoardConfig } from '@chief-clancy/core/schemas/env.js';
 import type { FetchedTicket } from '@chief-clancy/core/types/board.js';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 /** Data returned by the pre-wired rework detection function. */
 type ReworkData = {
   readonly ticket: FetchedTicket;
@@ -33,8 +31,6 @@ export type ReworkDetectionDeps = {
   ) => Promise<ReworkData | undefined>;
 };
 
-// ─── Phase ───────────────────────────────────────────────────────────────────
-
 /**
  * Detect PR-based rework from reviewer feedback.
  *
@@ -55,8 +51,6 @@ export async function reworkDetection(
     return { isDetected: false };
   }
 }
-
-// ─── Internal helpers ────────────────────────────────────────────────────────
 
 /** Run rework detection and populate context on match. */
 async function detect(

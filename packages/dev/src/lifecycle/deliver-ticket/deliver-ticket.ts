@@ -29,8 +29,6 @@ import {
   pushBranch,
 } from '@chief-clancy/core/shared/git-ops.js';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 /** Filesystem for reading verification attempt counter. */
 type DeliverFs = {
   readonly readFile: (path: string) => string;
@@ -58,8 +56,6 @@ type DeliveryResult = {
   readonly outcome: ReturnType<typeof deliveryOutcome>;
   readonly prResult?: PrCreationResult;
 };
-
-// ─── Public API ──────────────────────────────────────────────────────────────
 
 /**
  * Push branch to remote, create PR/MR, resolve outcome, and append progress.
@@ -95,8 +91,6 @@ export async function deliverViaPullRequest(
 
   return { isPushed: true, outcome, prResult };
 }
-
-// ─── Internal helpers ────────────────────────────────────────────────────────
 
 /** Handle push failure: log progress and return failure result. */
 function handlePushFailure(opts: DeliverOpts): DeliveryResult {

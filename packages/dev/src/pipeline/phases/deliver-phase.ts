@@ -8,8 +8,6 @@
 import type { RunContext } from '../context.js';
 import type { ProgressStatus } from '@chief-clancy/core/types/progress.js';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 /** Structured result of the deliver phase. */
 type DeliverPhaseResult = {
   readonly ok: boolean;
@@ -64,8 +62,6 @@ export type DeliverPhaseDeps = {
   readonly removeBuildLabel: (ticketKey: string) => Promise<void>;
 };
 
-// ─── Phase ───────────────────────────────────────────────────────────────────
-
 /**
  * Deliver the ticket via PR (rework or fresh path).
  *
@@ -84,8 +80,6 @@ export async function deliverPhase(
     ? deliverRework(ctx, deps)
     : deliverFresh(ctx, deps);
 }
-
-// ─── Internal helpers ────────────────────────────────────────────────────────
 
 /** Deliver a rework ticket: push, log REWORK, quality, post-rework actions. */
 async function deliverRework(

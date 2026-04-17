@@ -15,8 +15,6 @@ import type { ProgressEntry, ProgressFs } from '~/d/lifecycle/progress.js';
 import { ticketBranch } from '~/d/lifecycle/branch.js';
 import { findEntriesWithStatus } from '~/d/lifecycle/progress.js';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 /** Result of rework detection — the ticket, feedback, and PR context. */
 type ReworkResult = {
   readonly ticket: FetchedTicket;
@@ -43,13 +41,9 @@ type PostReworkOpts = {
   readonly reviewers?: readonly string[];
 };
 
-// ─── Constants ───────────────────────────────────────────────────────────────
-
 const MAX_CANDIDATES = 5;
 const MAX_FEEDBACK_PREVIEW = 3;
 const MAX_FEEDBACK_LENGTH = 80;
-
-// ─── Public API ──────────────────────────────────────────────────────────────
 
 /**
  * Build a rework comment to post on the PR after pushing fixes.
@@ -118,8 +112,6 @@ export async function postReworkActions(opts: PostReworkOpts): Promise<void> {
   await resolveAddressedThreads(handlers, prNumber, discussionIds);
   await requestReReviews(handlers, prNumber, reviewers);
 }
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 /** Best-effort: post a rework comment on the PR. */
 async function postReworkComment(
