@@ -8,8 +8,6 @@ import type { RunContext } from '../context.js';
 import type { BoardConfig } from '@chief-clancy/core/schemas/env.js';
 import type { FetchedTicket } from '@chief-clancy/core/types/board.js';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 /** Data returned by the pre-wired rework detection function. */
 type ReworkData = {
   readonly ticket: FetchedTicket;
@@ -21,7 +19,7 @@ type ReworkData = {
 
 /** Structured result of the rework-detection phase. */
 type ReworkDetectionResult = {
-  readonly detected: boolean;
+  readonly isDetected: boolean;
   readonly ticketKey?: string;
 };
 
@@ -32,8 +30,6 @@ export type ReworkDetectionDeps = {
     config: BoardConfig,
   ) => Promise<ReworkData | undefined>;
 };
-
-// ─── Phase ───────────────────────────────────────────────────────────────────
 
 /**
  * Detect PR-based rework from reviewer feedback.
@@ -52,11 +48,9 @@ export async function reworkDetection(
   try {
     return await detect(ctx, deps);
   } catch {
-    return { detected: false };
+    return { isDetected: false };
   }
 }
-
-// ─── Internal helpers ────────────────────────────────────────────────────────
 
 /** Run rework detection and populate context on match. */
 async function detect(
@@ -67,7 +61,7 @@ async function detect(
   const config = ctx.config!;
   const rework = await deps.fetchRework(config);
 
-  if (!rework) return { detected: false };
+  if (!rework) return { isDetected: false };
 
   ctx.setRework({
     isRework: true,
@@ -78,5 +72,5 @@ async function detect(
   });
   ctx.setTicket(rework.ticket);
 
-  return { detected: true, ticketKey: rework.ticket.key };
+  return { isDetected: true, ticketKey: rework.ticket.key };
 }

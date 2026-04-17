@@ -20,7 +20,7 @@ function makeDeps(overrides: Partial<DeliverPhaseDeps> = {}): DeliverPhaseDeps {
   return {
     deliverViaPullRequest: vi
       .fn()
-      .mockResolvedValue({ pushed: true, outcome: { type: 'created' } }),
+      .mockResolvedValue({ isPushed: true, outcome: { type: 'created' } }),
     appendProgress: vi.fn(),
     recordDelivery: vi.fn(),
     recordRework: vi.fn(),
@@ -165,7 +165,7 @@ describe('deliverPhase — fresh delivery', () => {
     const deps = makeDeps({
       deliverViaPullRequest: vi
         .fn()
-        .mockResolvedValue({ pushed: false, outcome: { type: 'local' } }),
+        .mockResolvedValue({ isPushed: false, outcome: { type: 'local' } }),
     });
     const result = await deliverPhase(ctx, deps);
 
@@ -178,7 +178,7 @@ describe('deliverPhase — fresh delivery', () => {
     const deps = makeDeps({
       deliverViaPullRequest: vi
         .fn()
-        .mockResolvedValue({ pushed: false, outcome: { type: 'local' } }),
+        .mockResolvedValue({ isPushed: false, outcome: { type: 'local' } }),
     });
     await deliverPhase(ctx, deps);
 
@@ -200,7 +200,7 @@ describe('deliverPhase — fresh delivery', () => {
     const deps = makeDeps({
       deliverViaPullRequest: vi
         .fn()
-        .mockResolvedValue({ pushed: false, outcome: { type: 'local' } }),
+        .mockResolvedValue({ isPushed: false, outcome: { type: 'local' } }),
     });
     await deliverPhase(ctx, deps);
 
@@ -242,13 +242,13 @@ describe('deliverPhase — rework delivery', () => {
     expect(result.ok).toBe(true);
   });
 
-  it('calls deliverViaPullRequest with skipLog: true', async () => {
+  it('calls deliverViaPullRequest with shouldSkipLog: true', async () => {
     const ctx = setupCtx({ isRework: true });
     const deps = makeDeps();
     await deliverPhase(ctx, deps);
 
     expect(deps.deliverViaPullRequest).toHaveBeenCalledWith(
-      expect.objectContaining({ skipLog: true }),
+      expect.objectContaining({ shouldSkipLog: true }),
     );
   });
 
@@ -300,7 +300,7 @@ describe('deliverPhase — rework delivery', () => {
     const deps = makeDeps({
       deliverViaPullRequest: vi
         .fn()
-        .mockResolvedValue({ pushed: false, outcome: { type: 'local' } }),
+        .mockResolvedValue({ isPushed: false, outcome: { type: 'local' } }),
     });
     await deliverPhase(ctx, deps);
 
@@ -314,7 +314,7 @@ describe('deliverPhase — rework delivery', () => {
     const deps = makeDeps({
       deliverViaPullRequest: vi
         .fn()
-        .mockResolvedValue({ pushed: false, outcome: { type: 'local' } }),
+        .mockResolvedValue({ isPushed: false, outcome: { type: 'local' } }),
     });
     const result = await deliverPhase(ctx, deps);
 

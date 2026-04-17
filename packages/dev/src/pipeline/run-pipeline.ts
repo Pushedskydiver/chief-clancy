@@ -11,8 +11,6 @@
  */
 import type { RunContext } from './context.js';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 /** Structured result of a pipeline run. */
 export type PipelineResult = {
   readonly status: 'completed' | 'aborted' | 'resumed' | 'dry-run' | 'error';
@@ -47,7 +45,7 @@ export type PipelineDeps = {
   /** Rework detection — check for PR review feedback. */
   readonly reworkDetection: (
     ctx: RunContext,
-  ) => Promise<{ readonly detected: boolean }>;
+  ) => Promise<{ readonly isDetected: boolean; readonly ticketKey?: string }>;
   /** Ticket fetch — fetch ticket + resolve branches. */
   readonly ticketFetch: (ctx: RunContext) => Promise<{
     readonly ok: boolean;
@@ -87,8 +85,6 @@ export type PipelineDeps = {
   readonly deleteVerifyAttempt: () => void;
 };
 
-// ─── Orchestrator ────────────────────────────────────────────────────────────
-
 /**
  * Run the full pipeline — all phases + invoke callback.
  *
@@ -125,8 +121,6 @@ export async function runPipeline(
     cleanupLock(ctx, deps);
   }
 }
-
-// ─── Internal helpers ────────────────────────────────────────────────────────
 
 /** Run all phases after lock-check. Separated for clean error boundaries. */
 async function runPhases(

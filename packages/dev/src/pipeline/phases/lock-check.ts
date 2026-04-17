@@ -16,8 +16,6 @@ import {
   readLock,
 } from '~/d/lifecycle/lock.js';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 /** Structured result of the lock-check phase. */
 type LockCheckResult = {
   /** `continue` = proceed to next phase, `abort` = stop, `resumed` = session resumed. */
@@ -31,7 +29,7 @@ type ResumeInfo = {
   readonly branch: string;
   readonly hasUncommitted: boolean;
   readonly hasUnpushed: boolean;
-  readonly alreadyDelivered: boolean;
+  readonly isAlreadyDelivered: boolean;
 };
 
 /** Resume detection options. */
@@ -58,8 +56,6 @@ export type LockCheckDeps = {
   ) => Promise<ResumeExecResult>;
 };
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
 /** Resume detection and execution for a stale lock. Best-effort. */
 async function resume(
   ctx: RunContext,
@@ -77,7 +73,7 @@ async function resume(
 
   if (!info) return { action: 'continue' };
 
-  if (info.alreadyDelivered) {
+  if (info.isAlreadyDelivered) {
     return {
       action: 'continue',
       reason: `${lock.ticketKey} already delivered — skipping`,
@@ -97,8 +93,6 @@ async function resume(
     ? { action: 'resumed', reason: `Resumed ${lock.ticketKey}` }
     : { action: 'continue' };
 }
-
-// ─── Phase ───────────────────────────────────────────────────────────────────
 
 /**
  * Check for an existing lock file and handle stale/active sessions.

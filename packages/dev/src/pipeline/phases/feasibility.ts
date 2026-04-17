@@ -8,8 +8,6 @@
 import type { RunContext } from '../context.js';
 import type { ProgressStatus } from '@chief-clancy/core/types/progress.js';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 /** Ticket metadata passed to the feasibility check. */
 type FeasibilityTicket = {
   readonly key: string;
@@ -19,7 +17,7 @@ type FeasibilityTicket = {
 
 /** Result from the feasibility check function. */
 type FeasibilityCheckResult = {
-  readonly feasible: boolean;
+  readonly isFeasible: boolean;
   readonly reason?: string;
 };
 
@@ -48,8 +46,6 @@ export type FeasibilityPhaseDeps = {
   readonly appendProgress: AppendFn;
 };
 
-// ─── Phase ───────────────────────────────────────────────────────────────────
-
 /**
  * Evaluate whether a ticket is feasible as pure code changes.
  *
@@ -77,7 +73,7 @@ export async function feasibilityPhase(
     config.env.CLANCY_MODEL,
   );
 
-  if (!result.feasible) {
+  if (!result.isFeasible) {
     deps.appendProgress({
       key: ticket.key,
       summary: ticket.title,

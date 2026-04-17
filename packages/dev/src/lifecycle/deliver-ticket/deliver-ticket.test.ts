@@ -82,7 +82,7 @@ const mockTicket: FetchedTicket = {
 function makeOpts(
   overrides: {
     readonly pushSucceeds?: boolean;
-    readonly skipLog?: boolean;
+    readonly shouldSkipLog?: boolean;
     readonly parent?: string;
     readonly verifyAttempt?: string;
     readonly ticketType?: string;
@@ -102,7 +102,7 @@ function makeOpts(
     ticket,
     ticketBranch: 'feature/proj-42',
     targetBranch: 'main',
-    skipLog: overrides.skipLog,
+    shouldSkipLog: overrides.shouldSkipLog,
     parent: overrides.parent,
   };
 }
@@ -114,11 +114,11 @@ describe('deliverViaPullRequest', () => {
     mockFetchFn.mockClear();
   });
 
-  it('returns pushed true and created outcome on success', async () => {
+  it('returns isPushed true and created outcome on success', async () => {
     const opts = makeOpts();
     const result = await deliverViaPullRequest(opts);
 
-    expect(result.pushed).toBe(true);
+    expect(result.isPushed).toBe(true);
     expect(result.outcome.type).toBe('created');
   });
 
@@ -132,11 +132,11 @@ describe('deliverViaPullRequest', () => {
     expect(content).toContain('PROJ-42');
   });
 
-  it('returns pushed false when push fails', async () => {
+  it('returns isPushed false when push fails', async () => {
     const opts = makeOpts({ pushSucceeds: false });
     const result = await deliverViaPullRequest(opts);
 
-    expect(result.pushed).toBe(false);
+    expect(result.isPushed).toBe(false);
   });
 
   it('appends PUSH_FAILED progress when push fails', async () => {
@@ -147,15 +147,15 @@ describe('deliverViaPullRequest', () => {
     expect(content).toContain('PUSH_FAILED');
   });
 
-  it('skips progress when skipLog is true', async () => {
-    const opts = makeOpts({ skipLog: true });
+  it('skips progress when shouldSkipLog is true', async () => {
+    const opts = makeOpts({ shouldSkipLog: true });
     await deliverViaPullRequest(opts);
 
     expect(opts.progressFs.appendFile).not.toHaveBeenCalled();
   });
 
-  it('skips PUSH_FAILED progress when skipLog and push fails', async () => {
-    const opts = makeOpts({ pushSucceeds: false, skipLog: true });
+  it('skips PUSH_FAILED progress when shouldSkipLog and push fails', async () => {
+    const opts = makeOpts({ pushSucceeds: false, shouldSkipLog: true });
     await deliverViaPullRequest(opts);
 
     expect(opts.progressFs.appendFile).not.toHaveBeenCalled();
@@ -205,7 +205,7 @@ describe('deliverViaPullRequest', () => {
 
     const result = await deliverViaPullRequest(opts);
 
-    expect(result.pushed).toBe(true);
+    expect(result.isPushed).toBe(true);
     expect(result.outcome.type).toBe('failed');
   });
 
@@ -236,7 +236,7 @@ describe('deliverViaPullRequest', () => {
     };
     const result = await deliverViaPullRequest(opts);
 
-    expect(result.pushed).toBe(true);
+    expect(result.isPushed).toBe(true);
     expect(result.outcome.type).toBe('not_attempted');
   });
 });

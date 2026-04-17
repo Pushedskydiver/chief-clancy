@@ -8,8 +8,6 @@
 import type { RunContext } from '../context.js';
 import type { ProgressStatus } from '@chief-clancy/core/types/progress.js';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 /** Structured result of the deliver phase. */
 type DeliverPhaseResult = {
   readonly ok: boolean;
@@ -17,14 +15,14 @@ type DeliverPhaseResult = {
 
 /** Minimal delivery result from the pre-wired deliver function. */
 type DeliveryResult = {
-  readonly pushed: boolean;
+  readonly isPushed: boolean;
 };
 
 /** Options passed to the pre-wired deliver function. */
 type DeliverCallOpts = {
   readonly ticketBranch: string;
   readonly targetBranch: string;
-  readonly skipLog?: boolean;
+  readonly shouldSkipLog?: boolean;
   readonly parent?: string;
   readonly singleChildParent?: string;
 };
@@ -64,8 +62,6 @@ export type DeliverPhaseDeps = {
   readonly removeBuildLabel: (ticketKey: string) => Promise<void>;
 };
 
-// ─── Phase ───────────────────────────────────────────────────────────────────
-
 /**
  * Deliver the ticket via PR (rework or fresh path).
  *
@@ -85,8 +81,6 @@ export async function deliverPhase(
     : deliverFresh(ctx, deps);
 }
 
-// ─── Internal helpers ────────────────────────────────────────────────────────
-
 /** Deliver a rework ticket: push, log REWORK, quality, post-rework actions. */
 async function deliverRework(
   ctx: RunContext,
@@ -101,11 +95,11 @@ async function deliverRework(
   const result = await deps.deliverViaPullRequest({
     ticketBranch,
     targetBranch: effectiveTarget,
-    skipLog: true,
+    shouldSkipLog: true,
     parent: parentKey,
   });
 
-  if (!result.pushed) {
+  if (!result.isPushed) {
     deps.appendProgress({
       key: ticket.key,
       summary: ticket.title,
@@ -160,7 +154,7 @@ async function deliverFresh(
     singleChildParent,
   });
 
-  if (!result.pushed) {
+  if (!result.isPushed) {
     deps.appendProgress({
       key: ticket.key,
       summary: ticket.title,

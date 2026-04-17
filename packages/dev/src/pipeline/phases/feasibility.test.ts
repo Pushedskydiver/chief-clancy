@@ -38,7 +38,7 @@ function makeDeps(
   overrides: Partial<FeasibilityPhaseDeps> = {},
 ): FeasibilityPhaseDeps {
   return {
-    checkFeasibility: vi.fn(() => Promise.resolve({ feasible: true })),
+    checkFeasibility: vi.fn(() => Promise.resolve({ isFeasible: true })),
     appendProgress: vi.fn(),
     ...overrides,
   };
@@ -62,7 +62,7 @@ describe('feasibilityPhase', () => {
     const deps = makeDeps({
       checkFeasibility: vi.fn(() =>
         Promise.resolve({
-          feasible: false,
+          isFeasible: false,
           reason: 'requires infrastructure changes',
         }),
       ),
@@ -79,7 +79,7 @@ describe('feasibilityPhase', () => {
     const deps = makeDeps({
       checkFeasibility: vi.fn(() =>
         Promise.resolve({
-          feasible: false,
+          isFeasible: false,
           reason: 'needs hardware',
         }),
       ),
@@ -116,7 +116,7 @@ describe('feasibilityPhase', () => {
 
   it('passes ticket metadata and model to checkFeasibility', async () => {
     const ctx = makePopulatedCtx({ configEnv: { CLANCY_MODEL: 'sonnet' } });
-    const checkFeasibility = vi.fn(() => Promise.resolve({ feasible: true }));
+    const checkFeasibility = vi.fn(() => Promise.resolve({ isFeasible: true }));
     const deps = makeDeps({ checkFeasibility });
 
     await feasibilityPhase(ctx, deps);
@@ -134,7 +134,7 @@ describe('feasibilityPhase', () => {
   it('uses default reason when checkFeasibility returns no reason', async () => {
     const ctx = makePopulatedCtx();
     const deps = makeDeps({
-      checkFeasibility: vi.fn(() => Promise.resolve({ feasible: false })),
+      checkFeasibility: vi.fn(() => Promise.resolve({ isFeasible: false })),
     });
 
     const result = await feasibilityPhase(ctx, deps);
