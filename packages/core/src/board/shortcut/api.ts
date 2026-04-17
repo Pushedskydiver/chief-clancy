@@ -58,16 +58,21 @@ export async function pingShortcut(
     .catch(() => undefined);
 
   if (!response) {
-    return { ok: false, error: '✗ Could not reach Shortcut — check network' };
+    return {
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: '✗ Could not reach Shortcut — check network',
+      },
+    };
   }
 
   if (!response.ok) {
-    return response.status === 401 || response.status === 403
-      ? {
-          ok: false,
-          error: '✗ Shortcut auth failed — check SHORTCUT_API_TOKEN',
-        }
-      : { ok: false, error: `✗ Shortcut API returned HTTP ${response.status}` };
+    const isAuthError = response.status === 401 || response.status === 403;
+    const message = isAuthError
+      ? '✗ Shortcut auth failed — check SHORTCUT_API_TOKEN'
+      : `✗ Shortcut API returned HTTP ${response.status}`;
+    return { ok: false, error: { kind: 'unknown', message } };
   }
 
   try {
@@ -81,7 +86,10 @@ export async function pingShortcut(
 
   return {
     ok: false,
-    error: '✗ Shortcut auth failed — check SHORTCUT_API_TOKEN',
+    error: {
+      kind: 'unknown',
+      message: '✗ Shortcut auth failed — check SHORTCUT_API_TOKEN',
+    },
   };
 }
 

@@ -79,7 +79,7 @@ export async function preflightPhase(
   const ping = await board.ping();
 
   if (!ping.ok) {
-    return { ok: false, error: ping.error };
+    return { ok: false, error: ping.error.message };
   }
 
   // Success — populate context
