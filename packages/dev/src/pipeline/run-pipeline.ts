@@ -68,7 +68,6 @@ export type PipelineDeps = {
   /** Feasibility — Claude feasibility check. */
   readonly feasibility: (ctx: RunContext) => Promise<{
     readonly ok: boolean;
-    readonly error?: string;
     readonly reason?: string;
   }>;
   /** Branch setup — git branch operations + lock write. */
@@ -82,13 +81,9 @@ export type PipelineDeps = {
   /** Transition — move ticket to In Progress. */
   readonly transition: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
   /** Invoke — run Claude session. */
-  readonly invoke: (
-    ctx: RunContext,
-  ) => Promise<{ readonly ok: boolean; readonly error?: string }>;
+  readonly invoke: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
   /** Deliver — push + PR creation. */
-  readonly deliver: (
-    ctx: RunContext,
-  ) => Promise<{ readonly ok: boolean; readonly error?: string }>;
+  readonly deliver: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
   /** Cost — log estimated token cost. */
   readonly cost: (ctx: RunContext) => { readonly ok: boolean };
   /** Cleanup — completion data + notification. */
@@ -179,7 +174,7 @@ async function runPhases(
     return {
       status: 'aborted',
       phase: 'feasibility',
-      error: feasibility.error ?? feasibility.reason,
+      error: feasibility.reason,
     };
 
   // Branch setup
@@ -196,13 +191,11 @@ async function runPhases(
 
   // Invoke Claude session
   const invoke = await deps.invoke(ctx);
-  if (!invoke.ok)
-    return { status: 'aborted', phase: 'invoke', error: invoke.error };
+  if (!invoke.ok) return { status: 'aborted', phase: 'invoke' };
 
   // Deliver
   const deliver = await deps.deliver(ctx);
-  if (!deliver.ok)
-    return { status: 'aborted', phase: 'deliver', error: deliver.error };
+  if (!deliver.ok) return { status: 'aborted', phase: 'deliver' };
 
   // Cost (best-effort — never aborts)
   deps.cost(ctx);
