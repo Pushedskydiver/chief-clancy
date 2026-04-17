@@ -38,12 +38,12 @@ describe('buildFeasibilityPrompt', () => {
 
 describe('parseFeasibilityResponse', () => {
   it('returns feasible for FEASIBLE response', () => {
-    expect(parseFeasibilityResponse('FEASIBLE')).toEqual({ feasible: true });
+    expect(parseFeasibilityResponse('FEASIBLE')).toEqual({ isFeasible: true });
   });
 
   it('returns feasible with extra whitespace', () => {
     expect(parseFeasibilityResponse('  FEASIBLE  \n')).toEqual({
-      feasible: true,
+      isFeasible: true,
     });
   });
 
@@ -51,32 +51,32 @@ describe('parseFeasibilityResponse', () => {
     expect(
       parseFeasibilityResponse('INFEASIBLE: requires OneTrust admin access'),
     ).toEqual({
-      feasible: false,
+      isFeasible: false,
       reason: 'requires OneTrust admin access',
     });
   });
 
   it('returns infeasible without reason when none given', () => {
     expect(parseFeasibilityResponse('INFEASIBLE')).toEqual({
-      feasible: false,
+      isFeasible: false,
       reason: undefined,
     });
   });
 
   it('is case-insensitive', () => {
     expect(parseFeasibilityResponse('infeasible: reason')).toEqual({
-      feasible: false,
+      isFeasible: false,
       reason: 'reason',
     });
   });
 
   it('fails open on empty output', () => {
-    expect(parseFeasibilityResponse('')).toEqual({ feasible: true });
+    expect(parseFeasibilityResponse('')).toEqual({ isFeasible: true });
   });
 
   it('fails open on malformed output', () => {
     expect(parseFeasibilityResponse('I think this is feasible')).toEqual({
-      feasible: true,
+      isFeasible: true,
     });
   });
 
@@ -86,7 +86,7 @@ describe('parseFeasibilityResponse', () => {
         'Some preamble\nINFEASIBLE: needs manual testing',
       ),
     ).toEqual({
-      feasible: false,
+      isFeasible: false,
       reason: 'needs manual testing',
     });
   });
@@ -99,7 +99,7 @@ describe('checkFeasibility', () => {
     const invoke = vi.fn().mockReturnValue({ stdout: 'FEASIBLE', ok: true });
     const ticket = { key: 'PROJ-1', title: 'Test', description: 'desc' };
 
-    expect(checkFeasibility(invoke, ticket)).toEqual({ feasible: true });
+    expect(checkFeasibility(invoke, ticket)).toEqual({ isFeasible: true });
     expect(invoke).toHaveBeenCalledWith(expect.any(String), undefined);
   });
 
@@ -111,7 +111,7 @@ describe('checkFeasibility', () => {
     const ticket = { key: 'PROJ-1', title: 'Test', description: 'desc' };
 
     expect(checkFeasibility(invoke, ticket)).toEqual({
-      feasible: false,
+      isFeasible: false,
       reason: 'requires external API',
     });
   });
@@ -120,7 +120,7 @@ describe('checkFeasibility', () => {
     const invoke = vi.fn().mockReturnValue({ stdout: '', ok: false });
     const ticket = { key: 'PROJ-1', title: 'Test', description: 'desc' };
 
-    expect(checkFeasibility(invoke, ticket)).toEqual({ feasible: true });
+    expect(checkFeasibility(invoke, ticket)).toEqual({ isFeasible: true });
   });
 
   it('passes model to invoke', () => {
@@ -144,7 +144,7 @@ describe('parseFeasibilityResponse property-based', () => {
           .filter((s) => !/^\s*INFEASIBLE/i.test(s)),
         (stdout) => {
           const result = parseFeasibilityResponse(stdout);
-          return result.feasible === true && result.reason === undefined;
+          return result.isFeasible === true && result.reason === undefined;
         },
       ),
     );
@@ -154,7 +154,7 @@ describe('parseFeasibilityResponse property-based', () => {
     fc.assert(
       fc.property(fc.string({ minLength: 0, maxLength: 100 }), (suffix) => {
         const result = parseFeasibilityResponse(`INFEASIBLE${suffix}`);
-        return result.feasible === false;
+        return result.isFeasible === false;
       }),
     );
   });

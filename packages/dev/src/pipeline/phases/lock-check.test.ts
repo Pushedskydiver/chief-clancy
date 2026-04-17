@@ -100,7 +100,7 @@ describe('lockCheck', () => {
       branch: 'feat/proj-42',
       hasUncommitted: false,
       hasUnpushed: false,
-      alreadyDelivered: true,
+      isAlreadyDelivered: true,
     }));
 
     const result = await lockCheck(
@@ -121,7 +121,7 @@ describe('lockCheck', () => {
       branch: 'feat/proj-42',
       hasUncommitted: true,
       hasUnpushed: false,
-      alreadyDelivered: false,
+      isAlreadyDelivered: false,
     }));
     const executeResume = vi.fn(async () => ({ ok: true }));
 
@@ -143,7 +143,7 @@ describe('lockCheck', () => {
       branch: 'feat/proj-42',
       hasUncommitted: true,
       hasUnpushed: false,
-      alreadyDelivered: false,
+      isAlreadyDelivered: false,
     }));
     const executeResume = vi.fn(async () => ({ ok: false }));
 
@@ -164,7 +164,7 @@ describe('lockCheck', () => {
       branch: 'feat/proj-42',
       hasUncommitted: true,
       hasUnpushed: true,
-      alreadyDelivered: false,
+      isAlreadyDelivered: false,
     }));
     const executeResume = vi.fn(async () => ({ ok: false }));
 
@@ -187,7 +187,7 @@ describe('lockCheck', () => {
       branch: 'feat/proj-42',
       hasUncommitted: true,
       hasUnpushed: false,
-      alreadyDelivered: false,
+      isAlreadyDelivered: false,
     }));
     const executeResume = vi.fn(async () => {
       throw new Error('resume crashed');

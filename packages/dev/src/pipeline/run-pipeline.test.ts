@@ -17,7 +17,7 @@ function makeDeps(overrides: Partial<PipelineDeps> = {}): PipelineDeps {
     preflight: vi.fn().mockResolvedValue({ ok: true }),
     epicCompletion: vi.fn().mockResolvedValue({ results: [] }),
     prRetry: vi.fn().mockResolvedValue({ results: [] }),
-    reworkDetection: vi.fn().mockResolvedValue({ detected: false }),
+    reworkDetection: vi.fn().mockResolvedValue({ isDetected: false }),
     ticketFetch: vi.fn().mockResolvedValue({ ok: true }),
     feasibility: vi.fn().mockResolvedValue({ ok: true }),
     branchSetup: vi.fn().mockResolvedValue({ ok: true }),
@@ -90,7 +90,7 @@ describe('runPipeline — happy path', () => {
       }),
       reworkDetection: vi.fn(async () => {
         order.push('reworkDetection');
-        return { detected: false };
+        return { isDetected: false };
       }),
       ticketFetch: vi.fn(async () => {
         order.push('ticketFetch');
@@ -276,7 +276,7 @@ describe('runPipeline — informational phases', () => {
     const deps = makeDeps({
       reworkDetection: vi
         .fn()
-        .mockResolvedValue({ detected: true, ticketKey: 'PROJ-1' }),
+        .mockResolvedValue({ isDetected: true, ticketKey: 'PROJ-1' }),
     });
     const result = await runPipeline(makeCtx(), deps);
 

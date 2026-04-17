@@ -31,7 +31,7 @@ type ResumeInfo = {
   readonly branch: string;
   readonly hasUncommitted: boolean;
   readonly hasUnpushed: boolean;
-  readonly alreadyDelivered: boolean;
+  readonly isAlreadyDelivered: boolean;
 };
 
 /** Resume detection options. */
@@ -77,7 +77,7 @@ async function resume(
 
   if (!info) return { action: 'continue' };
 
-  if (info.alreadyDelivered) {
+  if (info.isAlreadyDelivered) {
     return {
       action: 'continue',
       reason: `${lock.ticketKey} already delivered — skipping`,

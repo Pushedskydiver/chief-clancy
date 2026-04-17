@@ -151,7 +151,7 @@ describe('detectResume', () => {
       branch: 'feature/proj-42',
       hasUncommitted: true,
       hasUnpushed: false,
-      alreadyDelivered: false,
+      isAlreadyDelivered: false,
     });
   });
 
@@ -167,7 +167,7 @@ describe('detectResume', () => {
       branch: 'feature/proj-42',
       hasUncommitted: false,
       hasUnpushed: true,
-      alreadyDelivered: false,
+      isAlreadyDelivered: false,
     });
   });
 
@@ -183,7 +183,7 @@ describe('detectResume', () => {
       branch: 'feature/proj-42',
       hasUncommitted: true,
       hasUnpushed: true,
-      alreadyDelivered: false,
+      isAlreadyDelivered: false,
     });
   });
 
@@ -224,11 +224,11 @@ describe('detectResume', () => {
       branch: 'feature/proj-42',
       hasUncommitted: false,
       hasUnpushed: true,
-      alreadyDelivered: false,
+      isAlreadyDelivered: false,
     });
   });
 
-  it('returns alreadyDelivered when progress shows PR_CREATED', () => {
+  it('returns isAlreadyDelivered when progress shows PR_CREATED', () => {
     const progressFs = makeProgressFs([
       {
         timestamp: '2026-03-22 10:00',
@@ -250,11 +250,11 @@ describe('detectResume', () => {
       branch: 'feature/proj-42',
       hasUncommitted: false,
       hasUnpushed: false,
-      alreadyDelivered: true,
+      isAlreadyDelivered: true,
     });
   });
 
-  it('returns alreadyDelivered for PUSHED status', () => {
+  it('returns isAlreadyDelivered for PUSHED status', () => {
     const progressFs = makeProgressFs([
       {
         timestamp: '2026-03-22 10:00',
@@ -275,11 +275,11 @@ describe('detectResume', () => {
       branch: 'feature/proj-42',
       hasUncommitted: false,
       hasUnpushed: false,
-      alreadyDelivered: true,
+      isAlreadyDelivered: true,
     });
   });
 
-  it('returns alreadyDelivered for RESUMED status', () => {
+  it('returns isAlreadyDelivered for RESUMED status', () => {
     const progressFs = makeProgressFs([
       {
         timestamp: '2026-03-22 10:00',
@@ -300,7 +300,7 @@ describe('detectResume', () => {
       branch: 'feature/proj-42',
       hasUncommitted: false,
       hasUnpushed: false,
-      alreadyDelivered: true,
+      isAlreadyDelivered: true,
     });
   });
 
@@ -332,7 +332,7 @@ describe('executeResume', () => {
     branch: 'feature/proj-42',
     hasUncommitted: false,
     hasUnpushed: true,
-    alreadyDelivered: false,
+    isAlreadyDelivered: false,
   };
 
   it('pushes and returns ok when hasUnpushed only', async () => {

@@ -17,7 +17,7 @@ type FeasibilityTicket = {
 
 /** Result of a feasibility check. */
 type FeasibilityResult = {
-  readonly feasible: boolean;
+  readonly isFeasible: boolean;
   readonly reason?: string;
 };
 
@@ -66,10 +66,10 @@ export function parseFeasibilityResponse(stdout: string): FeasibilityResult {
 
   if (/^INFEASIBLE/i.test(line)) {
     const reason = line.replace(/^INFEASIBLE:?\s*/i, '').trim() || undefined;
-    return { feasible: false, reason };
+    return { isFeasible: false, reason };
   }
 
-  return { feasible: true };
+  return { isFeasible: true };
 }
 
 /** Invoke Claude in print mode and return stdout + success flag. */
@@ -97,7 +97,7 @@ export function checkFeasibility(
   const prompt = buildFeasibilityPrompt(ticket);
   const { stdout, ok } = invoke(prompt, model);
 
-  if (!ok) return { feasible: true };
+  if (!ok) return { isFeasible: true };
 
   return parseFeasibilityResponse(stdout);
 }

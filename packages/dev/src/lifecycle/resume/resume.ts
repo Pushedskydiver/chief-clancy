@@ -28,7 +28,7 @@ type ResumeInfo = {
   readonly branch: string;
   readonly hasUncommitted: boolean;
   readonly hasUnpushed: boolean;
-  readonly alreadyDelivered: boolean;
+  readonly isAlreadyDelivered: boolean;
 };
 
 /** Options for {@link detectResume}. */
@@ -96,7 +96,7 @@ export function detectResume(opts: DetectResumeOpts): ResumeInfo | undefined {
     return checkAlreadyDelivered({ progressFs, projectRoot, lock }, branch);
   }
 
-  return { branch, ...state, alreadyDelivered: false };
+  return { branch, ...state, isAlreadyDelivered: false };
 }
 
 // ─── Execution ───────────────────────────────────────────────────────────────
@@ -230,7 +230,7 @@ function checkAlreadyDelivered(
       branch,
       hasUncommitted: false,
       hasUnpushed: false,
-      alreadyDelivered: true,
+      isAlreadyDelivered: true,
     };
   }
 

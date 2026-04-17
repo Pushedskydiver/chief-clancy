@@ -19,7 +19,7 @@ type FeasibilityTicket = {
 
 /** Result from the feasibility check function. */
 type FeasibilityCheckResult = {
-  readonly feasible: boolean;
+  readonly isFeasible: boolean;
   readonly reason?: string;
 };
 
@@ -77,7 +77,7 @@ export async function feasibilityPhase(
     config.env.CLANCY_MODEL,
   );
 
-  if (!result.feasible) {
+  if (!result.isFeasible) {
     deps.appendProgress({
       key: ticket.key,
       summary: ticket.title,

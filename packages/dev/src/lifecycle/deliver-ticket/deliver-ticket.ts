@@ -47,14 +47,14 @@ type DeliverOpts = {
   readonly ticket: FetchedTicket;
   readonly ticketBranch: string;
   readonly targetBranch: string;
-  readonly skipLog?: boolean;
+  readonly shouldSkipLog?: boolean;
   readonly parent?: string;
   readonly singleChildParent?: string;
 };
 
 /** Result of a delivery attempt. */
 type DeliveryResult = {
-  readonly pushed: boolean;
+  readonly isPushed: boolean;
   readonly outcome: ReturnType<typeof deliveryOutcome>;
   readonly prResult?: PrCreationResult;
 };
@@ -93,7 +93,7 @@ export async function deliverViaPullRequest(
   appendDeliveryProgress(opts, outcome);
   safeCheckout(exec, targetBranch);
 
-  return { pushed: true, outcome, prResult };
+  return { isPushed: true, outcome, prResult };
 }
 
 // ─── Internal helpers ────────────────────────────────────────────────────────
@@ -101,9 +101,9 @@ export async function deliverViaPullRequest(
 /** Handle push failure: log progress and return failure result. */
 function handlePushFailure(opts: DeliverOpts): DeliveryResult {
   const { exec, progressFs, projectRoot, ticket, targetBranch } = opts;
-  const { skipLog = false, parent } = opts;
+  const { shouldSkipLog = false, parent } = opts;
 
-  if (!skipLog) {
+  if (!shouldSkipLog) {
     appendProgress(progressFs, projectRoot, {
       key: ticket.key,
       summary: ticket.title,
@@ -115,7 +115,7 @@ function handlePushFailure(opts: DeliverOpts): DeliveryResult {
   safeCheckout(exec, targetBranch);
 
   return {
-    pushed: false,
+    isPushed: false,
     outcome: { type: 'local' },
   };
 }
@@ -187,7 +187,7 @@ function appendDeliveryProgress(
   opts: DeliverOpts,
   outcome: ReturnType<typeof deliveryOutcome>,
 ): void {
-  if (opts.skipLog) return;
+  if (opts.shouldSkipLog) return;
 
   const { status, prNumber } = progressForOutcome(outcome);
   appendProgress(opts.progressFs, opts.projectRoot, {

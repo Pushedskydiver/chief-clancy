@@ -47,7 +47,7 @@ export type PipelineDeps = {
   /** Rework detection — check for PR review feedback. */
   readonly reworkDetection: (
     ctx: RunContext,
-  ) => Promise<{ readonly detected: boolean }>;
+  ) => Promise<{ readonly isDetected: boolean }>;
   /** Ticket fetch — fetch ticket + resolve branches. */
   readonly ticketFetch: (ctx: RunContext) => Promise<{
     readonly ok: boolean;

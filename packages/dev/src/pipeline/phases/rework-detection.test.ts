@@ -28,17 +28,17 @@ function makeDeps(
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
 describe('reworkDetection', () => {
-  it('returns detected: false when no rework found', async () => {
+  it('returns isDetected: false when no rework found', async () => {
     const ctx = makeCtx();
     const deps = makeDeps();
 
     const result = await reworkDetection(ctx, deps);
 
-    expect(result.detected).toBe(false);
+    expect(result.isDetected).toBe(false);
     expect(result.ticketKey).toBeUndefined();
   });
 
-  it('returns detected: true when rework found', async () => {
+  it('returns isDetected: true when rework found', async () => {
     const ctx = makeCtx();
     const deps = makeDeps({
       fetchRework: vi.fn(() =>
@@ -53,7 +53,7 @@ describe('reworkDetection', () => {
 
     const result = await reworkDetection(ctx, deps);
 
-    expect(result.detected).toBe(true);
+    expect(result.isDetected).toBe(true);
     expect(result.ticketKey).toBe('PROJ-42');
   });
 
@@ -109,7 +109,7 @@ describe('reworkDetection', () => {
     expect(ctx.prFeedback).toBeUndefined();
   });
 
-  it('catches errors and returns detected: false', async () => {
+  it('catches errors and returns isDetected: false', async () => {
     const ctx = makeCtx();
     const deps = makeDeps({
       fetchRework: vi.fn(() => Promise.reject(new Error('network error'))),
@@ -117,11 +117,11 @@ describe('reworkDetection', () => {
 
     const result = await reworkDetection(ctx, deps);
 
-    expect(result.detected).toBe(false);
+    expect(result.isDetected).toBe(false);
     expect(ctx.isRework).toBeUndefined();
   });
 
-  it('catches sync errors and returns detected: false', async () => {
+  it('catches sync errors and returns isDetected: false', async () => {
     const ctx = makeCtx();
     const deps: ReworkDetectionDeps = {
       fetchRework: vi.fn(() => {
@@ -131,7 +131,7 @@ describe('reworkDetection', () => {
 
     const result = await reworkDetection(ctx, deps);
 
-    expect(result.detected).toBe(false);
+    expect(result.isDetected).toBe(false);
   });
 
   it('passes config to fetchRework', async () => {

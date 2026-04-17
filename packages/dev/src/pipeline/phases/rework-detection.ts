@@ -21,7 +21,7 @@ type ReworkData = {
 
 /** Structured result of the rework-detection phase. */
 type ReworkDetectionResult = {
-  readonly detected: boolean;
+  readonly isDetected: boolean;
   readonly ticketKey?: string;
 };
 
@@ -52,7 +52,7 @@ export async function reworkDetection(
   try {
     return await detect(ctx, deps);
   } catch {
-    return { detected: false };
+    return { isDetected: false };
   }
 }
 
@@ -67,7 +67,7 @@ async function detect(
   const config = ctx.config!;
   const rework = await deps.fetchRework(config);
 
-  if (!rework) return { detected: false };
+  if (!rework) return { isDetected: false };
 
   ctx.setRework({
     isRework: true,
@@ -78,5 +78,5 @@ async function detect(
   });
   ctx.setTicket(rework.ticket);
 
-  return { detected: true, ticketKey: rework.ticket.key };
+  return { isDetected: true, ticketKey: rework.ticket.key };
 }

@@ -17,14 +17,14 @@ type DeliverPhaseResult = {
 
 /** Minimal delivery result from the pre-wired deliver function. */
 type DeliveryResult = {
-  readonly pushed: boolean;
+  readonly isPushed: boolean;
 };
 
 /** Options passed to the pre-wired deliver function. */
 type DeliverCallOpts = {
   readonly ticketBranch: string;
   readonly targetBranch: string;
-  readonly skipLog?: boolean;
+  readonly shouldSkipLog?: boolean;
   readonly parent?: string;
   readonly singleChildParent?: string;
 };
@@ -101,11 +101,11 @@ async function deliverRework(
   const result = await deps.deliverViaPullRequest({
     ticketBranch,
     targetBranch: effectiveTarget,
-    skipLog: true,
+    shouldSkipLog: true,
     parent: parentKey,
   });
 
-  if (!result.pushed) {
+  if (!result.isPushed) {
     deps.appendProgress({
       key: ticket.key,
       summary: ticket.title,
@@ -160,7 +160,7 @@ async function deliverFresh(
     singleChildParent,
   });
 
-  if (!result.pushed) {
+  if (!result.isPushed) {
     deps.appendProgress({
       key: ticket.key,
       summary: ticket.title,
