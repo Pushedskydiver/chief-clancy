@@ -11,7 +11,7 @@ import { preflightPhase } from './preflight-phase.js';
 
 function makeBoard(overrides: Partial<Board> = {}): Board {
   return {
-    ping: vi.fn(async () => ({ ok: true })),
+    ping: vi.fn<Board['ping']>(async () => ({ ok: true })),
     validateInputs: vi.fn(() => undefined),
     fetchTicket: async () => undefined,
     fetchTickets: async () => [],
@@ -104,7 +104,10 @@ describe('preflightPhase', () => {
 
   it('returns error when board ping fails', async () => {
     const board = makeBoard({
-      ping: vi.fn(async () => ({ ok: false, error: 'Connection refused' })),
+      ping: vi.fn<Board['ping']>(async () => ({
+        ok: false,
+        error: { kind: 'unknown', message: 'Connection refused' },
+      })),
     });
     const deps = makeDeps({ createBoard: vi.fn(() => board) });
 

@@ -47,11 +47,19 @@ export type FetchTicketOpts = {
   readonly limit?: number;
 };
 
-/** Result of a board connectivity check. */
-export type PingResult = {
-  readonly ok: boolean;
-  readonly error?: string;
-};
+/**
+ * Result of a board connectivity check.
+ *
+ * Discriminated on `ok`. The failure branch carries a tagged error with
+ * `kind: 'unknown'` and a human-readable `message` per CONVENTIONS.md
+ * §Error Handling.
+ */
+export type PingResult =
+  | { readonly ok: true }
+  | {
+      readonly ok: false;
+      readonly error: { readonly kind: 'unknown'; readonly message: string };
+    };
 
 /** Count of child tickets and how many remain incomplete. */
 export type ChildrenStatus = {

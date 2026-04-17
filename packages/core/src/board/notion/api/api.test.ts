@@ -58,8 +58,13 @@ describe('notion api', () => {
         .mockResolvedValue(mockResponse({}, 401));
 
       const result = await pingNotion(TOKEN, mockFetch);
-      expect(result.ok).toBe(false);
-      expect(result.error).toContain('auth failed');
+      expect(result).toMatchObject({
+        ok: false,
+        error: {
+          kind: 'unknown',
+          message: expect.stringContaining('auth failed'),
+        },
+      });
     });
 
     it('returns error on server error', async () => {
@@ -68,8 +73,13 @@ describe('notion api', () => {
         .mockResolvedValue(mockResponse({}, 500));
 
       const result = await pingNotion(TOKEN, mockFetch);
-      expect(result.ok).toBe(false);
-      expect(result.error).toContain('HTTP 500');
+      expect(result).toMatchObject({
+        ok: false,
+        error: {
+          kind: 'unknown',
+          message: expect.stringContaining('HTTP 500'),
+        },
+      });
     });
 
     it('returns error on network failure', async () => {
@@ -78,8 +88,13 @@ describe('notion api', () => {
         .mockRejectedValue(new Error('ECONNREFUSED'));
 
       const result = await pingNotion(TOKEN, mockFetch);
-      expect(result.ok).toBe(false);
-      expect(result.error).toContain('Could not reach');
+      expect(result).toMatchObject({
+        ok: false,
+        error: {
+          kind: 'unknown',
+          message: expect.stringContaining('Could not reach'),
+        },
+      });
     });
 
     it('sends correct headers', async () => {

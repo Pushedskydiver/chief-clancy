@@ -21,11 +21,9 @@ export type PingEndpointOpts = {
 /**
  * Ping an API endpoint and map common HTTP error codes to messages.
  *
- * Returns `{ ok: true }` on success, or `{ ok: false, error }` with
- * a human-readable message on failure. Includes a 10s timeout.
- *
- * @param opts - URL, headers, status-to-error map, and network error message.
- * @returns A ping result with `ok` and optional `error`.
+ * Returns `{ ok: true }` on success, or a tagged failure with
+ * `{ kind: 'unknown'; message }` on non-OK status or network failure.
+ * Includes a 10s timeout.
  */
 export async function pingEndpoint(
   opts: PingEndpointOpts,
@@ -45,10 +43,9 @@ export async function pingEndpoint(
     if (response.ok) return { ok: true };
 
     const mapped = statusErrors[response.status];
-    return mapped
-      ? { ok: false, error: mapped }
-      : { ok: false, error: `✗ HTTP ${response.status}` };
+    const message = mapped ?? `✗ HTTP ${response.status}`;
+    return { ok: false, error: { kind: 'unknown', message } };
   } catch {
-    return { ok: false, error: networkError };
+    return { ok: false, error: { kind: 'unknown', message: networkError } };
   }
 }

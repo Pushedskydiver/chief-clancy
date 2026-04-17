@@ -192,8 +192,13 @@ describe('pingLinear', () => {
       .mockResolvedValue({ ok: false, status: 401 } as Response);
 
     const result = await pingLinear('key', mockFetch);
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('auth failed');
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('auth failed'),
+      },
+    });
   });
 
   it('returns auth error on 403', async () => {
@@ -202,8 +207,13 @@ describe('pingLinear', () => {
       .mockResolvedValue({ ok: false, status: 403 } as Response);
 
     const result = await pingLinear('key', mockFetch);
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('auth failed');
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('auth failed'),
+      },
+    });
   });
 
   it('returns generic error on other HTTP codes', async () => {
@@ -212,16 +222,20 @@ describe('pingLinear', () => {
       .mockResolvedValue({ ok: false, status: 500 } as Response);
 
     const result = await pingLinear('key', mockFetch);
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('500');
+    expect(result).toMatchObject({
+      ok: false,
+      error: { kind: 'unknown', message: expect.stringContaining('500') },
+    });
   });
 
   it('returns network error on fetch failure', async () => {
     const mockFetch = vi.fn<Fetcher>().mockRejectedValue(new Error('offline'));
 
     const result = await pingLinear('key', mockFetch);
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('network');
+    expect(result).toMatchObject({
+      ok: false,
+      error: { kind: 'unknown', message: expect.stringContaining('network') },
+    });
   });
 
   it('returns auth error when viewer ID is missing', async () => {
@@ -231,8 +245,13 @@ describe('pingLinear', () => {
     } as Response);
 
     const result = await pingLinear('key', mockFetch);
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('auth failed');
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('auth failed'),
+      },
+    });
   });
 });
 

@@ -102,9 +102,10 @@ export async function linearGraphql(opts: LinearGraphqlOpts): Promise<unknown> {
 /** Map a Linear ping HTTP status to a failure result. */
 function mapPingStatus(status: number): PingResult {
   const isAuthError = status === 401 || status === 403;
-  return isAuthError
-    ? { ok: false, error: '✗ Linear auth failed — check LINEAR_API_KEY' }
-    : { ok: false, error: `✗ Linear API returned HTTP ${status}` };
+  const message = isAuthError
+    ? '✗ Linear auth failed — check LINEAR_API_KEY'
+    : `✗ Linear API returned HTTP ${status}`;
+  return { ok: false, error: { kind: 'unknown', message } };
 }
 
 /**
@@ -124,7 +125,13 @@ export async function pingLinear(
   ).catch(() => undefined);
 
   if (!response) {
-    return { ok: false, error: '✗ Could not reach Linear — check network' };
+    return {
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: '✗ Could not reach Linear — check network',
+      },
+    };
   }
 
   if (!response.ok) return mapPingStatus(response.status);
@@ -137,7 +144,13 @@ export async function pingLinear(
     // Invalid JSON — treat as auth issue
   }
 
-  return { ok: false, error: '✗ Linear auth failed — check LINEAR_API_KEY' };
+  return {
+    ok: false,
+    error: {
+      kind: 'unknown',
+      message: '✗ Linear auth failed — check LINEAR_API_KEY',
+    },
+  };
 }
 
 /** Linear ticket with issue ID, optional parent info, and labels. */

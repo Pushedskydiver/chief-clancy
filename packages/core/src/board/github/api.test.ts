@@ -79,8 +79,13 @@ describe('pingGitHub', () => {
     } as Response);
 
     const result = await pingGitHub('bad_token', 'owner/repo', mockFetch);
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('auth failed');
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('auth failed'),
+      },
+    });
   });
 
   it('returns not found on 404', async () => {
@@ -91,8 +96,10 @@ describe('pingGitHub', () => {
     } as Response);
 
     const result = await pingGitHub('tok_123', 'owner/missing', mockFetch);
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('not found');
+    expect(result).toMatchObject({
+      ok: false,
+      error: { kind: 'unknown', message: expect.stringContaining('not found') },
+    });
   });
 });
 

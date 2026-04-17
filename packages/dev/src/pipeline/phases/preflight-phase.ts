@@ -8,8 +8,6 @@ import type { RunContext } from '../context.js';
 import type { BoardConfig } from '@chief-clancy/core/schemas/env.js';
 import type { Board } from '@chief-clancy/core/types/board.js';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 /** Structured result of the preflight phase. */
 type PreflightPhaseResult = {
   readonly ok: boolean;
@@ -32,8 +30,6 @@ export type PreflightPhaseDeps = {
   readonly detectBoard: (env: Record<string, string>) => BoardConfig | string;
   readonly createBoard: (config: BoardConfig) => Board;
 };
-
-// ─── Phase ───────────────────────────────────────────────────────────────────
 
 /**
  * Run preflight checks, detect board, validate, and ping.
@@ -79,7 +75,7 @@ export async function preflightPhase(
   const ping = await board.ping();
 
   if (!ping.ok) {
-    return { ok: false, error: ping.error };
+    return { ok: false, error: ping.error.message };
   }
 
   // Success — populate context

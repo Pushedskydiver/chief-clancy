@@ -60,7 +60,13 @@ export async function pingGitHub(
   fetcher?: Fetcher,
 ): Promise<PingResult> {
   if (!isValidRepo(repo)) {
-    return { ok: false, error: '✗ GITHUB_REPO format is invalid' };
+    return {
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: '✗ GITHUB_REPO format is invalid',
+      },
+    };
   }
 
   return pingEndpoint({

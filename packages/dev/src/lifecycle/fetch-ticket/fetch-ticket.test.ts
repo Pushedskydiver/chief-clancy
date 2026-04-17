@@ -24,7 +24,7 @@ function makeTicket(overrides: Partial<FetchedTicket> = {}): FetchedTicket {
 
 function makeBoard(overrides: Partial<Board> = {}): Board {
   return {
-    ping: vi.fn(() => Promise.resolve({ ok: true })),
+    ping: vi.fn<Board['ping']>(() => Promise.resolve({ ok: true })),
     validateInputs: vi.fn(() => undefined),
     fetchTicket: vi.fn(() => Promise.resolve(undefined)),
     fetchTickets: vi.fn(() => Promise.resolve([])),

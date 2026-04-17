@@ -203,8 +203,13 @@ describe('pingJira', () => {
       projectKey: 'PROJ',
       auth: 'bad',
     });
-    expect(result.ok).toBe(false);
-    expect(result.error).toContain('auth failed');
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: expect.stringContaining('auth failed'),
+      },
+    });
   });
 });
 
