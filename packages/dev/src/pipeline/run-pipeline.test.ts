@@ -233,6 +233,7 @@ describe('runPipeline — early exits', () => {
 
     expect(result.status).toBe('aborted');
     expect(result.phase).toBe('branch-setup');
+    expect(result.error).toBe('branch setup failed');
     expect(deps.transition).not.toHaveBeenCalled();
   });
 
