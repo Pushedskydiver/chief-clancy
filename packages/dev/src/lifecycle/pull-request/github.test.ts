@@ -170,7 +170,7 @@ describe('checkPrReviewState', () => {
     owner: 'owner',
   };
 
-  it('returns changesRequested: true when inline comments exist', async () => {
+  it('returns hasChangesRequested: true when inline comments exist', async () => {
     const mockFetch = chainedFetch(
       { ok: true, json: () => Promise.resolve(OPEN_PR) },
       {
@@ -189,13 +189,13 @@ describe('checkPrReviewState', () => {
     });
 
     expect(result).toEqual({
-      changesRequested: true,
+      hasChangesRequested: true,
       prNumber: 10,
       prUrl: 'https://github.com/owner/repo/pull/10',
     });
   });
 
-  it('returns changesRequested: true when a Rework: conversation comment exists', async () => {
+  it('returns hasChangesRequested: true when a Rework: conversation comment exists', async () => {
     const mockFetch = chainedFetch(
       { ok: true, json: () => Promise.resolve(OPEN_PR) },
       { ok: true, json: () => Promise.resolve([]) },
@@ -218,13 +218,13 @@ describe('checkPrReviewState', () => {
     });
 
     expect(result).toEqual({
-      changesRequested: true,
+      hasChangesRequested: true,
       prNumber: 10,
       prUrl: 'https://github.com/owner/repo/pull/10',
     });
   });
 
-  it('returns changesRequested: false when only non-Rework: conversation comments exist', async () => {
+  it('returns hasChangesRequested: false when only non-Rework: conversation comments exist', async () => {
     const mockFetch = chainedFetch(
       { ok: true, json: () => Promise.resolve(OPEN_PR) },
       { ok: true, json: () => Promise.resolve([]) },
@@ -248,7 +248,7 @@ describe('checkPrReviewState', () => {
     });
 
     expect(result).toEqual({
-      changesRequested: false,
+      hasChangesRequested: false,
       prNumber: 10,
       prUrl: 'https://github.com/owner/repo/pull/10',
     });
@@ -276,7 +276,7 @@ describe('checkPrReviewState', () => {
       ...reviewOpts,
     });
 
-    expect(result?.changesRequested).toBe(true);
+    expect(result?.hasChangesRequested).toBe(true);
   });
 
   it('returns undefined when no open PR for branch', async () => {
@@ -342,7 +342,7 @@ describe('checkPrReviewState', () => {
       ...reviewOpts,
     });
 
-    expect(result?.changesRequested).toBe(true);
+    expect(result?.hasChangesRequested).toBe(true);
     expect(mockFetch.mock.calls[1][0]).not.toContain('&since=');
   });
 
@@ -370,7 +370,7 @@ describe('checkPrReviewState', () => {
     });
 
     expect(result).toEqual({
-      changesRequested: true,
+      hasChangesRequested: true,
       prNumber: 10,
       prUrl: 'https://github.com/owner/repo/pull/10',
       reviewers: ['reviewer1'],
@@ -401,7 +401,7 @@ describe('checkPrReviewState', () => {
     });
 
     expect(result).toEqual({
-      changesRequested: false,
+      hasChangesRequested: false,
       prNumber: 10,
       prUrl: 'https://github.com/owner/repo/pull/10',
     });
@@ -421,7 +421,7 @@ describe('checkPrReviewState', () => {
     });
 
     expect(result).toEqual({
-      changesRequested: false,
+      hasChangesRequested: false,
       prNumber: 10,
       prUrl: 'https://github.com/owner/repo/pull/10',
     });
@@ -459,7 +459,7 @@ describe('checkPrReviewState', () => {
       ...reviewOpts,
     });
 
-    expect(result?.changesRequested).toBe(false);
+    expect(result?.hasChangesRequested).toBe(false);
   });
 
   it('allows user Rework: comments through even when same author', async () => {
@@ -485,7 +485,7 @@ describe('checkPrReviewState', () => {
       ...reviewOpts,
     });
 
-    expect(result?.changesRequested).toBe(true);
+    expect(result?.hasChangesRequested).toBe(true);
   });
 });
 

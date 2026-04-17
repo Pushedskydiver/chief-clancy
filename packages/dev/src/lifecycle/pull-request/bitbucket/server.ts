@@ -188,7 +188,7 @@ export async function checkServerPrReviewState(
     );
 
     return {
-      changesRequested: hasInline || hasReworkConvo,
+      hasChangesRequested: hasInline || hasReworkConvo,
       prNumber: pr.id,
       prUrl: pr.links.self?.[0]?.href ?? '',
     };

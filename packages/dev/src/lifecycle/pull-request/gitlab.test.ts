@@ -258,7 +258,7 @@ describe('checkMrReviewState', () => {
 
   const checkOpts = { ...BASE_OPTS, branch: 'feature/test' };
 
-  it('returns changesRequested: true when DiffNote exists', async () => {
+  it('returns hasChangesRequested: true when DiffNote exists', async () => {
     const mockFetch = chainedFetch(
       { ok: true, json: () => Promise.resolve(OPEN_MR) },
       {
@@ -286,13 +286,13 @@ describe('checkMrReviewState', () => {
     });
 
     expect(result).toEqual({
-      changesRequested: true,
+      hasChangesRequested: true,
       prNumber: 5,
       prUrl: 'https://gitlab.com/group/project/-/merge_requests/5',
     });
   });
 
-  it('returns changesRequested: true when Rework: comment exists', async () => {
+  it('returns hasChangesRequested: true when Rework: comment exists', async () => {
     const mockFetch = chainedFetch(
       { ok: true, json: () => Promise.resolve(OPEN_MR) },
       {
@@ -319,10 +319,10 @@ describe('checkMrReviewState', () => {
       ...checkOpts,
     });
 
-    expect(result?.changesRequested).toBe(true);
+    expect(result?.hasChangesRequested).toBe(true);
   });
 
-  it('returns changesRequested: false when no actionable notes', async () => {
+  it('returns hasChangesRequested: false when no actionable notes', async () => {
     const mockFetch = chainedFetch(
       { ok: true, json: () => Promise.resolve(OPEN_MR) },
       {
@@ -349,7 +349,7 @@ describe('checkMrReviewState', () => {
       ...checkOpts,
     });
 
-    expect(result?.changesRequested).toBe(false);
+    expect(result?.hasChangesRequested).toBe(false);
   });
 
   it('ignores system notes', async () => {
@@ -379,7 +379,7 @@ describe('checkMrReviewState', () => {
       ...checkOpts,
     });
 
-    expect(result?.changesRequested).toBe(false);
+    expect(result?.hasChangesRequested).toBe(false);
   });
 
   it('filters notes before since timestamp', async () => {
@@ -411,7 +411,7 @@ describe('checkMrReviewState', () => {
       since: '2026-03-01T00:00:00Z',
     });
 
-    expect(result?.changesRequested).toBe(false);
+    expect(result?.hasChangesRequested).toBe(false);
   });
 
   it('ignores resolved DiffNotes', async () => {
@@ -442,7 +442,7 @@ describe('checkMrReviewState', () => {
       ...checkOpts,
     });
 
-    expect(result?.changesRequested).toBe(false);
+    expect(result?.hasChangesRequested).toBe(false);
   });
 
   it('returns undefined when no open MR', async () => {
@@ -497,7 +497,7 @@ describe('checkMrReviewState', () => {
       ...checkOpts,
     });
 
-    expect(result?.changesRequested).toBe(true);
+    expect(result?.hasChangesRequested).toBe(true);
   });
 });
 

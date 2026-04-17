@@ -92,7 +92,7 @@ export type PrCreationResult = PrCreationSuccess | PrCreationFailure;
 /** Result of checking PR/MR review state. */
 export type PrReviewState = {
   /** Whether changes have been requested by a reviewer. */
-  readonly changesRequested: boolean;
+  readonly hasChangesRequested: boolean;
   /** The PR/MR number/ID (needed to fetch comments). */
   readonly prNumber: number;
   /** The PR/MR URL (for logging). */

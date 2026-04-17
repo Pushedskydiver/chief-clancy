@@ -130,7 +130,7 @@ export async function checkPrReviewState(
     const commentTriggered = hasInlineComments || hasReworkConvo;
 
     if (commentTriggered) {
-      return { changesRequested: true, prNumber: pr.number, prUrl: pr.url };
+      return { hasChangesRequested: true, prNumber: pr.number, prUrl: pr.url };
     }
 
     const reviewResult = await checkReviews({
@@ -142,7 +142,7 @@ export async function checkPrReviewState(
     });
 
     return {
-      changesRequested: reviewResult.changesRequested,
+      hasChangesRequested: reviewResult.hasChangesRequested,
       prNumber: pr.number,
       prUrl: pr.url,
       ...(reviewResult.reviewers && { reviewers: reviewResult.reviewers }),
@@ -366,7 +366,7 @@ async function fetchFilteredComments(
 
 /** Review check result from GitHub reviews API. */
 type ReviewCheckResult = {
-  readonly changesRequested: boolean;
+  readonly hasChangesRequested: boolean;
   readonly reviewers?: readonly string[];
 };
 
@@ -391,7 +391,7 @@ async function checkReviews(
       { headers: githubHeaders(token) },
     );
 
-    if (!res.ok) return { changesRequested: false };
+    if (!res.ok) return { hasChangesRequested: false };
 
     const reviews = githubReviewListSchema.parse(await res.json());
     const latestByUser = new Map(
@@ -404,9 +404,9 @@ async function checkReviews(
       .filter(([, state]) => state === 'CHANGES_REQUESTED')
       .map(([login]) => login);
 
-    if (requested.length === 0) return { changesRequested: false };
-    return { changesRequested: true, reviewers: requested };
+    if (requested.length === 0) return { hasChangesRequested: false };
+    return { hasChangesRequested: true, reviewers: requested };
   } catch {
-    return { changesRequested: false };
+    return { hasChangesRequested: false };
   }
 }
