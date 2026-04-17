@@ -1,5 +1,12 @@
 # chief-clancy
 
+## 0.9.42
+
+### Patch Changes
+
+- Updated dependencies []:
+  - @chief-clancy/terminal@0.3.1
+
 ## 0.9.41
 
 ### Patch Changes
