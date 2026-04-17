@@ -40,7 +40,7 @@ import { runPipeline } from '@chief-clancy/dev';
 import { runImplementBatch } from '../runner/implement/batch.js';
 import { runImplement } from '../runner/implement/implement.js';
 
-type GitSpawnFn = (
+type SpawnFn = (
   command: string,
   args: readonly string[],
   options: { readonly cwd: string; readonly encoding: 'utf8' },
@@ -57,10 +57,7 @@ type GitSpawnFn = (
  * @param spawn - Spawn function (injected for testability).
  * @returns An ExecGit function that throws on failure.
  */
-export function makeExecGit(
-  cwd: string,
-  spawn: GitSpawnFn = spawnSync,
-): ExecGit {
+export function makeExecGit(cwd: string, spawn: SpawnFn = spawnSync): ExecGit {
   return (args) => {
     const result = spawn('git', [...args], { cwd, encoding: 'utf8' });
 
@@ -90,10 +87,7 @@ export function makeExecGit(
  * @param spawn - Spawn function (injected for testability).
  * @returns An ExecCmd function that throws on failure.
  */
-export function makeExecCmd(
-  cwd: string,
-  spawn: GitSpawnFn = spawnSync,
-): ExecCmd {
+export function makeExecCmd(cwd: string, spawn: SpawnFn = spawnSync): ExecCmd {
   return (file, args) => {
     const result = spawn(file, [...args], { cwd, encoding: 'utf8' });
 

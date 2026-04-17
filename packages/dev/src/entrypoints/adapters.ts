@@ -23,7 +23,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 
-type GitSpawnFn = (
+type SpawnFn = (
   command: string,
   args: readonly string[],
   options: { readonly cwd: string; readonly encoding: 'utf8' },
@@ -32,10 +32,7 @@ type GitSpawnFn = (
 // ─── Adapter factories ──────────────────────────────────────────────────────
 
 /** Create a synchronous git executor bound to the given working directory. Throws on non-zero exit. */
-export function makeExecGit(
-  cwd: string,
-  spawn: GitSpawnFn = spawnSync,
-): ExecGit {
+export function makeExecGit(cwd: string, spawn: SpawnFn = spawnSync): ExecGit {
   return (args) => {
     const result = spawn('git', [...args], { cwd, encoding: 'utf8' });
 
@@ -62,10 +59,7 @@ export function makeExecGit(
  * (`claude --version`, `git --version`) — an `ExecGit` that prepends `git`
  * would turn those into `git claude --version` and fail spuriously.
  */
-export function makeExecCmd(
-  cwd: string,
-  spawn: GitSpawnFn = spawnSync,
-): ExecCmd {
+export function makeExecCmd(cwd: string, spawn: SpawnFn = spawnSync): ExecCmd {
   return (file, args) => {
     const result = spawn(file, [...args], { cwd, encoding: 'utf8' });
 
