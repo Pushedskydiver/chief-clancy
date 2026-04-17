@@ -1,5 +1,28 @@
 # @chief-clancy/dev
 
+## 0.5.6
+
+### Patch Changes
+
+- [#344](https://github.com/Pushedskydiver/chief-clancy/pull/344) [`37e644f`](https://github.com/Pushedskydiver/chief-clancy/commit/37e644f5e3c222350f159d58540dd78d1835e8fa) Thanks [@Pushedskydiver](https://github.com/Pushedskydiver)! - **BREAKING** — `PingResult` in `@chief-clancy/core/types/board.js` is now a proper discriminated union:
+
+  ```ts
+  // Before
+  type PingResult = { ok: boolean; error?: string };
+
+  // After
+  type PingResult =
+    | { ok: true }
+    | { ok: false; error: { kind: 'unknown'; message: string } };
+  ```
+
+  Per CONVENTIONS.md §Error Handling — the `error` channel is a tagged discriminated union (house shape: `{ ok: false, error: { kind: '<tag>', ...context } }`), ergonomically close to a bare string but on a typed chassis for future widening (`kind: 'auth'`, `kind: 'network'`, etc.) without string parsing.
+
+  Consumers must read `result.error.message` where they previously read `result.error`. `pingEndpoint` and all 6 board adapters (github, jira, linear, notion, azdo, shortcut) updated. Dev's `preflight-phase.ts` cascade updated. ~20 test assertion sites migrated to `toMatchObject({ error: { kind: 'unknown', message: expect.stringContaining(...) } })`.
+
+- Updated dependencies [[`37e644f`](https://github.com/Pushedskydiver/chief-clancy/commit/37e644f5e3c222350f159d58540dd78d1835e8fa)]:
+  - @chief-clancy/core@2.0.0
+
 ## 0.5.5
 
 ### Patch Changes
