@@ -8,6 +8,19 @@ See also: [DEVELOPMENT.md "Task sizing"](DEVELOPMENT.md#task-sizing) for the pro
 
 ---
 
+## Authoring these rules
+
+Conventions for code in this repo. Rules are imperatives and apply to every contribution, regardless of author. Two shapes live here:
+
+- **Mechanical rules** — taste-invariant, checkbox-suitable. "No `any`", "No `reduce()`", "No nested ternaries", explicit return types on exports. Short bullets + crisp criteria. A reviewer can apply the rule without interpreting intent.
+- **Taste-shaped rules** — reader-experience judgments a checkbox cannot capture. Beat spacing, extraction depth, variable-name earning. Prose that makes the intent legible to a semantic reader; not a weaker rule, a different enforcement surface. Adversarial reading (grill) still applies — the bar is "does the intent survive a hostile re-read?", not "can a mechanical reviewer tick a box?"
+
+Goal: consistent behaviour across sessions. Strong rules prevent drift; fuzz invites rationalisation. When a rule is taste-shaped, write the strongest clearest prose you can, not a weaker bullet.
+
+If this meta grows beyond ~400 words or ~1 page, promote to a future `docs/AUTHORING.md` and leave a one-line pointer here. Matches the CLAUDE.md → DEVELOPMENT.md delegation pattern.
+
+---
+
 ## Complexity Limits (ESLint)
 
 | Rule                           | Limit                      | Rationale                                                                        |
