@@ -6,7 +6,7 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 
 Ordering updated 2026-04-18:
 
-1. **Phase 5 — ship collaboration protocols PRs.** PR-α (split into α.1 + α.2) + PR-β + PR-γ complete. Remaining order: η → δ → ε → ζ. Four PRs left. Standard discipline per PR: two-phase grill → per-commit DA → final verification DA → self-review → open PR → Copilot round(s) → merge. Next session starts at PR-η (PROGRESS.md archival + `docs/history/SESSIONS.md` seed + archival-maintenance rule). proposals.md remains the playbook (gitignored, see Phase 5 execution log appended at top).
+1. **Phase 5 — ship collaboration protocols PRs.** PR-α (split into α.1 + α.2) + PR-β + PR-γ + PR-η complete. Remaining order: δ → ε → ζ. Three PRs left. Standard discipline per PR: two-phase grill → per-commit DA → final verification DA → self-review → open PR → Copilot round(s) → merge. Next session starts at PR-δ (memory → docs promotions + 1 deletion). proposals.md remains the playbook (gitignored, see Phase 5 execution log appended at top).
 2. **Automated session handoff** (deferred — revisit after 10 post-PR-γ sessions of recorded metrics OR when any §Measurement protocol early-revisit trigger fires). Substrate is Claude Code Routines + `PostCompact` hook; measurement protocol lives in `docs/DEVELOPMENT.md §Session handoff > §Measurement protocol` (shipped in PR-γ). Not in scope for Phase 5.
 3. **Plumb real error channels through invoke/deliver/feasibility** — the open design question from Session 98.
 4. **Phase F** — `@chief-clancy/design` (Stitch integration).
