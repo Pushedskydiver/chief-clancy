@@ -222,18 +222,15 @@ Run through the **[DA Review Checklist](DA-REVIEW.md)** — a structured, item-b
 
 Run through the **[Self-Review Checklist](SELF-REVIEW.md)**. Read every changed file (`git diff main...HEAD`) and check for detail-level issues that DA misses — stale comments, wrong endpoints, fixture shapes, unused params, test isolation.
 
-### 3. CodeRabbit Review (PR-level, automated)
+### 3. Automated review (Copilot, optionally CodeRabbit)
 
-CodeRabbit runs automatically on every PR. It posts line-level comments on the diff covering bugs, null checks, resource leaks, edge cases, and security basics. Configured via `.coderabbit.yaml` in the repo root.
+**Copilot** is the primary automated reviewer on chief-clancy. Request explicitly after push — the repo does not auto-trigger on PR open. Mechanics + timeout + thread-resolve discipline live in [§Post-PR flow](#post-pr-flow). **CodeRabbit** is configured via `.coderabbit.yaml` and may also post; on recent PRs it has been silent, so treat it as best-effort rather than a required gate.
 
 After DA and self-review are clean:
 
 1. Push branch and create PR — assign to Alex (`Pushedskydiver`) and add labels (`feature`/`fix`/`chore` + affected package e.g. `terminal`, `core`). See [GIT.md](GIT.md) for label conventions and merge strategy.
-2. CodeRabbit will automatically review the PR within minutes.
-3. For each CodeRabbit comment:
-   - **Evaluate** — understand the underlying issue, not just the suggested code. CodeRabbit identifies valid problems but its fix may not follow our conventions. Decide the best approach independently.
-   - **Fix or decline** — apply your own fix if it better follows conventions, apply CodeRabbit's if it's the best option, or decline with reasoning. Always check fixes against CONVENTIONS.md (chaining limits, named booleans, type over interface, etc.).
-   - **Reply** — always reply to every comment explaining what was done and why. If diverging from CodeRabbit's suggestion, explain the reasoning.
+2. Request Copilot review per [§Post-PR flow](#post-pr-flow) step 1.
+3. For each Copilot or CodeRabbit comment, triage per [§Evaluating Automated Review Findings](#evaluating-automated-review-findings-copilot--coderabbit) — every comment gets fix / fix-differently / dismiss-with-evidence + reply. Resolve threads per [§Post-PR flow](#post-pr-flow) step 3.
 4. If pushing additional commits, update the PR body to reflect all changes.
 
 ### Evaluating Automated Review Findings (Copilot / CodeRabbit)
@@ -401,9 +398,13 @@ After opening a PR, Claude runs the following sequence before considering the PR
 
 1. **Copilot review** — request explicitly after push; the repo does not auto-trigger Copilot on PR open. Use `gh api -X POST repos/{owner}/{repo}/pulls/{n}/requested_reviewers -f 'reviewers[]=copilot-pull-request-reviewer[bot]'` (the app login resolves to `Copilot` in `requested_reviewers`). Claude then waits for the review to complete or for 10min (dial; adjust based on post-merge observations) after CI green, whichever first.
 2. **Findings triage** — every Copilot finding gets one of: fix, fix differently, dismiss-with-evidence. See [§Evaluating Automated Review Findings](#evaluating-automated-review-findings-copilot--coderabbit). When a needs-oversight trigger fires during triage (see [§HITL triggers](#hitl-triggers) — e.g. severity-flagged Copilot dismissal), add the `## HITL flags` checkbox to the PR body in the same action, before step 4's auto-merge decision.
-3. **Resolve-after-reply** — for every inline Copilot comment, after its action (fix landed, reasoned dismissal, or no-op acknowledgement for nit-level observations), actively mark the thread resolved:
+3. **Resolve-after-reply** — for every inline Copilot comment, after its action (fix landed, reasoned dismissal, or no-op acknowledgement for nit-level observations), actively mark the thread resolved. Discover thread IDs first, then resolve by ID:
 
    ```bash
+   # List thread IDs for the PR:
+   gh api graphql -f query='query($owner: String!, $repo: String!, $number: Int!) { repository(owner: $owner, name: $repo) { pullRequest(number: $number) { reviewThreads(first: 100) { nodes { id isResolved comments(first: 1) { nodes { body } } } } } } }' -F owner=Pushedskydiver -F repo=chief-clancy -F number=364
+
+   # Resolve by ID:
    gh api graphql -f query='mutation { resolveReviewThread(input: {threadId: "PRRT_..."}) { thread { isResolved } } }'
    ```
 
@@ -436,7 +437,7 @@ Autonomous PR merge decision. All gates must pass; any exception triggers Alex-h
 - **Release PR** — title matches `📦 chore: version packages`. Release PRs trigger `pnpm changeset publish` and GitHub releases; Alex merges. See [changesets/action docs](https://github.com/changesets/changesets/tree/main/packages/action) for the release-PR lifecycle.
 - **Size/scope**:
   - Diff ≥500 added+deleted LOC (dial; adjust based on post-merge observations). Generated files excluded.
-  - Touches ≥3 packages (dial) in the dependency chain (`core`, `dev`, `terminal`, `brief`, `plan`, `scan`, `wrapper`).
+  - Touches ≥3 packages (dial) in the dependency chain (`core`, `dev`, `terminal`, `brief`, `plan`, `scan`, `chief-clancy` — the `packages/chief-clancy/` wrapper).
 - **Semver**:
   - Any changeset includes `major`.
   - `pnpm changeset status --since=origin/main` exits non-zero (no new changeset since `main`) AND the PR lacks a `skip-changeset` label. Canonical check per [changesets/changesets docs](https://github.com/changesets/changesets/blob/main/docs/checking-for-changesets.md): `changeset status --since=main` exits 1 when no new changesets exist since base. `skip-changeset` is the human-in-the-loop escape hatch for test-only / docs-only / infra-only PRs that legitimately need no changeset.
@@ -447,7 +448,7 @@ Autonomous PR merge decision. All gates must pass; any exception triggers Alex-h
   - Policy docs: `/CLAUDE.md`, `/docs/DEVELOPMENT.md`, `/docs/DA-REVIEW.md`, `/docs/SELF-REVIEW.md`, `/docs/CONVENTIONS.md`, `/docs/RATIONALIZATIONS.md`, `/docs/GIT.md`, `/docs/TESTING.md`
   - Per-package publish surface: `/packages/*/package.json`, `/packages/*/tsconfig.json`
 - **HITL signal fired** — see [§HITL triggers](#hitl-triggers) below.
-- **Lockfile hand-edit** — `pnpm-lock.yaml` changed without a corresponding `package.json` change in the same commit.
+- **Lockfile hand-edit** — `pnpm-lock.yaml` changed without any `package.json` change across the whole PR. Split-commit PRs where `package.json` and lockfile updates live in separate commits are fine; the exception only fires on PRs where the lockfile moved but no `package.json` did.
 
 ### Rationale
 
