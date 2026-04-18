@@ -192,7 +192,7 @@ Workflow `.md` files in `src/{commands,workflows,agents}/` are runtime artifacts
 - [ ] Type suffixes follow project dialect (`*Opts`, `*Result`, `*Ctx`/`*Context`, `*Deps`, `*Fn`) as category markers on a semantic base name — not mechanical `FooOpts`; no `I` prefix on interfaces, no `T` prefix on generics
 - [ ] Abbreviations from the allowlist (`ctx`, `opts`, `fs`, `fn`, `env`, `id`, `url`, `args`, `argv`, `i`) or unambiguous domain terms
 - [ ] Expected failures return a Result-shaped discriminated union (`{ ok: true, ...data } | { ok: false, error: { kind, ...context } }`), not thrown exceptions or bare `error: string` — see [CONVENTIONS.md §Error Handling](CONVENTIONS.md#error-handling)
-- [ ] **Platform-dispatch parity.** Dispatch code (PR creation, rework handling, ticket fetch) must handle every value of `GitPlatform` (`github`, `gitlab`, `bitbucket`, `bitbucket-server`, `azure`) from [`packages/core/src/types/remote.ts`](../packages/core/src/types/remote.ts). `unknown` and `none` are sentinels — return `undefined` or a no-op. Azure DevOps is a known gap in prior DA rounds — grep the file under review for each platform value and verify coverage.
+- [ ] **Platform-dispatch parity.** Dispatch code (PR creation, rework handling, remote parsing, manual PR URL building) must handle every value of `GitPlatform` (`github`, `gitlab`, `bitbucket`, `bitbucket-server`, `azure`) from [`packages/core/src/types/remote.ts`](../packages/core/src/types/remote.ts). `unknown` and `none` are sentinels — return `undefined` or a no-op. Azure DevOps is a known gap in prior DA rounds — grep the file under review for each platform value and verify coverage.
 
 ## TSDoc & documentation
 
