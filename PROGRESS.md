@@ -2,7 +2,7 @@
 
 Living state document for the Clancy monorepo. Records the current state, the phase ledger, and the next decision. Session-by-session detail lives in git history (each phase's PRs are tagged + commit messages reference them).
 
-## Next workstreams (after Session 103)
+## Next workstreams (after Session 104)
 
 Ordering updated 2026-04-18:
 
@@ -10,6 +10,48 @@ Ordering updated 2026-04-18:
 2. **Automated session handoff** (deferred — revisit after 10 post-PR-γ sessions of recorded metrics OR when any §Measurement protocol early-revisit trigger fires). Substrate is Claude Code Routines + `PostCompact` hook; measurement protocol lives in `docs/DEVELOPMENT.md §Session handoff > §Measurement protocol` (shipped in PR-γ). Not in scope for Phase 5.
 3. **Plumb real error channels through invoke/deliver/feasibility** — the open design question from Session 98.
 4. **Phase F** — `@chief-clancy/design` (Stitch integration).
+
+---
+
+**Session 104 (2026-04-18) — Phase 5 PR-η shipped. `PROGRESS.md` archival discipline codified + applied retroactively.** PR [#365](https://github.com/Pushedskydiver/chief-clancy/pull/365) merged (squash `6ccfd15`). Three coordinated changes: (1) `docs/history/SESSIONS.md` seeded with 21 one-line rows for Sessions 78-98 compressed from source prose (PR numbers as clickable Markdown links; `—` for research-only sessions); (2) new `### Archival maintenance` subsection under `docs/DEVELOPMENT.md §Session handoff` after `### Measurement protocol`, codifying the cadence (>5 entries OR band exceeds ~10k tokens → compress oldest to SESSIONS.md + update the `§Session archive` pointer); (3) `PROGRESS.md` trimmed 117 lines across dropped `## Current state (2026-04-16)` rollup block (stale — versions showed `core 1.0.0`, actual `4.0.0`; test counts pre-Session-98) + archived Sessions 78-98 prose. 5 commits total (η.1 seed + η.3 rule + η.2 trim + final-DA LOW 1 fix + Copilot R2 3-fix). Net: ≈32k → ≈13.6k tokens (57.7% byte reduction on `PROGRESS.md`); handoff-budget consumption drops from ≈82% of the 50k pre-compaction band to ≈22%.
+
+**Review stack.** Spec grill R1 discovery (3 BLOCKING + 7 MATERIAL + 3 LOW across 15 verification targets) → R_n verification (all 10 original findings CONFIRMED CLOSED + 3 new LOW nits folded at execution time). R1 B1 (Session 82 PR count 6 vs 8) disproven against direct evidence at `PROGRESS.md:35` verbatim "Eight PRs shipped across one extended working session" — the grill had read the Phase ledger row compression (a summary-of-a-summary) rather than Session 82's source detailed prose. Per-commit DA × 3 on each of η.1 / η.3 / η.2: η.1 zero findings; η.3 1 LOW deferred (pointer-update "include" semantic — template-visible on next archival cycle); η.2 1 MATERIAL fixed inline (stacked `---` artifacts between session boundaries — collapsed via regex) + 2 LOWs deferred (archive-pointer wording drift semantically consistent; pre-existing `DEVELOPMENT.md:NNN` brittle line-refs in Session 103 preserved prose — out of scope per content-preservation mandate). Final verification DA on combined diff: zero BLOCKING, zero MATERIAL, 2 LOWs — LOW 1 (row-format example `#X, #Y` vs archive-table `[#X](url)` schema-pair drift) applied as 4th commit `67d3df0`; LOW 2 deferred (same pre-existing line-refs noted above). Self-review §Consistency clean; verified all relative links resolve from their source contexts, all section-name refs (not line-refs) in new content, Sessions 99-103 surviving prose byte-identical vs `origin/main` modulo one intentional `PROGRESS.md:149` → prose edit.
+
+**3 Copilot rounds, 4 findings across R1+R2, R3 clean.** R1 ×1: row-format example used `| Session N |` but the shipped archive table uses `| N |` (header is `Session`). **Same schema-pair drift class that final-DA LOW 1 caught in the PRs cell but missed in the Session cell** — Copilot was more thorough on the same rule. Fixed in `dd3dce1`. R2 ×3: (i) SESSIONS.md Session 82 date `2026-04-14` vs source `2026-04-14/15` — compression lost multi-day detail, restored; (ii) Session 97 headline read "9-PR locked plan" but PRs column listed 10 PRs — clarified to "9-PR locked plan + #355 follow-up" (source distinguishes planned-PRs from unplanned-follow-up; Copilot's suggested "10-PR locked plan" would have collapsed that distinction); (iii) `PROGRESS.md §Next workstreams` still listed η as pending — updated atomically in `c49c91c` rather than deferring to a follow-up, so the living-state claim ships coherent with the archival commits. R3 returned "generated no new comments." Total Copilot findings across Phase 5 so far: 23 (PR-α ×2, PR-ε ×2, PR-ζ ×1, PR-η ×5, PR-θ ×2, PR-ι ×0, PR-κ ×4, PR-λ ×3, PR-γ ×11, PR-η(this) ×4). Pattern still holds: Copilot's class is reader-precision / schema-consistency / terminology on doc prose; DA + grill catch structural / source-fidelity / cross-section claims.
+
+**Meta-findings (carry-forward to Session 105+):**
+
+- **Compression-from-source, not compression-from-compressed.** R1's B1 miscount happened because the grill read the Phase ledger row for Session 82 (a compression of Session 82's already-compressed "Eight PRs" claim) rather than the detailed-prose source. My own archive seed wrote rows directly from Session-N source prose and therefore did not reproduce the miscount — but the inverse failure mode would have been easy if I had seeded from Phase ledger. Rule worth holding in head for any future archive / summary / headline generation: **cite from the deepest-available source, not the nearest summary**.
+- **Schema-pair drift crosses cell boundaries.** Final DA LOW 1 caught the PRs-cell drift (`#X, #Y` → `[#X](url)`); Copilot R1 caught the Session-cell drift (`Session N` → `N`) — same rule violation class in two different cells of the same row format. Lesson: when reviewing a schema example against its schema, walk **every cell** of the row format, not just the cell that prompted the review trigger. Candidate addition to `docs/SELF-REVIEW.md §Consistency` for a later sweep if the pattern recurs.
+- **"Apply own-PR rules to own PR" extends to `§Next workstreams` living-state.** Session 103's carry-forward covered within-diff cross-section consistency. Copilot R2 caught that the discipline ALSO applies across `PROGRESS.md §Next workstreams` — when a PR ships an item listed there as pending, the §Next workstreams update should land atomically in the same PR. Not a rule change — just a broader application of the existing discipline.
+- **Preemptive archival at handoff is cleaner than deferred archival at next-session-start.** This handoff commits the Session 104 entry + archives Session 99 in one direct-to-main step, so Session 105 opens with exactly 5 detailed entries (100-104) and doesn't need to spend its first productive tool call on maintenance. `§Archival maintenance` rule says "at session start" — if the preemptive-at-handoff pattern holds for Session 105+, consider relaxing the rule to "at session start OR handoff time."
+
+**Session 104 handoff metrics.** (Data point 2 of 10 toward the automated-handoff revisit threshold per PR-γ §Measurement protocol.)
+
+- Trigger: phase boundary (PR-η merged on main; `PROGRESS.md` archival workstream complete) — the sooner-of-three dial fired on (b) phase boundary before (a) 60% context or (c) compaction warning.
+- Context at trigger: ≈60-65% of pre-compaction budget (manual estimate — heavy session with 2 grill rounds + 3 per-commit DA + 1 final verification DA + 3 Copilot rounds + archive-seed drafting from 21 source entries + `PROGRESS.md` rewrite across 129k → 54k bytes + 6 ScheduleWakeup resumes).
+- Handoff turn cost: ≈3.5k tokens (this entry + archive pointer update + Session 99 archive row + Session 105 loading instructions).
+- Unplanned compaction: no.
+- Time from "handoff now" decision to next-session first productive tool call: N/A (manual measurement; recorded by Session 105).
+- `PROGRESS.md` quality signal: N/A (recorded by Session 105).
+
+### Session 105 loading instructions
+
+On load:
+
+1. Read `PROGRESS.md` top-to-bottom (this Session 104 entry + §Next workstreams + 5 detailed entries for Sessions 100-104).
+2. Read `.claude/research/collaboration-protocols/proposals.md` — Phase 5 playbook. **Critical:** read the "Phase 5 execution log" footer at the TOP first (Session 102 architectural pivot + α split + β.2 deferral + γ.5 subsection lock).
+3. Start at PR-δ (memory → docs promotions + 1 deletion). See proposals.md §PR-δ for the locked spec. Source for the per-file dispositions: `.claude/research/collaboration-protocols/memory-review.md` (Session 99 Phase 2 output). Shape: promote 5 memory files into the relevant repo docs + delete `feedback_da_must_be_subagent` (superseded by `.claude/agents/da-review.md` + `docs/DEVELOPMENT.md:173`).
+4. Standard discipline per PR: two-phase grill on the spec → per-commit DA → final verification DA on combined diff → self-review → open PR → Copilot round(s) → merge. δ touches `docs/DEVELOPMENT.md` + `docs/TESTING.md` + `docs/GIT.md` + `docs/DA-REVIEW.md` — all in γ.2's policy-docs exception list → Alex-merge by default. Memory-file deletion is out-of-band (auto-memory under `.claude/projects/`, not repo-tracked).
+5. Branch suggestion: `chore/memory-to-docs-promotions`. Type label `chore`. Package labels: none (root-level docs only).
+6. **Carry-overs from Session 104:**
+   - **Dispatcher-prior verification** still load-bearing — Session 104's own R1 B1 miscount is the second data point (first was Session 103's γ.1 auto-trigger false premise). Before dispatching any subagent with a numeric or presence claim, spot-check against direct source evidence.
+   - **Compression-from-source, not compression-from-compressed** — applies to any archive-row / summary-row / cross-section headline claim. Cite from the deepest-available source.
+   - **Schema-pair drift crosses cell boundaries** — when reviewing a schema example, walk every cell of the row format.
+   - **"Apply own-PR rules" extends to `§Next workstreams`** — when a PR ships an item listed there as pending, update §Next workstreams atomically in the same PR.
+   - **Preemptive archival at handoff** — Session 104 archived Session 99 preemptively. Flag: decide if `§Archival maintenance` should relax "at session start" to "at session start OR handoff time" if the pattern holds.
+   - **§Measurement protocol data point 2 recorded above.** 8 more to go until the 10-entry revisit threshold. Early-trigger thresholds unchanged (3+ unplanned compactions in 5 sessions / handoff >5min on 2+ sessions / 2+ clarifying-question sessions in a row).
+7. After δ ships, remaining order: ε → ζ (CONVENTIONS preamble + `node:path` lint → CODEOWNERS seed).
 
 ---
 
@@ -156,35 +198,9 @@ On load:
 
 ---
 
-**Session 99 (2026-04-17 — research-only, no PRs) — Collaboration protocols workstream Phases 1+2 complete.** Phase 1 audit of Sessions 96-98 (working backward from 98 per Alex's scope direction) catalogued 25 friction points with A/B/C classification. Phase 2 walked all 14 memory files against current docs. Two artefacts shipped at `.claude/research/collaboration-protocols/` (gitignored): `audit.md` + `memory-review.md`. **Phase 1 outputs (audit.md):** 12 items classified (A) — already codified and either followed correctly (98.2, 98.5, 97.3, 96.1, 96.4-6) or a compliance gap not a rule gap (97.1 per-commit DA skip on PR-I, verified against [docs/DEVELOPMENT.md:307](docs/DEVELOPMENT.md#L307)); 8 items classified (B) — 5 ready to draft without research (publish-gate / branch-cleanup / release-PR-commit-msg / changeset-semver-for-re-exports / cross-file-JSDoc-cascade), 3 research-pending (97.4 bundle-vs-defer, 97.9 expanded auto-merge, 97.11 Copilot rate-limit + resolve-after-reply); 3 items (C) — design decisions out of protocol scope. **Alex's kickoff seed** (release-PR timing, Copilot auto-request, rate-limit handling, branch cleanup, PR auto-merge, release-PR commit-message convention) all mapped to explicit audit items + protocol-candidate queue. **Phase 2 outputs (memory-review.md):** **Delete 1** — `feedback_da_must_be_subagent.md` (superseded by [docs/DEVELOPMENT.md:173](docs/DEVELOPMENT.md#L173) + `.claude/agents/da-review.md`). **Promote 5 (Phase 4 targets)** — `feedback_layering_vs_cohesion` → DEVELOPMENT.md, `feedback_fetcher_typing` → TESTING.md, `feedback_sequential_pr` → GIT.md (depends on 97.9 auto-merge research), `feedback_azure_parity` → DA-REVIEW.md, `feedback_progress_md_direct_to_main` → DEVELOPMENT.md §Session-handoff (pairs with audit 98.6 publish-gate). **Keep 7** — `user_alex`, 5 deferred-work pointers (board-context / terminal-entry / update-infra / readability-review / PR-sizing-experiment), `feedback_audience_reframe` (pending form-decision research). **Research-pending 2** added to Phase 3: 3.6 docs-vs-memory for meta-authoring guidance (audience_reframe promotion form); 3.7 `node:path` rule form (lint rule vs CONVENTIONS prose). **Phase 3 scope expanded to 7 research threads.** Original brief's 5 (Copilot lifecycle / Changesets release flow / Agent checkpoint patterns / Session handoff triggers / HITL supervision) + 2 from Phase 2. **Grill discipline applied per Alex's kickoff addition ("ask rather than infer"):** 6 AskUserQuestion rounds across Phases 1+2 resolved A/B/C boundary cases — publish-gate scope (all semvers, not just major), bundle-vs-defer preference (fix-in-PR if small; tracking-loss concern drives research), auto-merge expansion (Claude merges all unless serious), Copilot four-scenario coverage (request trigger / resolve-after-reply / rate-limit mid-PR / rate-limit fresh-PR), 97.1 classification (rule exists, compliance gap), audience-reframe form (research), node:path form (research). **Session-99 handoff triggered on context load** — Phases 1+2 both closed; Phase 3 external research starts fresh session.
-
-### Session 100 loading instructions
-
-On load:
-
-1. Read `PROGRESS.md` top-to-bottom (this entry + Session 98 + Next workstreams section).
-2. Read `.claude/research/collaboration-protocols/brief.md` (Phase 3 instructions).
-3. Read `.claude/research/collaboration-protocols/audit.md` (Phase 1 output — B-classified items feed Phase 4 proposals).
-4. Read `.claude/research/collaboration-protocols/memory-review.md` (Phase 2 output — promotion targets + 3.6/3.7 research flags).
-5. Execute Phase 3. Seven threads — run in parallel if context allows, else in batches. Each produces a findings file under `.claude/research/collaboration-protocols/research/` using the shape defined in the brief (Question / Evidence / Verdict / Implications for our protocol / What we're NOT changing).
-
-Phase 3 threads:
-
-- **3.1 Copilot review lifecycle** — rate-limits, re-request triggers, auto-dismiss patterns; covers audit 97.11 four scenarios. Bundle audit 97.4 bundle-vs-defer investigation if findings align.
-- **3.2 Changesets release workflow** — who merges version-packages PR in mature monorepos (Vercel/Astro/Remix/shadcn); publish-failure recovery (PR-β npm-skip precedent). Feeds audit 98.6 publish-gate + release-PR-commit-msg drafting.
-- **3.3 Agent checkpoint patterns** — Devin/Cursor/Aider/Claude Agent SDK/SWE-Bench auto-merge vs wait signals. Feeds audit 97.9 expanded auto-merge.
-- **3.4 Session handoff triggers** — revisit Levy / Liu / Lulla specifically on cross-session boundaries. Current "3 PRs or context compression" (CLAUDE.md) is vague.
-- **3.5 HITL supervision** — "agent stuck" vs "agent needs oversight" signals. Maps to step-in-when-needed goal.
-- **3.6 Meta-authoring guidance placement** (NEW, Phase 2) — in-doc preamble vs separate AUTHORING.md vs style-guide-appendix. Short thread; Alex prefers evidence-backed form decision for `feedback_audience_reframe.md`.
-- **3.7 `node:path` rule form** (NEW, Phase 2) — lint rule (`unicorn/prefer-node-protocol`, path-concat detectors) vs CONVENTIONS prose. If lint-enforceable → PR-ι-style (lint + doc) prereq. Short thread.
-
-Then Phase 4 (protocol drafting) + Phase 5 (ship). Estimated 2 sessions total for Phases 3+4+5.
-
----
-
 ## Session archive
 
-Sessions 78-98 → see [`docs/history/SESSIONS.md`](docs/history/SESSIONS.md). Sessions 1-77 pre-date the per-session PROGRESS.md entry pattern; §Phase ledger below summarises that era by workstream (phase-indexed, not session-indexed); `git log -p PROGRESS.md` has the per-commit retrospective.
+Sessions 78-99 → see [`docs/history/SESSIONS.md`](docs/history/SESSIONS.md). Sessions 1-77 pre-date the per-session PROGRESS.md entry pattern; §Phase ledger below summarises that era by workstream (phase-indexed, not session-indexed); `git log -p PROGRESS.md` has the per-commit retrospective.
 
 ## Phase ledger
 
