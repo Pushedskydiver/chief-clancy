@@ -1,8 +1,6 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 
@@ -17,14 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v5
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
 
       - run: pnpm typecheck
       - run: pnpm lint
@@ -32,42 +23,14 @@ jobs:
       - run: pnpm test
       - run: pnpm format:check
 
-  integration-tests:
-    name: Integration tests
-    needs: unit-tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - uses: pnpm/action-setup@v5
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
-
-      - run: pnpm build
-
-      - name: Run integration tests
-        run: echo "No integration tests yet — placeholder for Phase 11"
-
-  quality:
-    name: Quality checks
+  advisory:
+    name: Advisory checks
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
       - uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v5
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: pnpm
-
-      - run: pnpm install --frozen-lockfile
+      - uses: ./.github/actions/setup
 
       - run: pnpm build
 
