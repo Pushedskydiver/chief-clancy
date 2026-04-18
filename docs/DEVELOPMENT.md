@@ -13,7 +13,7 @@ See also: [DA-REVIEW.md](DA-REVIEW.md) (architectural review, Required disciplin
 1. **Read** — brief + PROGRESS.md
 2. **Validate** — phase validation protocol (if starting a new phase)
 3. **Build** — tracer bullet TDD: one test → implement → next test → repeat → refactor → lint
-4. **Review gate** — DA review → self-review → fix all findings → create PR → CodeRabbit review → fix findings
+4. **Review gate** — DA review → self-review → fix all findings → create PR → Copilot review → fix findings
 5. **Ship** — squash merge, update PROGRESS.md
 
 ---
@@ -26,7 +26,7 @@ Config files, tooling setup, docs. No feature branches needed. Commit directly t
 
 ### Phase 2+ (Application Code) — branches + PRs
 
-All code changes go through: branch → review gate → PR → CodeRabbit review → squash merge. See [Review Gate](#review-gate--da--self-review--coderabbit) below.
+All code changes go through: branch → review gate → PR → Copilot review → squash merge. See [Review Gate](#review-gate--da--self-review--copilot) below.
 
 ---
 
@@ -206,7 +206,7 @@ The DA review agent runs as a subagent — it reviews code in a separate context
 
 ---
 
-## Review Gate — DA → Self-Review → CodeRabbit
+## Review Gate — DA → Self-Review → Copilot
 
 Three checks before merging a PR, plus automated security scanning in CI.
 
@@ -333,7 +333,7 @@ One `focus.md` per active workstream; no PR without one (once the gate lands). T
 #### Review discipline
 
 - **Plan-stage grill uses the [Two-phase grill discipline](#two-phase-grill-discipline)** from §P1 — discovery rounds + verification round before any code moves.
-- **During execution: per-commit DA + final verification DA + self-review.** Two DA passes, distinct prompts — per-commit DA runs against each commit before the next commit lands (discovery brief, catches mechanical errors within one blast radius); final verification DA runs against the PR's full diff (evaluative-skeptical, confirms merge-readiness). Self-review runs last, after all DA-driven changes have landed — per the [Review Gate](#review-gate--da--self-review--coderabbit) ordering rationale (DA fixes invalidate earlier self-review). Then push and create the PR for Copilot.
+- **During execution: per-commit DA + final verification DA + self-review.** Two DA passes, distinct prompts — per-commit DA runs against each commit before the next commit lands (discovery brief, catches mechanical errors within one blast radius); final verification DA runs against the PR's full diff (evaluative-skeptical, confirms merge-readiness). Self-review runs last, after all DA-driven changes have landed — per the [Review Gate](#review-gate--da--self-review--copilot) ordering rationale (DA fixes invalidate earlier self-review). Then push and create the PR for Copilot.
 - **Two DA passes, not N.** Iterating DA beyond final verification has diminishing returns against DA's own error model: the same blind spots recur across re-runs. The designed review stages are plan grill → per-commit DA → final verification DA → self-review → PR creation → Copilot. Don't patch a DA-miss by adding a third DA pass beyond final verification; Copilot's post-push pass is part of the designed review stack, and a DA-miss Copilot catches is part of the stack working, not a signal to re-run DA.
 - **Verification DA prompt includes an explicit cross-section-consistency check** when the PR revises or adds a definitional rule — classification table, named category, prose using absolute quantifiers ("every", "no", "always", "never"), or exception-carving ("except", "unless", "other than"). Evidence: on PR5 + PR6, most of the 13 Copilot findings across the two PRs (at least 7 strictly; up to 9 under a looser rubric) were absolute-phrase-contradicts-another-section-of-same-diff — the dominant failure class for structural-doc PRs. Fold the check into the verification prompt, not a separate review stage.
 - **Mechanical-refactor checklist** — consumer-surface grep, `vi.mock`/dynamic-import grep, docs-sweep regex, boundary-vs-concept-folder distinction — lives in [SELF-REVIEW §Folder structure](SELF-REVIEW.md#folder-structure) + [DA-REVIEW §Folder structure](DA-REVIEW.md#folder-structure). Link, don't restate.
