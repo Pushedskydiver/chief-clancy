@@ -271,7 +271,7 @@ Use `vi.fn<Fetcher>()` for mock fetchers in tests — not untyped `vi.fn()` or a
 
 ```ts
 // GOOD — typed, mockable, no cast needed
-import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
+import type { Fetcher } from '@chief-clancy/core';
 
 const mockFetch = vi.fn<Fetcher>();
 
