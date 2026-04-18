@@ -160,7 +160,7 @@ If you spot something worth improving outside the current task scope, list it as
 
 **How to hand off:**
 
-1. Update PROGRESS.md with current state (commit directly to main; PROGRESS-only changes don't go through PR review).
+1. Update PROGRESS.md with current state (commit directly to main — see [§PROGRESS.md updates commit direct to main](#progressmd-updates-commit-direct-to-main) below).
 2. Save any important decisions to Claude Code's memory system (the `.claude/projects/` directory, managed via the auto-memory feature — not checked into the repo).
 3. Leave a handoff summary with:
    - What was completed (PR numbers, key files)
@@ -169,6 +169,12 @@ If you spot something worth improving outside the current task scope, list it as
    - If mid-PR: current branch, what's done, what remains
 
 The next session starts clean: reads the brief, reads PROGRESS.md, picks up where the handoff left off. Fresh context with full recall via memory and docs.
+
+### PROGRESS.md updates commit direct to main
+
+PROGRESS.md is session-state — a living record of what happened. It is not architecturally-reviewed content like `docs/CONVENTIONS.md` or `docs/DEVELOPMENT.md`. Handoffs, session entries, the `## Next workstreams` pointer, and phase-ledger updates commit direct to `main` — no branch, no PR.
+
+**Exception:** when PROGRESS.md is part of a larger PR (bundled with the work being logged), leave it in that PR — atomic is better than split.
 
 ### Measurement protocol
 
