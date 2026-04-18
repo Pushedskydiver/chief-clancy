@@ -2,14 +2,60 @@
 
 Living state document for the Clancy monorepo. Records the current state, the phase ledger, and the next decision. Session-by-session detail lives in git history (each phase's PRs are tagged + commit messages reference them).
 
-## Next workstreams (after Session 104)
+## Next workstreams (after Session 105)
 
 Ordering updated 2026-04-18:
 
-1. **Phase 5 — ship collaboration protocols PRs.** PR-α (split into α.1 + α.2) + PR-β + PR-γ + PR-η complete. Remaining order: δ → ε → ζ. Three PRs left. Standard discipline per PR: two-phase grill → per-commit DA → final verification DA → self-review → open PR → Copilot round(s) → merge. Next session starts at PR-δ (memory → docs promotions + 1 deletion). proposals.md remains the playbook (gitignored, see Phase 5 execution log appended at top).
+1. **Phase 5 — ship collaboration protocols PRs.** PR-α (split into α.1 + α.2) + PR-β + PR-γ + PR-η + PR-δ complete. Remaining order: ε → ζ. Two PRs left. Standard discipline per PR: two-phase grill → per-commit DA → final verification DA → self-review → open PR → Copilot round(s) → merge. Next session starts at PR-ε (CONVENTIONS.md Option D preamble + `node:path` rule + `n/no-path-concat` lint floor). proposals.md remains the playbook (gitignored, see Phase 5 execution log appended at top).
 2. **Automated session handoff** (deferred — revisit after 10 post-PR-γ sessions of recorded metrics OR when any §Measurement protocol early-revisit trigger fires). Substrate is Claude Code Routines + `PostCompact` hook; measurement protocol lives in `docs/DEVELOPMENT.md §Session handoff > §Measurement protocol` (shipped in PR-γ). Not in scope for Phase 5.
 3. **Plumb real error channels through invoke/deliver/feasibility** — the open design question from Session 98.
 4. **Phase F** — `@chief-clancy/design` (Stitch integration).
+
+---
+
+**Session 105 (2026-04-18) — Phase 5 PR-δ shipped. Memory → docs promotions + 1 deletion.** PR [#366](https://github.com/Pushedskydiver/chief-clancy/pull/366) merged (squash `8126692`). Six commits: 4 per-promotion commits (δ.1 DEVELOPMENT.md §Locking package-scope decisions, δ.2 TESTING.md §Typed mock fetchers, δ.3 DA-REVIEW.md §Conventions & code patterns §Platform-dispatch parity checkbox, δ.4 DEVELOPMENT.md §PROGRESS.md updates commit direct to main) + 2 fold commits (post-per-commit-DA on δ.1 + δ.3) + 1 final-DA fold + 2 Copilot-round folds. Net: `docs/DEVELOPMENT.md` +21/-1, `docs/TESTING.md` +19, `docs/DA-REVIEW.md` +1. Out-of-band post-merge: 5 memory files deleted + MEMORY.md dated-block added (auto-memory under `~/.claude/projects/`, not repo-tracked).
+
+**`feedback_sequential_pr.md` scope adjustment.** Proposals.md §PR-δ originally listed 5 promotions + 1 deletion (6 dispositions). The sequential-PR memory was already deleted in Session 102 (incompatible with auto-merge Option B). Final PR-δ scope: 4 promotions + 1 deletion + MEMORY.md index update. Scope verified against MEMORY.md before spec drafting — a second data point on the Session 104 carry-over "verify dispatcher priors before dispatching subagents."
+
+**Review stack fired end-to-end.** **Spec two-phase grill:** R1 discovery (1 BLOCKING + 6 MATERIAL + 6 LOW + 4 missed-concerns across 3 target docs). R1 B1 was a live factual error — memory file `feedback_fetcher_typing.md:11` had a stale import path (`~/c/shared/http/index.js`) that would have shipped a broken code example; corrected to `~/c/shared/http/fetch-and-parse.js` per 20+ live import sites in `packages/core/src/board/github/*.ts`. R_n verification confirmed 11 R1 findings fixed, caught 2 new (NEW-B1 per-commit DA scope, NEW-M1 TESTING.md sentence scope drift) — both folded pre-code. **Per-commit DA × 4:** Commit 1 (δ.1) 0B/0M/4L — folded F1 (anti-duplication pointer to `decisions/architecture/package-evolution.md`) + F3 ("planning agent" ambiguity → "evaluation of package placement" neutral framing). Commit 2 (δ.2) READY zero. Commit 3 (δ.3) 3M/3L — folded all five: M1 unsourced "most often missed" superlative → memory-faithful "known gap in prior DA rounds"; M2 coined "Remote-type" vocabulary (no codebase match) → "Platform-dispatch parity" anchored to `GitPlatform` at `packages/core/src/types/remote.ts:5`; M3 "only unsupported remote types" (conflated sentinels with unsupported platforms) → explicit enumeration of 5 supported values + 2 sentinels; L1 §Architecture & imports weak fit → §Conventions & code patterns (peer of Result-shape discriminated-union rule); L2 "rework detection" → "rework handling" matching codebase folder naming. Commit 4 (δ.4) READY zero. **Final verification DA on combined diff:** 1 MATERIAL (label-match on pointer — "Phase C PR 8" was legacy-repo shorthand; target doc uses "PR #213"; rewritten verbatim) + 2 LOW (line-number citation squash-discarded + "Platform parity check" SELF-REVIEW.md:89 vs "Platform-dispatch parity" DA-REVIEW.md:195 reader-confusion; scopes legitimately different, companion pointer deferred as cosmetic).
+
+**2 Copilot rounds, 2 findings, R3 clean.** R1: DA-REVIEW.md §Platform-dispatch parity listed "ticket fetch" as a GitPlatform-dispatch site — Copilot caught that ticket fetching dispatches on the `Board` abstraction (`packages/core/src/board/factory.ts`), not `GitPlatform`. Memory source conflated the two surfaces; promoted checkbox inherited the conflation. Replaced with `remote parsing` + `manual PR URL building` — both verified as real GitPlatform-dispatch sites. R2: TESTING.md §Typed mock fetchers example used `~/c/` path alias (core-internal) in repo-wide guidance. Fixed to `@chief-clancy/core` package-entry (Fetcher re-exported from `src/index.ts:16`) — cleaner than Copilot's suggested deep-path `@chief-clancy/core/shared/http/fetch-and-parse.js` since the type is available at the package root. R3 returned zero new findings. Total Copilot findings across Phase 5 so far: 25 (added 2 PR-δ findings on top of Session 104's 23).
+
+**Meta-findings (carry-forward to Session 106+):**
+
+- **Rule-promotion spec grills must Claim-extract on absolute quantifiers in the rule-body itself, not just on cited code references.** Final verification DA surfaced this: R1/R_n spec grill caught proposal-to-memory drift but missed three factual claims in the Platform-dispatch checkbox body (superlative "most often missed", coined vocabulary "Remote-type", enumeration conflation "only unsupported remote types"). Per-commit DA caught all three on first read — the class of claim that spec grills scope down to "cited code" rather than "rule-body's own factual assertions". Candidate addition to `docs/DA-REVIEW.md §Claim-extraction pass` or `docs/SELF-REVIEW.md §Consistency` for a later sweep if the pattern recurs across another rule-promotion PR.
+- **Memory files' own factual errors don't necessarily surface during memory review.** Session 99 Phase 2 memory-review marked `feedback_fetcher_typing.md` as Promote without flagging the stale `index.js` import path — the memory's "How to apply" line was treated as prescription, not verified against current codebase. R1 spec grill did catch it (because Claim-extraction pass targets cited paths), but the earlier memory-review pass did not. Implication: future memory → docs promotion PRs should re-verify every file-path / import claim in memory bodies against current code before shipping.
+- **Preemptive archival at handoff — 2nd data point.** Session 104 archived Session 99 at handoff time; this Session 105 handoff archives Session 100 at handoff time. §Archival maintenance rule currently says "at session start" — two consecutive preemptive-at-handoff applications suggest the rule can relax to "at session start OR handoff time". Wait for 3rd data point (Session 106 handoff) before promoting the rule change, per Session 104 carry-over.
+- **§Next workstreams own-PR-rule.** PR-δ shipped an item listed in §Next workstreams as pending (δ → ε → ζ); this handoff updates §Next workstreams atomically to "ε → ζ remaining" per Session 104's "apply own-PR rules to own PR" meta-finding. Second data point on this discipline; pattern holds.
+
+**Session 105 handoff metrics.** (Data point 3 of 10 toward the automated-handoff revisit threshold per PR-γ §Measurement protocol.)
+
+- Trigger: phase boundary (PR-δ merged on main).
+- Context at trigger: ≈65-70% of pre-compaction budget (manual estimate — heavy session with 2 spec-grill rounds + 4 per-commit DA dispatches + 1 final-verification DA + self-review + 3 Copilot rounds + 2 fold commits + pre-push quality suite + wake-up resumes across merge wait).
+- Handoff turn cost: ≈4k tokens (this entry + Session 100 archive row + §Next workstreams update + Session 106 loading instructions + out-of-band memory cleanup).
+- Unplanned compaction: no.
+- Time from "handoff now" decision to next-session first productive tool call: N/A (recorded by Session 106).
+- `PROGRESS.md` quality signal: N/A (recorded by Session 106).
+
+### Session 106 loading instructions
+
+On load:
+
+1. Read `PROGRESS.md` top-to-bottom (this Session 105 entry + §Next workstreams + 5 detailed entries for Sessions 101-105).
+2. Read `.claude/research/collaboration-protocols/proposals.md` — Phase 5 playbook. **Critical:** read the "Phase 5 execution log" footer at the TOP first (Session 102 architectural pivot + α split + β.2 deferral + γ.5 subsection lock; η's execution didn't amend the footer since spec deviations were honest-call-list items in the η spec; δ's execution also didn't amend the footer since deviations were honest-call-list items in the δ spec).
+3. Start at PR-ε. Scope per proposals.md §PR-ε: (i) add Option D preamble to `docs/CONVENTIONS.md` top; (ii) add `node:path` rule under a new §Portability section; (iii) add `n/no-path-concat` lint rule to `eslint.config.ts`. Source memories: `project_architecture.md` (node:path rule — still in memory as a Keep per Session 99 review) + research findings `3.6-meta-authoring-placement.md` (Option D) + `3.7-node-path-rule-form.md` (prose primary + lint floor).
+4. Standard discipline per PR: two-phase grill on the spec → per-commit DA → final verification DA on combined diff → self-review → open PR → Copilot round(s) → merge. ε touches `docs/CONVENTIONS.md` (policy doc, in γ.2's blast-radius exception list) + `eslint.config.ts` (repo-root config, in exception list) → Alex-merge by default.
+5. Branch suggestion: `chore/conventions-preamble-plus-node-path-lint`. Type label `chore`. No package labels (root-level docs + config only).
+6. **Carry-overs from Session 105:**
+   - **Rule-promotion spec grills must Claim-extract on absolute quantifiers in rule-body, not just cited code.** ε is a rule-promotion PR (node:path rule body). When drafting the spec brief, flag every absolute quantifier in the promoted text ("every", "no", "always", "never", "only") + every named identifier for verification — don't rely on spec-grill to reach that scope unprompted.
+   - **Memory file factual errors don't surface during memory review.** `project_architecture.md` memory mentions node:path — spot-check the memory's code citations against current state before copying prose into the rule body. Session 99 memory-review marked this as Keep without verifying.
+   - **Verify dispatcher priors before dispatching subagents.** Third data point on this discipline; pattern holds. Before dispatching any grill, state load-bearing premises + spot-check non-obvious ones (memory-file existence, proposals.md staleness, anchor targets, codebase facts).
+   - **Compression-from-source, not compression-from-compressed.** Applies to archive rows + summary rows + cross-section headline work. Cite from the deepest-available source.
+   - **Schema-pair drift crosses cell boundaries.** When presenting a schema example, walk every cell of the row format.
+   - **"Apply own-PR rules to own PR" extends to §Next workstreams** — when ε ships, update §Next workstreams atomically in the same commit/PR.
+   - **§Archival maintenance preemptive-at-handoff — 2nd data point.** Session 104 + Session 105 both applied preemptively. If Session 106 hand-off also applies preemptively, consider relaxing §Archival maintenance "at session start" to "at session start OR handoff time" in the same PR that ships it.
+   - **§Measurement protocol data point 3 recorded above.** 7 more to go until the 10-entry revisit threshold. Early-trigger thresholds unchanged (3+ unplanned compactions in 5 sessions / handoff >5min on 2+ sessions / 2+ clarifying-question sessions in a row).
+7. After ε ships, remaining order: ζ (CODEOWNERS seed from blast-radius path list). Phase 5 complete after ζ.
 
 ---
 
@@ -158,49 +204,9 @@ On load:
 
 ---
 
-**Session 100 (2026-04-17 late — research-only, no PRs) — Collaboration protocols workstream Phase 3 complete + Phase 4 locked plan.** 7 research threads shipped (3.1 Copilot lifecycle, 3.2 changesets release, 3.3 agent checkpoints, 3.4 session handoff, 3.5 HITL supervision, 3.6 meta-authoring placement, 3.7 node:path rule form) at `.claude/research/collaboration-protocols/research/`. 4 validation threads dispatched after Alex's Q1-Q8 answers with strong-evidence findings:
-
-**Q1 publish-gate rule → DROP entirely.** All 3 motivations broke under survey: version-skew is phantom (changesets reference package names not versions; `pnpm publish` rewrites `workspace:*` at publish); merge conflicts phantom (zero cases found across ~50 release PRs in Astro/TanStack/shadcn); silent-skip is architectural bug — repo's `publish.yml` uses `workflow_run + conclusion=='success'` antipattern (community #21090 + `changesets/action#341`), guaranteed to silent-skip when `ci.yml` `cancel-in-progress: true` fires on superseding push (the PR-β / `dev@0.7.1` root cause). Canonical pattern is `on: push: main` single-job (TanStack Query `release.yml`).
-
-**Q2 auto-merge Option B → VALIDATED with 3 modifications.** Dependabot/Renovate/Kodiak patterns validate the shape. Mods: (a) size/scope gate — LOC + package-touch caps (agent PRs bigger than dependabot PRs; Cursor L4/L5 blast-radius classification endorses); (b) Copilot gate restated — Copilot always submits `COMMENT`, never `REQUEST_CHANGES` (community #185265), so require review-completion + severity-keyword filter + 10min timeout fallback; (c) "CI green" tightened to ALL checks, not just required (dependabot/feedback#519), + 30s stability window (#727). Plus: changeset-presence check + revert-guard + blast-radius path list seeds a CODEOWNERS the repo lacks.
-
-**Q3 handoff Option C → VALIDATED with "phase boundary" definition.** 60% dial defensible (band 50-65%); principle is "hand off before compaction, with buffer for handoff turn." Define phase boundary in CLAUDE.md as `{PR merged on main, research doc shipped, workstream segment completed}`. Compaction research: Claude Code 1M harness compacts at ~76-80k tokens per #34332/#42375 against a ~200k effective budget.
-
-**Q4 block-vs-surface hybrid → VALIDATED with mods.** Drop "design decisions" from hard-block (too vague — they're settled at plan-stage per Q5 or caught by Stop-the-Line). Add `.github/workflows/**` + lockfile hand-edits. Surface via PR-body checklist. Flagged: no 2025-2026 benchmark validates Claude self-flagging of borderline cases — keep surfacing low-stakes.
-
-**Q5 plan-stage HITL → VALIDATED with stopping criterion refinement.** SDD frameworks (Kiro, GitHub Spec Kit, cc-sdd) all mandate approval at every phase transition — EPAM: "Each phase requires explicit human approval before proceeding." Agent-grilling-human well-studied (SAGE-Agent EVPI, HumanEvalComm, ICLR 2025 future-turns). **"Nit-floor" redefined** as "successive iterations produce only cosmetic deltas OR Alex says ship" — matches Self-Refine/illusion-of-diminishing-returns convergence literature; bounds cost at 3-5 rounds typical / ~7 max (~1-4 hrs Alex attention per workstream). Cost accepted.
-
-**Q6 meta-authoring → Option D.** Short preamble in CONVENTIONS.md + pointer-out if expanded later. Matches our own CLAUDE.md pattern.
-
-**Q7 issue scheduling → end-of-PR + GitHub Issues only.** Matches Devin/Cursor/OpenHands task-boundary. "End-of-PR" = post-merge + CI green. Priority via labels (`P0`, `security`) reorders queue for next pickup — NO mid-task preemption. **Clarified:** Clancy `plan` package's board is for END USERS planning their work in their own repos; chief-clancy-the-repo uses GitHub Issues for its OWN development. Surface mechanism is plain `gh issue create` + `gh issue list --label` — zero adapter, zero new infra.
-
-**Q8 publish.yml architectural fix → IN-SCOPE.** Single ~30-line workflow change. Preserve `cancel-in-progress: false` on release job.
-
-**Phase 4 locked plan (6 PRs):** PR-α `publish.yml` architectural fix + title gitmoji; PR-β CLAUDE.md handoff trigger + merge policy rewrite; PR-γ `docs/DEVELOPMENT.md` Post-PR flow + auto-merge criteria + HITL hybrid + issue-queue check; PR-δ memory→docs promotions (5 files) + 1 deletion (`feedback_da_must_be_subagent`); PR-ε `docs/CONVENTIONS.md` Option D preamble + `node:path` rule + `n/no-path-concat` lint floor; PR-ζ `CODEOWNERS` seeded from blast-radius path list. Ordering: α first (fixes silent-skip before we drop the gate), β unblocks merge autonomy, ζ parallel-able.
-
-**Dial values locked:** handoff threshold 60% (band 50-65%); auto-merge LOC cap 500; package-touch cap 3-in-chain; CI stability window 30s; Copilot timeout 10min; plan-iteration soft cap 5 typical / 7 max; retry budget 3; oscillation 2 cycles; node:path form = prose + `n/no-path-concat` floor.
-
-**Artefacts shipped:** 7 findings files (`research/3.1-` through `3.7-`) + 4 validation files (`research/validation-publish-gate.md`, `validation-auto-merge.md`, `validation-handoff-plan-hitl.md`, `validation-block-vs-surface-issue-scheduling.md`). All at `.claude/research/collaboration-protocols/` (gitignored).
-
-**Session 100 handoff triggered preemptively** per the exact rule we just validated — context high after 7 research + 4 validation threads consumed; Phase 4 drafting is output-heavy (6 PRs' worth of unified-diff-ready text) and warrants fresh context with research files as primary anchor.
-
-### Session 101 loading instructions
-
-On load:
-
-1. Read `PROGRESS.md` top-to-bottom (this Session 100 entry + Session 99 + Next workstreams section).
-2. Read `.claude/research/collaboration-protocols/brief.md` (Phase 4 + 5 instructions).
-3. Read all 7 findings files + 4 validation files under `.claude/research/collaboration-protocols/research/`.
-4. Read current target files: `CLAUDE.md`, `docs/DEVELOPMENT.md`, `docs/CONVENTIONS.md`, `docs/SELF-REVIEW.md`, `docs/DA-REVIEW.md`, `docs/RATIONALIZATIONS.md`, `docs/GIT.md`, `docs/TESTING.md`, `.github/workflows/publish.yml`, `.github/workflows/ci.yml`, `eslint.config.ts`.
-5. Draft `.claude/research/collaboration-protocols/proposals.md` with unified-diff-ready text for each of 6 PRs (α-ζ). Each proposal anchors to specific audit/research/validation findings by file + section.
-6. Two-phase grill the proposals per the redefined stopping criterion ("successive iterations produce only cosmetic deltas OR Alex says ship"). Ask Alex where implications are preference-dependent.
-7. Phase 5 ships PR-α first (architectural fix before gate drop), then β, γ, δ, ε, ζ. Standard discipline: two-phase grill → per-commit DA → final verification DA → self-review → open PR → Copilot round(s) → merge.
-
----
-
 ## Session archive
 
-Sessions 78-99 → see [`docs/history/SESSIONS.md`](docs/history/SESSIONS.md). Sessions 1-77 pre-date the per-session PROGRESS.md entry pattern; §Phase ledger below summarises that era by workstream (phase-indexed, not session-indexed); `git log -p PROGRESS.md` has the per-commit retrospective.
+Sessions 78-100 → see [`docs/history/SESSIONS.md`](docs/history/SESSIONS.md). Sessions 1-77 pre-date the per-session PROGRESS.md entry pattern; §Phase ledger below summarises that era by workstream (phase-indexed, not session-indexed); `git log -p PROGRESS.md` has the per-commit retrospective.
 
 ## Phase ledger
 
