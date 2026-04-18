@@ -397,7 +397,7 @@ See `.github/workflows/release.yml` for the full workflow. `NPM_TOKEN` secret re
 After opening a PR, Claude runs the following sequence before considering the PR closed:
 
 1. **Copilot review** — request explicitly after push; the repo does not auto-trigger Copilot on PR open. Use `gh api -X POST repos/{owner}/{repo}/pulls/{n}/requested_reviewers -f 'reviewers[]=copilot-pull-request-reviewer[bot]'` (the app login resolves to `Copilot` in `requested_reviewers`). Claude then waits for the review to complete or for 10min (dial; adjust based on post-merge observations) after CI green, whichever first.
-2. **Findings triage** — every Copilot finding gets one of: fix, fix differently, dismiss-with-evidence. See [§Evaluating Automated Review Findings](#evaluating-automated-review-findings-copilot--coderabbit). When a needs-oversight trigger fires during triage (see [§HITL triggers](#hitl-triggers) — e.g. severity-flagged Copilot dismissal), add the `## HITL flags` checkbox to the PR body in the same action, before step 4's auto-merge decision.
+2. **Findings triage** — every Copilot finding gets one of: fix, fix differently, dismiss-with-evidence. See [§Evaluating Automated Review Findings](#evaluating-automated-review-findings-copilot--coderabbit). When a needs-oversight trigger fires during triage (see [§HITL triggers](#hitl-triggers) — e.g. severity-flagged Copilot dismissal), add or update the `## HITL flags` checklist section in the PR body with an unchecked box for the trigger, in the same action, before step 4's auto-merge decision.
 3. **Resolve-after-reply** — for every inline Copilot comment, after its action (fix landed, reasoned dismissal, or no-op acknowledgement for nit-level observations), actively mark the thread resolved. Discover thread IDs first, then resolve by ID:
 
    ```bash
@@ -429,7 +429,9 @@ Autonomous PR merge decision. All gates must pass; any exception triggers Alex-h
 - **Copilot gate satisfied** (one of):
   - Copilot posted a review (any verdict) AND all Copilot review threads resolved per [§Post-PR flow](#post-pr-flow) step 3 — OR
   - 10min (dial; adjust based on post-merge observations) elapsed since CI green with no Copilot review posted (hang fallback per [community #176835](https://github.com/orgs/community/discussions/176835)).
-  - Clock resets on each push — fresh diff, fresh window.
+
+  Note: both branches' clocks reset on each push — fresh diff, fresh window.
+
 - **No merge conflicts**; type label present; package labels present when touching `packages/*/src/`.
 
 ### Exceptions (any triggers Alex-handoff)
