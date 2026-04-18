@@ -375,7 +375,7 @@ See `.github/workflows/release.yml` for the full workflow. `NPM_TOKEN` secret re
 After opening a PR, Claude runs the following sequence before considering the PR closed:
 
 1. **Copilot review** — auto-triggered on PR open (no manual request needed). Claude waits for the review to complete or for 10min (dial; adjust based on post-merge observations) after CI green, whichever first.
-2. **Findings triage** — every Copilot finding gets one of: fix, fix differently, dismiss-with-evidence. See [§Evaluating Automated Review Findings](#evaluating-automated-review-findings-copilot--coderabbit).
+2. **Findings triage** — every Copilot finding gets one of: fix, fix differently, dismiss-with-evidence. See [§Evaluating Automated Review Findings](#evaluating-automated-review-findings-copilot--coderabbit). When a needs-oversight trigger fires during triage (see [§HITL triggers](#hitl-triggers) — e.g. severity-flagged Copilot dismissal), add the `## HITL flags` checkbox to the PR body in the same action, before step 4's auto-merge decision.
 3. **Resolve-after-reply** — for every inline Copilot comment, after its action (fix landed, reasoned dismissal, or no-op acknowledgement for nit-level observations), actively mark the thread resolved:
 
    ```bash
@@ -386,7 +386,7 @@ After opening a PR, Claude runs the following sequence before considering the PR
 
 4. **Auto-merge decision** — walk [§Auto-merge criteria](#auto-merge-criteria). If all gates pass and no exception fires, squash-merge. Otherwise, surface to Alex with a one-line summary of which gate/exception blocked.
 5. **Post-merge** — pull `main`, prune remotes (`git fetch --prune origin`), delete local branch, verify the release workflow (if a changeset merged). If `release.yml` posts red on the merge commit, stop-the-line and surface to Alex — publish-step failures are idempotent-recoverable via `pnpm changeset publish` but shouldn't proceed silently.
-6. **Next pickup** — run `gh issue list --label ready` before claiming the next workstream ticket. Any issue here pre-empts the next planned ticket. See §Issue queue below (shipped alongside this section).
+6. **Next pickup** — run `gh issue list --label ready` before claiming the next workstream ticket. Any issue here pre-empts the next planned ticket. See [§Issue queue](#issue-queue) below.
 
 ---
 
@@ -421,12 +421,69 @@ Autonomous PR merge decision. All gates must pass; any exception triggers Alex-h
   - Repo-root config: `/package.json`, `/pnpm-workspace.yaml`, `/pnpm-lock.yaml`, `/tsconfig.base.json`, `/.changeset/config.json`
   - Policy docs: `/CLAUDE.md`, `/docs/DEVELOPMENT.md`, `/docs/DA-REVIEW.md`, `/docs/SELF-REVIEW.md`, `/docs/CONVENTIONS.md`, `/docs/RATIONALIZATIONS.md`, `/docs/GIT.md`, `/docs/TESTING.md`
   - Per-package publish surface: `/packages/*/package.json`, `/packages/*/tsconfig.json`
-- **HITL signal fired** — see §HITL triggers below (shipped alongside this section).
+- **HITL signal fired** — see [§HITL triggers](#hitl-triggers) below.
 - **Lockfile hand-edit** — `pnpm-lock.yaml` changed without a corresponding `package.json` change in the same commit.
 
 ### Rationale
 
 Structural gates beat agent self-assessment — verbalised LLM confidence is miscalibrated on current models per [Xiong et al. 2023](https://openreview.net/forum?id=gjeQKFxFpZ) (GPT-4 expressed high confidence on 87% of answers including wrong ones). The exception list is curated from failure modes documented at scale in Dependabot / Renovate / Kodiak ([dependabot/feedback#519](https://github.com/dependabot/feedback/issues/519), [#727](https://github.com/dependabot/feedback/issues/727), [#85](https://github.com/dependabot/feedback/issues/85)) and the one well-documented Claude Code auto-merge incident ([claude-code#44202](https://github.com/anthropics/claude-code/issues/44202) — root cause was absence-of-gate, not loose-gate).
+
+---
+
+## HITL triggers
+
+Two distinct axes — Claude pauses on either. Two surfacing channels — ephemeral push + durable record.
+
+### Stuck signals (agent-initiated; structural, not introspective)
+
+Surface to Alex when any fires:
+
+- **Retry-budget exhaustion** — same tool call made 3+ times with materially identical args producing materially identical errors.
+- **Oscillation** — fix A broke B; fix B re-broke A. Two cycles = stop.
+- **Pre-push quality suite fails twice on the same diff** — i.e. the suite fails, a fix lands, the suite fails again on the same diff. Two failed suite runs separated by one fix attempt; don't drive to a third.
+- **Novel error class** not matched in prior session context or docs.
+- **Cross-file blast radius** exceeds the auto-merge size gate (≥500 LOC OR ≥3 packages; dials per [§Auto-merge criteria](#auto-merge-criteria)). Same cutoff as the auto-merge size exception — flag before committing rather than let auto-merge refuse at ship time.
+
+### Needs-oversight signals (design-initiated; reversibility-driven)
+
+Claude surfaces even when confident:
+
+- **Public API change** — any exported-symbol signature shift in `@chief-clancy/*` (consumers may exist outside this repo).
+- **Semver-major** — any changeset requiring `major`.
+- **Schema migration / zod-shape change** where serialised data exists on disk (`.clancy/`).
+- **Deletion of historical artefacts** — PROGRESS.md sections, commit history, changesets, merged-PR docs.
+- **Destructive shell ops** — already covered by the Claude Code git-safety protocol (restated here for taxonomy).
+- **Security-sensitive code** — credential handling, hook content, MCP server config.
+- **Cross-package boundary change** — dep-direction edits, `eslint-plugin-boundaries` config.
+- **Release gating** — publishing, tagging, main-branch force operations.
+- **Severity-flagged Copilot dismissal** — a Copilot comment containing `security`, `regression`, or `breaking` that is resolved via dismissal-with-evidence (rather than a landed fix) surfaces to Alex. The dismissal may well be correct, but severity-flagged dismissals are design-weight decisions that warrant a second eye.
+- **Ambiguous requirement** — two equally valid interpretations that change observable behaviour. Ties into [§Surface assumptions](#surface-assumptions-before-starting).
+
+### Plan-stage mandatory HITL
+
+Before any code moves on a non-trivial spec / rule-promotion / execution plan / rationale doc, run the two-phase grill — [discovery + verification rounds](#two-phase-grill-discipline), defined under [§P1](#p1--spec-grilling--upstream-research) — with Alex in the loop. Stopping criterion: _successive grill rounds produce only cosmetic deltas, OR Alex says ship — whichever is sooner._ Matches Self-Refine and illusion-of-diminishing-returns convergence literature; bounds iteration cost at ~3-5 rounds typical / ~7 max. "Nit-floor" as an aspiration, not a hard rule — humans generate nits indefinitely.
+
+### Surfacing mechanism
+
+When any trigger above fires, Claude surfaces via two channels:
+
+1. **Ephemeral push — primary when available.** The `PushNotification` tool sends a terminal toast always, and pushes to phone when [Remote Control](https://code.claude.com/docs/en/remote-control) is configured (`claude remote-control` on a recent Claude Code version). Config via `/config` → "Push when Claude decides". If Remote Control is not configured, the push surface reduces to terminal-toast-only — the durable PR checklist below stays the always-available record regardless. Pairs with the existing [`packages/terminal/src/hooks/clancy-notification/`](../packages/terminal/src/hooks/clancy-notification/) terminal notify path. Evidence: Devin (Slack DM per run) and Cursor Background Agent both landed on push-to-phone as the primary solo-maintainer HITL surface — nobody relies on "human checks PR queue" for time-sensitive decisions ([Devin docs](https://docs.devin.ai/integrations/slack), [Cursor docs](https://docs.cursor.com/en/background-agent)).
+2. **Durable record — fallback + audit trail.** PR body carries a `## HITL flags` checklist section. Each flag is an unchecked Markdown tickbox with the trigger name + a one-line context. [§Auto-merge criteria](#auto-merge-criteria) reads this section via the HITL-signal-fired exception — any unchecked box blocks auto-merge. Alex ticks boxes to acknowledge / unblock. Push is ephemeral; the PR is the audit trail.
+
+Push is for "decide now" moments. Checklist is for "surface for the next PR review" moments. Both for everything else; the write is cheap.
+
+Rejected alternatives: GitHub-issue `needs-alex` (adds noise, no phone push without extra GitHub-mobile setup), Channels (Telegram/Discord plugins are research-preview, protocol may change), Twilio WhatsApp (paid + DIY for a solved problem).
+
+---
+
+## Issue queue
+
+Chief-clancy-the-repo uses GitHub Issues for its own development backlog — distinct from the Clancy `plan` package, whose board is for end users planning work in their own repos.
+
+- **End-of-PR pickup, not mid-task.** After a PR merges + CI green on main, run `gh issue list --label ready` before starting the next planned ticket.
+- **Priority labels reorder the queue** (`P0`, `security`). Alex applies labels; Claude reads them at next pickup.
+- **No mid-task preemption.** A new high-priority issue filed while Claude is mid-PR waits for the next end-of-PR boundary. Matches Devin / Cursor / OpenHands task-boundary semantics.
+- **No adapter, no new infra.** Plain `gh issue create` + `gh issue list --label`; the Clancy `plan` board is unrelated to this queue.
 
 ---
 
