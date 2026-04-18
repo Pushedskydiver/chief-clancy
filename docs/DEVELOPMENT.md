@@ -47,7 +47,7 @@ Layering violations break the build (hard constraint). Cohesion violations pass 
 
 **When an evaluation of package placement considers only one constraint, push back** — ask the other. A one-dimensional analysis is incomplete regardless of which dimension is missing.
 
-See [`decisions/architecture/package-evolution.md`](decisions/architecture/package-evolution.md) for the operational cohesion test ("is this part of the package's lifecycle, or is it downstream consumption of the package's output?") and the worked example from Phase C PR 8.
+See [`decisions/architecture/package-evolution.md`](decisions/architecture/package-evolution.md) for the operational cohesion test ("is this part of the package's lifecycle, or is it downstream consumption of the package's output?") and the Phase C worked example (closed at [PR #213](https://github.com/Pushedskydiver/chief-clancy/pull/213)).
 
 ---
 
