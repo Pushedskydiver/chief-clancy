@@ -166,7 +166,7 @@ Instead, from this PR onward every session records a **Handoff metrics** block i
 ```markdown
 **Session N handoff metrics.**
 
-- Trigger: {60% context / phase boundary / compaction fallback}
+- Trigger: {60% context / phase boundary / compaction warning backstop}
 - Context at trigger: {N%} of pre-compaction budget
 - Handoff turn cost: {tokens used to write the PROGRESS.md update + next-session loading block}
 - Unplanned compaction: {yes / no — did the harness compact before the handoff turn completed?}
@@ -401,8 +401,8 @@ After opening a PR, Claude runs the following sequence before considering the PR
 3. **Resolve-after-reply** — for every inline Copilot comment, after its action (fix landed, reasoned dismissal, or no-op acknowledgement for nit-level observations), actively mark the thread resolved. Discover thread IDs first, then resolve by ID:
 
    ```bash
-   # List thread IDs for the PR:
-   gh api graphql -f query='query($owner: String!, $repo: String!, $number: Int!) { repository(owner: $owner, name: $repo) { pullRequest(number: $number) { reviewThreads(first: 100) { nodes { id isResolved comments(first: 1) { nodes { body } } } } } } }' -F owner=Pushedskydiver -F repo=chief-clancy -F number=364
+   # List thread IDs for the PR (paginate via `pageInfo.endCursor` if the PR has >100 threads — rare here):
+   gh api graphql -f query='query($owner: String!, $repo: String!, $number: Int!) { repository(owner: $owner, name: $repo) { pullRequest(number: $number) { reviewThreads(first: 100) { nodes { id isResolved comments(first: 1) { nodes { body } } } pageInfo { hasNextPage endCursor } } } } }' -F owner=Pushedskydiver -F repo=chief-clancy -F number=364
 
    # Resolve by ID:
    gh api graphql -f query='mutation { resolveReviewThread(input: {threadId: "PRRT_..."}) { thread { isResolved } } }'
