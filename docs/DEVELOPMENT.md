@@ -13,7 +13,7 @@ See also: [DA-REVIEW.md](DA-REVIEW.md) (architectural review, Required disciplin
 1. **Read** — brief + PROGRESS.md
 2. **Validate** — phase validation protocol (if starting a new phase)
 3. **Build** — tracer bullet TDD: one test → implement → next test → repeat → refactor → lint
-4. **Review gate** — DA review → self-review → fix all findings → create PR → CodeRabbit review → fix findings
+4. **Review gate** — DA review → self-review → fix all findings → create PR → Copilot review → fix findings
 5. **Ship** — squash merge, update PROGRESS.md
 
 ---
@@ -26,7 +26,7 @@ Config files, tooling setup, docs. No feature branches needed. Commit directly t
 
 ### Phase 2+ (Application Code) — branches + PRs
 
-All code changes go through: branch → review gate → PR → CodeRabbit review → squash merge. See [Review Gate](#review-gate--da--self-review--coderabbit) below.
+All code changes go through: branch → review gate → PR → Copilot review → squash merge. See [Review Gate](#review-gate--da--self-review--copilot) below.
 
 ---
 
@@ -105,7 +105,7 @@ Every session follows this pattern:
 5. Pick up the next PR
 6. Tracer bullet TDD: one test → implement → next test → repeat → refactor → lint
 7. Review gate: DA review → self-review → fix findings (Phase 2+)
-8. Create PR, review CodeRabbit findings, fix issues (Phase 2+)
+8. Create PR, review Copilot findings, fix issues (Phase 2+)
 9. Squash merge, mark PR complete in PROGRESS.md
 10. If handing off: see "Session handoff" below
 ```
@@ -157,6 +157,31 @@ If you spot something worth improving outside the current task scope, list it as
 
 The next session starts clean: reads the brief, reads PROGRESS.md, picks up where the handoff left off. Fresh context with full recall via memory and docs.
 
+### Measurement protocol
+
+Session 101's R1 grill settled that [Claude Code Routines](https://code.claude.com/docs/en/routines.md) (cloud-run, fresh context, API + schedule + GitHub triggers) are the documented automation path for zero-human-intervention session handoff — a `PostCompact` hook fires a Routine API trigger with the handoff summary as the `text` field. We are **not shipping that automation in this workstream.** The substrate is research preview (2026-04 beta) and the failure modes are unsurveyed in our context. There is no evidence that LLM-generated handoff summaries match human-written quality either; Lulla et al. 2026 ([arxiv:2601.20404](https://arxiv.org/abs/2601.20404)) validates that AGENTS.md _presence_ improves agent efficiency, but it does not validate LLM-generated equivalents, and authorship is a separate axis the paper doesn't address.
+
+Instead, from this PR onward every session records a **Handoff metrics** block in `PROGRESS.md` at handoff time:
+
+```markdown
+**Session N handoff metrics.**
+
+- Trigger: {60% context / phase boundary / compaction warning backstop}
+- Context at trigger: {N%} of pre-compaction budget
+- Handoff turn cost: {tokens used to write the PROGRESS.md update + next-session loading block}
+- Unplanned compaction: {yes / no — did the harness compact before the handoff turn completed?}
+- Time from "handoff now" decision to next-session first productive tool call: {minutes — manual measurement}
+- PROGRESS.md quality signal: {did next-session Claude need to ask clarifying questions? 0 / 1+ / N/A}
+```
+
+Revisit the automated-handoff question after 10 post-PR-γ sessions of recorded metrics, OR when any of these fire:
+
+- 3 or more unplanned-compaction events in a 5-session window → trigger threshold miscalibrated.
+- Handoff time >5 minutes on 2+ sessions → manual-paste friction is real.
+- PROGRESS.md quality drops (≥2 clarifying-question sessions in a row) → the artefact itself is the bottleneck, not the handoff mechanism.
+
+If Routines-based automation is eventually warranted, scope is `PostCompact` hook + Routine API POST + a lightweight `PROGRESS.md` summariser. Track as a deferred workstream in `PROGRESS.md` §Next workstreams.
+
 ---
 
 ## Context Management
@@ -181,7 +206,7 @@ The DA review agent runs as a subagent — it reviews code in a separate context
 
 ---
 
-## Review Gate — DA → Self-Review → CodeRabbit
+## Review Gate — DA → Self-Review → Copilot
 
 Three checks before merging a PR, plus automated security scanning in CI.
 
@@ -197,18 +222,15 @@ Run through the **[DA Review Checklist](DA-REVIEW.md)** — a structured, item-b
 
 Run through the **[Self-Review Checklist](SELF-REVIEW.md)**. Read every changed file (`git diff main...HEAD`) and check for detail-level issues that DA misses — stale comments, wrong endpoints, fixture shapes, unused params, test isolation.
 
-### 3. CodeRabbit Review (PR-level, automated)
+### 3. Automated review (Copilot, optionally CodeRabbit)
 
-CodeRabbit runs automatically on every PR. It posts line-level comments on the diff covering bugs, null checks, resource leaks, edge cases, and security basics. Configured via `.coderabbit.yaml` in the repo root.
+**Copilot** is the primary automated reviewer on chief-clancy. Request explicitly after push — the repo does not auto-trigger on PR open. Mechanics + timeout + thread-resolve discipline live in [§Post-PR flow](#post-pr-flow). **CodeRabbit** is configured via `.coderabbit.yaml` and may also post; on recent PRs it has been silent, so treat it as best-effort rather than a required gate.
 
 After DA and self-review are clean:
 
 1. Push branch and create PR — assign to Alex (`Pushedskydiver`) and add labels (`feature`/`fix`/`chore` + affected package e.g. `terminal`, `core`). See [GIT.md](GIT.md) for label conventions and merge strategy.
-2. CodeRabbit will automatically review the PR within minutes.
-3. For each CodeRabbit comment:
-   - **Evaluate** — understand the underlying issue, not just the suggested code. CodeRabbit identifies valid problems but its fix may not follow our conventions. Decide the best approach independently.
-   - **Fix or decline** — apply your own fix if it better follows conventions, apply CodeRabbit's if it's the best option, or decline with reasoning. Always check fixes against CONVENTIONS.md (chaining limits, named booleans, type over interface, etc.).
-   - **Reply** — always reply to every comment explaining what was done and why. If diverging from CodeRabbit's suggestion, explain the reasoning.
+2. Request Copilot review per [§Post-PR flow](#post-pr-flow) step 1.
+3. For each Copilot or CodeRabbit comment, triage per [§Evaluating Automated Review Findings](#evaluating-automated-review-findings-copilot--coderabbit) — every comment gets fix / fix-differently / dismiss-with-evidence + reply. Resolve threads per [§Post-PR flow](#post-pr-flow) step 3.
 4. If pushing additional commits, update the PR body to reflect all changes.
 
 ### Evaluating Automated Review Findings (Copilot / CodeRabbit)
@@ -311,7 +333,7 @@ One `focus.md` per active workstream; no PR without one (once the gate lands). T
 #### Review discipline
 
 - **Plan-stage grill uses the [Two-phase grill discipline](#two-phase-grill-discipline)** from §P1 — discovery rounds + verification round before any code moves.
-- **During execution: per-commit DA + final verification DA + self-review.** Two DA passes, distinct prompts — per-commit DA runs against each commit before the next commit lands (discovery brief, catches mechanical errors within one blast radius); final verification DA runs against the PR's full diff (evaluative-skeptical, confirms merge-readiness). Self-review runs last, after all DA-driven changes have landed — per the [Review Gate](#review-gate--da--self-review--coderabbit) ordering rationale (DA fixes invalidate earlier self-review). Then push and create the PR for Copilot.
+- **During execution: per-commit DA + final verification DA + self-review.** Two DA passes, distinct prompts — per-commit DA runs against each commit before the next commit lands (discovery brief, catches mechanical errors within one blast radius); final verification DA runs against the PR's full diff (evaluative-skeptical, confirms merge-readiness). Self-review runs last, after all DA-driven changes have landed — per the [Review Gate](#review-gate--da--self-review--copilot) ordering rationale (DA fixes invalidate earlier self-review). Then push and create the PR for Copilot.
 - **Two DA passes, not N.** Iterating DA beyond final verification has diminishing returns against DA's own error model: the same blind spots recur across re-runs. The designed review stages are plan grill → per-commit DA → final verification DA → self-review → PR creation → Copilot. Don't patch a DA-miss by adding a third DA pass beyond final verification; Copilot's post-push pass is part of the designed review stack, and a DA-miss Copilot catches is part of the stack working, not a signal to re-run DA.
 - **Verification DA prompt includes an explicit cross-section-consistency check** when the PR revises or adds a definitional rule — classification table, named category, prose using absolute quantifiers ("every", "no", "always", "never"), or exception-carving ("except", "unless", "other than"). Evidence: on PR5 + PR6, most of the 13 Copilot findings across the two PRs (at least 7 strictly; up to 9 under a looser rubric) were absolute-phrase-contradicts-another-section-of-same-diff — the dominant failure class for structural-doc PRs. Fold the check into the verification prompt, not a separate review stage.
 - **Mechanical-refactor checklist** — consumer-surface grep, `vi.mock`/dynamic-import grep, docs-sweep regex, boundary-vs-concept-folder distinction — lives in [SELF-REVIEW §Folder structure](SELF-REVIEW.md#folder-structure) + [DA-REVIEW §Folder structure](DA-REVIEW.md#folder-structure). Link, don't restate.
@@ -367,6 +389,129 @@ Independent versioning managed by `@changesets/cli`. Coordinated v1.0.0 release 
 **New packages start private.** Set `"private": true` in `package.json` when scaffolding. Only flip to `false` and add a changeset in the final PR when the package is ready (README written, API stable). This prevents `changesets/action` from auto-publishing before the package is complete.
 
 See `.github/workflows/release.yml` for the full workflow. `NPM_TOKEN` secret required in repo settings.
+
+---
+
+## Post-PR flow
+
+After opening a PR, Claude runs the following sequence before considering the PR closed:
+
+1. **Copilot review** — request explicitly after push; the repo does not auto-trigger Copilot on PR open. Use `gh api -X POST repos/{owner}/{repo}/pulls/{n}/requested_reviewers -f 'reviewers[]=copilot-pull-request-reviewer[bot]'` (the app login resolves to `Copilot` in `requested_reviewers`). Claude then waits for the review to complete or for 10min (dial; adjust based on post-merge observations) after CI green, whichever first.
+2. **Findings triage** — every Copilot finding gets one of: fix, fix differently, dismiss-with-evidence. See [§Evaluating Automated Review Findings](#evaluating-automated-review-findings-copilot--coderabbit). When a needs-oversight trigger fires during triage (see [§HITL triggers](#hitl-triggers) — e.g. severity-flagged Copilot dismissal), add or update the `## HITL flags` checklist section in the PR body with an unchecked box for the trigger, in the same action, before step 4's auto-merge decision.
+3. **Resolve-after-reply** — for every inline Copilot comment, after its action (fix landed, reasoned dismissal, or no-op acknowledgement for nit-level observations), actively mark the thread resolved. Discover thread IDs first, then resolve by ID:
+
+   ```bash
+   # List thread IDs for the PR (paginate via `pageInfo.endCursor` if the PR has >100 threads — rare here):
+   gh api graphql -f query='query($owner: String!, $repo: String!, $number: Int!) { repository(owner: $owner, name: $repo) { pullRequest(number: $number) { reviewThreads(first: 100) { nodes { id isResolved comments(first: 1) { nodes { body } } } pageInfo { hasNextPage endCursor } } } } }' -F owner=Pushedskydiver -F repo=chief-clancy -F number=364
+
+   # Resolve by ID:
+   gh api graphql -f query='mutation { resolveReviewThread(input: {threadId: "PRRT_..."}) { thread { isResolved } } }'
+   ```
+
+   Without this, Copilot re-raises the same comment on the next push ([community #190754](https://github.com/orgs/community/discussions/190754)).
+
+4. **Auto-merge decision** — walk [§Auto-merge criteria](#auto-merge-criteria). If all gates pass and no exception fires, squash-merge. Otherwise, surface to Alex with a one-line summary of which gate/exception blocked.
+5. **Post-merge** — pull `main`, prune remotes (`git fetch --prune origin`), delete local branch, verify the release workflow (if a changeset merged). If `release.yml` posts red on the merge commit, stop-the-line and surface to Alex — publish-step failures are idempotent-recoverable via `pnpm changeset publish` but shouldn't proceed silently.
+6. **Next pickup** — run `gh issue list --label ready` before claiming the next workstream ticket. Any issue here pre-empts the next planned ticket. See [§Issue queue](#issue-queue) below.
+
+---
+
+## Auto-merge criteria
+
+Autonomous PR merge decision. All gates must pass; any exception triggers Alex-handoff.
+
+### Gates (all must pass)
+
+- **CI green on every check, not just required.** Non-required checks count for auto-merge. Mitigates the [dependabot/feedback#519](https://github.com/dependabot/feedback/issues/519) failure mode where a non-required check silently failed and the PR auto-merged around it.
+- **≥30-second stability window (dial; adjust based on post-merge observations) after the last check completed.** Mitigates the [dependabot/feedback#727](https://github.com/dependabot/feedback/issues/727) race-condition failure mode.
+- **Per-commit DA + final verification DA both returned READY TO MERGE.** Two DA passes per [§P3 Review discipline](#review-discipline); iterating beyond final verification has diminishing returns.
+- **Self-review completed** after final DA.
+- **Copilot gate satisfied** (one of):
+  - Copilot posted a review (any verdict) AND all Copilot review threads resolved per [§Post-PR flow](#post-pr-flow) step 3 — OR
+  - 10min (dial; adjust based on post-merge observations) elapsed since CI green with no Copilot review posted (hang fallback per [community #176835](https://github.com/orgs/community/discussions/176835)).
+
+  Note: both branches' clocks reset on each push — fresh diff, fresh window.
+
+- **No merge conflicts**; type label present; package labels present when touching `packages/*/src/`.
+
+### Exceptions (any triggers Alex-handoff)
+
+- **Release PR** — title matches `📦 chore: version packages`. Release PRs trigger `pnpm changeset publish` and GitHub releases; Alex merges. See [changesets/action docs](https://github.com/changesets/changesets/tree/main/packages/action) for the release-PR lifecycle.
+- **Size/scope**:
+  - Diff ≥500 added+deleted LOC (dial; adjust based on post-merge observations). Generated files excluded.
+  - Touches ≥3 packages (dial) in the dependency chain (`core`, `dev`, `terminal`, `brief`, `plan`, `scan`, `chief-clancy` — the `packages/chief-clancy/` wrapper).
+- **Semver**:
+  - Any changeset includes `major`.
+  - `pnpm changeset status --since=origin/main` exits non-zero (no new changeset since `origin/main`) AND the PR lacks a `skip-changeset` label. Canonical check per [changesets/changesets docs](https://github.com/changesets/changesets/blob/main/docs/checking-for-changesets.md); the docs use `--since=main` as shorthand — we use `origin/main` explicitly since that's the base CI resolves in practice. `skip-changeset` is the human-in-the-loop escape hatch for test-only / docs-only / infra-only PRs that legitimately need no changeset.
+- **Revert**: title starts `Revert ` — guards the revert-loop failure mode.
+- **Blast-radius path touched** — any path in the following list (also the intended seed for a forthcoming `.github/CODEOWNERS`):
+  - `.github/workflows/**`, `.github/instructions/**`, `.github/copilot-instructions.md`
+  - Repo-root config: `/package.json`, `/pnpm-workspace.yaml`, `/pnpm-lock.yaml`, `/tsconfig.base.json`, `/.changeset/config.json`
+  - Policy docs: `/CLAUDE.md`, `/docs/DEVELOPMENT.md`, `/docs/DA-REVIEW.md`, `/docs/SELF-REVIEW.md`, `/docs/CONVENTIONS.md`, `/docs/RATIONALIZATIONS.md`, `/docs/GIT.md`, `/docs/TESTING.md`
+  - Per-package publish surface: `/packages/*/package.json`, `/packages/*/tsconfig.json`
+- **HITL signal fired** — see [§HITL triggers](#hitl-triggers) below.
+- **Lockfile hand-edit** — `pnpm-lock.yaml` changed without any `package.json` change across the whole PR. Split-commit PRs where `package.json` and lockfile updates live in separate commits are fine; the exception only fires on PRs where the lockfile moved but no `package.json` did.
+
+### Rationale
+
+Structural gates beat agent self-assessment — verbalised LLM confidence is miscalibrated on current models per [Xiong et al. 2023](https://openreview.net/forum?id=gjeQKFxFpZ) (GPT-4 expressed high confidence on 87% of answers including wrong ones). The exception list is curated from failure modes documented at scale in Dependabot / Renovate / Kodiak ([dependabot/feedback#519](https://github.com/dependabot/feedback/issues/519), [#727](https://github.com/dependabot/feedback/issues/727), [#85](https://github.com/dependabot/feedback/issues/85)) and the one well-documented Claude Code auto-merge incident ([claude-code#44202](https://github.com/anthropics/claude-code/issues/44202) — root cause was absence-of-gate, not loose-gate).
+
+---
+
+## HITL triggers
+
+Two distinct axes — Claude pauses on either. Two surfacing channels — ephemeral push + durable record.
+
+### Stuck signals (agent-initiated; structural, not introspective)
+
+Surface to Alex when any fires:
+
+- **Retry-budget exhaustion** — same tool call made 3+ times with materially identical args producing materially identical errors.
+- **Oscillation** — fix A broke B; fix B re-broke A. Two cycles = stop.
+- **Pre-push quality suite fails twice on the same diff** — i.e. the suite fails, a fix lands, the suite fails again on the same diff. Two failed suite runs separated by one fix attempt; don't drive to a third.
+- **Novel error class** not matched in prior session context or docs.
+- **Cross-file blast radius** exceeds the auto-merge size gate (≥500 LOC OR ≥3 packages; dials per [§Auto-merge criteria](#auto-merge-criteria)). Same cutoff as the auto-merge size exception — flag before committing rather than let auto-merge refuse at ship time.
+
+### Needs-oversight signals (design-initiated; reversibility-driven)
+
+Claude surfaces even when confident:
+
+- **Public API change** — any exported-symbol signature shift in `@chief-clancy/*` (consumers may exist outside this repo).
+- **Semver-major** — any changeset requiring `major`.
+- **Schema migration / zod-shape change** where serialised data exists on disk (`.clancy/`).
+- **Deletion of historical artefacts** — PROGRESS.md sections, commit history, changesets, merged-PR docs.
+- **Destructive shell ops** — already covered by the Claude Code git-safety protocol (restated here for taxonomy).
+- **Security-sensitive code** — credential handling, hook content, MCP server config.
+- **Cross-package boundary change** — dep-direction edits, `eslint-plugin-boundaries` config.
+- **Release gating** — publishing, tagging, main-branch force operations.
+- **Severity-flagged Copilot dismissal** — a Copilot comment containing `security`, `regression`, or `breaking` that is resolved via dismissal-with-evidence (rather than a landed fix) surfaces to Alex. The dismissal may well be correct, but severity-flagged dismissals are design-weight decisions that warrant a second eye.
+- **Ambiguous requirement** — two equally valid interpretations that change observable behaviour. Ties into [§Surface assumptions](#surface-assumptions-before-starting).
+
+### Plan-stage mandatory HITL
+
+Before any code moves on a non-trivial spec / rule-promotion / execution plan / rationale doc, run the two-phase grill — [discovery + verification rounds](#two-phase-grill-discipline), defined under [§P1](#p1--spec-grilling--upstream-research) — with Alex in the loop. Stopping criterion: _successive grill rounds produce only cosmetic deltas, OR Alex says ship — whichever is sooner._ Matches Self-Refine and illusion-of-diminishing-returns convergence literature; bounds iteration cost at ~3-5 rounds typical / ~7 max. "Nit-floor" as an aspiration, not a hard rule — humans generate nits indefinitely.
+
+### Surfacing mechanism
+
+When any trigger above fires, Claude surfaces via two channels:
+
+1. **Ephemeral push — primary when available.** The `PushNotification` tool sends a terminal toast always, and pushes to phone when [Remote Control](https://code.claude.com/docs/en/remote-control) is configured (`claude remote-control` on a recent Claude Code version). Config via `/config` → "Push when Claude decides". If Remote Control is not configured, the push surface reduces to terminal-toast-only — the durable PR checklist below stays the always-available record regardless. Pairs with the existing [`packages/terminal/src/hooks/clancy-notification/`](../packages/terminal/src/hooks/clancy-notification/) terminal notify path. Evidence: Devin (Slack DM per run) and Cursor Background Agent both landed on push-to-phone as the primary solo-maintainer HITL surface — nobody relies on "human checks PR queue" for time-sensitive decisions ([Devin docs](https://docs.devin.ai/integrations/slack), [Cursor docs](https://docs.cursor.com/en/background-agent)).
+2. **Durable record — fallback + audit trail.** PR body carries a `## HITL flags` checklist section. Each flag is an unchecked Markdown tickbox with the trigger name + a one-line context. [§Auto-merge criteria](#auto-merge-criteria) reads this section via the HITL-signal-fired exception — any unchecked box blocks auto-merge. Alex ticks boxes to acknowledge / unblock. Push is ephemeral; the PR is the audit trail.
+
+Push is for "decide now" moments. Checklist is for "surface for the next PR review" moments. Both for everything else; the write is cheap.
+
+Rejected alternatives: GitHub-issue `needs-alex` (adds noise, no phone push without extra GitHub-mobile setup), Channels (Telegram/Discord plugins are research-preview, protocol may change), Twilio WhatsApp (paid + DIY for a solved problem).
+
+---
+
+## Issue queue
+
+Chief-clancy-the-repo uses GitHub Issues for its own development backlog — distinct from the Clancy `plan` package, whose board is for end users planning work in their own repos.
+
+- **End-of-PR pickup, not mid-task.** After a PR merges + CI green on main, run `gh issue list --label ready` before starting the next planned ticket.
+- **Priority labels reorder the queue** (`P0`, `security`). Alex applies labels; Claude reads them at next pickup.
+- **No mid-task preemption.** A new high-priority issue filed while Claude is mid-PR waits for the next end-of-PR boundary. Matches Devin / Cursor / OpenHands task-boundary semantics.
+- **No adapter, no new infra.** Plain `gh issue create` + `gh issue list --label`; the Clancy `plan` board is unrelated to this queue.
 
 ---
 

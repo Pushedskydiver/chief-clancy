@@ -50,7 +50,7 @@ gh pr create --assignee Pushedskydiver --label "feature" --label "core"
 # Package labels: core, terminal, brief, plan, dev, scan
 ```
 
-Merge policy: for **cleanup PRs** (C-prefixed audit fixes), watch CI and merge once all checks pass. For **regular phase PRs** (new features/modules), create the PR but leave merging to Alex.
+Merge policy: Claude auto-merges a PR when all gates pass and no exception fires. Alex merges otherwise. See [`docs/DEVELOPMENT.md` §Auto-merge criteria](docs/DEVELOPMENT.md#auto-merge-criteria) for gates + exceptions.
 
 ## Architecture
 
