@@ -45,7 +45,9 @@ Package-scope decisions satisfy two independent constraints — layering AND coh
 
 Layering violations break the build (hard constraint). Cohesion violations pass the build but accumulate scope creep (soft constraint). Both matter; cohesion is easier to ignore because nothing breaks immediately — locked-decision docs become load-bearing and the missing constraint propagates across every PR built on top.
 
-**When a planning agent's evaluation matrix is one-dimensional, push back.** If the agent only checks dependency direction and not package purpose, the analysis is incomplete.
+**When an evaluation of package placement considers only one constraint, push back** — ask the other. A one-dimensional analysis is incomplete regardless of which dimension is missing.
+
+See [`decisions/architecture/package-evolution.md`](decisions/architecture/package-evolution.md) for the operational cohesion test ("is this part of the package's lifecycle, or is it downstream consumption of the package's output?") and the worked example from Phase C PR 8.
 
 ---
 
