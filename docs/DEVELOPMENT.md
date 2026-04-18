@@ -475,8 +475,8 @@ Autonomous PR merge decision. All gates must pass; any exception triggers Alex-h
   - Any changeset includes `major`.
   - `pnpm changeset status --since=origin/main` exits non-zero (no new changeset since `origin/main`) AND the PR lacks a `skip-changeset` label. Canonical check per [changesets/changesets docs](https://github.com/changesets/changesets/blob/main/docs/checking-for-changesets.md); the docs use `--since=main` as shorthand — we use `origin/main` explicitly since that's the base CI resolves in practice. `skip-changeset` is the human-in-the-loop escape hatch for test-only / docs-only / infra-only PRs that legitimately need no changeset.
 - **Revert**: title starts `Revert ` — guards the revert-loop failure mode.
-- **Blast-radius path touched** — any path in the following list (also the intended seed for a forthcoming `.github/CODEOWNERS`):
-  - `.github/workflows/**`, `.github/instructions/**`, `.github/copilot-instructions.md`
+- **Blast-radius path touched** — any path in the following list (mirror: [`.github/CODEOWNERS`](../.github/CODEOWNERS)):
+  - `.github/workflows/**`, `.github/actions/**`, `.github/instructions/**`, `.github/copilot-instructions.md`, `.github/CODEOWNERS`
   - Repo-root config: `/package.json`, `/pnpm-workspace.yaml`, `/pnpm-lock.yaml`, `/tsconfig.base.json`, `/.changeset/config.json`
   - Policy docs: `/CLAUDE.md`, `/docs/DEVELOPMENT.md`, `/docs/DA-REVIEW.md`, `/docs/SELF-REVIEW.md`, `/docs/CONVENTIONS.md`, `/docs/RATIONALIZATIONS.md`, `/docs/GIT.md`, `/docs/TESTING.md`
   - Per-package publish surface: `/packages/*/package.json`, `/packages/*/tsconfig.json`
