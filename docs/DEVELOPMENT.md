@@ -147,7 +147,7 @@ If you spot something worth improving outside the current task scope, list it as
 
 **How to hand off:**
 
-1. Update PROGRESS.md with current state (commit direct to main per `feedback_progress_md_direct_to_main` convention).
+1. Update PROGRESS.md with current state (commit direct to main; PROGRESS-only changes don't go through PR review).
 2. Save any important decisions to Claude Code's memory system (the `.claude/projects/` directory, managed via the auto-memory feature — not checked into the repo).
 3. Leave a handoff summary with:
    - What was completed (PR numbers, key files)
