@@ -172,7 +172,7 @@ The next session starts clean: reads the brief, reads PROGRESS.md, picks up wher
 
 ### PROGRESS.md updates commit direct to main
 
-PROGRESS.md is session-state — a living record of what happened. It is not architecturally-reviewed content like `docs/CONVENTIONS.md` or `docs/DEVELOPMENT.md`. Handoffs, session entries, the `## Next workstreams` pointer, and phase-ledger updates commit direct to `main` — no branch, no PR.
+PROGRESS.md is session-state — a living record of what happened. It is not architecturally-reviewed content like `docs/CONVENTIONS.md` or `docs/DEVELOPMENT.md`. Handoffs, session entries, the `## Next workstreams` pointer, phase-ledger updates, and the [`docs/history/SESSIONS.md`](history/SESSIONS.md) archival appends that [§Archival maintenance](#archival-maintenance) co-commits commit direct to `main` — no branch, no PR.
 
 **Exception:** when PROGRESS.md is part of a larger PR (bundled with the work being logged), leave it in that PR — atomic is better than split.
 
@@ -213,7 +213,7 @@ At session start or at handoff time, check `PROGRESS.md`'s detailed-sessions ban
 
 **Why a separate file.** `PROGRESS.md` loads on session start — every byte consumes handoff budget forever. Active state (last 5 detailed entries) stays in `PROGRESS.md`; archival state moves to lookup-on-demand. Matches agent-memory convention (active vs archival split). PR-number column preserves git-log traceability.
 
-**Why both times.** Preemptive archival folds into the same direct-to-main `PROGRESS.md` commit that ships the Session-N handoff entry — next session opens with N ≤ 5 detailed entries and zero first-turn maintenance tax. Reactive-on-load stays as the backstop for sessions where the prior handoff didn't apply the rule. Earned via 3 consecutive preemptive-at-handoff applications (Sessions 104-106, per `PROGRESS.md` meta-findings).
+**Why both times.** Preemptive archival folds into the same direct-to-main `PROGRESS.md` commit that ships the Session-N handoff entry — next session opens with N ≤ 5 detailed entries and typically zero first-turn maintenance tax (the token-band trigger can still bind when remaining entries are individually large). Reactive-on-load stays as the backstop for sessions where the prior handoff skipped the preemptive pass. Earned via 3 consecutive preemptive-at-handoff applications (Sessions 104-106, per `PROGRESS.md` meta-findings).
 
 ---
 
