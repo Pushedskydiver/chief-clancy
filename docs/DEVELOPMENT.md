@@ -36,6 +36,19 @@ v1 ships as two packages (`core` + `terminal`) but code is organised internally 
 
 See [package evolution strategy](decisions/architecture/package-evolution.md) for the full directory map, extraction criteria, and target architecture.
 
+### Locking package-scope decisions
+
+Package-scope decisions satisfy two independent constraints — layering AND cohesion. Check both before locking.
+
+1. **Layering** (dependency direction): does this introduce a forbidden import? Drag heavy deps into a light-deps package? Cross the documented `core ← terminal ← chief-clancy` chain?
+2. **Cohesion** (package focus): does this match what the package is _for_? Would a reader of the package's README expect to find this command here?
+
+Layering violations break the build (hard constraint). Cohesion violations pass the build but accumulate scope creep (soft constraint). Both matter; cohesion is easier to ignore because nothing breaks immediately — locked-decision docs become load-bearing and the missing constraint propagates across every PR built on top.
+
+**When an evaluation of package placement considers only one constraint, push back** — ask the other. A one-dimensional analysis is incomplete regardless of which dimension is missing.
+
+See [`decisions/architecture/package-evolution.md`](decisions/architecture/package-evolution.md) for the operational cohesion test ("is this part of the package's lifecycle, or is it downstream consumption of the package's output?") and the Phase C worked example (closed at [PR #213](https://github.com/Pushedskydiver/chief-clancy/pull/213)).
+
 ---
 
 ## Phase-Based Delivery
@@ -147,7 +160,7 @@ If you spot something worth improving outside the current task scope, list it as
 
 **How to hand off:**
 
-1. Update PROGRESS.md with current state (commit directly to main; PROGRESS-only changes don't go through PR review).
+1. Update PROGRESS.md with current state (commit directly to main — see [§PROGRESS.md updates commit direct to main](#progressmd-updates-commit-direct-to-main) below).
 2. Save any important decisions to Claude Code's memory system (the `.claude/projects/` directory, managed via the auto-memory feature — not checked into the repo).
 3. Leave a handoff summary with:
    - What was completed (PR numbers, key files)
@@ -156,6 +169,12 @@ If you spot something worth improving outside the current task scope, list it as
    - If mid-PR: current branch, what's done, what remains
 
 The next session starts clean: reads the brief, reads PROGRESS.md, picks up where the handoff left off. Fresh context with full recall via memory and docs.
+
+### PROGRESS.md updates commit direct to main
+
+PROGRESS.md is session-state — a living record of what happened. It is not architecturally-reviewed content like `docs/CONVENTIONS.md` or `docs/DEVELOPMENT.md`. Handoffs, session entries, the `## Next workstreams` pointer, and phase-ledger updates commit direct to `main` — no branch, no PR.
+
+**Exception:** when PROGRESS.md is part of a larger PR (bundled with the work being logged), leave it in that PR — atomic is better than split.
 
 ### Measurement protocol
 
