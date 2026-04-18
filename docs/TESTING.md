@@ -265,6 +265,25 @@ const api = {
 
 The SDK approach means each mock returns one specific shape, no conditional logic in test setup, and easier to see which endpoints a test exercises. This is how all the board adapters in `packages/core/src/board/` are structured — `getIssue`, `createIssue`, `addLabel`, etc, each its own function.
 
+### Typed mock fetchers
+
+Use `vi.fn<Fetcher>()` for mock fetchers in tests — not untyped `vi.fn()` or a plain `: Fetcher` annotation. `vi.fn<Fetcher>()` preserves both type-checking and mock interface properties without needing `vi.mocked()` wrappers at call sites.
+
+```ts
+// GOOD — typed, mockable, no cast needed
+import type { Fetcher } from '~/c/shared/http/fetch-and-parse.js';
+
+const mockFetch = vi.fn<Fetcher>();
+
+// BAD — loses type safety
+const mockFetch = vi.fn();
+
+// BAD — loses mock interface
+const mockFetch: Fetcher = async () => ({ ok: true }) as Response;
+```
+
+Fix typing findings in the same PR that surfaces them — don't defer.
+
 ### DAMP > DRY in tests
 
 In production code, DRY (Don't Repeat Yourself) is usually right. In tests, **DAMP (Descriptive And Meaningful Phrases)** is better. A test should read like a specification — each test should tell a complete story without requiring the reader to trace through shared helpers.
