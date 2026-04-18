@@ -16,6 +16,8 @@ import type { FetchFn } from '~/d/lifecycle/pr-creation.js';
 import type { ProgressFs } from '~/d/lifecycle/progress.js';
 import type { EpicContext } from '~/d/lifecycle/pull-request/pr-body.js';
 
+import { join } from 'node:path';
+
 import { resolveCommitType } from '~/d/lifecycle/commit-type.js';
 import { buildEpicContext } from '~/d/lifecycle/epic.js';
 import { deliveryOutcome, progressForOutcome } from '~/d/lifecycle/outcome.js';
@@ -164,7 +166,7 @@ function resolveEpicContext(opts: DeliverOpts): EpicContext | undefined {
 function readVerificationWarning(opts: DeliverOpts): string | undefined {
   try {
     const attempt = opts.deliverFs
-      .readFile(`${opts.projectRoot}/.clancy/verify-attempt.txt`)
+      .readFile(join(opts.projectRoot, '.clancy', 'verify-attempt.txt'))
       .trim();
     const attemptNum = parseInt(attempt, 10);
     if (attemptNum > 0) {

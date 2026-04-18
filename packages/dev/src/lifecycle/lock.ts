@@ -8,8 +8,6 @@ import { join } from 'node:path';
 
 import { z } from 'zod/mini';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 /** Injected filesystem operations for lock file I/O. */
 export type LockFs = {
   /** Read a file as UTF-8, throwing if missing. */
@@ -38,11 +36,9 @@ export type LockData = z.infer<typeof lockDataSchema>;
 
 const CLANCY_DIR = '.clancy';
 const LOCK_FILE = 'lock.json';
-const LOCK_PATH = `${CLANCY_DIR}/${LOCK_FILE}`;
-const VERIFY_ATTEMPT_PATH = `${CLANCY_DIR}/verify-attempt.txt`;
+const LOCK_PATH = join(CLANCY_DIR, LOCK_FILE);
+const VERIFY_ATTEMPT_PATH = join(CLANCY_DIR, 'verify-attempt.txt');
 const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
-
-// ─── Public API ──────────────────────────────────────────────────────────────
 
 /** Write lock data to `.clancy/lock.json`. Creates the `.clancy` directory if needed. */
 export function writeLock(

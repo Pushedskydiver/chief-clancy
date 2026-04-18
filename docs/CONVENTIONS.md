@@ -8,6 +8,21 @@ See also: [DEVELOPMENT.md "Task sizing"](DEVELOPMENT.md#task-sizing) for the pro
 
 ---
 
+## Authoring these rules
+
+Conventions for code in this repo. Rules are imperatives and apply to every contribution, regardless of author. Two shapes live here:
+
+- **Mechanical rules** — taste-invariant, checkbox-suitable. "No `any`", "No `reduce()`", "No nested ternaries", "Explicit return types on exports". Short bullets + crisp criteria. A reviewer can apply the rule without interpreting intent.
+- **Taste-shaped rules** — reader-experience judgments a checkbox cannot capture. Beat spacing, extraction depth, variable-name earning. Prose that makes the intent legible to a semantic reader; not a weaker rule, a different enforcement surface. Adversarial reading (grill) still applies — the bar is "does the intent survive a hostile re-read?", not "can a mechanical reviewer tick a box?"
+
+Many rules blend both shapes — a mechanical scope with a taste-shaped interior, or vice versa. Classify by which enforcement surface carries the load, not by forcing every rule into one bucket.
+
+Goal: consistent behaviour across sessions. Strong rules prevent drift; fuzz invites rationalisation. When a rule is taste-shaped, write the strongest clearest prose you can, not a weaker bullet.
+
+If this meta grows beyond ~400 words or ~1 page, promote to a future `docs/AUTHORING.md` and leave a one-line pointer here. Matches the CLAUDE.md → on-demand-docs delegation pattern.
+
+---
+
 ## Complexity Limits (ESLint)
 
 | Rule                           | Limit                      | Rationale                                                                        |
@@ -101,6 +116,14 @@ Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 - **Boolean naming: `is*/has*/can*/should*` prefix.** Boolean variables and boolean-returning predicate functions use an interrogative prefix: `isValidRepo`, `hasParent`, `canRetry`, `shouldSkip`. The `if` statement reads like a question.
 - **Type suffix conventions (project dialect).** For types that earn a name per the **Inline trivial types** rule, choose a semantic base name first, then apply a category suffix where it adds signal: `*Opts` for options bags, `*Result` for discriminated-union returns, `*Ctx`/`*Context` for runtime context, `*Deps` for dependency-injection shapes, `*Fn` for function type aliases. The suffixes are category markers on a meaningful name, not a license for mechanical `FooOpts` naming. No `I` prefix on interfaces, no `T` prefix on generics.
 - **Abbreviation allowlist.** Allowed when universally recognised in JS/TS/Node context: `ctx`, `opts`, `fs`, `fn`, `env`, `id`, `url`, `args`, `argv`, `i` (loop index). Project-local abbreviations are fine when unambiguous in the domain (`pr` for pull request OK; `tkt` for ticket not OK).
+
+---
+
+## Portability
+
+- **Use `node:path`, never string concatenation with `/`.** Filesystem paths go through `join()`, `resolve()`, or `relative()` from `node:path` — never `` `${a}/${b}` ``, `'a' + '/' + 'b'`, or `__dirname + '/foo'`. Node on Windows accepts `/` in most APIs, but `join()` normalises separators and resolves `.`/`..` syntactically within the joined string. The stronger argument is normalisation + intent, not raw separator compatibility.
+  - **Only filesystem paths.** URLs, repo-slug labels (`https://${host}/${path}`, `${owner}/${repo}`), and platform-invariant string keys — test-fixture keys against an in-memory `FileMap`, manifest/cache keys that must read the same on every platform — are not filesystem paths. Template-literal `/`-joining in those is fine. The rule scopes to paths Node's `path` / `fs` / module-resolution APIs consume.
+  - **Lint floor:** `n/no-path-concat` is enabled on `packages/*/src/**/*.ts`. Within that scope it catches the `__dirname`/`__filename` shape in both forms — concat (`__dirname + '/foo.js'`) and template (`` `${__dirname}/foo.js` ``). Arbitrary template-literal path concat (`` `${someDir}/${file}` ``), bare-string concat (`'a' + '/' + 'b'`), and anything outside the linted glob (scripts, config, non-TS) are not lint-caught — reviewers catch them.
 
 ---
 
