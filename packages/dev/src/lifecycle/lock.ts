@@ -38,8 +38,8 @@ export type LockData = z.infer<typeof lockDataSchema>;
 
 const CLANCY_DIR = '.clancy';
 const LOCK_FILE = 'lock.json';
-const LOCK_PATH = `${CLANCY_DIR}/${LOCK_FILE}`;
-const VERIFY_ATTEMPT_PATH = `${CLANCY_DIR}/verify-attempt.txt`;
+const LOCK_PATH = join(CLANCY_DIR, LOCK_FILE);
+const VERIFY_ATTEMPT_PATH = join(CLANCY_DIR, 'verify-attempt.txt');
 const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
 
 // ─── Public API ──────────────────────────────────────────────────────────────

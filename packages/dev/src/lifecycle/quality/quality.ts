@@ -56,7 +56,7 @@ type QualityData = {
 
 const CLANCY_DIR = '.clancy';
 const QUALITY_FILE = 'quality.json';
-const QUALITY_PATH = `${CLANCY_DIR}/${QUALITY_FILE}`;
+const QUALITY_PATH = join(CLANCY_DIR, QUALITY_FILE);
 
 const EMPTY_SUMMARY: QualitySummary = {
   totalTickets: 0,
