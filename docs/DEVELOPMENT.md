@@ -105,7 +105,7 @@ Every session follows this pattern:
 5. Pick up the next PR
 6. Tracer bullet TDD: one test → implement → next test → repeat → refactor → lint
 7. Review gate: DA review → self-review → fix findings (Phase 2+)
-8. Create PR, review CodeRabbit findings, fix issues (Phase 2+)
+8. Create PR, review Copilot findings, fix issues (Phase 2+)
 9. Squash merge, mark PR complete in PROGRESS.md
 10. If handing off: see "Session handoff" below
 ```
