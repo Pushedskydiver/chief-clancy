@@ -123,7 +123,7 @@ Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 
 - **Use `node:path`, never string concatenation with `/`.** Filesystem paths go through `join()`, `resolve()`, or `relative()` from `node:path` — never `` `${a}/${b}` ``, `'a' + '/' + 'b'`, or `__dirname + '/foo'`. Node on Windows accepts `/` in most APIs, but `join()` normalises separators and resolves `.`/`..` syntactically within the joined string. The stronger argument is normalisation + intent, not raw separator compatibility.
   - **Only filesystem paths.** URLs, repo-slug labels (`https://${host}/${path}`, `${owner}/${repo}`), and platform-invariant string keys — test-fixture keys against an in-memory `FileMap`, manifest/cache keys that must read the same on every platform — are not filesystem paths. Template-literal `/`-joining in those is fine. The rule scopes to paths Node's `path` / `fs` / module-resolution APIs consume.
-  - **Lint floor:** `n/no-path-concat` is enabled. It catches the `__dirname`/`__filename` shape in both forms — concat (`__dirname + '/foo.js'`) and template (`` `${__dirname}/foo.js` ``). Arbitrary template-literal path concat (`` `${someDir}/${file}` ``) and bare-string concat (`'a' + '/' + 'b'`) are not lint-caught — reviewers catch them.
+  - **Lint floor:** `n/no-path-concat` is enabled on `packages/*/src/**/*.ts`. Within that scope it catches the `__dirname`/`__filename` shape in both forms — concat (`__dirname + '/foo.js'`) and template (`` `${__dirname}/foo.js` ``). Arbitrary template-literal path concat (`` `${someDir}/${file}` ``), bare-string concat (`'a' + '/' + 'b'`), and anything outside the linted glob (scripts, config, non-TS) are not lint-caught — reviewers catch them.
 
 ---
 
