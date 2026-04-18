@@ -129,18 +129,27 @@ This pattern surfaced two outright wrong claims in the Phase D plan grill (Sessi
 
 If you spot something worth improving outside the current task scope, list it as a NOTICED block — don't fix it inline. Drive-by refactors mixed with feature work make both harder to review and debug. See [SELF-REVIEW.md "NOTICED BUT NOT TOUCHING"](SELF-REVIEW.md#noticed-but-not-touching).
 
-### When to Hand Off
+---
 
-Start a new session when **any** of these triggers fire:
+## Session handoff
 
-1. **3 PRs completed** in the current session — context is accumulating, fresh start is better
-2. **Context compression detected** — Claude's responses get vaguer, repeat themselves, or miss things previously discussed
-3. **Task boundary** — switching between unrelated work (e.g. finishing Phase 1 scaffold, starting Phase 2 application code)
-4. **Two failed corrections** — if Claude does something wrong twice despite corrections, the context is polluted with failed approaches. Start fresh with a better prompt.
+`CLAUDE.md` §Process directives owns the actionable trigger rule (sooner-of: 60% context / phase boundary / compaction warning backstop). This section provides evidence + token-count translation + the loading-instructions format + the operational handoff steps.
+
+**Token-count translation:** the 60% threshold corresponds to ≈50k tokens on the current Opus 4.7 1M harness (compaction fires ~76-80k per [anthropics/claude-code#34332](https://github.com/anthropics/claude-code/issues/34332) + [#42375](https://github.com/anthropics/claude-code/issues/42375)). Re-calibrate when the harness or model changes.
+
+**Evidence for the 60% threshold:**
+
+- Levy 2024 ([arxiv:2402.14848](https://arxiv.org/abs/2402.14848)) — reasoning accuracy degrades visibly by 3k tokens, accelerating thereafter
+- Liu 2023 ([arxiv:2307.03172](https://arxiv.org/abs/2307.03172)) — recall is U-shaped over long context (middle worst)
+- Chroma "context rot" — degradation is smooth, not stepwise; waiting for the compaction warning means context has already degraded
+
+**Loading-instructions format:** PROGRESS.md Session N entries end with a `### Session N+1 loading instructions` block enumerating (i) the order in which to read files, (ii) the authoritative source-of-truth for the active workstream, (iii) where execution should resume. See Session 102 for the template.
+
+**Measurement protocol:** PR-γ will add a `### Measurement protocol` subsection with dial-revisit triggers + observation rubric.
 
 **How to hand off:**
 
-1. Update PROGRESS.md with current state
+1. Update PROGRESS.md with current state (commit direct to main per `feedback_progress_md_direct_to_main` convention).
 2. Save any important decisions to Claude Code's memory system (the `.claude/projects/` directory, managed via the auto-memory feature — not checked into the repo).
 3. Leave a handoff summary with:
    - What was completed (PR numbers, key files)
