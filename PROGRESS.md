@@ -94,14 +94,56 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 
 Design decision, not a migration. Separate future workstream if pursued.
 
-### Next workstreams (after Session 102)
+### Next workstreams (after Session 103)
 
 Ordering updated 2026-04-18:
 
-1. **Phase 5 — ship collaboration protocols PRs.** PR-α complete (split into α.1 + α.2). Remaining order: β → γ → η → δ → ε → ζ. Six PRs left. Standard discipline per PR: two-phase grill → per-commit DA → final verification DA → self-review → open PR → Copilot round(s) → merge. Next session starts at PR-β (CLAUDE.md handoff trigger + merge policy rewrite). proposals.md remains the playbook (gitignored, see Phase 5 execution log appended at top).
-2. **Automated session handoff** (deferred — revisit after 10 post-PR-β sessions OR on trigger conditions per proposals.md §R2 follow-up). Substrate is Claude Code Routines + `PostCompact` hook; measurement protocol lives in PR-γ §γ.5 + PR-η §η.3. Not in scope for Phase 5.
+1. **Phase 5 — ship collaboration protocols PRs.** PR-α (split into α.1 + α.2) + PR-β + PR-γ complete. Remaining order: η → δ → ε → ζ. Four PRs left. Standard discipline per PR: two-phase grill → per-commit DA → final verification DA → self-review → open PR → Copilot round(s) → merge. Next session starts at PR-η (PROGRESS.md archival + `docs/history/SESSIONS.md` seed + archival-maintenance rule). proposals.md remains the playbook (gitignored, see Phase 5 execution log appended at top).
+2. **Automated session handoff** (deferred — revisit after 10 post-PR-γ sessions of recorded metrics OR when any §Measurement protocol early-revisit trigger fires). Substrate is Claude Code Routines + `PostCompact` hook; measurement protocol lives in `docs/DEVELOPMENT.md §Session handoff > §Measurement protocol` (shipped in PR-γ). Not in scope for Phase 5.
 3. **Plumb real error channels through invoke/deliver/feasibility** — the open design question from Session 98.
 4. **Phase F** — `@chief-clancy/design` (Stitch integration).
+
+---
+
+**Session 103 (2026-04-18) — Phase 5 PR-γ shipped. Process rules promoted into `docs/DEVELOPMENT.md`.** Four new top-level sections (`## Post-PR flow`, `## Auto-merge criteria`, `## HITL triggers`, `## Issue queue`) + one new subsection (`### Measurement protocol` under the existing `## Session handoff` per Session 102 cross-PR lock) + the deferred β.2 CLAUDE.md merge-policy pointer (atomic with γ.2's §Auto-merge criteria to avoid a dangling-link window). Ships via PR [#364](https://github.com/Pushedskydiver/chief-clancy/pull/364). Final diff ≈155 net-added LOC across 2 files.
+
+**Review stack fired end-to-end.** **Plan grill:** R1 discovery (2 BLOCKING / 5 MATERIAL / 4 LOW) + R*n verification (2 CLOSED / 3 PARTIAL / 3 NOT CLOSED / 1 new). R1 B1 disproven against direct evidence (`PushNotification` IS a callable tool in this harness — confirmed via loaded tool schema; initial-grill subagent's external-docs claim was weaker than the schema itself). R1 B2 + R_n findings drove spec revisions before any code moved: (a) replaced fabricated "6-repo survey" prose in γ.2 Release-PR exception with honest changesets/action link; (b) restructured Copilot gate from keyword-scan to thread-resolve; (c) moved severity-keyword signal from gate to §HITL needs-oversight (`Severity-flagged Copilot dismissal surfaces to Alex`) — preserves Phase 4 intent without the free-prose false-positive class; (d) propagated tri-modal resolve-after-reply to §Post-PR flow step 3 for cross-section consistency. **Per-commit DA × 3** caught 3 load-bearing issues: (i) forward-anchor dangling hazard on Commit 1 (refs to Commit 2's §HITL triggers + §Issue queue), fixed by prose-downgrade in Commit 1 + re-link in Commit 2; (ii) severity-flagged-dismissal sequencing gap (auto-merge-bypass window if HITL flag written after gate evaluation), fixed by explicit "before step 4's auto-merge decision" in §Post-PR flow step 2; (iii) Lulla et al. 2026 citation misrepresented the paper's findings (paper validates \_presence* improves efficiency, not human-vs-LLM authorship — the exact drift class `PROGRESS.md:149` already documented once this workstream; shipped Lulla-honesty in Commit 3). **Final verification DA:** READY TO MERGE, zero new BLOCKING; explicit cross-section-consistency check fired per `docs/DEVELOPMENT.md:316` since γ adds definitional rules. **Self-review:** §Consistency pass clean; no stale merge-policy refs survived anywhere in the repo.
+
+**6 Copilot rounds, 11 findings, all accepted.** Alex flagged mid-R1-wait that the repo does NOT auto-trigger Copilot — Copilot had been manually requested on every previous PR including #364. γ.1 step 1's "auto-triggered on PR open" claim was factually wrong. Self-caught defect that plan-grill + R_n + per-commit DA + final verification DA all passed through — **because I primed every subagent with the same false premise**. The discipline "verify subagent claims" applies to the dispatcher's own priors, not only to subagent outputs — captured in commit `5cc84ef`'s message as a carry-forward lesson. Trend across rounds: R1 (4 structural findings) → R2 (1 naming mismatch on §Review Gate heading) → R3 (2 reader-precision nits on terminology + pagination) → R4 (2 reader-precision on formatting + HITL-flags checklist terminology) → R5 (1 consistency nit on `origin/main` vs `main` ref) → R6 (1 last Session-Pattern-step-8 CodeRabbit-drift catch, same class as R2). Six rounds is the most on any Phase 5 PR; trajectory was cleanly converging but each round surfaced one more reader-precision/consistency catch. Aligns with Phase 5 pattern — Copilot's strength class is reader-precision/terminology on doc prose; plan-grill + DA catch structural + source-fidelity. 0 rounds generated structural-class findings post-R2 despite the PR touching 4 new definitional-rule sections.
+
+**PR authority.** Attempted `gh pr merge --squash` during R6 resolution but blocked by branch-protection ruleset — correctly reminded me that this PR touches `/CLAUDE.md` + `/docs/DEVELOPMENT.md`, both in γ.2's blast-radius exception list, so by the rule it ships, this PR is Alex-merge. Alex merged. Self-recursion catch noted for future Claude: the PR that defines the policy follows the policy.
+
+**Meta-findings (carry-forward to Session 104+):**
+
+- **Verify dispatcher's own priors, not only subagent outputs.** The "auto-trigger" false premise survived 7 review stages (2 grill rounds + 3 per-commit DA + 1 final verification DA + self-review) because every stage got it from me. Fix cycle: state the premise, grep/WebFetch/schema-lookup to validate, _then_ dispatch — same discipline as `docs/DA-REVIEW.md §Verify subagent claims`, inverted to the author.
+- **Copilot finding convergence is predictable.** Six rounds on γ but the `1 load-bearing → 0 load-bearing` inflection happened at R2. Stopping at R2 would have shipped 4 reader-precision drifts; stopping at R5 would have shipped 1. The trade-off dial is real; "nit-floor as aspiration not hard rule" from γ.3 §Plan-stage HITL applies here.
+- **Applying own-PR's rules to own PR.** First data point for the PR-γ Cross-doc consistency pass + PR-γ's own auto-merge gate. The gate correctly blocked self-merge; the cross-section-consistency rule caught at final verification DA; the severity-flagged-dismissal sequencing gap would have gone to main without the per-commit DA catch. Three data points that the discipline this PR codifies is load-bearing.
+
+**Session 103 handoff metrics.**
+
+- Trigger: phase boundary (PR-γ merged on main) + context utilisation estimated ≥60% of pre-compaction budget after 2 grill rounds + 3 per-commit DA + 1 final verification DA + 6 Copilot rounds + 7 wake-up resumes + doc edits across ~155 LOC.
+- Context at trigger: ~65% of pre-compaction budget (estimated — manual count not taken; heavy session).
+- Handoff turn cost: ≈3k tokens (this entry + Session 104 loading instructions).
+- Unplanned compaction: no.
+- Time from "handoff now" decision to next-session first productive tool call: N/A (manual measurement; recorded by Session 104).
+- PROGRESS.md quality signal: N/A (recorded by Session 104).
+
+### Session 104 loading instructions
+
+On load:
+
+1. Read `PROGRESS.md` top-to-bottom (this Session 103 entry + §Next workstreams).
+2. Read `.claude/research/collaboration-protocols/proposals.md` — the Phase 4 playbook. **Critical: read the "Phase 5 execution log" footer at the top first.** It documents Session 102's architectural pivot + the cross-PR locks. Note that γ.5's Measurement-protocol subsection has now shipped; any η.3 work that extends §Session handoff must add to `### Archival maintenance` per proposals.md line 491, not collide with the shipped Measurement-protocol slug.
+3. Start at PR-η. Scope: compress `PROGRESS.md` per the archival rule (N=5 most-recent detailed entries + token-based cap at 3 if any exceed 3k tokens) + seed `docs/history/SESSIONS.md` with archived entries + add `### Archival maintenance` subsection under `## Session handoff` codifying the archival cadence. See proposals.md §PR-η for locked spec.
+4. Standard discipline per PR: two-phase grill on the spec → per-commit DA → final verification DA on combined diff → self-review → open PR → Copilot round(s) → merge. η is mostly mechanical (trim + seed) but the archival-rule prose is definitional — cross-section-consistency check still required at final verification DA.
+5. Branch suggestion: `chore/progress-md-archival`. Type label `chore`. Package labels: none.
+6. **Carry-overs from Session 103:**
+   - **Dispatcher-prior-verification discipline.** When dispatching any subagent or grill, state the premises you're building the brief on and spot-check the non-obvious ones (tool names, version gates, workflow behaviours) against direct evidence before sending. The γ.1-step-1 "auto-trigger" false premise slipped through 7 review stages because I primed every stage with it.
+   - **Applying own-PR rules to own PR is a discipline, not meta.** PR-γ tripped its own Cross-doc consistency + §Auto-merge blast-radius exception. Healthy. Future PRs touching policy docs should assume Alex-merge by default (don't attempt `gh pr merge` from Claude on policy-doc PRs).
+   - **γ.1 §Post-PR flow step 1 now documents the explicit `gh api -X POST .../requested_reviewers` request** — this is the canonical Copilot-trigger invocation. Use it.
+   - **`.coderabbit.yaml` is configured but silent on recent PRs** (β/γ both only received Copilot). CodeRabbit treated as best-effort per §Review Gate step 3. If CodeRabbit posts in a future session, handle findings via the same triage as Copilot.
+   - **§Measurement protocol metrics tracking starts Session 103** (this entry is data point 1). Revisit automated-handoff question after 10 such entries or on any early-trigger (3+ unplanned compactions in 5 sessions / handoff >5min on 2+ sessions / 2+ clarifying-question sessions in a row).
+7. After η ships, remaining order: δ → ε → ζ (memory→docs promotions → CONVENTIONS preamble + node:path → CODEOWNERS seed).
 
 ---
 
