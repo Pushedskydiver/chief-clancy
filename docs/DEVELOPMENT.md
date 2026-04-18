@@ -182,6 +182,18 @@ Revisit the automated-handoff question after 10 post-PR-γ sessions of recorded 
 
 If Routines-based automation is eventually warranted, scope is `PostCompact` hook + Routine API POST + a lightweight `PROGRESS.md` summariser. Track as a deferred workstream in `PROGRESS.md` §Next workstreams.
 
+### Archival maintenance
+
+At session start, check `PROGRESS.md`'s detailed-sessions band (everything between `## Next workstreams` and `## Session archive`). If it contains more than 5 entries OR the band exceeds ~10k tokens, compress the oldest entry to a one-line row in [`history/SESSIONS.md`](history/SESSIONS.md) and update the `§Session archive` pointer text in `PROGRESS.md` to include the newly archived session number.
+
+**Row format:** `| N | YYYY-MM-DD | Headline (one-line summary) | [#X](url), [#Y](url) |` — PR numbers render as GitHub links for click-through; `—` when a session shipped no PRs.
+
+**Headline** captures what made the session load-bearing — phase boundary, research shipment, cross-cutting rule change, design lock. Full retrospective survives in `git log -p PROGRESS.md` at the compression commit.
+
+**Why token-based, not fixed-N.** Session entries vary 3-5× in size (research-heavy sessions can run ≈2.5k tokens; shipping sessions run smaller). Fixed-N drifts; token-threshold keeps the handoff budget honest.
+
+**Why a separate file.** `PROGRESS.md` loads on session start — every byte consumes handoff budget forever. Active state (last 5 detailed entries) stays in `PROGRESS.md`; archival state moves to lookup-on-demand. Matches agent-memory convention (active vs archival split). PR-number column preserves git-log traceability.
+
 ---
 
 ## Context Management
