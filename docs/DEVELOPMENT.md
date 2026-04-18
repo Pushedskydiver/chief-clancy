@@ -203,7 +203,7 @@ If Routines-based automation is eventually warranted, scope is `PostCompact` hoo
 
 ### Archival maintenance
 
-At session start, check `PROGRESS.md`'s detailed-sessions band (everything between `## Next workstreams` and `## Session archive`). If it contains more than 5 entries OR the band exceeds ~10k tokens, compress the oldest entry to a one-line row in [`history/SESSIONS.md`](history/SESSIONS.md) and update the `§Session archive` pointer text in `PROGRESS.md` to include the newly archived session number.
+At session start or at handoff time, check `PROGRESS.md`'s detailed-sessions band (everything between `## Next workstreams` and `## Session archive`). If it contains more than 5 entries OR the band exceeds ~10k tokens, compress the oldest entry to a one-line row in [`history/SESSIONS.md`](history/SESSIONS.md) and update the `§Session archive` pointer text in `PROGRESS.md` to include the newly archived session number.
 
 **Row format:** `| N | YYYY-MM-DD | Headline (one-line summary) | [#X](url), [#Y](url) |` — PR numbers render as GitHub links for click-through; `—` when a session shipped no PRs.
 
@@ -212,6 +212,8 @@ At session start, check `PROGRESS.md`'s detailed-sessions band (everything betwe
 **Why token-based, not fixed-N.** Session entries vary 3-5× in size (research-heavy sessions can run ≈2.5k tokens; shipping sessions run smaller). Fixed-N drifts; token-threshold keeps the handoff budget honest.
 
 **Why a separate file.** `PROGRESS.md` loads on session start — every byte consumes handoff budget forever. Active state (last 5 detailed entries) stays in `PROGRESS.md`; archival state moves to lookup-on-demand. Matches agent-memory convention (active vs archival split). PR-number column preserves git-log traceability.
+
+**Why both times.** Preemptive archival folds into the same direct-to-main `PROGRESS.md` commit that ships the Session-N handoff entry — next session opens with N ≤ 5 detailed entries and zero first-turn maintenance tax. Reactive-on-load stays as the backstop for sessions where the prior handoff didn't apply the rule. Earned via 3 consecutive preemptive-at-handoff applications (Sessions 104-106, per `PROGRESS.md` meta-findings).
 
 ---
 
