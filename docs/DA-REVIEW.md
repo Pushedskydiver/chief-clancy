@@ -153,7 +153,6 @@ Workflow `.md` files in `src/{commands,workflows,agents}/` are runtime artifacts
 - [ ] No boundary violations (core importing from terminal or chat)
 - [ ] Should this be exported? Who calls it? If exported from a **package-entry `src/index.ts`**, is it genuinely cross-package public API? Internal modules consumed via `~/` deep imports should not appear in the package-entry barrel.
 - [ ] New public exports land at the correct surface: cross-package library consumers import from `src/index.ts`; `core/` additionally exposes deep paths under its wildcard subtrees. No new internal `index.ts` barrels under `src/` — see [Folder structure](#folder-structure) below.
-- [ ] **Remote-type parity.** Platform dispatch code (PR creation, rework detection, ticket fetch) must handle every supported platform. `unknown` and `none` are the only unsupported remote types. Azure DevOps is the one most often missed — grep the file under review for every platform value and verify coverage.
 
 ## Folder structure
 
@@ -193,6 +192,7 @@ Workflow `.md` files in `src/{commands,workflows,agents}/` are runtime artifacts
 - [ ] Type suffixes follow project dialect (`*Opts`, `*Result`, `*Ctx`/`*Context`, `*Deps`, `*Fn`) as category markers on a semantic base name — not mechanical `FooOpts`; no `I` prefix on interfaces, no `T` prefix on generics
 - [ ] Abbreviations from the allowlist (`ctx`, `opts`, `fs`, `fn`, `env`, `id`, `url`, `args`, `argv`, `i`) or unambiguous domain terms
 - [ ] Expected failures return a Result-shaped discriminated union (`{ ok: true, ...data } | { ok: false, error: { kind, ...context } }`), not thrown exceptions or bare `error: string` — see [CONVENTIONS.md §Error Handling](CONVENTIONS.md#error-handling)
+- [ ] **Platform-dispatch parity.** Dispatch code (PR creation, rework handling, ticket fetch) must handle every value of `GitPlatform` (`github`, `gitlab`, `bitbucket`, `bitbucket-server`, `azure`) from [`packages/core/src/types/remote.ts`](../packages/core/src/types/remote.ts). `unknown` and `none` are sentinels — return `undefined` or a no-op. Azure DevOps is a known gap in prior DA rounds — grep the file under review for each platform value and verify coverage.
 
 ## TSDoc & documentation
 
