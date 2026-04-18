@@ -3,6 +3,7 @@ import prettier from 'eslint-config-prettier';
 // boundaries v6 types don't export a valid ESLint Plugin shape
 import * as _boundaries from 'eslint-plugin-boundaries';
 import functional from 'eslint-plugin-functional';
+import n from 'eslint-plugin-n';
 import sonarjs from 'eslint-plugin-sonarjs';
 import unicorn from 'eslint-plugin-unicorn';
 import { defineConfig } from 'eslint/config';
@@ -39,6 +40,7 @@ export default defineConfig(
       sonarjs,
       boundaries,
       unicorn,
+      n,
     },
     settings: {
       'boundaries/elements': [
@@ -90,6 +92,9 @@ export default defineConfig(
 
       // ── Array callback safety ─────────────────────────────
       'unicorn/no-array-callback-reference': 'error',
+
+      // ── Portability ───────────────────────────────────────
+      'n/no-path-concat': 'error',
 
       // ── Architecture boundaries ─────────────────────────────
       'boundaries/dependencies': [
