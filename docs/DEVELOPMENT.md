@@ -107,7 +107,7 @@ Every session follows this pattern:
 7. Review gate: DA review → self-review → fix findings (Phase 2+)
 8. Create PR, review CodeRabbit findings, fix issues (Phase 2+)
 9. Squash merge, mark PR complete in PROGRESS.md
-10. If handing off: update handoff doc with summary
+10. If handing off: see "Session handoff" below
 ```
 
 ### Surface assumptions before starting
@@ -143,9 +143,7 @@ If you spot something worth improving outside the current task scope, list it as
 - Liu 2023 ([arxiv:2307.03172](https://arxiv.org/abs/2307.03172)) — recall is U-shaped over long context (middle worst)
 - Chroma "context rot" — degradation is smooth, not stepwise; waiting for the compaction warning means context has already degraded
 
-**Loading-instructions format:** PROGRESS.md Session N entries end with a `### Session N+1 loading instructions` block enumerating (i) the order in which to read files, (ii) the authoritative source-of-truth for the active workstream, (iii) where execution should resume. See Session 102 for the template.
-
-**Measurement protocol:** PR-γ will add a `### Measurement protocol` subsection with dial-revisit triggers + observation rubric.
+**Loading-instructions format:** when a session triggers handoff, the entry ends with a `### Session N+1 loading instructions` block enumerating (i) the order in which to read files, (ii) the authoritative source-of-truth for the active workstream, (iii) where execution should resume. The `### Session 102 loading instructions` block in PROGRESS.md (written by Session 101) is the canonical template.
 
 **How to hand off:**
 
