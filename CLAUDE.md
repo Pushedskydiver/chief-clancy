@@ -88,7 +88,3 @@ For Stop-the-Line, Surface Assumptions, NOTICED BUT NOT TOUCHING, Prove-It Patte
 - **Before writing tests:** read `docs/TESTING.md`.
 - **Before changing code style or adding a new board:** read `docs/CONVENTIONS.md`.
 - **For full process context:** read `docs/DEVELOPMENT.md`.
-
-## Reference
-
-The monorepo rebuild is complete. Historical decision docs reference the old Clancy repo (`~/Desktop/alex/clancy`) for migration context — all code now lives here.
