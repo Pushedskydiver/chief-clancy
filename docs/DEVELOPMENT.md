@@ -157,6 +157,31 @@ If you spot something worth improving outside the current task scope, list it as
 
 The next session starts clean: reads the brief, reads PROGRESS.md, picks up where the handoff left off. Fresh context with full recall via memory and docs.
 
+### Measurement protocol
+
+Session 101's R1 grill settled that [Claude Code Routines](https://code.claude.com/docs/en/routines.md) (cloud-run, fresh context, API + schedule + GitHub triggers) are the documented automation path for zero-human-intervention session handoff — a `PostCompact` hook fires a Routine API trigger with the handoff summary as the `text` field. We are **not shipping that automation in this workstream.** The substrate is research preview (2026-04 beta) and the failure modes are unsurveyed in our context. There is no evidence that LLM-generated handoff summaries match human-written quality either; Lulla et al. 2026 ([arxiv:2601.20404](https://arxiv.org/abs/2601.20404)) validates that AGENTS.md _presence_ improves agent efficiency, but it does not validate LLM-generated equivalents, and authorship is a separate axis the paper doesn't address.
+
+Instead, from this PR onward every session records a **Handoff metrics** block in `PROGRESS.md` at handoff time:
+
+```markdown
+**Session N handoff metrics.**
+
+- Trigger: {60% context / phase boundary / compaction fallback}
+- Context at trigger: {N%} of pre-compaction budget
+- Handoff turn cost: {tokens used to write the PROGRESS.md update + next-session loading block}
+- Unplanned compaction: {yes / no — did the harness compact before the handoff turn completed?}
+- Time from "handoff now" decision to next-session first productive tool call: {minutes — manual measurement}
+- PROGRESS.md quality signal: {did next-session Claude need to ask clarifying questions? 0 / 1+ / N/A}
+```
+
+Revisit the automated-handoff question after 10 post-PR-γ sessions of recorded metrics, OR when any of these fire:
+
+- 3 or more unplanned-compaction events in a 5-session window → trigger threshold miscalibrated.
+- Handoff time >5 minutes on 2+ sessions → manual-paste friction is real.
+- PROGRESS.md quality drops (≥2 clarifying-question sessions in a row) → the artefact itself is the bottleneck, not the handoff mechanism.
+
+If Routines-based automation is eventually warranted, scope is `PostCompact` hook + Routine API POST + a lightweight `PROGRESS.md` summariser. Track as a deferred workstream in `PROGRESS.md` §Next workstreams.
+
 ---
 
 ## Context Management
