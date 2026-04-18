@@ -94,14 +94,30 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 
 Design decision, not a migration. Separate future workstream if pursued.
 
-### Next workstreams (after Session 101)
+### Next workstreams (after Session 102)
 
-Ordering updated 2026-04-17:
+Ordering updated 2026-04-18:
 
-1. **Phase 5 — ship collaboration protocols PRs.** Execute `.claude/research/collaboration-protocols/proposals.md` (gitignored — load on fresh session) in order α → β → γ → η → δ → ε → ζ. Seven PRs total. Standard discipline per PR: two-phase grill → per-commit DA → final verification DA → self-review → open PR → Copilot round(s) → merge. Session 102 starts at PR-α (publish.yml architectural fix + release.yml rename + workflow_call extraction).
+1. **Phase 5 — ship collaboration protocols PRs.** PR-α complete (split into α.1 + α.2). Remaining order: β → γ → η → δ → ε → ζ. Six PRs left. Standard discipline per PR: two-phase grill → per-commit DA → final verification DA → self-review → open PR → Copilot round(s) → merge. Next session starts at PR-β (CLAUDE.md handoff trigger + merge policy rewrite). proposals.md remains the playbook (gitignored, see Phase 5 execution log appended at top).
 2. **Automated session handoff** (deferred — revisit after 10 post-PR-β sessions OR on trigger conditions per proposals.md §R2 follow-up). Substrate is Claude Code Routines + `PostCompact` hook; measurement protocol lives in PR-γ §γ.5 + PR-η §η.3. Not in scope for Phase 5.
 3. **Plumb real error channels through invoke/deliver/feasibility** — the open design question from Session 98.
 4. **Phase F** — `@chief-clancy/design` (Stitch integration).
+
+---
+
+**Session 102 (2026-04-18) — Phase 5 PR-α shipped in two split PRs.** Original PR-α (Phase 4 plan) bundled three workflow changes — `publish.yml` rewrite + `ci.yml` re-shape + `workflow_call` extraction. R1 grill surfaced 2 BLOCKERs forcing a split + architectural pivot.
+
+**R1 BLOCKERs (caught pre-implementation).** B1: `workflow_call` extraction would lose `pnpm build` artifacts across the runner boundary — reusable workflows run on separate runners per [GitHub Actions docs](https://docs.github.com/en/actions/sharing-automations/avoiding-duplication) — would publish empty packages. B2: ci.yml job-name changes via `workflow_call` would break the live branch protection ruleset (id `14239400` required `Unit tests` + `Integration tests`) — every subsequent PR permanently unmergeable.
+
+**Research validated pivot.** 6 changesets monorepos surveyed (TanStack/Query, changesets/changesets, Astro, shadcn-ui, vitest, langchainjs); **0 of 6** use `workflow_call` for quality-suite sharing; **4 of 6** use composite-action setup + inline quality. The proposals.md anchor cited TanStack `setup@main` as workflow_call evidence — actually a composite action (setup-only). Anchor was misread. Bonus finding: Changesets/Turborepo aggregator-job pattern (single `CI OK` with `if: always()` + `needs: [...]`) — strong precedent but premature at N=1 required job; deferred until N≥2.
+
+**PR-α.1 [#361](https://github.com/Pushedskydiver/chief-clancy/pull/361).** Pure architectural fix. Renamed `publish.yml` → `release.yml`, replaced `workflow_run` silent-skip antipattern with direct `push: main` trigger, preserved inline `pnpm build`, added `id-token: write` (forward-compat for npm provenance), `📦` chore gitmoji on changesets-bot title/commit, doc pointers in `docs/TECHNICAL-REFERENCE.md` + `docs/DEVELOPMENT.md`. Zero ci.yml touch, zero ruleset interaction. Single commit, ~22-line diff. R1 + R_n grills + per-commit DA + final verification DA + self-review + Copilot — all clean (Copilot 0 findings). Verified live: post-merge release.yml fired in 28s, all steps ran, changesets/action no-op on empty changeset state.
+
+**PR-α.2 [#362](https://github.com/Pushedskydiver/chief-clancy/pull/362).** ci.yml hygiene + composite extraction. New `.github/actions/setup/action.yml` (composite — pnpm + Node 24 + frozen-lockfile install, optional `registry-url` input). `release.yml` and both ci.yml jobs adopted composite. ci.yml dropped `push: main` trigger (release.yml owns main-branch signal; advisory signal loss accepted per H1 evidence — TanStack/shadcn-ui PR-only pattern + locked Phase 4 plan + green-trending advisory). Dropped `integration-tests` placeholder (Q3 research validated: name contract with ruleset, not Phase 11 anchor). Renamed `quality` → `advisory` (job ID + display name) — semantic clarity. **Pre-merge ruleset migration via `gh api PUT /repos/Pushedskydiver/chief-clancy/rulesets/14239400` dropped `Integration tests` from `required_status_checks`** (rollback recipe in PR body). Two commits, R1 + R_n grills + per-commit DA × 2 + final DA + Copilot — all clean. Verified live: post-merge release.yml with composite fired in 25s, `Run ./.github/actions/setup` step expanded correctly.
+
+**Process notes.** (1) The two-phase grill caught the BLOCKERs that Phase 4 missed — load-bearing even for small workflow PRs. R1 finding B1 (artifact propagation) and B2 (ruleset mismatch) would have shipped broken packages + bricked PR flow if not caught. (2) `docs/decisions/monorepo/brief.md:297-300, 421` preserved per ADR-immutable convention — historical record of Phase 1.8's exit criteria, not edited; ruleset state now diverges from brief.md (one required check, not two). (3) `proposals.md` (gitignored) updated with a "Phase 5 execution log" footer noting the architectural pivot — future Claude sessions will see context. (4) Aggregator-job pattern (Changesets/Turborepo) deferred as a tracked workstream; revisit when N≥2 required jobs.
+
+**Session 102 → 103 handoff: not triggered.** Context still well within budget after α.1 + α.2 (small PRs, focused scope). Continuing to PR-β in same session.
 
 ---
 
