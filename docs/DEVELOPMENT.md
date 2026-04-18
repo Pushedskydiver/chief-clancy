@@ -370,6 +370,66 @@ See `.github/workflows/release.yml` for the full workflow. `NPM_TOKEN` secret re
 
 ---
 
+## Post-PR flow
+
+After opening a PR, Claude runs the following sequence before considering the PR closed:
+
+1. **Copilot review** — auto-triggered on PR open (no manual request needed). Claude waits for the review to complete or for 10min (dial; adjust based on post-merge observations) after CI green, whichever first.
+2. **Findings triage** — every Copilot finding gets one of: fix, fix differently, dismiss-with-evidence. See [§Evaluating Automated Review Findings](#evaluating-automated-review-findings-copilot--coderabbit).
+3. **Resolve-after-reply** — for every inline Copilot comment, after its action (fix landed, reasoned dismissal, or no-op acknowledgement for nit-level observations), actively mark the thread resolved:
+
+   ```bash
+   gh api graphql -f query='mutation { resolveReviewThread(input: {threadId: "PRRT_..."}) { thread { isResolved } } }'
+   ```
+
+   Without this, Copilot re-raises the same comment on the next push ([community #190754](https://github.com/orgs/community/discussions/190754)).
+
+4. **Auto-merge decision** — walk [§Auto-merge criteria](#auto-merge-criteria). If all gates pass and no exception fires, squash-merge. Otherwise, surface to Alex with a one-line summary of which gate/exception blocked.
+5. **Post-merge** — pull `main`, prune remotes (`git fetch --prune origin`), delete local branch, verify the release workflow (if a changeset merged). If `release.yml` posts red on the merge commit, stop-the-line and surface to Alex — publish-step failures are idempotent-recoverable via `pnpm changeset publish` but shouldn't proceed silently.
+6. **Next pickup** — run `gh issue list --label ready` before claiming the next workstream ticket. Any issue here pre-empts the next planned ticket. See §Issue queue below (shipped alongside this section).
+
+---
+
+## Auto-merge criteria
+
+Autonomous PR merge decision. All gates must pass; any exception triggers Alex-handoff.
+
+### Gates (all must pass)
+
+- **CI green on every check, not just required.** Non-required checks count for auto-merge. Mitigates the [dependabot/feedback#519](https://github.com/dependabot/feedback/issues/519) failure mode where a non-required check silently failed and the PR auto-merged around it.
+- **≥30-second stability window (dial; adjust based on post-merge observations) after the last check completed.** Mitigates the [dependabot/feedback#727](https://github.com/dependabot/feedback/issues/727) race-condition failure mode.
+- **Per-commit DA + final verification DA both returned READY TO MERGE.** Two DA passes per [§P3 Review discipline](#review-discipline); iterating beyond final verification has diminishing returns.
+- **Self-review completed** after final DA.
+- **Copilot gate satisfied** (one of):
+  - Copilot posted a review (any verdict) AND all Copilot review threads resolved per [§Post-PR flow](#post-pr-flow) step 3 — OR
+  - 10min (dial; adjust based on post-merge observations) elapsed since CI green with no Copilot review posted (hang fallback per [community #176835](https://github.com/orgs/community/discussions/176835)).
+  - Clock resets on each push — fresh diff, fresh window.
+- **No merge conflicts**; type label present; package labels present when touching `packages/*/src/`.
+
+### Exceptions (any triggers Alex-handoff)
+
+- **Release PR** — title matches `📦 chore: version packages`. Release PRs trigger `pnpm changeset publish` and GitHub releases; Alex merges. See [changesets/action docs](https://github.com/changesets/changesets/tree/main/packages/action) for the release-PR lifecycle.
+- **Size/scope**:
+  - Diff ≥500 added+deleted LOC (dial; adjust based on post-merge observations). Generated files excluded.
+  - Touches ≥3 packages (dial) in the dependency chain (`core`, `dev`, `terminal`, `brief`, `plan`, `scan`, `wrapper`).
+- **Semver**:
+  - Any changeset includes `major`.
+  - `pnpm changeset status --since=origin/main` exits non-zero (no new changeset since `main`) AND the PR lacks a `skip-changeset` label. Canonical check per [changesets/changesets docs](https://github.com/changesets/changesets/blob/main/docs/checking-for-changesets.md): `changeset status --since=main` exits 1 when no new changesets exist since base. `skip-changeset` is the human-in-the-loop escape hatch for test-only / docs-only / infra-only PRs that legitimately need no changeset.
+- **Revert**: title starts `Revert ` — guards the revert-loop failure mode.
+- **Blast-radius path touched** — any path in the following list (also the intended seed for a forthcoming `.github/CODEOWNERS`):
+  - `.github/workflows/**`, `.github/instructions/**`, `.github/copilot-instructions.md`
+  - Repo-root config: `/package.json`, `/pnpm-workspace.yaml`, `/pnpm-lock.yaml`, `/tsconfig.base.json`, `/.changeset/config.json`
+  - Policy docs: `/CLAUDE.md`, `/docs/DEVELOPMENT.md`, `/docs/DA-REVIEW.md`, `/docs/SELF-REVIEW.md`, `/docs/CONVENTIONS.md`, `/docs/RATIONALIZATIONS.md`, `/docs/GIT.md`, `/docs/TESTING.md`
+  - Per-package publish surface: `/packages/*/package.json`, `/packages/*/tsconfig.json`
+- **HITL signal fired** — see §HITL triggers below (shipped alongside this section).
+- **Lockfile hand-edit** — `pnpm-lock.yaml` changed without a corresponding `package.json` change in the same commit.
+
+### Rationale
+
+Structural gates beat agent self-assessment — verbalised LLM confidence is miscalibrated on current models per [Xiong et al. 2023](https://openreview.net/forum?id=gjeQKFxFpZ) (GPT-4 expressed high confidence on 87% of answers including wrong ones). The exception list is curated from failure modes documented at scale in Dependabot / Renovate / Kodiak ([dependabot/feedback#519](https://github.com/dependabot/feedback/issues/519), [#727](https://github.com/dependabot/feedback/issues/727), [#85](https://github.com/dependabot/feedback/issues/85)) and the one well-documented Claude Code auto-merge incident ([claude-code#44202](https://github.com/anthropics/claude-code/issues/44202) — root cause was absence-of-gate, not loose-gate).
+
+---
+
 ## Quality Gates
 
 ### The Stop-the-Line Rule
