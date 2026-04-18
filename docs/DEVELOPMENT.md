@@ -442,7 +442,7 @@ Autonomous PR merge decision. All gates must pass; any exception triggers Alex-h
   - Touches ≥3 packages (dial) in the dependency chain (`core`, `dev`, `terminal`, `brief`, `plan`, `scan`, `chief-clancy` — the `packages/chief-clancy/` wrapper).
 - **Semver**:
   - Any changeset includes `major`.
-  - `pnpm changeset status --since=origin/main` exits non-zero (no new changeset since `main`) AND the PR lacks a `skip-changeset` label. Canonical check per [changesets/changesets docs](https://github.com/changesets/changesets/blob/main/docs/checking-for-changesets.md): `changeset status --since=main` exits 1 when no new changesets exist since base. `skip-changeset` is the human-in-the-loop escape hatch for test-only / docs-only / infra-only PRs that legitimately need no changeset.
+  - `pnpm changeset status --since=origin/main` exits non-zero (no new changeset since `origin/main`) AND the PR lacks a `skip-changeset` label. Canonical check per [changesets/changesets docs](https://github.com/changesets/changesets/blob/main/docs/checking-for-changesets.md); the docs use `--since=main` as shorthand — we use `origin/main` explicitly since that's the base CI resolves in practice. `skip-changeset` is the human-in-the-loop escape hatch for test-only / docs-only / infra-only PRs that legitimately need no changeset.
 - **Revert**: title starts `Revert ` — guards the revert-loop failure mode.
 - **Blast-radius path touched** — any path in the following list (also the intended seed for a forthcoming `.github/CODEOWNERS`):
   - `.github/workflows/**`, `.github/instructions/**`, `.github/copilot-instructions.md`
