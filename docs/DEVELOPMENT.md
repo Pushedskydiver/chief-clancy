@@ -172,7 +172,7 @@ The next session starts clean: reads the brief, reads PROGRESS.md, picks up wher
 
 ### PROGRESS.md updates commit direct to main
 
-PROGRESS.md is session-state — a living record of what happened. It is not architecturally-reviewed content like `docs/CONVENTIONS.md` or `docs/DEVELOPMENT.md`. Handoffs, session entries, the `## Next workstreams` pointer, phase-ledger updates, and the [`history/SESSIONS.md`](history/SESSIONS.md) archival appends that [§Archival maintenance](#archival-maintenance) co-commits commit direct to `main` — no branch, no PR.
+PROGRESS.md is session-state — a living record of what happened. It is not architecturally-reviewed content like `docs/CONVENTIONS.md` or `docs/DEVELOPMENT.md`. Handoffs, session entries, the `## Next workstreams` pointer, phase-ledger updates, and [`history/SESSIONS.md`](history/SESSIONS.md) archival appends (per [§Archival maintenance](#archival-maintenance)) commit direct to `main` — no branch, no PR.
 
 **Exception:** when PROGRESS.md is part of a larger PR (bundled with the work being logged), leave it in that PR — atomic is better than split.
 
