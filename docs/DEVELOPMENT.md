@@ -343,6 +343,8 @@ Without the verification phase, the last discovery round self-certifies — whic
 
 Pilot evidence — three independent runs, different artifact types: Barrier ([PR #305](https://github.com/Pushedskydiver/chief-clancy/pull/305)) applied the discipline as a final verification DA on a code diff; PR5 ([#306](https://github.com/Pushedskydiver/chief-clancy/pull/306)) and PR6 ([#308](https://github.com/Pushedskydiver/chief-clancy/pull/308)) applied it as plan grills on non-trivial spec drafts. In each case, the verification pass caught defects the discovery loop converged past — self-referential cross-section inconsistencies, stale line-number references, logical contradictions that individual-claim checks missed. One-pass grilling does not produce this signal.
 
+**Rule-promotion specs — dispatcher-brief requirement.** When the grilled spec promotes a rule into a policy doc (per [§Auto-merge criteria](#auto-merge-criteria) blast-radius list), the dispatch brief must explicitly flag rule-body quantifiers (universal / existential / null), adverbs of confidence, and named identifiers for verification — see [DA-REVIEW §Claim-extraction pass](DA-REVIEW.md#claim-extraction-pass). Without this, the grill scopes retrieval queries to cited code and misses rule-body claims.
+
 ### P2 — one `focus.md` per active workstream
 
 - **Owner (target):** CI gate. Not yet wired.
