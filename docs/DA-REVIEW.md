@@ -49,15 +49,18 @@ These disciplines must execute on every non-trivial review. Marking them as "app
 
 ### Claim-extraction pass
 
-Before walking the architectural checklists, extract every verifiable claim the diff makes about the codebase and verify each one against ground truth. A claim is any prose or code assertion that can be proven false by reading another file. Five buckets (straddles are fine — extract under every bucket that fits):
+Before walking the architectural checklists, extract every verifiable claim the diff makes about the codebase and verify each one against ground truth. A claim is any prose or code assertion that can be proven false by reading another file. Six buckets (straddles are fine — extract under every bucket that fits):
 
 - **Named identifier** — function, file path, package, env var, URL (`checkApprovalStatus` exists, `packages/dev/src/foo.ts`)
 - **Wiring assertion** — "X is enforced", "Y gates Z", "A called before B"
-- **Universal quantifier** — "all workflows", "every command", "each package"
+- **Quantifier (universal, existential, or null)** — "all workflows", "every command", "each package"; "zero callers", "no workflow does Y", "none of X"
+- **Adverb of confidence** — "reliably", "typically", "routinely", "consistently", "usually"
 - **Behaviour claim** — "X does Y when Z".
   - **Includes external-tool semantics** — how Node resolves `package.json` `exports`, how pnpm links workspace deps, how TypeScript applies path aliases, how Prettier formats tables. Claims about external-tool behaviour must be verified against the tool's documentation, not just inferred from the diff — a natural-language restatement of what a tool does is not evidence it actually does that.
   - _Caught by Copilot: PR #298 — the Package-export boundary entry said Node `exports` controls "files and symbols", but Node `exports` actually controls import paths (per the Node.js subpath-exports spec); symbol visibility is a separate concern governed by each resolved module's own `export` statements (ES module semantics)._
 - **Structural claim** — diagram node/edge, table cell, architecture statement
+
+**Scope includes the diff's own new prose, not just its references to existing code.** Rule-promotion PRs (into the policy-doc set per [DEVELOPMENT.md §Auto-merge criteria](DEVELOPMENT.md#auto-merge-criteria) blast-radius list) slip factual claims into newly-written rule bodies — quantifiers (universal / existential / null), adverbs of confidence, and named identifiers that grep can falsify. Extract and verify the rule body itself, not just its cited code. Spec grills miss this class when retrieval queries target only cited code; when the dispatch brief flags rule-body quantifiers + named identifiers, the grill catches it. Per-commit DA also catches the class on first read when the brief scope is the full diff (δ.3 and ζ.2 observed). Pattern reproduced on 3 rule-promotion PRs where the class surfaced: δ.3 Platform-dispatch checkbox superlatives ([#366](https://github.com/Pushedskydiver/chief-clancy/pull/366)); ε CONVENTIONS preamble phantom rule-IDs ([#367](https://github.com/Pushedskydiver/chief-clancy/pull/367)); ζ.2 §Archival maintenance "zero first-turn maintenance tax" overclaim ([#368](https://github.com/Pushedskydiver/chief-clancy/pull/368)).
 
 **Generate the retrieval query from the extracted claim alone, not the surrounding prose.** Anchoring on the draft's framing re-reads what the prose already said and produces false-agreement. For each claim: form the query from the claim text, run retrieval (grep the identifier, Read the referenced file, enumerate the universal set), compare the result to what the claim asserts, flag any mismatch with a `file:line` citation and the ground-truth snippet.
 
