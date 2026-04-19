@@ -172,7 +172,7 @@ The next session starts clean: reads the brief, reads PROGRESS.md, picks up wher
 
 ### PROGRESS.md updates commit direct to main
 
-PROGRESS.md is session-state — a living record of what happened. It is not architecturally-reviewed content like `docs/CONVENTIONS.md` or `docs/DEVELOPMENT.md`. Handoffs, session entries, the `## Next workstreams` pointer, and phase-ledger updates commit direct to `main` — no branch, no PR.
+PROGRESS.md is session-state — a living record of what happened. It is not architecturally-reviewed content like `docs/CONVENTIONS.md` or `docs/DEVELOPMENT.md`. Handoffs, session entries, the `## Next workstreams` pointer, phase-ledger updates, and [`history/SESSIONS.md`](history/SESSIONS.md) archival appends (per [§Archival maintenance](#archival-maintenance)) commit direct to `main` — no branch, no PR.
 
 **Exception:** when PROGRESS.md is part of a larger PR (bundled with the work being logged), leave it in that PR — atomic is better than split.
 
@@ -203,7 +203,7 @@ If Routines-based automation is eventually warranted, scope is `PostCompact` hoo
 
 ### Archival maintenance
 
-At session start, check `PROGRESS.md`'s detailed-sessions band (everything between `## Next workstreams` and `## Session archive`). If it contains more than 5 entries OR the band exceeds ~10k tokens, compress the oldest entry to a one-line row in [`history/SESSIONS.md`](history/SESSIONS.md) and update the `§Session archive` pointer text in `PROGRESS.md` to include the newly archived session number.
+At session start or at handoff time, check `PROGRESS.md`'s detailed-sessions band (everything between `## Next workstreams` and `## Session archive`). If it contains more than 5 entries OR the band exceeds ~10k tokens, compress the oldest entry to a one-line row in [`history/SESSIONS.md`](history/SESSIONS.md) and update the `§Session archive` pointer text in `PROGRESS.md` to include the newly archived session number.
 
 **Row format:** `| N | YYYY-MM-DD | Headline (one-line summary) | [#X](url), [#Y](url) |` — PR numbers render as GitHub links for click-through; `—` when a session shipped no PRs.
 
@@ -212,6 +212,8 @@ At session start, check `PROGRESS.md`'s detailed-sessions band (everything betwe
 **Why token-based, not fixed-N.** Session entries vary 3-5× in size (research-heavy sessions can run ≈2.5k tokens; shipping sessions run smaller). Fixed-N drifts; token-threshold keeps the handoff budget honest.
 
 **Why a separate file.** `PROGRESS.md` loads on session start — every byte consumes handoff budget forever. Active state (last 5 detailed entries) stays in `PROGRESS.md`; archival state moves to lookup-on-demand. Matches agent-memory convention (active vs archival split). PR-number column preserves git-log traceability.
+
+**Why both times.** Preemptive archival folds into the same direct-to-main `PROGRESS.md` commit that ships the Session-N handoff entry — next session opens with N ≤ 5 detailed entries and typically zero first-turn maintenance tax (the token-band trigger can still bind when remaining entries are individually large). Reactive-on-load stays as the backstop for sessions where the prior handoff skipped the preemptive pass. Earned via 3 consecutive preemptive-at-handoff applications (Sessions 104-106, per `PROGRESS.md` meta-findings).
 
 ---
 
@@ -475,8 +477,8 @@ Autonomous PR merge decision. All gates must pass; any exception triggers Alex-h
   - Any changeset includes `major`.
   - `pnpm changeset status --since=origin/main` exits non-zero (no new changeset since `origin/main`) AND the PR lacks a `skip-changeset` label. Canonical check per [changesets/changesets docs](https://github.com/changesets/changesets/blob/main/docs/checking-for-changesets.md); the docs use `--since=main` as shorthand — we use `origin/main` explicitly since that's the base CI resolves in practice. `skip-changeset` is the human-in-the-loop escape hatch for test-only / docs-only / infra-only PRs that legitimately need no changeset.
 - **Revert**: title starts `Revert ` — guards the revert-loop failure mode.
-- **Blast-radius path touched** — any path in the following list (also the intended seed for a forthcoming `.github/CODEOWNERS`):
-  - `.github/workflows/**`, `.github/instructions/**`, `.github/copilot-instructions.md`
+- **Blast-radius path touched** — any path in the following list (mirror: [`.github/CODEOWNERS`](../.github/CODEOWNERS)):
+  - `/.github/workflows/**`, `/.github/actions/**`, `/.github/instructions/**`, `/.github/copilot-instructions.md`, `/.github/CODEOWNERS`
   - Repo-root config: `/package.json`, `/pnpm-workspace.yaml`, `/pnpm-lock.yaml`, `/tsconfig.base.json`, `/.changeset/config.json`
   - Policy docs: `/CLAUDE.md`, `/docs/DEVELOPMENT.md`, `/docs/DA-REVIEW.md`, `/docs/SELF-REVIEW.md`, `/docs/CONVENTIONS.md`, `/docs/RATIONALIZATIONS.md`, `/docs/GIT.md`, `/docs/TESTING.md`
   - Per-package publish surface: `/packages/*/package.json`, `/packages/*/tsconfig.json`

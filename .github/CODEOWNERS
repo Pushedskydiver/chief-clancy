@@ -1,0 +1,35 @@
+# @chief-clancy CODEOWNERS
+#
+# Seed list — every path below triggers Alex-handoff under auto-merge Option B
+# (see docs/DEVELOPMENT.md §Auto-merge criteria §Exceptions).
+#
+# Ownership is a merge-gate signal for Claude, not a human-review requirement.
+# Alex can always self-approve.
+
+# Branch-protection / CI infra
+/.github/workflows/**           @Pushedskydiver
+/.github/actions/**             @Pushedskydiver
+/.github/instructions/**        @Pushedskydiver
+/.github/copilot-instructions.md @Pushedskydiver
+/.github/CODEOWNERS             @Pushedskydiver
+
+# Root-level monorepo config
+/package.json                   @Pushedskydiver
+/pnpm-workspace.yaml            @Pushedskydiver
+/pnpm-lock.yaml                 @Pushedskydiver
+/tsconfig.base.json             @Pushedskydiver
+/.changeset/config.json         @Pushedskydiver
+
+# Policy surfaces (per CLAUDE.md process directives)
+/CLAUDE.md                      @Pushedskydiver
+/docs/DEVELOPMENT.md            @Pushedskydiver
+/docs/DA-REVIEW.md              @Pushedskydiver
+/docs/SELF-REVIEW.md            @Pushedskydiver
+/docs/CONVENTIONS.md            @Pushedskydiver
+/docs/RATIONALIZATIONS.md       @Pushedskydiver
+/docs/GIT.md                    @Pushedskydiver
+/docs/TESTING.md                @Pushedskydiver
+
+# Per-package publish surface (semver / publish correctness)
+/packages/*/package.json        @Pushedskydiver
+/packages/*/tsconfig.json       @Pushedskydiver
