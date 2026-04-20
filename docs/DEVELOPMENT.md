@@ -34,7 +34,7 @@ All code changes go through: branch → review gate → PR → Copilot review �
 
 v1 ships as two packages (`core` + `terminal`) but code is organised internally by **capability directories** that map to future packages (`dev/`, `brief/`, `plan/`, `design/`, `qa/`, `automate/`). When placing code during any phase, use the correct capability directory — not flat `lifecycle/` or `pipeline/`.
 
-See [package evolution strategy](decisions/architecture/package-evolution.md) for the full directory map, extraction criteria, and target architecture.
+See [package evolution strategy](decisions/PACKAGE-EVOLUTION.md) for the full directory map, extraction criteria, and target architecture.
 
 ### Locking package-scope decisions
 
@@ -47,13 +47,13 @@ Layering violations break the build (hard constraint). Cohesion violations pass 
 
 **When an evaluation of package placement considers only one constraint, push back** — ask the other. A one-dimensional analysis is incomplete regardless of which dimension is missing.
 
-See [`decisions/architecture/package-evolution.md`](decisions/architecture/package-evolution.md) for the operational cohesion test ("is this part of the package's lifecycle, or is it downstream consumption of the package's output?") and the Phase C worked example (closed at [PR #213](https://github.com/Pushedskydiver/chief-clancy/pull/213)).
+See [`decisions/PACKAGE-EVOLUTION.md`](decisions/PACKAGE-EVOLUTION.md) for the operational cohesion test ("is this part of the package's lifecycle, or is it downstream consumption of the package's output?") and the Phase C worked example (closed at [PR #213](https://github.com/Pushedskydiver/chief-clancy/pull/213)).
 
 ---
 
 ## Phase-Based Delivery
 
-The monorepo is built in 14 phases, each containing small, focused PRs. See the [monorepo brief](decisions/monorepo/brief.md) for the full phase breakdown.
+The monorepo is built in 14 phases, each containing small, focused PRs. See the [monorepo brief](decisions/MONOREPO-REBUILD.md) for the full phase breakdown.
 
 Each PR follows **tracer bullet TDD** — vertical slices, not horizontal:
 
@@ -111,7 +111,7 @@ Adjust the PR breakdown based on findings. Only begin implementation after both 
 Every session follows this pattern:
 
 ```
-1. Read the brief (decisions/monorepo/brief.md)
+1. Read the brief (decisions/MONOREPO-REBUILD.md)
 2. Read PROGRESS.md to see current state
 3. Surface assumptions (see below) before starting work
 4. Run phase validation (if starting a new phase)

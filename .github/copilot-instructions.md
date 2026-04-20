@@ -86,7 +86,7 @@ Examples: `✨ feat:`, `🐛 fix:`, `♻️ refactor:`, `📝 docs:`, `📦 chor
 
 ## Key paths
 
-Code is organised by **capability directories** that map to future packages. See `docs/decisions/architecture/package-evolution.md` for the full extraction plan.
+Code is organised by **capability directories** that map to future packages. See `docs/decisions/PACKAGE-EVOLUTION.md` for the full extraction plan.
 
 ### Core (domain model + capabilities)
 
