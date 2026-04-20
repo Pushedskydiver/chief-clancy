@@ -65,7 +65,7 @@ When extracting:
 
 - **`@chief-clancy/plan`** ships `/clancy:plan`, `/clancy:approve-plan`, and `/clancy:board-setup`. Approval writes a `.clancy/plans/{stem}.approved` SHA-256 marker, and in standalone+board mode `/clancy:approve-plan` can optionally push the approved plan to the source board ticket as a comment — see [`packages/plan/src/workflows/approve-plan.md`](../../packages/plan/src/workflows/approve-plan.md) Step 4c. The push uses the same six per-platform curl blocks already documented in `plan.md` Step 5b for the original board comment post.
 - **`@chief-clancy/brief`** ships `/clancy:brief`, `/clancy:approve-brief`, and `/clancy:board-setup`. Approval walks the brief's decomposition table and creates child tickets on the board (in topological order) with a single-source-of-truth pipeline label rule — see [`packages/brief/src/workflows/approve-brief.md`](../../packages/brief/src/workflows/approve-brief.md) Step 6. Standalone+board users have no `CLANCY_ROLES` configured but the workflow defaults to `CLANCY_LABEL_PLAN` because they have clearly intended to use plan — the standalone+board case in the precedence list explicitly handles this without needing a role gate.
-- **`@chief-clancy/dev`** ships `/clancy:dev` and `/clancy:board-setup`. Dev needs board credentials to fetch tickets for autonomous execution. Board-setup is adapted from brief (same credential collection, same `.clancy/.env` output) with dev-specific text. Local-ticket execution (without board credentials) is deferred to a future release.
+- **`@chief-clancy/dev`** ships `/clancy:dev` and `/clancy:board-setup`. Dev needs board credentials to fetch tickets for autonomous execution. Board-setup is adapted from brief (same credential collection, same `.clancy/.env` output) with dev-specific text. Local-ticket execution (without board credentials) is not yet supported.
 
 All three packages use the same `.clancy/.env` and `.clancy/clancy-implement.js` env-var probes in their Step 1 preflight to classify into three install contexts (standalone / standalone+board / terminal). In standalone mode, brief hard-stops on `/clancy:approve-brief` (there is nothing to do without a board, since approve-brief's job is to create tickets on the board) while plan continues with the local marker path (it can write a `.approved` SHA without a board).
 
@@ -73,7 +73,7 @@ All three packages use the same `.clancy/.env` and `.clancy/clancy-implement.js`
 
 ## Local-ticket schema
 
-Preserved here for forward-compatibility: if and when a future release ships local-source tickets (stored as markdown files in `.clancy/tickets/`), this is the intended shape. If that release ships with a different schema, this section supersedes and moves to a release-specific decisions doc.
+Preserved here for forward-compatibility: if and when a future release ships local-source tickets (stored as markdown files in `.clancy/tickets/`), this is the intended shape. If that release ships with a different schema, the release's own decision doc supersedes this section.
 
 **Path:** `.clancy/tickets/<id>-<slug>.md` (e.g. `.clancy/tickets/0042-add-credential-guard-hook.md`). Sequential numeric ids survive renames; the slug is for human readability.
 

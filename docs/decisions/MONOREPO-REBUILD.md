@@ -33,6 +33,7 @@ This was not a migration — it was a rebuild with the old codebase as reference
 | `packages/dev`          | `@chief-clancy/dev`      | Shipped — pipeline orchestration, lifecycle modules, AFK executor                     |
 | `packages/scan`         | `@chief-clancy/scan`     | Shipped — static-analysis tooling for codebase mapping                                |
 | `packages/chief-clancy` | `chief-clancy`           | Shipped — thin bin wrapper (`npx chief-clancy` delegates to `@chief-clancy/terminal`) |
+| `packages/cli`          | `@chief-clancy/cli`      | Future — interactive install wizard                                                   |
 | `packages/design`       | `@chief-clancy/design`   | Future (Phase F) — design specs, a11y, Stitch integration                             |
 | `packages/chat`         | `@chief-clancy/chat`     | Future — MCP server / Slack / Teams conversational interface                          |
 
@@ -52,4 +53,4 @@ This was not a migration — it was a rebuild with the old codebase as reference
 - Time that could go to features
 - Simplicity of single-package publishing
 
-> **Phases shipped** — see [PROGRESS.md §Phase ledger](../../PROGRESS.md#phase-ledger) for the per-phase ledger. Live rules live in [`docs/CONVENTIONS.md`](../CONVENTIONS.md), [`docs/DEVELOPMENT.md`](../DEVELOPMENT.md), [`docs/DA-REVIEW.md`](../DA-REVIEW.md), [`docs/SELF-REVIEW.md`](../SELF-REVIEW.md), and [`docs/TESTING.md`](../TESTING.md).
+> **Full target package map** — see [`PACKAGE-EVOLUTION.md`](PACKAGE-EVOLUTION.md). **Phases shipped** — see [PROGRESS.md §Phase ledger](../../PROGRESS.md#phase-ledger). **Live rules** — [`CONVENTIONS.md`](../CONVENTIONS.md), [`DEVELOPMENT.md`](../DEVELOPMENT.md), [`DA-REVIEW.md`](../DA-REVIEW.md), [`SELF-REVIEW.md`](../SELF-REVIEW.md), [`TESTING.md`](../TESTING.md).
