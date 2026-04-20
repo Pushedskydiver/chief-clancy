@@ -27,10 +27,10 @@ This was not a migration — it was a rebuild with the old codebase as reference
 | Workspace               | npm name                 | Status                                                                                            |
 | ----------------------- | ------------------------ | ------------------------------------------------------------------------------------------------- |
 | `packages/core`         | `@chief-clancy/core`     | Shipped — board APIs, schemas, shared types, shared utilities (lifecycle moved to dev in Phase E) |
-| `packages/terminal`     | `@chief-clancy/terminal` | Shipped — installer, slash commands, hooks, AFK runner, Claude CLI bridge                         |
+| `packages/terminal`     | `@chief-clancy/terminal` | Shipped — installer, slash commands, hooks, AFK runner (Claude CLI bridge re-exported from dev)   |
 | `packages/brief`        | `@chief-clancy/brief`    | Shipped — standalone grill → decompose → brief                                                    |
 | `packages/plan`         | `@chief-clancy/plan`     | Shipped — standalone brief/ticket → plan + approve-plan gate                                      |
-| `packages/dev`          | `@chief-clancy/dev`      | Shipped — pipeline orchestration, lifecycle modules, AFK executor                                 |
+| `packages/dev`          | `@chief-clancy/dev`      | Shipped — pipeline orchestration, lifecycle modules, AFK executor, Claude CLI bridge              |
 | `packages/scan`         | `@chief-clancy/scan`     | Shipped — static-analysis tooling for codebase mapping                                            |
 | `packages/chief-clancy` | `chief-clancy`           | Shipped — thin bin wrapper (`npx chief-clancy` delegates to `@chief-clancy/terminal`)             |
 | `packages/cli`          | `@chief-clancy/cli`      | Future — interactive install wizard                                                               |
