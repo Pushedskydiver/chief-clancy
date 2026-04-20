@@ -1,6 +1,6 @@
 ---
 name: copilot-surrogate
-description: Fall-through reviewer when Copilot is classified UNREACHABLE per `docs/DEVELOPMENT.md §Post-PR flow` step 1. Reads each file in the PR diff at HEAD (not diff-scoped) and runs `docs/DA-REVIEW.md §Claim-extraction pass` + `§Schema-pair check` + `§Multi-section internal-consistency pass`. Returns factual-claim findings in-band for Claude's triage. Dispatch only after the unreachable-detection protocol fires — never when Copilot is reachable.
+description: Fall-through reviewer when Copilot is classified UNREACHABLE per `docs/DEVELOPMENT.md §Post-PR flow` step 1. Reads each file in the PR diff at HEAD (not diff-scoped) and runs `docs/DA-REVIEW.md §Claim-extraction pass` + `§Multi-section internal-consistency pass` + `§Schema-pair check` (order matches DA-REVIEW.md file layout). Returns factual-claim findings in-band for Claude's triage. Dispatch only after the unreachable-detection protocol fires — never when Copilot is reachable.
 tools: Read, Grep, Glob, Bash
 model: inherit
 ---
