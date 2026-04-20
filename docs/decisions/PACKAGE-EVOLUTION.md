@@ -28,21 +28,21 @@ Ship v1 with two packages (`core` + `terminal`) but organise the code internally
 ## Dependency direction
 
 ```
-core
-├── brief   (light dep — types/schemas only)
-├── plan    (light dep — types/schemas only)
-├── design  (light dep — types/schemas only)
-├── dev     (heavy dep — board APIs, pipeline, lifecycle)
-│
-scan        (zero runtime deps — assets-only; consumed by dev/brief/plan/terminal)
-│
-terminal    (consumes all above + adds installer/hooks/runners)
-chat        (consumes all above + adds Slack/Teams adapter)
-│
-cli         (interactive wizard — installs other packages)
+scan        (zero runtime deps — markdown/asset-only)
+
+core        (domain model, types, schemas, board APIs, shared utilities)
+
+brief    ← scan                 (prompt + markdown installer; no core import in current shape)
+plan     ← scan                 (prompt + markdown installer; no core import in current shape)
+design                          (future — scope TBD)
+dev      ← core, scan, zod      (pipeline, lifecycle, executor)
+
+terminal ← core, dev            (installer + hooks + runners; transitively uses scan via dev)
+chat                            (future — sibling to terminal, not a chain)
+cli                             (future — interactive install wizard)
 ```
 
-Terminal and chat are **siblings**, not a chain. Both wire their own I/O into core/dev.
+Terminal and chat are **siblings**, not a chain — both consume core + dev directly. The "light-dep-on-core" shape originally planned for brief/plan/design did not materialise: brief and plan shipped as prompt+markdown installers (scan is what they needed for codebase-reading agents, not core types), and design's shape is deferred until Phase F.
 
 ## Extraction criteria
 

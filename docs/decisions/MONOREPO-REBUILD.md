@@ -24,18 +24,18 @@ This was not a migration — it was a rebuild with the old codebase as reference
 
 ## Packages
 
-| Workspace               | npm name                 | Status                                                                                |
-| ----------------------- | ------------------------ | ------------------------------------------------------------------------------------- |
-| `packages/core`         | `@chief-clancy/core`     | Shipped — board APIs, schemas, shared types, ticket lifecycle primitives              |
-| `packages/terminal`     | `@chief-clancy/terminal` | Shipped — installer, slash commands, hooks, AFK runner, Claude CLI bridge             |
-| `packages/brief`        | `@chief-clancy/brief`    | Shipped — standalone grill → decompose → brief                                        |
-| `packages/plan`         | `@chief-clancy/plan`     | Shipped — standalone brief/ticket → plan + approve-plan gate                          |
-| `packages/dev`          | `@chief-clancy/dev`      | Shipped — pipeline orchestration, lifecycle modules, AFK executor                     |
-| `packages/scan`         | `@chief-clancy/scan`     | Shipped — static-analysis tooling for codebase mapping                                |
-| `packages/chief-clancy` | `chief-clancy`           | Shipped — thin bin wrapper (`npx chief-clancy` delegates to `@chief-clancy/terminal`) |
-| `packages/cli`          | `@chief-clancy/cli`      | Future — interactive install wizard                                                   |
-| `packages/design`       | `@chief-clancy/design`   | Future (Phase F) — design specs, a11y, Stitch integration                             |
-| `packages/chat`         | `@chief-clancy/chat`     | Future — MCP server / Slack / Teams conversational interface                          |
+| Workspace               | npm name                 | Status                                                                                            |
+| ----------------------- | ------------------------ | ------------------------------------------------------------------------------------------------- |
+| `packages/core`         | `@chief-clancy/core`     | Shipped — board APIs, schemas, shared types, shared utilities (lifecycle moved to dev in Phase E) |
+| `packages/terminal`     | `@chief-clancy/terminal` | Shipped — installer, slash commands, hooks, AFK runner, Claude CLI bridge                         |
+| `packages/brief`        | `@chief-clancy/brief`    | Shipped — standalone grill → decompose → brief                                                    |
+| `packages/plan`         | `@chief-clancy/plan`     | Shipped — standalone brief/ticket → plan + approve-plan gate                                      |
+| `packages/dev`          | `@chief-clancy/dev`      | Shipped — pipeline orchestration, lifecycle modules, AFK executor                                 |
+| `packages/scan`         | `@chief-clancy/scan`     | Shipped — static-analysis tooling for codebase mapping                                            |
+| `packages/chief-clancy` | `chief-clancy`           | Shipped — thin bin wrapper (`npx chief-clancy` delegates to `@chief-clancy/terminal`)             |
+| `packages/cli`          | `@chief-clancy/cli`      | Future — interactive install wizard                                                               |
+| `packages/design`       | `@chief-clancy/design`   | Future (Phase F) — design specs, a11y, Stitch integration                                         |
+| `packages/chat`         | `@chief-clancy/chat`     | Future — MCP server / Slack / Teams conversational interface                                      |
 
 ## What Clancy gains
 
