@@ -19,6 +19,7 @@ Ship v1 with two packages (`core` + `terminal`) but organise the code internally
 | `@chief-clancy/dev`      | Pipeline orchestration, lifecycle modules                        | Automators                          | Yes            |
 | `@chief-clancy/brief`    | Grill → decompose → produce brief document                       | PMs, designers, founders, engineers | No             |
 | `@chief-clancy/plan`     | Read brief/ticket → produce implementation plan                  | Tech leads, engineers               | No             |
+| `@chief-clancy/scan`     | Static-analysis tooling for codebase mapping                     | Planners, agents                    | No             |
 | `@chief-clancy/design`   | Design specs, a11y, Stitch integration, visual verification      | Designers, frontend engineers       | No             |
 | `@chief-clancy/terminal` | Full install — consumes all above + hooks, runners, all commands | Engineers using the full pipeline   | Yes            |
 | `@chief-clancy/chat`     | Slack/Teams conversational interface                             | Teams wanting chat-driven workflows | Depends on use |
@@ -32,6 +33,8 @@ core
 ├── plan    (light dep — types/schemas only)
 ├── design  (light dep — types/schemas only)
 ├── dev     (heavy dep — board APIs, pipeline, lifecycle)
+│
+scan        (zero runtime deps — assets-only; consumed by dev/brief/plan/terminal)
 │
 terminal    (consumes all above + adds installer/hooks/runners)
 chat        (consumes all above + adds Slack/Teams adapter)
