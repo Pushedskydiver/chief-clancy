@@ -14,7 +14,7 @@ type CommandGroup = {
   readonly commands: readonly Command[];
 };
 
-// Keep in sync with the slash command registry once it exists (see docs/decisions/architecture/package-evolution.md).
+// Keep in sync with the slash command registry once it exists (see docs/decisions/PACKAGE-EVOLUTION.md).
 const COMMAND_GROUPS: readonly CommandGroup[] = [
   {
     name: 'Strategist',

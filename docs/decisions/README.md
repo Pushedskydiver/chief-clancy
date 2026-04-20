@@ -4,8 +4,8 @@ Design decisions for Clancy features — the "why" behind non-obvious choices. T
 
 ## What belongs here
 
-- **Briefs** (`brief.md`) — problem statement, success criteria, scope boundaries.
-- **Design docs** (`design.md`) — architecture decisions, trade-offs, key choices.
+- **Briefs** — problem statement, success criteria, scope boundaries.
+- **Design docs** — architecture decisions, trade-offs, key choices.
 
 ## Lifecycle
 
@@ -15,10 +15,12 @@ Design decisions for Clancy features — the "why" behind non-obvious choices. T
 
 ## Current documents
 
-| Directory       | Document               | Purpose                                                                                       |
-| --------------- | ---------------------- | --------------------------------------------------------------------------------------------- |
-| `monorepo/`     | `brief.md`             | Monorepo rebuild — full brief with 15 phases, standards, PR breakdowns                        |
-| `architecture/` | `package-evolution.md` | Package evolution strategy — v1 as core+terminal, internal capability boundaries, future plan |
+Decision docs live at `docs/decisions/*.md` (ALLCAPS + flat, matching the top-level `docs/*.md` convention; `README.md` is the standard casing exception).
+
+| Document               | Purpose                                                                                                                        |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `MONOREPO-REBUILD.md`  | Problem, proposed solution, packages, gains/losses                                                                             |
+| `PACKAGE-EVOLUTION.md` | Target package map, dependency direction, extraction criteria, package-scope rules, local-ticket schema, move-first discipline |
 
 ## Related docs
 

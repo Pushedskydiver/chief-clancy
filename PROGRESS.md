@@ -283,7 +283,7 @@ Detail for all phases lives in git history. Disciplines are documented in `docs/
 5. `@chief-clancy/cli` — interactive wizard
 6. `@chief-clancy/chat` — conversational interface (Slack/Teams)
 
-See [`docs/decisions/architecture/package-evolution.md`](docs/decisions/architecture/package-evolution.md) for the full rationale.
+See [`docs/decisions/PACKAGE-EVOLUTION.md`](docs/decisions/PACKAGE-EVOLUTION.md) for the full rationale.
 
 ## Repo
 
