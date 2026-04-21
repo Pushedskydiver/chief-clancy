@@ -213,7 +213,7 @@ At session start or at handoff time, check `PROGRESS.md`'s detailed-sessions ban
 
 **Why a separate file.** `PROGRESS.md` loads on session start — every byte consumes handoff budget forever. Active state (last 5 detailed entries) stays in `PROGRESS.md`; archival state moves to lookup-on-demand. Matches agent-memory convention (active vs archival split). PR-number column preserves git-log traceability.
 
-**Why both times.** Preemptive archival folds into the same direct-to-main `PROGRESS.md` commit that ships the Session-N handoff entry — next session opens with N ≤ 5 detailed entries and typically zero first-turn maintenance tax (the token-band trigger can still bind when remaining entries are individually large). Reactive-on-load stays as the backstop for sessions where the prior handoff skipped the preemptive pass. Earned via 3 consecutive preemptive-at-handoff applications (Sessions 104-106, per `PROGRESS.md` meta-findings).
+**Why both times.** Preemptive archival folds into the same direct-to-main `PROGRESS.md` commit that ships the Session-N handoff entry — next session opens with N ≤ 5 detailed entries and typically zero first-turn maintenance tax (the token-band trigger can still bind when remaining entries are individually large). Reactive-on-load stays as the backstop for sessions where the prior handoff skipped the preemptive pass. Earned via 3 consecutive preemptive-at-handoff applications (Sessions 104-106, per `PROGRESS.md` meta-findings); pattern now at n=10 consecutive applications as of Session 112.
 
 ---
 
