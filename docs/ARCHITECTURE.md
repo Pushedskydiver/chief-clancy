@@ -63,7 +63,7 @@ Library/asset-only (bundled into consumer installers — no npx, no installer):
 │   │       │   └── remote.ts        — parseRemote, detectRemote
 │   ├── dev/                         — @chief-clancy/dev
 │   │   └── src/
-│   │       ├── pipeline/            — phase orchestrator + 13 phase modules (flat .ts in phases/)
+│   │       ├── pipeline/            — phase orchestrator + 13 phase modules in `phases/` (invoke callback wired from `dep-factory/invoke-phase.ts`)
 │   │       ├── lifecycle/           — per-phase lifecycle modules
 │   │       ├── artifacts/           — readiness-report, run-summary, deferred, drift, atomic-write
 │   │       ├── agents/              — readiness rubric + verdict parser
