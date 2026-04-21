@@ -167,7 +167,7 @@ RunContext (mutable shared state)
   +-- cleanup          — completion print, webhook notification
 ```
 
-The Claude session invocation (prompt building, CLI bridge) lives in `terminal/runner/`, not in the core pipeline. Each phase has signature `(ctx: RunContext) => Promise<boolean> | boolean`. Returns `true` to continue, `false` for early exit.
+The Claude session invocation (prompt building, CLI bridge) lives in `packages/dev/src/` (`prompt-builder.ts`, `cli-bridge.ts`). The pipeline itself also lives in `packages/dev/src/pipeline/` — not in `@chief-clancy/core` (moved from core in PR #229 to eliminate a circular dep). Each phase exposed to the orchestrator has signature `(ctx: RunContext) => Promise<PhaseResult>`, where `PhaseResult` is a phase-specific typed result object (e.g. `PreflightPhaseResult`, `BranchSetupResult`). The orchestrator inspects result fields (`.ok`, `.action`, etc.) to decide continue vs. early-exit.
 
 ## Runner Modes
 
