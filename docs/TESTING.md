@@ -1,18 +1,17 @@
 # Testing
 
-Clancy uses a 3-layer QA architecture across three packages: unit tests (core, terminal, brief), integration tests (terminal), and E2E tests (terminal). All layers use Vitest.
+Clancy uses a 3-layer QA architecture: unit tests (co-located across five packages — core, terminal, brief, plan, dev), integration tests (in `packages/terminal/test/integration/`), and E2E tests (also under terminal, in `test/e2e/`). All three layers use Vitest.
 
 ## Quick reference
 
 ```bash
-pnpm test                        # All unit tests (core + terminal, via Turbo)
-pnpm typecheck                   # tsc --noEmit (both packages)
-pnpm lint                        # ESLint (both packages)
+pnpm test                        # All unit tests (via Turbo, for every package with a `test` script)
+pnpm typecheck                   # tsc --noEmit (all packages)
+pnpm lint                        # ESLint (all packages)
 
-# Per-package
-cd packages/core && pnpm test                    # Core unit tests
-cd packages/terminal && pnpm test                # Terminal unit tests
-cd packages/terminal && pnpm test:e2e            # E2E tests (real APIs)
+# Per-package (any of core, terminal, brief, plan, dev)
+cd packages/<name> && pnpm test                  # One package's unit tests
+cd packages/terminal && pnpm test:e2e            # E2E tests (real APIs — terminal only)
 cd packages/terminal && pnpm test:e2e "github"   # E2E for a single board
 
 # Coverage
@@ -23,40 +22,52 @@ pnpm vitest run --coverage       # Unit tests with coverage report (80% threshol
 
 ## Layer 1: Unit tests
 
-Module-level tests with `vi.mock()`. Co-located with source files in both packages.
+Module-level tests with `vi.mock()`. Co-located with source files across all five packages.
 
 ### How to run
 
 ```bash
 pnpm test                                            # all unit tests
-pnpm vitest run packages/core/src/board              # subset by path
-pnpm vitest run packages/terminal/src/installer      # subset by path
+pnpm vitest run packages/core/src/board              # subset by path (core)
+pnpm vitest run packages/dev/src/lifecycle           # subset by path (dev)
+pnpm vitest run packages/terminal/src/installer      # subset by path (terminal)
 ```
 
 ### File structure
 
-Tests are co-located: `<name>/<name>.ts` + `<name>/<name>.test.ts`.
+Tests are co-located: `<name>.test.ts` sits next to `<name>.ts`. When a module warrants its own directory (e.g. `board/github/`), the same sibling pattern applies inside.
 
 ```
 packages/core/src/
-├── board/
-│   ├── github/github.test.ts             — GitHub Issues API
-│   ├── jira/jira.test.ts                 — Jira REST API
-│   ├── linear/linear.test.ts             — Linear GraphQL API
-│   ├── shortcut/shortcut.test.ts         — Shortcut REST API
-│   ├── notion/notion.test.ts             — Notion REST API
-│   ├── azdo/azdo.test.ts                 — Azure DevOps WIQL API
-│   └── factory/factory.test.ts           — Board factory
-├── dev/
-│   ├── pipeline/phases/                  — Per-phase tests
-│   └── lifecycle/                        — Per-module tests (lock, deliver, rework, etc.)
-├── shared/                               — cache, env-parser, git-ops, http, remote
-└── schemas/                              — Zod schema validation tests
+├── board/                  — per-board adapters (github, jira, linear, shortcut, notion, azdo) + factory + detect-board
+├── shared/                 — cache, env-parser, git-ops, git-token, http, label-helpers, remote
+├── schemas/                — Zod schemas + per-board validation tests
+└── types/                  — shared types (Ticket, FetchedTicket, ProgressStatus, etc.)
+
+packages/dev/src/
+├── pipeline/               — pipeline runner + per-phase modules
+├── lifecycle/              — per-phase lifecycle modules
+├── agents/                 — agent invocation + rubric loading
+├── artifacts/              — artifact writers
+├── commands/ + workflows/  — Clancy `/dev` command + workflow prompts
+├── dep-factory/            — dependency construction for the pipeline runner
+├── execute/                — single-ticket executor
+├── entrypoints/            — CLI bridges
+├── installer/              — dev-package installer
+├── cli-bridge.ts, esbuild.runtime.ts, notify.ts, prompt-builder.ts, queue.ts, stop-condition.ts
+└── types/                  — dev-internal types
 
 packages/terminal/src/
-├── installer/                            — install, file-ops, hook-installer, manifest, prompts, role-filter
-├── runner/                               — autopilot, implement, dep-factory, prompt-builder, session-report
-└── hooks/                                — credential-guard, branch-guard, context-monitor, etc.
+├── installer/              — terminal-installer surface
+├── runner/                 — autopilot + session-report + implement/ + runtime shims
+├── hooks/                  — Clancy hooks (one subdirectory per hook)
+├── agents/, roles/, templates/, entrypoints/, shared/  — prompt + template assets
+
+packages/brief/src/ + packages/plan/src/
+└── agents/, commands/, installer/, workflows/  — prompt-shipping packages with thin installer tests
+
+packages/scan/src/
+└── agents/, commands/, workflows/              — prompts-only (no unit tests)
 ```
 
 ### How they work
@@ -70,7 +81,7 @@ packages/terminal/src/
 
 Tests that handle string parsing, formatting, or validation use [fast-check](https://github.com/dubzzz/fast-check) for property-based testing. This covers edge cases that hand-written examples miss.
 
-Used in: lifecycle modules (rework, pr-creation, format, feasibility), schema tests, git-ops, remote, hooks (branch-guard, credential-guard), runner (autopilot, session-report, prompt-builder).
+Used across `core/shared` (env-parser, remote), `dev/lifecycle/*`, `dev/prompt-builder`, `dev/notify`, `terminal/hooks/*`, and `terminal/runner/session-report` — anywhere a test covers many input shapes for a parser, formatter, or validator. Grep `fast-check` for the current list.
 
 ### Adding unit tests
 
@@ -102,21 +113,27 @@ packages/terminal/
 ├── vitest.config.e2e.ts              — 60s timeout, sequential, no retry
 └── test/e2e/
     ├── pipeline/
-│   ├── github-pipeline.e2e.ts    — GitHub Issues E2E
-│   ├── jira-pipeline.e2e.ts      — Jira E2E
-│   ├── linear-pipeline.e2e.ts    — Linear E2E
-│   ├── shortcut-pipeline.e2e.ts  — Shortcut E2E
-│   ├── notion-pipeline.e2e.ts    — Notion E2E
-│   └── azdo-pipeline.e2e.ts      — Azure DevOps E2E
+    │   ├── github-pipeline.e2e.ts           — GitHub Issues E2E
+    │   ├── jira-pipeline.e2e.ts             — Jira E2E
+    │   ├── linear-pipeline.e2e.ts           — Linear E2E
+    │   ├── shortcut-pipeline.e2e.ts         — Shortcut E2E
+    │   ├── notion-pipeline.e2e.ts           — Notion E2E
+    │   ├── azdo-pipeline.e2e.ts             — Azure DevOps E2E
+    │   ├── local-lifecycle-contract.e2e.ts  — local-mode lifecycle contract
+    │   ├── local-plan-pipeline.e2e.ts       — local-plan pipeline end-to-end
+    │   └── pipeline-e2e-setup.ts            — shared pipeline fixture setup
     ├── schema/
-    │   └── schema-validation.e2e.ts  — live API schema validation
+    │   └── schema-validation.e2e.ts         — live API schema validation
     └── helpers/
-        ├── env.ts                    — credential loading (.env.e2e or process.env)
-        ├── ticket-factory/           — real API ticket creation (all boards)
-        ├── cleanup/                  — ticket/PR/branch cleanup per board
-        ├── gc/                       — orphan cleanup ([QA] tickets >24h old)
-        ├── jira-auth.ts              — Base64 Basic auth for Jira
-        └── azdo-auth.ts              — Base64 Basic auth for Azure DevOps
+        ├── env.ts                           — credential loading (.env.e2e or process.env)
+        ├── ticket-factory/                  — real API ticket creation (all boards)
+        ├── cleanup/                         — ticket/PR/branch cleanup per board
+        ├── gc/                              — orphan cleanup ([QA] tickets >24h old)
+        ├── jira-auth.ts                     — Base64 Basic auth for Jira
+        ├── azdo-auth.ts                     — Base64 Basic auth for Azure DevOps
+        ├── git-auth.ts                      — git HTTPS auth helper
+        ├── fetch-timeout.ts                 — timeout wrapper for board API calls
+        └── local-plan-setup.ts              — local-plan fixture scaffolding
 ```
 
 ### How they work
@@ -149,7 +166,7 @@ E2E tests run via GitHub Actions (`.github/workflows/e2e.yml`):
 - **Weekly:** Monday 6am UTC (all boards)
 - **Manual dispatch:** select a single board or all
 - **GC job** runs first (cleans orphans across all boards)
-- **Per-board matrix** with `fail-fast: false` and 30min timeout
+- **Per-board matrix** with `fail-fast: false` (no per-job timeout set)
 
 ### No retry policy
 
@@ -161,7 +178,7 @@ E2E tests do not retry because they create real external resources (tickets, PRs
 
 ### Root config (`vitest.config.ts`)
 
-Manages both packages with coverage thresholds:
+Manages all five packages with coverage thresholds:
 
 ```
 80% minimum for statements, branches, functions, and lines
@@ -371,12 +388,15 @@ Both Addy Osmani's `test-driven-development` skill and Matt Pocock's `triage-iss
 
 For drift detection. Bump these when intentional growth lands.
 
-| Package                  | Count | Notes                                                                   |
-| ------------------------ | ----- | ----------------------------------------------------------------------- |
-| `@chief-clancy/core`     | 1608  | Stable since Phase B                                                    |
-| `@chief-clancy/terminal` | 838   | After Phase D (PR #220) — was 836, +2 from brief-content array refactor |
-| `@chief-clancy/brief`    | 73    | After Phase D (PR #222) — was 51, +22 across PR 11a + 11b               |
-| `@chief-clancy/plan`     | 264   | Stable since Phase C PR #216                                            |
+| Package                  | Count | Notes                     |
+| ------------------------ | ----- | ------------------------- |
+| `@chief-clancy/core`     | 879   | Refreshed 2026-04-21      |
+| `@chief-clancy/terminal` | 758   | Refreshed 2026-04-21      |
+| `@chief-clancy/brief`    | 126   | Refreshed 2026-04-21      |
+| `@chief-clancy/plan`     | 326   | Refreshed 2026-04-21      |
+| `@chief-clancy/dev`      | 1210  | First baseline 2026-04-21 |
+
+`@chief-clancy/scan` ships no unit tests (prompts-only — `src/{agents,commands,workflows}` only) and is excluded from this baseline.
 
 Drift outside these baselines without an intentional change is a Red Flag — see [DA-REVIEW.md](DA-REVIEW.md#red-flags--stop-and-reassess).
 
