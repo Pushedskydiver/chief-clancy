@@ -401,13 +401,17 @@ Clancy has four non-code persistence surfaces to reconcile: repo docs, `focus.md
 
 ## Versioning
 
-| Package                  | Initial version | Current (2026-04-09) | Rationale                                      |
-| ------------------------ | --------------- | -------------------- | ---------------------------------------------- |
-| `@chief-clancy/core`     | 0.1.0           | 0.1.0                | New package, proven code, unstable API surface |
-| `@chief-clancy/terminal` | 0.1.0           | 0.1.7                | Patch bumps for internal refactors (Phase C/D) |
-| `@chief-clancy/brief`    | 0.1.0           | 0.3.0                | Minor bumps for new command surface (Phase D)  |
-| `@chief-clancy/plan`     | 0.1.0           | 0.5.0                | Minor bumps for approve-plan + push (Phase C)  |
-| `chief-clancy` (wrapper) | 0.9.0           | 0.9.15               | Continues existing lineage, thin re-export     |
+| Package                  | Initial version | Current (2026-04-21) | Rationale                                                                                                   |
+| ------------------------ | --------------- | -------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `@chief-clancy/core`     | 0.1.0           | 4.0.0                | First 1.0 via Barrier-Core (Session 86); 3 additional majors via Conventions compliance sweep               |
+| `@chief-clancy/terminal` | 0.1.0           | 0.3.1                | Minor bumps for command surface + execCmd minor (Conventions sweep)                                         |
+| `@chief-clancy/brief`    | 0.1.0           | 0.4.3                | Minor bumps for new command surface (Phase D)                                                               |
+| `@chief-clancy/plan`     | 0.1.0           | 0.7.1                | Minor bumps for approve-plan + push (Phase C)                                                               |
+| `@chief-clancy/dev`      | 0.0.2           | 0.9.0                | Scaffolded private (Phase E), flipped public at 0.0.2; minor bumps across dev-internal surfaces             |
+| `@chief-clancy/scan`     | 0.1.0           | 0.2.3                | Scaffolded + publishable (Session 67); incremental minor + patch bumps                                      |
+| `chief-clancy` (wrapper) | 0.9.0           | 0.9.42               | Continues existing lineage; entry-point wrapper (`npx chief-clancy`) delegating to `@chief-clancy/terminal` |
+
+`Initial version` = first published version (not pre-publish scaffold state).
 
 Independent versioning managed by `@changesets/cli`. Coordinated v1.0.0 release when API surfaces are stable. Update the "Current" column whenever a new version ships.
 
