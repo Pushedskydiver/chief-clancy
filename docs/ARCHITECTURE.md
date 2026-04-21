@@ -184,12 +184,13 @@ RunContext (mutable shared state)
   +-- feasibility      — can this be implemented as code?
   +-- branch-setup     — git ops (epic branch, feature branch, lock write)
   +-- transition       — move ticket to In Progress
+  +-- invoke           — run Claude session (prompt-builder + CLI bridge); abort on failure
   +-- deliver          — push branch, create PR, log progress
   +-- cost             — duration-based token estimate -> costs.log
   +-- cleanup          — completion print, webhook notification
 ```
 
-The Claude session invocation (prompt building, CLI bridge) lives in `packages/dev/src/` (`prompt-builder.ts`, `cli-bridge.ts`). The pipeline itself also lives in `packages/dev/src/pipeline/` — not in `@chief-clancy/core` (moved from core in PR #229 to eliminate a circular dep). Each phase exposed to the orchestrator has signature `(ctx: RunContext) => Promise<PhaseResult>`, where `PhaseResult` is a phase-specific typed result object (e.g. `PreflightPhaseResult`, `BranchSetupResult`). The orchestrator inspects result fields (`.ok`, `.action`, etc.) to decide continue vs. early-exit.
+The `invoke` phase callback runs the Claude session; its implementation modules live at `packages/dev/src/prompt-builder.ts` and `packages/dev/src/cli-bridge.ts`. The pipeline itself also lives in `packages/dev/src/pipeline/` — not in `@chief-clancy/core` (moved from core in PR #229 to eliminate a circular dep). Each phase exposed to the orchestrator has signature `(ctx: RunContext) => Promise<PhaseResult>`, where `PhaseResult` is a phase-specific typed result object (e.g. `PreflightPhaseResult`, `BranchSetupResult`). The orchestrator inspects result fields (`.ok`, `.action`, etc.) to decide continue vs. early-exit.
 
 ## Runner Modes
 
