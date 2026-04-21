@@ -6,7 +6,7 @@ Interactive diagrams showing how packages, roles, commands, and flows connect. R
 
 1. [Package Boundaries](#1-package-boundaries) — monorepo structure and dependency flow
 2. [Role & Command Map](#2-role--command-map) — all roles and their commands
-3. [Ticket Lifecycle](#3-ticket-lifecycle--end-to-end) — state machine from idea to merged code
+3. [Lifecycle](#3-lifecycle--end-to-end) — state machine from idea to merged code
 4. [Implementation Flow](#4-implementation-flow) — what happens inside `/clancy:implement`
 5. [Strategist Flow](#5-strategist-flow--brief-to-tickets) — `/clancy:brief` and `/clancy:approve-brief`
 6. [Board API Matrix](#6-board-api-interaction-matrix) — which commands talk to which APIs
@@ -25,7 +25,7 @@ Interactive diagrams showing how packages, roles, commands, and flows connect. R
 Seven packages. Dependency direction is strict: `core ← terminal ← chief-clancy`. The standalone packages each have their own `npx @chief-clancy/{pkg}` entry point and can be installed independently of `terminal`:
 
 - `scan` — no package dependencies
-- `brief` and `plan` — depend on `scan` only
+- `brief` and `plan` — standalone (declare `scan` as a workspace sibling for installer sequencing only; zero code imports from scan)
 - `dev` — depends on `core` and `scan` (uses `core` for board integrations, schemas, shared utilities)
 
 No reverse imports. Enforced by eslint-plugin-boundaries.
@@ -49,7 +49,7 @@ graph TD
         board["board/\n(GitHub, Jira, Linear,\nShortcut, Notion, Azure DevOps)"]
         types["types/"]
         schemas["schemas/\n(Zod/mini validation)"]
-        shared["shared/\n(cache, http, git-ops,\nenv-parser, remote)"]
+        shared["shared/\n(cache, http, git-ops,\nenv-parser, remote,\ngit-token, label-helpers)"]
     end
 
     subgraph brief["@chief-clancy/brief (standalone)"]
@@ -71,7 +71,7 @@ graph TD
         scanAgents["agents/ (5 specialists)"]
     end
 
-    subgraph dev["@chief-clancy/dev (standalone from terminal — uses core)"]
+    subgraph dev["@chief-clancy/dev (standalone from terminal — uses core + scan)"]
         devInstaller["installer/"]
         devPipeline["pipeline/\n(phase orchestrator)"]
         devLifecycle["lifecycle/\n(ticket lifecycle modules)"]
@@ -86,8 +86,6 @@ graph TD
     devPipeline --> board
     devLifecycle --> board
     devLifecycle --> shared
-    brief --> scanCommands
-    plan --> scanCommands
     board --> schemas
     board --> shared
 
@@ -675,7 +673,7 @@ flowchart TD
     style WriteMarker stroke:#1565c0,stroke-width:2px
 ```
 
-**Runtime enforcement is split.** Batch mode (`--from <dir> --afk`) DOES check marker existence — `runImplementBatch` in `packages/terminal/src/runner/implement/batch.ts` skips plans without a sibling `.approved` file. Single-plan mode (`--from <file>`) does not check the marker at all. **SHA-256 verification is deferred everywhere** — the verifier `checkApprovalStatus` at `packages/dev/src/lifecycle/plan-file/plan-file.ts:144` has no pipeline callers. Hash drift (plan edited after approval) is caught only by workflow convention today — human or Claude Code reads the marker and refuses to apply on mismatch.
+**Runtime enforcement is split.** Batch mode (`--from <dir> --afk`) DOES check marker existence — `runImplementBatch` in `packages/terminal/src/runner/implement/batch.ts` skips plans without a sibling `.approved` file. Single-plan mode (`--from <file>`) does not check the marker at all. **SHA-256 verification is deferred everywhere** — the verifier `checkApprovalStatus` at `packages/dev/src/lifecycle/plan-file/plan-file.ts:180` has no pipeline callers. Hash drift (plan edited after approval) is caught only by workflow convention today — human or Claude Code reads the marker and refuses to apply on mismatch.
 
 ---
 
