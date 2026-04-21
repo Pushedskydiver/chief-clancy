@@ -50,27 +50,31 @@ Library/asset-only (bundled into consumer installers — no npx, no installer):
 │   │       │   ├── notion/
 │   │       │   ├── azdo/
 │   │       │   ├── detect-board.ts  — auto-detect provider from env
-│   │       │   └── factory/         — createBoard() — single switch on provider
+│   │       │   └── factory.ts       — createBoard() — single switch on provider
 │   │       ├── schemas/             — Zod/mini schemas for API responses + env vars
 │   │       ├── types/               — shared type definitions
 │   │       ├── shared/              — utility modules
-│   │       │   ├── cache/           — Cached<T>, CachedMap<K,V>
-│   │       │   ├── env-parser/      — .clancy/.env loader
-│   │       │   ├── git-ops/         — checkout, branch detection, push
-│   │       │   ├── git-token/       — resolveGitToken
+│   │       │   ├── cache.ts         — Cached<T>, CachedMap<K,V>
+│   │       │   ├── env-parser.ts    — .clancy/.env loader
+│   │       │   ├── git-ops.ts       — checkout, branch detection, push
+│   │       │   ├── git-token.ts     — resolveGitToken
 │   │       │   ├── http/            — fetchAndParse, retryFetch, ping
-│   │       │   ├── label-helpers/   — modifyLabelList, safeLabel
-│   │       │   └── remote/          — parseRemote, detectRemote
+│   │       │   ├── label-helpers.ts — modifyLabelList, safeLabel
+│   │       │   └── remote.ts        — parseRemote, detectRemote
 │   ├── dev/                         — @chief-clancy/dev
 │   │   └── src/
-│   │       ├── pipeline/            — phase orchestrator + 13 phase directories
-│   │       ├── lifecycle/           — 19 ticket-lifecycle modules
+│   │       ├── pipeline/            — phase orchestrator + 13 phase modules (flat .ts in phases/)
+│   │       ├── lifecycle/           — per-phase lifecycle modules
 │   │       ├── artifacts/           — readiness-report, run-summary, deferred, drift, atomic-write
-│   │       ├── queue.ts             — executeQueue + executeFixedCount loop primitives
 │   │       ├── agents/              — readiness rubric + verdict parser
-│   │       ├── execute/             — single-ticket executor + readiness gate
+│   │       ├── commands/ + workflows/ — Clancy /dev command + workflow prompts
+│   │       ├── dep-factory/         — dependency construction for the pipeline runner
 │   │       ├── entrypoints/         — dev.ts, loop.ts (esbuild entry points)
-│   │       └── installer/           — standalone installer (bin/dev.js)
+│   │       ├── execute/             — single-ticket executor + readiness gate
+│   │       ├── installer/           — standalone installer (bin/dev.js)
+│   │       ├── types/               — dev-internal types
+│   │       ├── cli-bridge.ts, esbuild.runtime.ts, notify.ts, prompt-builder.ts, queue.ts, stop-condition.ts
+│   │       └── index.ts             — public exports
 │   ├── terminal/                    — @chief-clancy/terminal
 │   │   └── src/
 │   │       ├── installer/           — install orchestrator
@@ -82,11 +86,12 @@ Library/asset-only (bundled into consumer installers — no npx, no installer):
 │   │       │   ├── role-filter/     — optional role filtering via CLANCY_ROLES
 │   │       │   └── ui/              — banner, success output
 │   │       ├── runner/              — execution engine
-│   │       │   ├── autopilot/       — AFK loop runner
-│   │       │   ├── implement/       — single-ticket runner
-│   │       │   ├── dep-factory/     — dependency injection wiring
-│   │       │   ├── prompt-builder/  — prompt generation for Claude sessions
-│   │       │   └── session-report/  — AFK session summary
+│   │       │   ├── autopilot.ts     — AFK loop runner
+│   │       │   ├── implement/       — single-ticket runner (batch.ts + implement.ts)
+│   │       │   ├── dep-factory.ts   — dependency injection wiring
+│   │       │   ├── session-report.ts — AFK session summary
+│   │       │   └── esbuild.runtime.ts — runtime bundle config
+│   │       ├── entrypoints/         — autopilot.ts, implement.ts (esbuild entry points)
 │   │       ├── hooks/               — CJS hook bundles (esbuild)
 │   │       │   ├── clancy-credential-guard/  — PreToolUse: blocks credential writes
 │   │       │   ├── clancy-branch-guard/      — PreToolUse: blocks force push + destructive resets
@@ -111,7 +116,21 @@ Library/asset-only (bundled into consumer installers — no npx, no installer):
 │   │       ├── installer/           — self-contained installer (no core/terminal deps)
 │   │       ├── commands/            — brief.md, approve-brief.md, board-setup.md slash commands
 │   │       ├── workflows/           — brief.md, approve-brief.md, board-setup.md workflows
-│   │       └── agents/              — devils-advocate.md (AI-grill agent)
+│   │       ├── agents/              — devils-advocate.md (AI-grill agent)
+│   │       └── index.ts             — public exports
+│   ├── plan/                        — @chief-clancy/plan (standalone)
+│   │   ├── bin/plan.js              — ESM entry point with shebang
+│   │   └── src/
+│   │       ├── installer/           — self-contained installer (no core/terminal deps)
+│   │       ├── commands/            — plan, approve-plan, board-setup, update-plan, uninstall-plan slash commands
+│   │       ├── workflows/           — matching workflows
+│   │       ├── agents/              — devils-advocate.md (AI-grill agent)
+│   │       └── index.ts             — public exports
+│   ├── scan/                        — @chief-clancy/scan (library/asset-only)
+│   │   └── src/
+│   │       ├── agents/              — arch, concerns, design, quality, tech specialist agents
+│   │       ├── commands/            — /clancy:map-codebase, /clancy:update-docs slash commands
+│   │       └── workflows/           — map-codebase, update-docs workflows
 │   └── chief-clancy/               — chief-clancy (CLI wrapper)
 │       ├── bin/clancy.js            — ESM entry point with shebang
 │       └── package.json             — bin field, depends on @chief-clancy/terminal
