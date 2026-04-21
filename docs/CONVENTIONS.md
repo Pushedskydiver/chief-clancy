@@ -215,7 +215,7 @@ These patterns apply to all board adapters (`board/{provider}/`):
 - **Co-located tests** — `<name>/<name>.test.ts` next to source.
 - **Unit tests for every exported function** — no exceptions.
 - **Property-based tests** (fast-check) for parsers, serialisers, URL builders, string transformers.
-- **Integration tests** for cross-module workflows (MSW-backed, in `packages/terminal/test/integration/`).
+- **Integration tests** for cross-module workflows (DI adapters + real filesystem, in `packages/terminal/test/integration/`).
 - **Coverage threshold: 80%** per package (statements, branches, functions, lines).
 - **Tracer bullet TDD for new logic.** Vertical slices, not horizontal. One test → implement to pass → next test → repeat → refactor. Never write all tests first then all implementation — tests written in bulk test imagined behaviour, not actual behaviour. See [GLOSSARY.md](GLOSSARY.md) for the definition and [TESTING.md "Writing good tests"](TESTING.md#writing-good-tests) for the supporting disciplines (test state not interactions, mock at boundaries, DAMP > DRY).
 - **Tests exempt from functional rules** — `immutable-data` off, `max-lines-per-function` off, `no-duplicate-string` off in test files.
