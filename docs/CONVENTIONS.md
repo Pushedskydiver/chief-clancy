@@ -4,7 +4,7 @@ Standards enforced across the `@chief-clancy` monorepo. All rules are configured
 
 See also: [DEVELOPMENT.md "Task sizing"](DEVELOPMENT.md#task-sizing) for the process side of complexity limits, [TESTING.md](TESTING.md) for testing disciplines, [GLOSSARY.md](GLOSSARY.md) for term definitions including [tracer bullet TDD](GLOSSARY.md).
 
-**Last reviewed:** 2026-04-09
+**Last reviewed:** 2026-04-21
 
 ---
 
@@ -49,10 +49,20 @@ If this meta grows beyond ~400 words or ~1 page, promote to a future `docs/AUTHO
 
 ## Architecture Enforcement (eslint-plugin-boundaries)
 
-| Rule                               | Effect   |
-| ---------------------------------- | -------- |
-| Core imports nothing from terminal | Enforced |
-| Terminal imports from core only    | Enforced |
+| From (type)                | May import from               |
+| -------------------------- | ----------------------------- |
+| `core`                     | `core`                        |
+| `brief`                    | `brief`                       |
+| `plan`                     | `plan`                        |
+| `scan`                     | `scan`                        |
+| `dev`                      | `dev`, `core`                 |
+| `terminal`                 | `terminal`, `core`, `dev`     |
+| `chat`¹                    | `chat`, `core`                |
+| `wrapper` (`chief-clancy`) | `wrapper`, `terminal`, `plan` |
+
+¹ `chat` is registered in `eslint.config.ts`; `packages/chat/` does not exist on disk today.
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for dependency-direction rationale.
 
 ---
 
@@ -60,15 +70,15 @@ If this meta grows beyond ~400 words or ~1 page, promote to a future `docs/AUTHO
 
 Imports are sorted into 5 groups, separated by blank lines:
 
-| Group                 | Pattern                             | Example                                            |
-| --------------------- | ----------------------------------- | -------------------------------------------------- |
-| 1. Type imports       | `import type { ... }` from anywhere | `import type { Board } from '@chief-clancy/core'`  |
-| 2. Node built-ins     | `node:*`                            | `import { resolve } from 'node:path'`              |
-| 3. Third-party        | npm packages                        | `import { z } from 'zod/mini'`                     |
-| 4. Workspace packages | `@chief-clancy/*`                   | `import { createBoard } from '@chief-clancy/core'` |
-| 5. Local              | `~/c/`, `~/t/`, `./`, `../`         | `import { parse } from '~/c/branch/branch.js'`     |
+| Group                 | Pattern                                             | Example                                            |
+| --------------------- | --------------------------------------------------- | -------------------------------------------------- |
+| 1. Type imports       | `import type { ... }` from anywhere                 | `import type { Board } from '@chief-clancy/core'`  |
+| 2. Node built-ins     | `node:*`                                            | `import { resolve } from 'node:path'`              |
+| 3. Third-party        | npm packages                                        | `import { z } from 'zod/mini'`                     |
+| 4. Workspace packages | `@chief-clancy/*`                                   | `import { createBoard } from '@chief-clancy/core'` |
+| 5. Local              | `~/c/`, `~/t/`, `~/b/`, `~/p/`, `~/d/`, `./`, `../` | `import { parse } from '~/c/branch/branch.js'`     |
 
-Each package has a unique path alias: `~/c/` for core, `~/t/` for terminal, `~/d/` for dev (configured in each `tsconfig.json`, rewritten by `tsc-alias` at build time). Use the alias for imports that would otherwise need deep relative paths (`../../` or deeper). Short relative paths (`./`, `../`) within the same module are fine.
+Each package has a unique path alias: `~/c/` for core, `~/t/` for terminal, `~/b/` for brief, `~/p/` for plan, `~/d/` for dev (configured in each `tsconfig.json`, rewritten by `tsc-alias` at build time). Use the alias for imports that would otherwise need deep relative paths (`../../` or deeper). Short relative paths (`./`, `../`) within the same module are fine.
 
 **Path aliases do not work across package boundaries.** TypeScript's `rootDir` enforcement (TS6059) blocks aliases that resolve outside the package's `src/` directory. Use `@chief-clancy/{package}` imports for cross-package dependencies — never `~/c/` from terminal or `~/d/` from core.
 
@@ -140,8 +150,8 @@ Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 
 A **concept folder** (one that groups source code by domain concept, not by build-system role) exists for one of two reasons:
 
-- **Wrapper folder** — a single concept has **≥2 source files** (tests don't count). Examples: `lifecycle/rework/` (`rework.ts` + `rework-builders.ts` + `rework-handlers.ts`), `runner/implement/` (`implement.ts` + `batch.ts`).
-- **Grouping folder** — multiple related concepts clustered by a name the team actually uses (Evans, _Domain-Driven Design_, ubiquitous language). Examples: `lifecycle/pull-request/` (per-provider adapters), `pipeline/phases/`.
+- **Wrapper folder** — a single concept has **≥2 source files** (tests don't count). Examples: `dev/lifecycle/rework/` (`rework.ts` + `rework-builders.ts` + `rework-handlers.ts` + `rework-types.ts`), `terminal/runner/implement/` (`implement.ts` + `batch.ts`).
+- **Grouping folder** — multiple related concepts clustered by a name the team actually uses (Evans, _Domain-Driven Design_, ubiquitous language). Examples: `dev/lifecycle/pull-request/` (per-provider adapters), `dev/pipeline/phases/`.
 
 Single-file concepts stay flat. No `feature-name/feature-name.ts` wrappers — the wrapper folder adds a directory level without adding information.
 
@@ -205,7 +215,7 @@ These patterns apply to all board adapters (`board/{provider}/`):
 - **Co-located tests** — `<name>/<name>.test.ts` next to source.
 - **Unit tests for every exported function** — no exceptions.
 - **Property-based tests** (fast-check) for parsers, serialisers, URL builders, string transformers.
-- **Integration tests** for cross-module workflows (MSW-backed, in `packages/terminal/test/integration/`).
+- **Integration tests** for cross-module workflows (DI adapters + real filesystem, in `packages/terminal/test/integration/`).
 - **Coverage threshold: 80%** per package (statements, branches, functions, lines).
 - **Tracer bullet TDD for new logic.** Vertical slices, not horizontal. One test → implement to pass → next test → repeat → refactor. Never write all tests first then all implementation — tests written in bulk test imagined behaviour, not actual behaviour. See [GLOSSARY.md](GLOSSARY.md) for the definition and [TESTING.md "Writing good tests"](TESTING.md#writing-good-tests) for the supporting disciplines (test state not interactions, mock at boundaries, DAMP > DRY).
 - **Tests exempt from functional rules** — `immutable-data` off, `max-lines-per-function` off, `no-duplicate-string` off in test files.
