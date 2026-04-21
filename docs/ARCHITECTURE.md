@@ -25,15 +25,15 @@ Library/asset-only (bundled into consumer installers — no npx, no installer):
 
 **Dependency direction: core ← terminal ← chief-clancy.** `brief`, `plan`, and `dev` each ship their own `npx @chief-clancy/{pkg}` entry and installer surface. `scan` and `core` are library/asset-only and flow into consumer installers. Dep chain: `scan` has no package deps; `brief` and `plan` depend on `scan`; `dev` depends on `core` and `scan`. No reverse imports. Enforced by `eslint-plugin-boundaries`.
 
-| Package                  | Purpose                                                                                               | Published      |
-| ------------------------ | ----------------------------------------------------------------------------------------------------- | -------------- |
-| `chief-clancy`           | Entry-point wrapper delegating to `@chief-clancy/terminal`                                            | Yes (unscoped) |
-| `@chief-clancy/terminal` | Installer, hooks, runners, slash commands, agents                                                     | Yes            |
-| `@chief-clancy/core`     | Board abstractions, schemas (Zod/mini), shared utilities (cache, http, git-ops, env-parser)           | Yes            |
-| `@chief-clancy/scan`     | Standalone codebase-scan commands + specialist agents (`/clancy:map-codebase`, `/clancy:update-docs`) | Yes            |
-| `@chief-clancy/brief`    | Standalone brief generator — `/clancy:brief`, `/clancy:approve-brief`, `/clancy:board-setup`          | Yes            |
-| `@chief-clancy/plan`     | Standalone planner — `/clancy:plan`, `/clancy:approve-plan` (writes `.approved` marker in local mode) | Yes            |
-| `@chief-clancy/dev`      | Standalone executor — pipeline phases, lifecycle modules, esbuild runtime bundles for `.clancy/`      | Yes            |
+| Package                  | Purpose                                                                                                                       | Published      |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| `chief-clancy`           | Entry-point wrapper delegating to `@chief-clancy/terminal`                                                                    | Yes (unscoped) |
+| `@chief-clancy/terminal` | Installer, hooks, runners, slash commands, agents                                                                             | Yes            |
+| `@chief-clancy/core`     | Board abstractions, schemas (Zod/mini), shared utilities (cache, http, git-ops, env-parser)                                   | Yes            |
+| `@chief-clancy/scan`     | Codebase-scan commands + specialist agents (`/clancy:map-codebase`, `/clancy:update-docs`) — bundled into consumer installers | Yes            |
+| `@chief-clancy/brief`    | Standalone brief generator — `/clancy:brief`, `/clancy:approve-brief`, `/clancy:board-setup`                                  | Yes            |
+| `@chief-clancy/plan`     | Standalone planner — `/clancy:plan`, `/clancy:approve-plan` (writes `.approved` marker in local mode)                         | Yes            |
+| `@chief-clancy/dev`      | Standalone executor — pipeline phases, lifecycle modules, esbuild runtime bundles for `.clancy/`                              | Yes            |
 
 ## Directory Structure
 
