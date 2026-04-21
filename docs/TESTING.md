@@ -1,6 +1,6 @@
 # Testing
 
-Clancy uses a 2-layer QA architecture: unit tests (co-located across five packages — core, terminal, brief, plan, dev) and E2E tests (terminal). Both layers use Vitest.
+Clancy uses a 3-layer QA architecture: unit tests (co-located across five packages — core, terminal, brief, plan, dev), integration tests (in `packages/terminal/test/integration/`), and E2E tests (also under terminal, in `test/e2e/`). All three layers use Vitest.
 
 ## Quick reference
 
