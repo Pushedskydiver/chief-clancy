@@ -304,13 +304,13 @@ These run automatically in CI and do not require manual steps:
 
 **What is non-trivial?** Code with logic (new functions, changed conditionals, refactored modules), changed type signatures, new env vars, test infrastructure changes. All non-trivial changes get the full review gate.
 
-**What is trivial?** Typos, badge updates, reformatting, adding test cases to proven structures. Trivial changes can skip DA but should still get a self-review pass. CodeRabbit still runs automatically.
+**What is trivial?** Typos, badge updates, reformatting, adding test cases to proven structures. Trivial changes can skip DA but should still get a self-review pass. Automated review (Copilot / CodeRabbit) still runs — request Copilot after push; CodeRabbit posts when it fires.
 
 ### Why this order matters
 
-DA may flag issues that change the code, which invalidates a self-review done earlier. Self-review may fix issues that change what CodeRabbit sees. Running them out of order means repeating work or shipping with stale artifacts.
+DA may flag issues that change the code, which invalidates a self-review done earlier. Self-review may fix issues that change what Copilot / CodeRabbit see. Running them out of order means repeating work or shipping with stale artifacts.
 
-The self-review checklist is a **living document** — when CodeRabbit catches something the self-review should have spotted, add the check to [SELF-REVIEW.md](SELF-REVIEW.md) immediately.
+The self-review checklist is a **living document** — when Copilot or CodeRabbit catch something the self-review should have spotted, add the check to [SELF-REVIEW.md](SELF-REVIEW.md) immediately.
 
 ---
 
@@ -633,7 +633,7 @@ Every PR must pass before merging:
 - [ ] Quality tools pass (`pnpm knip && pnpm publint && pnpm attw`)
 - [ ] DA review completed (for non-trivial changes)
 - [ ] Self-review checklist completed
-- [ ] CodeRabbit review findings addressed
+- [ ] Automated review findings (Copilot / CodeRabbit) addressed
 - [ ] PROGRESS.md updated
 
 ---

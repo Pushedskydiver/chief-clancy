@@ -280,6 +280,6 @@ Findings get labelled so the author knows what's required vs optional. The six l
 ## See also
 
 - [SELF-REVIEW.md](SELF-REVIEW.md) — line-level accuracy checks (split ownership: DA owns architectural; self-review owns code-level)
-- [DEVELOPMENT.md](DEVELOPMENT.md) — full review gate flow (DA → self-review → CodeRabbit)
+- [DEVELOPMENT.md](DEVELOPMENT.md) — full review gate flow (DA → self-review → Copilot / CodeRabbit)
 - [RATIONALIZATIONS.md](RATIONALIZATIONS.md) — anti-rationalization index, especially the [Review section](RATIONALIZATIONS.md#review)
 - [TESTING.md](TESTING.md) — Prove-It Pattern, mock-at-boundaries, state-vs-interaction
