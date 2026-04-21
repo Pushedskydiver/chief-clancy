@@ -279,7 +279,7 @@ Human reviews plan file
   +- Leaves feedback -> /clancy:plan --from -> auto-detects feedback, revises plan
 ```
 
-The `.approved` marker is a **write-side contract today** — `/clancy:approve-plan` writes it correctly (SHA-256 + timestamp via `O_EXCL`), but runtime enforcement is deferred per `packages/plan/src/workflows/approve-plan.md:412-418`. The verifier function `checkApprovalStatus` exists at `packages/dev/src/lifecycle/plan-file/plan-file.ts:144` but has no callers in the pipeline today. `runLocalMode` in `packages/dev/src/entrypoints/dev.ts:168` runs `--from` plans without checking the marker. Until the verifier is wired, approval is a workflow-level convention — the user (or Claude Code via natural-language instruction) reads the marker and refuses to apply on mismatch.
+The `.approved` marker is a **write-side contract today** — `/clancy:approve-plan` writes it correctly (SHA-256 + timestamp via `O_EXCL`), but runtime enforcement is deferred per `packages/plan/src/workflows/approve-plan.md:412-418`. The verifier function `checkApprovalStatus` exists at `packages/dev/src/lifecycle/plan-file/plan-file.ts:180` but has no callers in the pipeline today. `runLocalMode` in `packages/dev/src/entrypoints/dev.ts:192` runs `--from` plans without checking the marker. Until the verifier is wired, approval is a workflow-level convention — the user (or Claude Code via natural-language instruction) reads the marker and refuses to apply on mismatch.
 
 Planner and implementer work on separate queues (board path) or separate plan-file states (local path). They never compete for the same work.
 
@@ -373,14 +373,14 @@ Plus a `<!-- clancy:start -->` / `<!-- clancy:end -->` block in the project's `C
 
 ## Build System
 
-| Tool            | Purpose                                                                                           |
-| --------------- | ------------------------------------------------------------------------------------------------- |
-| pnpm workspaces | Package management, workspace linking                                                             |
-| Turbo           | Parallel builds, test caching, task orchestration                                                 |
-| tsc + tsc-alias | TypeScript compilation, path alias rewriting (`~/c/` -> `core/src/*`, `~/t/` -> `terminal/src/*`) |
-| esbuild         | Hook CJS bundling (8 self-contained bundles, zero npm deps)                                       |
-| Vitest          | Unit + integration testing                                                                        |
-| Changesets      | Version management + npm publishing                                                               |
+| Tool            | Purpose                                                                                                                                                                   |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| pnpm workspaces | Package management, workspace linking                                                                                                                                     |
+| Turbo           | Parallel builds, test caching, task orchestration                                                                                                                         |
+| tsc + tsc-alias | TypeScript compilation, path alias rewriting (`~/c/` -> `core/src/*`, `~/t/` -> `terminal/src/*`, `~/d/` -> `dev/src/*`, `~/b/` -> `brief/src/*`, `~/p/` -> `plan/src/*`) |
+| esbuild         | Hook CJS bundling (8 self-contained bundles, zero npm deps)                                                                                                               |
+| Vitest          | Unit + integration testing                                                                                                                                                |
+| Changesets      | Version management + npm publishing                                                                                                                                       |
 
 ## Validation
 
