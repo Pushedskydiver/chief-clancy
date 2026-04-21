@@ -11,7 +11,8 @@ Clancy is a monorepo of seven npm packages that install Claude Code slash comman
 ```
 chief-clancy                  — CLI wrapper (npx chief-clancy)
   └── @chief-clancy/terminal  — installer, runner, hooks, commands, agents
-        └── @chief-clancy/core   — board integrations, schemas, shared utilities
+        ├── @chief-clancy/core — board integrations, schemas, shared utilities
+        └── @chief-clancy/dev  — pipeline, lifecycle, executor runtime
 
 Own npx entry (install independently of terminal):
 @chief-clancy/brief           — depends on scan
@@ -25,15 +26,15 @@ Library/asset-only (bundled into consumer installers — no npx, no installer):
 
 **Dependency direction: core ← terminal ← chief-clancy.** `brief`, `plan`, and `dev` each ship their own `npx @chief-clancy/{pkg}` entry and installer surface. `scan` and `core` are library/asset-only and flow into consumer installers. Dep chain: `scan` has no package deps; `brief` and `plan` depend on `scan`; `dev` depends on `core` and `scan`. No reverse imports. Enforced by `eslint-plugin-boundaries`.
 
-| Package                  | Purpose                                                                                                                       | Published      |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | -------------- |
-| `chief-clancy`           | Entry-point wrapper delegating to `@chief-clancy/terminal`                                                                    | Yes (unscoped) |
-| `@chief-clancy/terminal` | Installer, hooks, runners, slash commands, agents                                                                             | Yes            |
-| `@chief-clancy/core`     | Board abstractions, schemas (Zod/mini), shared utilities (cache, http, git-ops, env-parser)                                   | Yes            |
-| `@chief-clancy/scan`     | Codebase-scan commands + specialist agents (`/clancy:map-codebase`, `/clancy:update-docs`) — bundled into consumer installers | Yes            |
-| `@chief-clancy/brief`    | Standalone brief generator — `/clancy:brief`, `/clancy:approve-brief`, `/clancy:board-setup`                                  | Yes            |
-| `@chief-clancy/plan`     | Standalone planner — `/clancy:plan`, `/clancy:approve-plan` (writes `.approved` marker in local mode)                         | Yes            |
-| `@chief-clancy/dev`      | Standalone executor — pipeline phases, lifecycle modules, esbuild runtime bundles for `.clancy/`                              | Yes            |
+| Package                  | Purpose                                                                                                                                                                       | Published      |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| `chief-clancy`           | Entry-point wrapper delegating to `@chief-clancy/terminal`                                                                                                                    | Yes (unscoped) |
+| `@chief-clancy/terminal` | Installer, hooks, runners, slash commands, agents                                                                                                                             | Yes            |
+| `@chief-clancy/core`     | Board abstractions, schemas (Zod/mini), shared utilities (cache, http, git-ops, env-parser)                                                                                   | Yes            |
+| `@chief-clancy/scan`     | Codebase-scan commands + specialist agents (`/clancy:map-codebase`, `/clancy:update-docs`) — bundled into consumer installers                                                 | Yes            |
+| `@chief-clancy/brief`    | Standalone brief generator — `/clancy:brief`, `/clancy:approve-brief`, `/clancy:board-setup`, `/clancy:update-brief`, `/clancy:uninstall-brief`                               | Yes            |
+| `@chief-clancy/plan`     | Standalone planner — `/clancy:plan`, `/clancy:approve-plan`, `/clancy:board-setup`, `/clancy:update-plan`, `/clancy:uninstall-plan` (writes `.approved` marker in local mode) | Yes            |
+| `@chief-clancy/dev`      | Standalone executor — pipeline phases, lifecycle modules, esbuild runtime bundles for `.clancy/`                                                                              | Yes            |
 
 ## Directory Structure
 
@@ -78,13 +79,15 @@ Library/asset-only (bundled into consumer installers — no npx, no installer):
 │   ├── terminal/                    — @chief-clancy/terminal
 │   │   └── src/
 │   │       ├── installer/           — install orchestrator
-│   │       │   ├── install/         — runInstall, resolveInstallPaths, parseInstallFlag
-│   │       │   ├── file-ops/        — copy, inline workflows
-│   │       │   ├── hook-installer/  — settings.json registration
-│   │       │   ├── manifest/        — SHA-256 checksums for patch preservation
-│   │       │   ├── prompts/         — interactive CLI prompts
-│   │       │   ├── role-filter/     — optional role filtering via CLANCY_ROLES
-│   │       │   └── ui/              — banner, success output
+│   │       │   ├── install/         — runInstall, resolveInstallPaths, parseInstallFlag (directory)
+│   │       │   ├── shared/          — fs-errors.ts (hasErrorCode), other shared helpers (directory)
+│   │       │   ├── file-ops.ts      — copy, inline workflows
+│   │       │   ├── hook-installer.ts — settings.json registration
+│   │       │   ├── manifest.ts      — SHA-256 checksums for patch preservation
+│   │       │   ├── prompts.ts       — interactive CLI prompts
+│   │       │   ├── role-filter.ts   — optional role filtering via CLANCY_ROLES
+│   │       │   ├── ui.ts            — banner, success output
+│   │       │   └── {brief,plan,scan}-content.ts — per-package install-content gates
 │   │       ├── runner/              — execution engine
 │   │       │   ├── autopilot.ts     — AFK loop runner
 │   │       │   ├── implement/       — single-ticket runner (batch.ts + implement.ts)
@@ -101,14 +104,14 @@ Library/asset-only (bundled into consumer installers — no npx, no installer):
 │   │       │   ├── clancy-post-compact/      — PostCompact: re-injects ticket context
 │   │       │   ├── clancy-notification/      — Notification: native OS desktop notifications
 │   │       │   ├── clancy-drift-detector/    — PostToolUse: warns on outdated runtime files
-│   │       │   └── shared/                   — hook utilities (hasErrorCode, isPlainObject)
+│   │       │   └── shared/                   — hook runtime helpers (hook-output, lock-file, stdin-reader, tmpdir, types)
 │   │       ├── roles/               — commands + workflows by role
-│   │       │   ├── setup/           — init, settings, doctor, help
+│   │       │   ├── setup/           — init, settings, doctor, help, update, uninstall, update-terminal, uninstall-terminal
 │   │       │   ├── implementer/     — implement, autopilot, dry-run
 │   │       │   └── reviewer/        — review, status, logs
 │   │       │   (planner and strategist are virtual roles — their slash commands live in @chief-clancy/plan and @chief-clancy/brief)
 │   │       ├── agents/              — specialist agent prompts (.md)
-│   │       ├── templates/           — CLAUDE.md template, .env.example per board
+│   │       ├── templates/           — CLAUDE.md template (the .env.example content lives in roles/setup/workflows/init.md + scaffold.md)
 │   │       └── shared/              — ANSI colour helpers
 │   ├── brief/                       — @chief-clancy/brief (standalone)
 │   │   ├── bin/brief.js             — ESM entry point with shebang
@@ -146,13 +149,11 @@ The two virtual roles (`planner`, `strategist`) have no on-disk directory in `te
 `packages/chief-clancy/bin/clancy.js` is the entry point for `npx chief-clancy`. It resolves the `@chief-clancy/terminal` package on disk and delegates to `runInstall`:
 
 1. Prompts for global (`~/.claude`) or local (`./.claude`) install (or reads `--global`/`--local` flag)
-2. Walks `roles/*/commands/` and copies command files flat to `{dest}/commands/clancy/`
-   - Core roles (implementer, reviewer, setup) are always installed
-   - Optional roles (planner, strategist) are only installed if listed in `CLANCY_ROLES` env var in `.clancy/.env`, or if no `.clancy/.env` exists yet (first install = install all)
+2. Walks the physical role directories (`roles/implementer/`, `roles/reviewer/`, `roles/setup/`) under `commands/` and copies files flat to `{dest}/commands/clancy/`. `planner` and `strategist` slash commands are not in `roles/*/` — they ship via `@chief-clancy/plan` and `@chief-clancy/brief` and are installed by those packages' own installers (gated by `CLANCY_ROLES` env in `.clancy/.env`, or installed on first install when `.clancy/.env` does not exist).
 3. Walks `roles/*/workflows/` and copies workflow files flat to `{dest}/clancy/workflows/`
 4. Copies hook bundles (`dist/hooks/*.js`) to `{dest}/hooks/`
 5. Copies bundled runtime scripts (`dist/bundle/clancy-implement.js`, `clancy-autopilot.js`) to `.clancy/`
-6. Registers hooks in Claude's `settings.json` (PreToolUse, PostToolUse, SessionStart, Statusline)
+6. Registers hooks in Claude's `settings.json` (PreToolUse, PostToolUse, SessionStart, Statusline, PostCompact, Notification, Stop)
 7. Writes `{"type":"commonjs"}` package.json into hooks dir (ESM compatibility)
 8. Generates SHA-256 manifests for patch preservation on future updates
 9. For global installs: inlines workflow content into command files (`@` paths don't resolve globally)
@@ -201,7 +202,7 @@ The terminal package provides two runner entry points:
 | `runImplement` | `runner/implement/`   | Single ticket — fetch, implement, deliver, exit                          |
 | `runAutopilot` | `runner/autopilot.ts` | Loop — repeat implement until no tickets remain, generate session report |
 
-Both use `buildPipelineDeps` (`runner/dep-factory.ts`) to wire real dependencies (fs, git, Claude CLI) into the pipeline phases.
+Both use `buildPipelineDeps` to wire real dependencies (fs, git, Claude CLI) into the pipeline phases. `terminal/src/runner/dep-factory.ts` is a thin re-export shim; the wiring lives in `@chief-clancy/dev` at `packages/dev/src/dep-factory/dep-factory.ts`.
 
 ## Board Type Abstraction
 
