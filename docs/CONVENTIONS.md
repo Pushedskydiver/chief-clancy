@@ -129,7 +129,7 @@ Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 
 ## Export Hygiene
 
-- **Types start internal.** Only add `export` to a type when it's consumed outside the file. Options objects (`FetchOpts`, `TransitionOpts`) used only by the function in the same file stay non-exported.
+- **Types start internal.** Only add `export` to a type when it's consumed outside the file. Options objects (`FetchTicketOpts`, `TransitionOpts`) used only by the function in the same file stay non-exported.
 - **Aliasing colliding cross-board names.** When multiple boards export the same name (e.g. `fetchBlockerStatus`), alias at the import site (`import { fetchBlockerStatus as fetchGitHubBlockerStatus }`) or rename the source export. Don't route collisions through a shared barrel — package-entry (`src/index.ts`) and wildcard-exposed `index.ts` barrels exist for package-boundary exports, not collision resolution.
 - **Board label helpers stay internal.** `ensureLabel`, `addLabel`, `removeLabel`, `createLabel`, `fetchLabels`, `getStoryLabelIds` are per-provider internals. Don't re-export them from any board barrel.
 - **Export for testability is allowed.** When a pure function needs direct unit testing (e.g. `parseCostsLog`, `checkStopCondition`, `parseTime`), export it from the source file. For internal modules, the file-level export _is_ the consumer-visible surface — don't add a barrel just for tests. Package-entry `src/index.ts` and wildcard-exposed `index.ts` barrels remain the package-boundary surface and are unaffected by this rule.
@@ -163,7 +163,7 @@ Consumers within a package use deep paths (`~/d/dep-factory/invoke-phase.js`). C
 
 ### Migration state — `core/`
 
-**Barrier-Core landed in `@chief-clancy/core@1.0.0`.** All internal `index.ts` barrels under `src/{types,schemas,shared,board}/` have been deleted; all consumers import from declaration files directly. New `core/` files follow Rule 7 (flat-first, single-file concepts stay flat, **no new internal barrels under `src/{types,schemas,shared,board}/`**). The package-entry `src/index.ts` is the only barrel that remains, and it re-exports per declaration file, not via intermediate barrels.
+**Barrier-Core first shipped in `@chief-clancy/core@1.0.0`; core has since bumped to `4.0.0`.** All internal `index.ts` barrels under `src/{types,schemas,shared,board}/` have been deleted; all consumers import from declaration files directly. New `core/` files follow the flat-first folder rule (single-file concepts stay flat, **no new internal barrels under `src/{types,schemas,shared,board}/`**). The package-entry `src/index.ts` is the only barrel that remains, and it re-exports per declaration file, not via intermediate barrels.
 
 ### Mode is an adapter, not a phase
 

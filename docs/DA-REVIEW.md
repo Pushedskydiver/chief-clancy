@@ -256,7 +256,7 @@ DA-REVIEW Rule 11 owns the **architectural gate** (is this symbol actually publi
 
 ## Severity Labels
 
-Findings get labelled so the author knows what's required vs optional. The five tiers below have two distinct semantic layers — gate readiness (top three) and author attention (bottom three):
+Findings get labelled so the author knows what's required vs optional. The six labels below fall into two semantic groups — **gate readiness** (Critical / Medium+ / Low) and **author attention** (Nit / Optional·Consider / FYI):
 
 | Prefix                        | Semantic                                        | Author action                                                      |
 | ----------------------------- | ----------------------------------------------- | ------------------------------------------------------------------ |

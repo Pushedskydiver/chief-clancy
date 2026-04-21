@@ -139,6 +139,7 @@ Owned by the **Planner** virtual role (see [docs/roles/PLANNER.md](roles/PLANNER
    ├─ Lock check + resume detection
    ├─ Preflight + board detection
    ├─ Epic completion check (auto)
+   ├─ PR retry (network-recovery for PUSHED tickets)
    ├─ Rework detection (auto)
    ├─ Fetches next unblocked ticket
    │    (skips blocked tickets, skips HITL in AFK mode)
@@ -150,7 +151,7 @@ Owned by the **Planner** virtual role (see [docs/roles/PLANNER.md](roles/PLANNER
    │    (self-healing retry if checks fail)
    ├─ Creates PR targeting epic branch
    ├─ Logs cost
-   └─ Sends notification (if configured)
+   └─ Cleanup + notification (if configured)
 
 👤 Review the PR
    │

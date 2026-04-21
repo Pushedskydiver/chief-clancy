@@ -125,7 +125,7 @@ Workflow `.md` files are as load-bearing as TypeScript — Claude follows them s
 - If the diff adds a cross-package export, is it added to the package-entry `src/index.ts`? (Internal consumers use deep `~/` imports — no new internal barrels under `src/`; see [Folder structure](#folder-structure) below.)
 - Does changing a shared type in core break downstream packages? Run `pnpm build` to verify
 - Are `workspace:*` dependencies correct? (core has no workspace deps, terminal depends on core)
-- Do new modules respect the dependency direction? (core ← terminal ← wrapper)
+- Do new modules respect the dependency direction? (core ← terminal ← chief-clancy; brief and plan are standalone)
 
 ## Folder structure
 
