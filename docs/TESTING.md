@@ -22,7 +22,7 @@ pnpm vitest run --coverage       # Unit tests with coverage report (80% threshol
 
 ## Layer 1: Unit tests
 
-Module-level tests with `vi.mock()`. Co-located with source files in both packages.
+Module-level tests with `vi.mock()`. Co-located with source files across all five packages.
 
 ### How to run
 
@@ -42,7 +42,7 @@ packages/core/src/
 ├── board/                  — per-board adapters (github, jira, linear, shortcut, notion, azdo) + factory + detect-board
 ├── shared/                 — cache, env-parser, git-ops, git-token, http, label-helpers, remote
 ├── schemas/                — Zod schemas + per-board validation tests
-└── types/                  — shared types (Ticket, PipelineDeps, ProgressStage, etc.)
+└── types/                  — shared types (Ticket, FetchedTicket, ProgressStatus, etc.)
 
 packages/dev/src/
 ├── pipeline/               — pipeline runner + per-phase modules
@@ -178,7 +178,7 @@ E2E tests do not retry because they create real external resources (tickets, PRs
 
 ### Root config (`vitest.config.ts`)
 
-Manages both packages with coverage thresholds:
+Manages all five packages with coverage thresholds:
 
 ```
 80% minimum for statements, branches, functions, and lines
