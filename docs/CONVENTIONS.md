@@ -70,15 +70,15 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for dependency-direction rationale.
 
 Imports are sorted into 5 groups, separated by blank lines:
 
-| Group                 | Pattern                             | Example                                            |
-| --------------------- | ----------------------------------- | -------------------------------------------------- |
-| 1. Type imports       | `import type { ... }` from anywhere | `import type { Board } from '@chief-clancy/core'`  |
-| 2. Node built-ins     | `node:*`                            | `import { resolve } from 'node:path'`              |
-| 3. Third-party        | npm packages                        | `import { z } from 'zod/mini'`                     |
-| 4. Workspace packages | `@chief-clancy/*`                   | `import { createBoard } from '@chief-clancy/core'` |
-| 5. Local              | `~/c/`, `~/t/`, `./`, `../`         | `import { parse } from '~/c/branch/branch.js'`     |
+| Group                 | Pattern                                             | Example                                            |
+| --------------------- | --------------------------------------------------- | -------------------------------------------------- |
+| 1. Type imports       | `import type { ... }` from anywhere                 | `import type { Board } from '@chief-clancy/core'`  |
+| 2. Node built-ins     | `node:*`                                            | `import { resolve } from 'node:path'`              |
+| 3. Third-party        | npm packages                                        | `import { z } from 'zod/mini'`                     |
+| 4. Workspace packages | `@chief-clancy/*`                                   | `import { createBoard } from '@chief-clancy/core'` |
+| 5. Local              | `~/c/`, `~/t/`, `~/b/`, `~/p/`, `~/d/`, `./`, `../` | `import { parse } from '~/c/branch/branch.js'`     |
 
-Each package has a unique path alias: `~/c/` for core, `~/t/` for terminal, `~/d/` for dev (configured in each `tsconfig.json`, rewritten by `tsc-alias` at build time). Use the alias for imports that would otherwise need deep relative paths (`../../` or deeper). Short relative paths (`./`, `../`) within the same module are fine.
+Each package has a unique path alias: `~/c/` for core, `~/t/` for terminal, `~/b/` for brief, `~/p/` for plan, `~/d/` for dev (configured in each `tsconfig.json`, rewritten by `tsc-alias` at build time). Use the alias for imports that would otherwise need deep relative paths (`../../` or deeper). Short relative paths (`./`, `../`) within the same module are fine.
 
 **Path aliases do not work across package boundaries.** TypeScript's `rootDir` enforcement (TS6059) blocks aliases that resolve outside the package's `src/` directory. Use `@chief-clancy/{package}` imports for cross-package dependencies — never `~/c/` from terminal or `~/d/` from core.
 
