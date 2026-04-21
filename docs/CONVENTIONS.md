@@ -150,8 +150,8 @@ Enforced on save and pre-commit via Prettier. Zero manual effort after setup.
 
 A **concept folder** (one that groups source code by domain concept, not by build-system role) exists for one of two reasons:
 
-- **Wrapper folder** — a single concept has **≥2 source files** (tests don't count). Examples: `lifecycle/rework/` (`rework.ts` + `rework-builders.ts` + `rework-handlers.ts`), `runner/implement/` (`implement.ts` + `batch.ts`).
-- **Grouping folder** — multiple related concepts clustered by a name the team actually uses (Evans, _Domain-Driven Design_, ubiquitous language). Examples: `lifecycle/pull-request/` (per-provider adapters), `pipeline/phases/`.
+- **Wrapper folder** — a single concept has **≥2 source files** (tests don't count). Examples: `dev/lifecycle/rework/` (`rework.ts` + `rework-builders.ts` + `rework-handlers.ts` + `rework-types.ts`), `terminal/runner/implement/` (`implement.ts` + `batch.ts`).
+- **Grouping folder** — multiple related concepts clustered by a name the team actually uses (Evans, _Domain-Driven Design_, ubiquitous language). Examples: `dev/lifecycle/pull-request/` (per-provider adapters), `dev/pipeline/phases/`.
 
 Single-file concepts stay flat. No `feature-name/feature-name.ts` wrappers — the wrapper folder adds a directory level without adding information.
 
