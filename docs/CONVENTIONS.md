@@ -4,7 +4,7 @@ Standards enforced across the `@chief-clancy` monorepo. All rules are configured
 
 See also: [DEVELOPMENT.md "Task sizing"](DEVELOPMENT.md#task-sizing) for the process side of complexity limits, [TESTING.md](TESTING.md) for testing disciplines, [GLOSSARY.md](GLOSSARY.md) for term definitions including [tracer bullet TDD](GLOSSARY.md).
 
-**Last reviewed:** 2026-04-09
+**Last reviewed:** 2026-04-21
 
 ---
 
@@ -49,10 +49,20 @@ If this meta grows beyond ~400 words or ~1 page, promote to a future `docs/AUTHO
 
 ## Architecture Enforcement (eslint-plugin-boundaries)
 
-| Rule                               | Effect   |
-| ---------------------------------- | -------- |
-| Core imports nothing from terminal | Enforced |
-| Terminal imports from core only    | Enforced |
+| From (type)                | May import from               |
+| -------------------------- | ----------------------------- |
+| `core`                     | `core`                        |
+| `brief`                    | `brief`                       |
+| `plan`                     | `plan`                        |
+| `scan`                     | `scan`                        |
+| `dev`                      | `dev`, `core`                 |
+| `terminal`                 | `terminal`, `core`, `dev`     |
+| `chat`¹                    | `chat`, `core`                |
+| `wrapper` (`chief-clancy`) | `wrapper`, `terminal`, `plan` |
+
+¹ `chat` is registered in `eslint.config.ts`; `packages/chat/` does not exist on disk today.
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for dependency-direction rationale.
 
 ---
 
