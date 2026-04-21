@@ -213,7 +213,7 @@ At session start or at handoff time, check `PROGRESS.md`'s detailed-sessions ban
 
 **Why a separate file.** `PROGRESS.md` loads on session start — every byte consumes handoff budget forever. Active state (last 5 detailed entries) stays in `PROGRESS.md`; archival state moves to lookup-on-demand. Matches agent-memory convention (active vs archival split). PR-number column preserves git-log traceability.
 
-**Why both times.** Preemptive archival folds into the same direct-to-main `PROGRESS.md` commit that ships the Session-N handoff entry — next session opens with N ≤ 5 detailed entries and typically zero first-turn maintenance tax (the token-band trigger can still bind when remaining entries are individually large). Reactive-on-load stays as the backstop for sessions where the prior handoff skipped the preemptive pass. Earned via 3 consecutive preemptive-at-handoff applications (Sessions 104-106, per `PROGRESS.md` meta-findings).
+**Why both times.** Preemptive archival folds into the same direct-to-main `PROGRESS.md` commit that ships the Session-N handoff entry — next session opens with N ≤ 5 detailed entries and typically zero first-turn maintenance tax (the token-band trigger can still bind when remaining entries are individually large). Reactive-on-load stays as the backstop for sessions where the prior handoff skipped the preemptive pass. Earned via 3 consecutive preemptive-at-handoff applications (Sessions 104-106, per `PROGRESS.md` meta-findings); pattern now at n=10 consecutive applications as of Session 112.
 
 ---
 
@@ -304,13 +304,13 @@ These run automatically in CI and do not require manual steps:
 
 **What is non-trivial?** Code with logic (new functions, changed conditionals, refactored modules), changed type signatures, new env vars, test infrastructure changes. All non-trivial changes get the full review gate.
 
-**What is trivial?** Typos, badge updates, reformatting, adding test cases to proven structures. Trivial changes can skip DA but should still get a self-review pass. CodeRabbit still runs automatically.
+**What is trivial?** Typos, badge updates, reformatting, adding test cases to proven structures. Trivial changes can skip DA but should still get a self-review pass. Automated review (Copilot / CodeRabbit) still runs — request Copilot after push; CodeRabbit posts when it fires.
 
 ### Why this order matters
 
-DA may flag issues that change the code, which invalidates a self-review done earlier. Self-review may fix issues that change what CodeRabbit sees. Running them out of order means repeating work or shipping with stale artifacts.
+DA may flag issues that change the code, which invalidates a self-review done earlier. Self-review may fix issues that change what Copilot / CodeRabbit see. Running them out of order means repeating work or shipping with stale artifacts.
 
-The self-review checklist is a **living document** — when CodeRabbit catches something the self-review should have spotted, add the check to [SELF-REVIEW.md](SELF-REVIEW.md) immediately.
+The self-review checklist is a **living document** — when Copilot or CodeRabbit catch something the self-review should have spotted, add the check to [SELF-REVIEW.md](SELF-REVIEW.md) immediately.
 
 ---
 
@@ -401,13 +401,17 @@ Clancy has four non-code persistence surfaces to reconcile: repo docs, `focus.md
 
 ## Versioning
 
-| Package                  | Initial version | Current (2026-04-09) | Rationale                                      |
-| ------------------------ | --------------- | -------------------- | ---------------------------------------------- |
-| `@chief-clancy/core`     | 0.1.0           | 0.1.0                | New package, proven code, unstable API surface |
-| `@chief-clancy/terminal` | 0.1.0           | 0.1.7                | Patch bumps for internal refactors (Phase C/D) |
-| `@chief-clancy/brief`    | 0.1.0           | 0.3.0                | Minor bumps for new command surface (Phase D)  |
-| `@chief-clancy/plan`     | 0.1.0           | 0.5.0                | Minor bumps for approve-plan + push (Phase C)  |
-| `chief-clancy` (wrapper) | 0.9.0           | 0.9.15               | Continues existing lineage, thin re-export     |
+| Package                  | Initial version | Current (2026-04-21) | Rationale                                                                                                                          |
+| ------------------------ | --------------- | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `@chief-clancy/core`     | 0.1.0           | 4.0.0                | First 1.0 via Barrier-Core (Session 86); 3 additional majors via Conventions compliance sweep                                      |
+| `@chief-clancy/terminal` | 0.1.0           | 0.3.1                | Minor bumps for command surface + execCmd minor (Conventions sweep)                                                                |
+| `@chief-clancy/brief`    | 0.1.0           | 0.4.3                | Minor bumps for new command surface (Phase D)                                                                                      |
+| `@chief-clancy/plan`     | 0.1.0           | 0.7.1                | Minor bumps for approve-plan + push (Phase C)                                                                                      |
+| `@chief-clancy/dev`      | 0.1.0           | 0.9.0                | Scaffolded private (Phase E), first published at 0.1.0; minor bumps across dev-internal surfaces                                   |
+| `@chief-clancy/scan`     | 0.2.0           | 0.2.3                | Scaffolded + first published at 0.2.0 (Session 67); incremental patch bumps                                                        |
+| `chief-clancy` (wrapper) | 0.1.0           | 0.9.42               | Continues pre-monorepo lineage (npm history starts 0.1.0); entry-point (`npx chief-clancy`) delegating to `@chief-clancy/terminal` |
+
+`Initial version` = first published version (not pre-publish scaffold state).
 
 Independent versioning managed by `@changesets/cli`. Coordinated v1.0.0 release when API surfaces are stable. Update the "Current" column whenever a new version ships.
 
@@ -629,7 +633,7 @@ Every PR must pass before merging:
 - [ ] Quality tools pass (`pnpm knip && pnpm publint && pnpm attw`)
 - [ ] DA review completed (for non-trivial changes)
 - [ ] Self-review checklist completed
-- [ ] CodeRabbit review findings addressed
+- [ ] Automated review findings (Copilot / CodeRabbit) addressed
 - [ ] PROGRESS.md updated
 
 ---
