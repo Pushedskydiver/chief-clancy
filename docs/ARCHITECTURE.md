@@ -13,18 +13,21 @@ chief-clancy                  — CLI wrapper (npx chief-clancy)
   └── @chief-clancy/terminal  — installer, runner, hooks, commands, agents
         └── @chief-clancy/core   — board integrations, schemas, shared utilities
 
-Standalone packages (own npx entry points, install independently of terminal):
-@chief-clancy/scan            — no package deps
+Own npx entry (install independently of terminal):
 @chief-clancy/brief           — depends on scan
 @chief-clancy/plan            — depends on scan
 @chief-clancy/dev             — depends on core + scan (ticket executor runtime)
+
+Library/asset-only (bundled into consumer installers — no npx, no installer):
+@chief-clancy/scan            — agents/commands/workflows distribution
+@chief-clancy/core            — board abstractions, schemas, shared utilities
 ```
 
-**Dependency direction: core ← terminal ← chief-clancy.** The standalone packages each have their own `npx @chief-clancy/{pkg}` entry point. `scan` has no package deps; `brief` and `plan` depend on `scan`; `dev` depends on `core` and `scan`. No reverse imports. Enforced by `eslint-plugin-boundaries`.
+**Dependency direction: core ← terminal ← chief-clancy.** `brief`, `plan`, and `dev` each ship their own `npx @chief-clancy/{pkg}` entry and installer surface. `scan` and `core` are library/asset-only and flow into consumer installers. Dep chain: `scan` has no package deps; `brief` and `plan` depend on `scan`; `dev` depends on `core` and `scan`. No reverse imports. Enforced by `eslint-plugin-boundaries`.
 
 | Package                  | Purpose                                                                                               | Published      |
 | ------------------------ | ----------------------------------------------------------------------------------------------------- | -------------- |
-| `chief-clancy`           | Thin bin wrapper — resolves paths, wires `runInstall`                                                 | Yes (unscoped) |
+| `chief-clancy`           | Entry-point wrapper delegating to `@chief-clancy/terminal`                                            | Yes (unscoped) |
 | `@chief-clancy/terminal` | Installer, hooks, runners, slash commands, agents                                                     | Yes            |
 | `@chief-clancy/core`     | Board abstractions, schemas (Zod/mini), shared utilities (cache, http, git-ops, env-parser)           | Yes            |
 | `@chief-clancy/scan`     | Standalone codebase-scan commands + specialist agents (`/clancy:map-codebase`, `/clancy:update-docs`) | Yes            |
