@@ -2,12 +2,11 @@
 
 Living state document for the Clancy monorepo. Records the current state, the phase ledger, and the next decision. Session-by-session detail lives in git history (each phase's PRs are tagged + commit messages reference them).
 
-## Next workstreams (after Session 117)
+## Next workstreams (after Session 118)
 
-Ordering updated 2026-04-22 (Session 117 — 1.d.β DEVELOPMENT.md §Post-PR flow surrogate-mandatory dispatch rule shipped via [PR #377](https://github.com/Pushedskydiver/chief-clancy/pull/377); 1.d.γ + 1.d.δ remain).
+Ordering updated 2026-04-22 (Session 118 — 1.d.γ DEVELOPMENT.md §Two-phase grill discipline bundle shipped via [PR #378](https://github.com/Pushedskydiver/chief-clancy/pull/378); 1.d.δ + 1.e + 1.f remain).
 
-1. **Documentation drift follow-ups (items 1.a + 1.b + 1.c + 1.d.α + 1.d.β shipped).** Parallel audit of 14 root-level `docs/*.md` files from Session 111. Small drift already folded direct-to-main in commits `01c0036` / `7caa2b1` / `914ad7a` / `55da4e4`. **Session 112 shipped TESTING.md** as [PR #372](https://github.com/Pushedskydiver/chief-clancy/pull/372) (merged `937903c`). **Session 113 shipped DEVELOPMENT.md** as [PR #373](https://github.com/Pushedskydiver/chief-clancy/pull/373) (merged `803dfab`). **Session 114 shipped ARCHITECTURE.md** as [PR #374](https://github.com/Pushedskydiver/chief-clancy/pull/374) (merged `543a385`). **Session 115 shipped CONVENTIONS.md + copilot-instructions.md terminal row** as [PR #375](https://github.com/Pushedskydiver/chief-clancy/pull/375) (merged `85601a9`). **Session 116 shipped 1.d.α GIT.md `fix(docs)` predicate Rule 1** as [PR #376](https://github.com/Pushedskydiver/chief-clancy/pull/376) (merged `7289a0e`). **Session 117 shipped 1.d.β DEVELOPMENT.md §Post-PR flow surrogate-mandatory-on-drift-fix-PR dispatch rule** as [PR #377](https://github.com/Pushedskydiver/chief-clancy/pull/377) (merged `c1ece5b`). **Remaining — one PR each, standard protocol (spec-grill → per-commit DA → final-verification DA → self-review → open PR → skip-Copilot-POST → surrogate → audit comment → Alex-merge when blast-radius fires):**
-   - **d.γ — DEVELOPMENT.md §Two-phase grill discipline: cross-doc caller-claim self-check (n=3) + exhaustive-grep grill short-circuit (n=2).** Two new rules in the same section. **Session 116 R1 M3 flagged that cross-doc caller-claim self-check might belong in `docs/DA-REVIEW.md` §Required disciplines instead** (rule fires at final-DA time, not grill time). **Session 116 R1 M4 flagged overlap with existing `docs/DA-REVIEW.md:91-93` §Cross-doc consistency sweep** — needs an explicit relationship statement. **Session 116 R1 M6 flagged "same class" criterion for exhaustive-grep short-circuit needs refinement** to "two-or-more consecutive R_n findings describable by a single regex over KEPT scope" or equivalent. Target decision: DEVELOPMENT.md §Two-phase grill-OR-DA-REVIEW §Required disciplines. Blast-radius γ.2 → Alex-merge.
+1. **Documentation drift follow-ups (items 1.a + 1.b + 1.c + 1.d.α + 1.d.β + 1.d.γ shipped).** Parallel audit of 14 root-level `docs/*.md` files from Session 111. Small drift already folded direct-to-main in commits `01c0036` / `7caa2b1` / `914ad7a` / `55da4e4`. **Session 112 shipped TESTING.md** as [PR #372](https://github.com/Pushedskydiver/chief-clancy/pull/372) (merged `937903c`). **Session 113 shipped DEVELOPMENT.md** as [PR #373](https://github.com/Pushedskydiver/chief-clancy/pull/373) (merged `803dfab`). **Session 114 shipped ARCHITECTURE.md** as [PR #374](https://github.com/Pushedskydiver/chief-clancy/pull/374) (merged `543a385`). **Session 115 shipped CONVENTIONS.md + copilot-instructions.md terminal row** as [PR #375](https://github.com/Pushedskydiver/chief-clancy/pull/375) (merged `85601a9`). **Session 116 shipped 1.d.α GIT.md `fix(docs)` predicate Rule 1** as [PR #376](https://github.com/Pushedskydiver/chief-clancy/pull/376) (merged `7289a0e`). **Session 117 shipped 1.d.β DEVELOPMENT.md §Post-PR flow surrogate-mandatory-on-drift-fix-PR dispatch rule** as [PR #377](https://github.com/Pushedskydiver/chief-clancy/pull/377) (merged `c1ece5b`). **Session 118 shipped 1.d.γ DEVELOPMENT.md §Two-phase grill discipline bundle + DA-REVIEW.md §Cross-doc consistency sweep bidirectional generalization + SELF-REVIEW companion fold** as [PR #378](https://github.com/Pushedskydiver/chief-clancy/pull/378) (merged `a5680f8`). **Remaining — one PR each, standard protocol (spec-grill → per-commit DA → final-verification DA → self-review → open PR → skip-Copilot-POST → surrogate → audit comment → Alex-merge when blast-radius fires):**
    - **d.δ — (Out-of-scope from PR #376 surrogate, carry-forward) GIT.md §Changelog Format gitmoji claim drift.** Surrogate F1 on PR #376: `docs/GIT.md:203-237` claims "each package maintains CHANGELOG.md ... uses gitmoji section headers" but `grep -rn "✨ Features|🐛 Fixes|♻️ Refactors" packages/*/CHANGELOG.md` returns zero matches; `scripts/group-changelog.ts` targets 3 of 7 packages and is conditional on unused changeset prefixes. Severity LOW / aspirational-vs-observed; Alex scope call on fix vs. deliberate aspirational framing. Blast-radius γ.2 → Alex-merge.
    - **e. GLOSSARY.md coverage gaps.** Copilot-surrogate / Copilot-unreachable-detection / dispatcher-prior-verification / preemptive-archival / protocol-scope-reframe-willingness — coined terms used in policy docs without glossary entries. Rule-addition (new content), not drift-fix. Needs Alex scope call on which terms earn permanent entries.
    - **f. (Out-of-original-scope, surfaced Session 112) TESTING.md Layer-2 integration-layer body section.** Opener at L3 says "3-layer" (accurate) but body has only `## Layer 1: Unit tests` + `## Layer 2: E2E tests` — no integration-layer section despite `packages/terminal/test/integration/` containing 10 tests (count corrected Session 116 per R1 B2; PROGRESS.md's "11 tests" claim in Session 112 entry was off by one). Content PR, not drift-fix. Queue behind (a)-(e).
@@ -20,6 +19,69 @@ Ordering updated 2026-04-22 (Session 117 — 1.d.β DEVELOPMENT.md §Post-PR flo
 6. **Phase 6.2 optional follow-ons (deferred).** (c) §Claim-extraction bucket expansion — always audit kept prose on restructure PRs, even when Copilot reachable. Reconsider if future evidence shows reachable-but-Copilot-missed drift on main. (f) mechanical pre-commit grep-audit for link integrity + literal identifiers — narrow coverage (~1/4 Seed findings). Optional; not load-bearing.
 
 **Policy-surface widening** (`.claude/agents/**`, `docs/decisions/**`, `CONTRIBUTING.md`, `.github/ISSUE_TEMPLATE/**`, `.github/pull_request_template.md` → CODEOWNERS + §Auto-merge blast-radius exception list) is deliberately deferred. Revisit only if Phase 7.0 audit surfaces a concrete reason.
+
+---
+
+**Session 118 (2026-04-22) — Item 1.d.γ DEVELOPMENT.md §Two-phase grill discipline bundle shipped. [PR #378](https://github.com/Pushedskydiver/chief-clancy/pull/378) merged `a5680f8` during handoff (γ.2 blast-radius — DEVELOPMENT.md + DA-REVIEW.md + SELF-REVIEW.md all on list). Surrogate caught 0 findings (24 claims verified / 3 UNCHECKED, clean). Self-referential drift n=3 earned (PROGRESS.md → rule-body inherited `CONVENTIONS.md:210` vs true `:208`; promotion-ready for future session). Per-commit DA on C1 caught apply-rule-to-own-PR miss via the new rule being codified. Copilot UNREACHABLE n=11.**
+
+**PR [#378](https://github.com/Pushedskydiver/chief-clancy/pull/378) shipped: 2 commits, 3 files (`docs/DA-REVIEW.md` + `docs/SELF-REVIEW.md` + `docs/DEVELOPMENT.md`), +12/-2 LOC net.** C1 (`de48d34`) rewrites `docs/DA-REVIEW.md §Cross-doc consistency sweep` (L91-93) to cover three sub-classes under one rule: **(a) downstream-cascade edits** (existing — CONVENTIONS → downstream, PR #306 → #308), **(b) cited-doc caller-claims** (new — spec body asserts another doc's content, Session 112 PR #372 + Session 113 PR #373), **(c) co-edited files** (new — multi-file atomic diff, Session 115 PR #375 + Session 117 PR #377). Line numbers dropped from evidence citations (PR # is load-bearing anchor; line numbers churn across restructures). SELF-REVIEW.md:115 companion attribution refreshed atomically (from "CONVENTIONS → review-gate cascade" to the three-sub-class framing). C2 (`f76f57f`) adds two companion rules in `docs/DEVELOPMENT.md §Two-phase grill discipline` after L346: **Multi-file-scope retrieval** (R1 brief must name every file when spec edits >1 file or cites another doc/agent by name; observational evidence Sessions 112/113/115/117) + **Exhaustive-grep short-circuit** (n=2 evidence — Session 109 identifier-rename class + Session 112 spec-grill drift-pattern class, archive-row quotes verbatim).
+
+**Review stack fired end-to-end across 9 rounds.** Spec-grill R1 (discovery): 2 BLOCKING + 5 MATERIAL + 4 LOW + 3 MC — all folded via **strategic pivot** from the original "add two new rules to DEVELOPMENT" spec to "generalize existing DA-REVIEW rule bidirectionally + add grill-side companion rules in DEVELOPMENT". Key R1 resolution: **B1 dropped the "n=4" count claim** (Session 117 R*n was a different sub-class — co-edit scope gap, not caller-claim-about-cited-doc; n stays at 3 for caller-claim class). **B2 surfaced that Session 115's catch is parallel-drift (co-edit class), not caller-claim — reducing pure caller-claim evidence to n=2 (Sessions 112+113)**, below promotion threshold. Fold: generalize bidirectionally covers all observed classes under one rule. R_n verification: 1 BLOCKING (self-referential misattribution — my own draft claimed Session 112 ran a grep "over TESTING.md HEAD"; git show cd527c4 falsified this — Session 112's actual sweep was a `— .+\(` regex over the spec-grill draft, NOT TESTING.md) + 1 MATERIAL ("default R1 behaviour" asserted a directive not documented in spec-grill.md; weakened to observational) + 2 LOW + 1 Nit. All folded. R*{n+1}: 1 MATERIAL (`docs/CONVENTIONS.md:210` inherited from PROGRESS.md vs true `:208` at PR #372 merge; fold Option B — drop all fragile line numbers; PR # anchors tree-state). R\_{n+2}: READY TO MERGE with 1 LOW (parse-ambiguity, contextually resolved). Per-commit DA ×2: C1 NEEDS FOLD (1 MATERIAL — SELF-REVIEW.md:115 companion attribution stale post-generalization; rule-self-apply on its own PR; soft-reset + re-commit expanded C1 to 2-file atomic edit) + C2 READY TO MERGE (1 FYI on "HEAD-scope contract" paraphrase). Final-verification DA: READY TO MERGE end-to-end. Pre-push quality suite green.
+
+**Copilot UNREACHABLE — n=11 consecutive sessions (108-118).** Skipped the `gh api requested_reviewers` POST per Session 117 directive. Surrogate dispatched via Copilot-unreachable fallback branch (not mandatory-on-drift-fix — this PR uses `docs(...)` commit types, not `fix(docs)`, since it's rule-addition per the codified predicate at `docs/GIT.md:30` / PR #376).
+
+**Surrogate: 0 findings (clean).** 24 claims extracted and verified across 3 files at HEAD; 0 falsified; 3 UNCHECKED disclosed (prescriptive / normative / semantic — not grep-falsifiable). PR #378 is the first rule-addition PR (not drift-fix) to exercise the surrogate; evidence base for surrogate-on-rule-addition is distinct from surrogate-on-drift-fix (n=6 there). Novel sub-class n=1.
+
+**Self-referential drift pattern earned n=3 — promotion-ready.** Session 116 R1 B2 caught my own PROGRESS.md "11 integration tests" claim (actual 10). Session 117 surrogate F1 caught my own PROGRESS.md Session 113 "3 MATERIAL" claim (actual 3 MATERIAL + 1 LOW). Session 118 R\_{n+1} caught PROGRESS.md Session 115's "CONVENTIONS.md:210" inherited into my spec-draft rule body (true referent was `:208` at PR #372 merge). Rule body candidate: **"before citing a PROGRESS.md meta-summary as authority in a rule-body quantifier or evidence clause, re-verify by grep against the primary source (PR audit-trail comments, filesystem greps, git show of handoff commits) — line numbers are the highest-drift surface and should be replaced with PR# + section name at any restructure-eligible target."** Target: `docs/DA-REVIEW.md §Claim-extraction pass` (the scope-includes-own-prose discipline at L63 is the closest existing rule). Candidate for item 1.d.δ bundling or separate follow-up.
+
+**Rule-self-apply on the PR that codifies it — n=2 events.** C1 per-commit DA applied the just-rewritten §Cross-doc consistency sweep rule to the C1 diff and caught the stale SELF-REVIEW.md:115 companion attribution. R\_{n+1} applied the same rule class (cross-doc citation verification) to my own draft evidence clause and caught the `:210` → `:208` inherited drift. The rule being codified is the mechanism that caught itself twice before push. Session 117 novel-n=1 extends to n=2 (novel sub-class).
+
+**Apply-rule-to-own-draft instance applied post-C1 soft-reset.** C1 was initially single-file (DA-REVIEW only); per-commit DA flagged SELF-REVIEW.md:115 stale; soft-reset + re-commit with both files atomically = precedent for "self-apply miss drives soft-reset fold" shape. This is the 5th consecutive session applying soft-reset-to-fold (Sessions 114-118). Pattern remains holding; no new codification opportunity.
+
+**Strategic scope-pivot earned n=1 (novel).** R1 pushback reshaped the spec from "new rules added in DEVELOPMENT.md" to "generalize existing DA-REVIEW rule bidirectionally + new companion rules in DEVELOPMENT.md". Distinct from Session 116's scope-split-on-R1-pushback (which trimmed scope 4 → 1 within one doc); this was scope-reshape across docs without reduction. Watch n=2.
+
+**Meta-findings (carry-forward to Session 119+):**
+
+- **Cross-doc caller-claim + exhaustive-grep codification COMPLETE (1.d.γ shipped).** No longer promotion candidates; rules live in DA-REVIEW.md §Cross-doc consistency sweep (bidirectional) + DEVELOPMENT.md §Two-phase grill discipline (multi-file-scope retrieval + exhaustive-grep short-circuit).
+- **Self-referential drift — n=3 earned, promotion-ready.** Rule-body candidate above; target `docs/DA-REVIEW.md §Claim-extraction pass`. Bundle candidate for item 1.d.δ or future PR.
+- **Surrogate-on-rule-addition — novel n=1.** Surrogate dispatched on non-drift-fix PR via fallback branch; 0 findings. Distinct evidence base from drift-fix surrogate. Watch n=2.
+- **Scope-reshape-on-R1-pushback — novel n=1** (cross-doc generalization vs. Session 116's intra-doc split). Watch n=2.
+- **Rule-self-apply catches on own PR — n=2 events within Session 118 (C1 per-commit DA + R\_{n+1}).** Pattern is the rule being codified catching its own codification PR. Session 117 novel-n=1 (rule-body LOW-count in its own PR) extends to novel-n=2. Watch for distinct sub-classes before codifying.
+- **Surrogate-fold scope-expansion — n=4 data points unchanged.** PR #378 (rule-addition) had 0 surrogate folds, so doesn't contribute to the drift-fix fold-expansion evidence base.
+- **Copilot UNREACHABLE n=11 consecutive sessions (108-118).** Skip `gh api requested_reviewers` POST in routine flows; surrogate is primary-not-fallback.
+- **§Archival maintenance preemptive-at-handoff — 16 consecutive applications** (Sessions 104-118). This handoff archives Session 114.
+- **§Measurement protocol second-10-window data point 6 of 10** (per §Next workstreams item 3). Post-audit window Sessions 113-122. 4 more to second revisit.
+
+**Session 118 handoff metrics.** (Data point 6 of second-10-window.)
+
+- Trigger: phase boundary (PR #378 opened + CI green + audit comment posted; Alex merge pending).
+- Context at trigger: ≈60-65% of pre-compaction budget (manual estimate — heavy session: 4 spec-grill rounds + soft-reset fold + 2 per-commit DA dispatches + final-verification DA + surrogate dispatch + 2 branch commits + pre-push ×1 + audit comment + this handoff).
+- Handoff turn cost: ≈6-8k tokens (this entry + Session 114 archive row + §Next workstreams rewrite + Session 119 loading instructions).
+- Unplanned compaction: no.
+- Time from "handoff now" decision to next-session first productive tool call: TBD (recorded by Session 119).
+- `PROGRESS.md` quality signal: TBD (recorded by Session 119).
+
+### Session 119 loading instructions
+
+On load:
+
+1. Read `PROGRESS.md` top-to-bottom (this Session 118 entry + §Next workstreams + detailed entries for Sessions 115-118).
+2. **PR #378 status check FIRST.** Run `gh pr view 378 --json state,mergedAt` — may be MERGED or still OPEN depending on Alex's merge timing. If merged, bump the §Next workstreams pointer to reflect merged SHA. If open, leave as-is; CI is green + surrogate-audit comment posted.
+3. **After #378 lands**, start **item 1.d.δ — GIT.md §Changelog Format gitmoji claim drift** per §Next workstreams. **Alex scope call required on load** — severity is LOW (aspirational-vs-observed framing); the CHANGELOG.md files + `scripts/group-changelog.ts` may be deliberately aspirational (documenting intended future state) rather than drift to fix. Ask Alex: "Fix the docs to match current state, or the code to match the docs?" Standard protocol once scoped.
+4. **Opportunistic bundle candidate for 1.d.δ**: self-referential drift rule promotion (n=3 earned Session 118). Target `docs/DA-REVIEW.md §Claim-extraction pass` — body draft: "before citing a PROGRESS.md meta-summary in a rule-body quantifier or evidence clause, re-verify by grep against the primary source; replace line numbers with PR# + section name at any restructure-eligible target". Bundle vs. atomic-PR discipline weigh — the 1.d.δ scope is narrow, self-referential-drift scope is also narrow (~1-2 paragraph addition); bundling may risk "two unrelated things" R1 split. Solo-PR for self-referential-drift may be cleaner. Grill R1 will tell.
+5. **Ship order for remaining doc-sweep**: 1.d.δ (NEXT, needs Alex scope call) → 1.e GLOSSARY (needs Alex scope call) → 1.f TESTING.md Layer-2 body section (content PR).
+6. **After item 1 fully ships**, return to Phase 7 (§Next workstreams item 2). First action: 7.3.α Dependabot Security Alerts flip via `gh api` (two PUT calls; not a PR; Alex may need to run if token lacks admin scope). See `.claude/research/dependency-automation/proposals.md §7.3` for locked 4-sub-PR plan.
+7. **Carry-overs from Session 118:**
+   - **Self-referential drift — n=3 earned, promotion-ready.** Target `docs/DA-REVIEW.md §Claim-extraction pass`. Bundle-vs-atomic judgment call during spec-grill.
+   - **Rule-self-apply — n=2 events, novel sub-class.** Pattern: rule-being-codified catches its own PR. Watch for distinct sub-classes before codifying.
+   - **Surrogate-on-rule-addition — novel n=1.** Distinct evidence base from drift-fix surrogate (n=6). Watch n=2.
+   - **Scope-reshape-on-R1-pushback — novel n=1.** Cross-doc generalization distinct from intra-doc split. Watch n=2.
+   - **Surrogate-fold scope-expansion — n=4 contained** (drift-fix evidence base unchanged).
+   - **Copilot UNREACHABLE n=11.** Skip `gh api requested_reviewers` POST; surrogate is primary.
+   - **§Archival maintenance preemptive-at-handoff — 16 consecutive applications.** Session 119's handoff should archive Session 115 preemptively if detailed band grows back to N=5 (currently 115-118 = N=4 post-Session-114 archive).
+   - **§Measurement protocol second-10-window data point 6 recorded.** 4 more to second revisit. Drift-rate thresholds active.
+   - **Cross-doc caller-claim + exhaustive-grep codification COMPLETE.** No longer promotion candidates.
+8. **If Alex redirects on load** (priority shift, new urgent ask), follow the redirect — §Next workstreams is a default, not a contract.
 
 ---
 
@@ -61,30 +123,6 @@ Ordering updated 2026-04-22 (Session 117 — 1.d.β DEVELOPMENT.md §Post-PR flo
 - Unplanned compaction: no.
 - Time from "handoff now" decision to next-session first productive tool call: TBD (recorded by Session 118).
 - `PROGRESS.md` quality signal: TBD (recorded by Session 118).
-
-### Session 118 loading instructions
-
-On load:
-
-1. Read `PROGRESS.md` top-to-bottom (this Session 117 entry + §Next workstreams + detailed entries for Sessions 114-117).
-2. **PR #377 status check FIRST.** Run `gh pr view 377 --json state,mergedAt` — MERGED `c1ece5b` during Session 117 handoff.
-3. **After #377 merges**, start **item 1.d.γ — DEVELOPMENT.md §Two-phase grill discipline bundle**: cross-doc caller-claim self-check (n=3) + exhaustive-grep grill short-circuit (n=2). Resolve the three carry-forward Session-116 R1 constraints during spec-grill:
-   - **R1 M3** — cross-doc caller-claim self-check target location: `§Two-phase grill discipline` (fires at R1 time) vs. `docs/DA-REVIEW.md §Required disciplines` (fires at final-DA time). Session 117 reinforced this — the N1 caller-claim drift between DEVELOPMENT.md and copilot-surrogate.md was caught at R_n verification time (not R1; not final-DA), suggesting the rule fires at "any round that sweeps beyond the primary file". Target decision during spec-grill.
-   - **R1 M4** — overlap with existing `docs/DA-REVIEW.md:91-93` §Cross-doc consistency sweep (directional: edits-propagate-downstream) vs. new rule (bidirectional: verify-caller-claims-stay-consistent). Spec needs explicit relationship statement.
-   - **R1 M6** — "same class" criterion for exhaustive-grep short-circuit is load-bearing; refine to "two-or-more consecutive R_n findings describable by a single regex over KEPT scope" or equivalent.
-4. **Opportunistic additional promotion candidate for 1.d.γ or later**: self-referential drift (PROGRESS.md meta-summary → rule-body quantifier). n=2 earned Session 117. Rule body candidate: "before citing a PROGRESS.md meta-summary as authority in a rule-body quantifier, re-verify by grep against the primary source." Watch n=3.
-5. **Ship order for remaining doc-sweep**: 1.d.γ (NEXT) → 1.d.δ GIT.md §Changelog Format (needs Alex scope call on fix vs. aspirational framing) → 1.e GLOSSARY (needs Alex scope call) → 1.f TESTING.md Layer-2 body section (content PR).
-6. **After item 1 fully ships**, return to Phase 7 (§Next workstreams item 2). First action: 7.3.α Dependabot Security Alerts flip via `gh api` (two PUT calls; not a PR; Alex may need to run if token lacks admin scope). See `.claude/research/dependency-automation/proposals.md §7.3` for locked 4-sub-PR plan.
-7. **Carry-overs from Session 117:**
-   - **Cross-doc caller-claim self-check n=3 + Exhaustive-grep n=2.** Both still promotion-ready. Bundle target for 1.d.γ.
-   - **Self-referential drift — novel n=2.** Rule candidate; watch n=3 before codifying.
-   - **Surrogate-on-rule-promotion — novel n=1.** Watch n=2.
-   - **Surrogate-fold scope-expansion — n=4, contained.** 1 MATERIAL fold on PR #377 (well under the 5-MATERIAL threshold).
-   - **Copilot UNREACHABLE n=10.** Skip `gh api requested_reviewers` POST; surrogate is primary.
-   - **§Archival maintenance preemptive-at-handoff — 15 consecutive applications.** Session 118's handoff should archive Session 114 preemptively if detailed band grows back to N=5 (currently 114-117 = N=4 post-Session-113 archive).
-   - **§Measurement protocol second-10-window data point 5 recorded.** 5 more to second revisit. Drift-rate thresholds still active (compaction ≥2/10, handoff-cost median ≥8k, clarifying-questions ≥1/10).
-   - **Surrogate-effectiveness codification COMPLETE** (1.d.β shipped). No longer a promotion candidate.
-8. **If Alex redirects on load** (priority shift, new urgent ask), follow the redirect — §Next workstreams is a default, not a contract.
 
 ---
 
@@ -158,89 +196,9 @@ On load:
 - Time from "handoff now" decision to next-session first productive tool call: TBD (recorded by Session 116).
 - `PROGRESS.md` quality signal: TBD (recorded by Session 116).
 
-### Session 116 loading instructions
-
-On load:
-
-1. Read `PROGRESS.md` top-to-bottom (this Session 115 entry + §Next workstreams + detailed entries for Sessions 112-115).
-2. **PR #375 status check FIRST.** Run `gh pr view 375 --json state,mergedAt` — expect MERGED (merged `85601a9` end of Session 115). Should be clean; nothing to nudge.
-3. **After #375 merges**, start **item 1.d: GIT.md `fix(docs)` codification + 3-rule bundle** per §Next workstreams item 1.d. Standard protocol: spec-grill R1→R_n → per-commit DA → final-verification DA → self-review → open PR → skip Copilot POST (n=8 disproven) → surrogate fall-through → Alex-merge (GIT.md on γ.2 policy-docs blast-radius list at `docs/DEVELOPMENT.md:494`).
-4. **Item 1.d bundle scope** — 3 rule-promotions all n≥2 earned + promotion-ready:
-   - Extend `fix(decisions)` direct-to-main rule to `fix(docs)` predicate (n=4 earned Session 111).
-   - Surrogate-mandatory-on-drift-fix-PR codification (n=4 earned — PR #372/#373/#374/#375). Target `docs/DEVELOPMENT.md §Post-PR flow`.
-   - Cross-doc caller-claim self-check codification (n=3 earned — Session 112/113/115). Target `docs/DEVELOPMENT.md §Two-phase grill discipline` or `docs/DA-REVIEW.md`.
-   - Exhaustive-grep grill short-circuit codification (n=2 earned — Session 109 + 112). Same target as caller-claim self-check.
-     Weigh bundle-size vs. atomic-PR discipline; 3+ rule promotions is a large bundle. Consider splitting 1.d into 1.d.α (GIT.md `fix(docs)`) + 1.d.β (DEVELOPMENT.md 3-rule promotion) if the spec-grill flags scope.
-5. **Ship order for remaining doc-sweep** (parallel-safe, disjoint files): 1.d GIT.md + rule codification (NEXT) → 1.e GLOSSARY (needs Alex scope call) → 1.f TESTING.md Layer-2 body section (content PR).
-6. **Named carry-forwards from PR #375 surrogate + DA reviews:**
-   - `.github/copilot-instructions.md:132` — `packages/terminal/src/agents/` claims "7 agent prompts"; actual count is 2. Future copilot-instructions refresh PR.
-   - `.github/copilot-instructions.md:23-24` — package-list drift (nonexistent `chat`, omits `dev`/`scan`). Future copilot-instructions refresh PR.
-   - `README.md:299` — arrow chain transitive-only.
-   - `CONTRIBUTING.md:52-59` — "four packages" block substantially drifted.
-   - `docs/ARCHITECTURE.md:27` — dev-deps-on-scan claim vs eslint allow-list (scan is content-only, not TS-imported; may need verification + fix).
-   - `eslint.config.ts:53` — stale `chat` element (no on-disk package).
-7. **After item 1 fully ships**, return to Phase 7 (§Next workstreams item 2). First action: 7.3.α Dependabot Security Alerts flip via `gh api` (two PUT calls; may need Alex to run if token lacks admin scope). See `.claude/research/dependency-automation/proposals.md §7.3` for locked 4-sub-PR plan.
-8. **Carry-overs from Session 115:**
-   - **Surrogate-effectiveness n=4 + Cross-doc caller-claim n=3 + Exhaustive-grep n=2.** All promotion-ready. Bundle into item 1.d.
-   - **Surrogate-fold scope-expansion risk — n=2, pattern unclear.** Watch n=3.
-   - **Copilot UNREACHABLE n=8.** Skip `gh api requested_reviewers` POST; surrogate is primary.
-   - **§Archival maintenance preemptive-at-handoff — 13 consecutive applications.** Session 116's handoff should archive Session 112 preemptively if detailed band grows back to N=5 (currently 112-115 = N=4 post-Session-111 archive).
-   - **§Measurement protocol second-10-window data point 3 recorded.** 7 more to second revisit.
-9. **If Alex redirects on load** (priority shift, new urgent ask), follow the redirect — §Next workstreams is a default, not a contract.
-
 ---
 
-**Session 114 (2026-04-21) — Item 1.b ARCHITECTURE.md second-audit fold shipped. [PR #374](https://github.com/Pushedskydiver/chief-clancy/pull/374) opened + awaiting Alex-merge. Surrogate-effectiveness n=3 earned (drift-fix-PR mandatory codification now unblocked). Copilot UNREACHABLE n=7 (monthly-reset hypothesis disproven on ≥30-day window).**
-
-**PR [#374](https://github.com/Pushedskydiver/chief-clancy/pull/374) shipped: 7 commits, 1 file (`docs/ARCHITECTURE.md`), +80/-56 LOC net.** Four scoped commits (C1-C4) + two DA-fold commits + one surrogate-fold commit. Scope: two-group package-table reframe (scan moved from false "own npx entry" to "library/asset-only"); `factory.ts`/`shared/*.ts` flat-file corrections; dev/src refresh (12 missing entries); runner/ flat-vs-directory corrections; terminal/entrypoints addition; plan/src + scan/src subsections (previously absent); `invoke` phase added to pipeline diagram with L193 prose reframe; path-alias list widened from 2 to 5 entries; line citations `plan-file.ts:144 → :180` + `dev.ts:168 → :192`; surrogate-caught kept-prose drifts (terminal deps, hooks/shared contents, installer tree flat-vs-dir, setup commands under-count, installer-walk prose, registered-hook enumeration).
-
-**Review stack fired end-to-end across 8 rounds.** Spec-grill R1: 1 BLOCKING + 7 MATERIAL + 3 LOW + 7 missed-concerns — all folded. R_n verification: 2 new MATERIAL (L23 rewrite under-specified; TESTING.md L47-70 shape anchor mismatch) — both folded. Per-commit DA ×4: C1 NEEDS FOLD (1 MATERIAL — scan row "Standalone" residue post-restructure sweep miss; folded `7a5e2fc`); C2 READY (2 LOW style nits on grouped rows, deferred); C3 READY; C4 READY. Final-verification DA: READY TO MERGE with 1 Nit (13-vs-14 phase count tension — folded `e5533b1`). Pre-push quality suite green.
-
-**Copilot UNREACHABLE — n=7 consecutive sessions (108-114). Monthly-reset hypothesis DISPROVEN on ≥30-day window.** Signal (a): POST `/requested_reviewers` returned `[]`. Signal (b): timeline at T+4min showed zero `copilot_work_started` events. Surrogate dispatched per `docs/DEVELOPMENT.md §Post-PR flow` step 1.
-
-**Surrogate caught 8 MATERIAL + 2 LOW findings that the entire review stack missed** — all in kept-prose regions the audit never swept. Folded 9 of 10 in `84300ba` (LOW finding 10 on "6 board providers" schemas left as-is; claim is accurate for its scope). Classes: factual-claim-against-code (scan row, terminal deps, hooks/shared, dep-factory shim), structural-claim (installer tree flat-vs-dir, templates/, setup commands count), internal-contradiction (package-table enumerations, registered-hooks list), factual-claim-against-code (installer walk prose). Audit-trail comment posted per protocol contract.
-
-**n=3 surrogate-effectiveness validated.** PR #372 (Session 112) caught 3 MATERIAL; PR #373 (Session 113) caught 3 MATERIAL; PR #374 (Session 114) caught 8 MATERIAL + 2 LOW. All three on drift-fix PRs whose explicit purpose was drift correction. **Promotion-ready and earned** per Session 113 carry-over — codify in `docs/DEVELOPMENT.md §Post-PR flow` as mandatory-on-drift-PR. Ideally bundle into item 1.c (CONVENTIONS) or 1.d (GIT codification) PR.
-
-**Merge routing.** ARCHITECTURE.md NOT on policy-docs blast-radius list at `docs/DEVELOPMENT.md:494`. Diff 136 LOC (under 500 dial), single file, no package.json/workflow touches, `skip-changeset` not needed (docs-only). **Auto-merge-eligible.** However, surrogate-fold scope-expansion (8 MATERIAL findings beyond the original 16-finding spec) widens the effective scope — Alex may prefer review before merge despite technical auto-merge qualification. Flagged for awareness; leaving as Alex-merge default.
-
-**Meta-findings (carry-forward to Session 115+):**
-
-- **Surrogate-effectiveness — n=3 earned.** Codification target: `docs/DEVELOPMENT.md §Post-PR flow` strengthen-to-mandatory-on-drift-fix-PRs. Bundle candidate for item 1.c or 1.d PR.
-- **Cross-doc caller-claim self-check — n=2 unchanged this session.** Still promotion-ready for `docs/DEVELOPMENT.md §Two-phase grill discipline`.
-- **Copilot monthly-reset hypothesis — DISPROVEN on ≥30-day window** (sessions 108-114 span 2026-04-19 to 2026-04-21 at a minimum; if treated as a calendar-month window, the window closes 2026-05-01 so reset might still fire — but the ≥7-consecutive-unreachable pattern means reset-hypothesis-alone is insufficient to explain persistent unreachability). Likely-replacement hypothesis: Copilot PR-review API capability removed or quota permanently at zero for Pushedskydiver. Surrogate fall-through is the permanent answer; the hypothesis matters only for whether to keep attempting the POST before surrogate-dispatch.
-- **Surrogate-fold-scope-expansion risk — novel n=1.** PR #374 grew from 16 findings (original spec) to 26 findings post-surrogate-dispatch. Each kept-prose finding was verified real drift, but the aggregated fold widens effective blast-radius and de-facto invalidates the spec-grill R_n "READY TO MERGE" verdict by introducing content the grill never reviewed. Candidate rule: "when surrogate catches ≥5 MATERIAL in kept prose, re-run spec-grill R_n on the expanded scope before merge routing decision" — or simpler, "scope-expansion of ≥5 MATERIAL makes the PR Alex-merge default regardless of blast-radius list." Watch n=2.
-- **§Archival maintenance preemptive-at-handoff — 12 consecutive applications** (Sessions 104-114). Session 114 archives Session 110.
-- **§Measurement protocol second-10-window data point 2 of 10** (per §Next workstreams item 3). Post-audit window Sessions 113-122.
-
-**Session 114 handoff metrics.** (Data point 2 of second-10-window.)
-
-- Trigger: phase boundary (PR #374 opened + surrogate dispatched + audit comment posted) + ~65-70% context utilization.
-- Context at trigger: ≈65-70% of pre-compaction budget (manual estimate — heavy session: fresh drift audit + 2 spec-grill rounds + 4 per-commit DA dispatches + 1 final-verification DA + surrogate dispatch + 2 soft/fold commits + 7 total commits on branch + cross-doc verifications + this handoff).
-- Handoff turn cost: ≈7-8k tokens (this entry + Session 110 archive row + §Next workstreams rewrite + Session 115 loading instructions).
-- Unplanned compaction: no.
-- Time from "handoff now" decision to next-session first productive tool call: TBD (recorded by Session 115).
-- `PROGRESS.md` quality signal: TBD (recorded by Session 115).
-
-### Session 115 loading instructions
-
-On load:
-
-1. Read `PROGRESS.md` top-to-bottom (this Session 114 entry + §Next workstreams + detailed entries for Sessions 111-114).
-2. **PR #374 status check FIRST.** Run `gh pr view 374 --json state,mergedAt` — expect MERGED. If still OPEN: CI is green, surrogate audit comment posted, awaiting Alex-merge. Note the surrogate-fold scope expansion (spec covered 16 findings; PR #374 ships 26 after surrogate catch). Alex may want to review before merge despite auto-merge technical qualification.
-3. **After #374 merges**, start **item 1.c: CONVENTIONS.md architecture enforcement table + L208 MSW drift + L143 runner/implement ambiguity** per §Next workstreams item 1. Standard protocol: spec-grill R1→R_n → per-commit DA → final-verification DA → self-review → open PR → Copilot (almost certainly still UNREACHABLE — monthly-reset hypothesis disproven) → surrogate fall-through → Alex-merge (CONVENTIONS.md IS on γ.2 policy-docs blast-radius list at `docs/DEVELOPMENT.md:494` — Alex-merge by default).
-4. **Opportunistic bundle candidates for 1.c or 1.d:** surrogate-mandatory-on-drift-PR codification (n=3 earned) + cross-doc caller-claim self-check codification (n=2 earned) + exhaustive-grep short-circuit codification (n=2 earned). Weigh bundle size vs. atomic PR discipline.
-5. **Ship order for remaining doc-sweep** (parallel-safe, disjoint files): 1.c CONVENTIONS (NEXT) → 1.d GIT.md `fix(docs)` codification → 1.e GLOSSARY (needs Alex scope call) → 1.f TESTING.md Layer-2 body section (content PR).
-6. **After item 1 fully ships**, return to Phase 7 (§Next workstreams item 2). First action: 7.3.α Dependabot Security Alerts flip via `gh api` (two PUT calls; not a PR; Alex may need to run if token lacks admin scope). See `.claude/research/dependency-automation/proposals.md §7.3` for locked 4-sub-PR plan.
-7. **Carry-overs from Session 114:**
-   - **Surrogate-effectiveness n=3 earned + promotion-ready.** Bundle into item 1.c or 1.d.
-   - **Surrogate-fold-scope-expansion risk — n=1, novel.** Watch whether 1.c surrogate dispatch catches ≥5 MATERIAL in kept prose; if yes, codify the re-grill rule or the Alex-merge default rule.
-   - **Copilot monthly-reset hypothesis DISPROVEN.** Treat Copilot as permanently unreachable until further evidence. Surrogate is the primary-not-fallback reviewer. The `gh api requested_reviewers` POST can be skipped entirely in routine flows — jump straight to surrogate.
-   - **Cross-doc caller-claim self-check n=2 unchanged.** Still promotion-ready.
-   - **Exhaustive-grep short-circuit n=2 unchanged.** Still promotion-ready.
-   - **§Archival maintenance preemptive-at-handoff — 12 consecutive applications.** Session 115's handoff should archive Session 111 preemptively if the detailed band grows back to N=5 (currently 111-114 = N=4 post-Session-110 archive).
-   - **§Measurement protocol second-10-window data point 2 recorded.** 8 more to second revisit.
-8. **If Alex redirects on load** (priority shift, new urgent ask), follow the redirect — §Next workstreams is a default, not a contract.
+**Session 114 (2026-04-21) — Item 1.b ARCHITECTURE.md second-audit fold shipped. [PR #374](https://github.com/Pushedskydiver/chief-clancy/pull/374) merged `543a385`. Surrogate-effectiveness n=3 earned. Copilot UNREACHABLE n=7; monthly-reset hypothesis DISPROVEN on ≥30-day window.** Archived to [`docs/history/SESSIONS.md`](docs/history/SESSIONS.md); full retrospective in `git log -p PROGRESS.md`.
 
 ---
 
@@ -262,7 +220,7 @@ On load:
 
 ## Session archive
 
-Sessions 78-112 → see [`docs/history/SESSIONS.md`](docs/history/SESSIONS.md). Sessions 1-77 pre-date the per-session PROGRESS.md entry pattern; §Phase ledger below summarises that era by workstream (phase-indexed, not session-indexed); `git log -p PROGRESS.md` has the per-commit retrospective.
+Sessions 78-114 → see [`docs/history/SESSIONS.md`](docs/history/SESSIONS.md). Sessions 1-77 pre-date the per-session PROGRESS.md entry pattern; §Phase ledger below summarises that era by workstream (phase-indexed, not session-indexed); `git log -p PROGRESS.md` has the per-commit retrospective.
 
 ## Phase ledger
 
