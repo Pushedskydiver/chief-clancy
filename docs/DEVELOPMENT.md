@@ -345,6 +345,10 @@ Pilot evidence — three independent runs, different artifact types: Barrier ([P
 
 **Rule-promotion specs — dispatcher-brief requirement.** When the grilled spec promotes a rule into a policy doc (per [§Auto-merge criteria](#auto-merge-criteria) blast-radius list), the dispatch brief must explicitly flag rule-body quantifiers (universal / existential / null), adverbs of confidence, and named identifiers for verification — see [DA-REVIEW §Claim-extraction pass](DA-REVIEW.md#claim-extraction-pass). Without this, the grill scopes retrieval queries to cited code and misses rule-body claims.
 
+**Multi-file-scope retrieval.** When the grilled spec edits more than one file or cites another doc/agent by name, the R1 brief must name every file in scope and direct retrieval queries to each at HEAD — see [DA-REVIEW §Cross-doc consistency sweep](DA-REVIEW.md#cross-doc-consistency-sweep). R1 rounds are observed to scope retrieval to the primary file unless the brief names additional files — Sessions 112/113/115/117 R1/R_n folds all sit in this class.
+
+**Exhaustive-grep short-circuit.** When a round's findings are expressible as matches of a single regex over the PR's HEAD-scope surface (every file the PR touches, read at HEAD — matching the HEAD-scope contract in [`.claude/agents/copilot-surrogate.md`](../.claude/agents/copilot-surrogate.md)), short-circuit further rounds with an exhaustive grep that closes the class in one pass. "Same class" means a regex you can actually run, not "same file" / "same topic" / "similar flavour". Apply on first observation when the regex exists. A zero-finding exhaustive grep is legitimate discovery convergence per the zero-returns affordance above — the next round can be the verification-phase R_n. Evidence — n=2: Session 109 closed an identifier-rename class in one grep over the decisions-docs PR's HEAD-scope (archived as "exhaustive-identifier-grep short-circuit n=1"); Session 112 closed a spec-grill drift-pattern class in one grep over the grill's scope (archived as "Exhaustive-grep grill short-circuit n=2").
+
 ### P2 — one `focus.md` per active workstream
 
 - **Owner (target):** CI gate. Not yet wired.

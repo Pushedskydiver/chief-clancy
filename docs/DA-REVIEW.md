@@ -90,7 +90,13 @@ After any rewrite that changes a load-bearing model (column order, write orderin
 
 ### Cross-doc consistency sweep
 
-When CONVENTIONS.md adds a new category, distinction, or carve-out, sweep every downstream review-gate doc (SELF-REVIEW, DA-REVIEW, copilot-instructions) for existing checklist items that now need the new distinction. Distinct from the intra-file §Post-restructure consistency sweep above; this covers the CONVENTIONS → downstream cascade. Companion: [SELF-REVIEW §Consistency](SELF-REVIEW.md#consistency) covers the apply-rule-to-own-draft companion discipline. A Boundary-folder row added to CONVENTIONS Rule 7 in PR #306 left SELF-REVIEW + DA-REVIEW Rule 7 bullets silently overclaiming ("every new folder passes the wrapper/grouping test") — Copilot caught this on PR #308, but one grep across `docs/{SELF,DA}-REVIEW.md` + `.github/copilot-instructions.md` at CONVENTIONS-edit time would have closed it pre-PR.
+When the current round's scope spans more than one file — via any of (a) downstream-cascade edits (CONVENTIONS → SELF-REVIEW / DA-REVIEW / `.github/copilot-instructions.md`), (b) cited-doc caller-claims (the spec or PR body asserts another doc's content by citation), or (c) co-edited files (a multi-file atomic diff) — read every file in scope at HEAD and verify cross-file consistency. Distinct from the intra-file §Post-restructure consistency sweep above; this covers every cross-file case. Applies at every round that sweeps beyond the primary file — spec-grill R1 retrieval, R_n verification, per-commit DA on a multi-file commit, final-verification DA on a multi-file PR. Companion: [SELF-REVIEW §Consistency](SELF-REVIEW.md#consistency) covers the apply-rule-to-own-draft companion discipline.
+
+Evidence across sub-classes:
+
+- **Downstream cascade** — PR #306 added a Boundary-folder row to CONVENTIONS Rule 7; SELF-REVIEW + DA-REVIEW Rule 7 bullets silently overclaimed ("every new folder passes the wrapper/grouping test"). Copilot caught on PR #308. One grep across `docs/{SELF,DA}-REVIEW.md` + `.github/copilot-instructions.md` at CONVENTIONS-edit time would have closed it pre-PR.
+- **Caller-claim** — Session 112 spec-grill R1 caught a false DA premise about an integration-test claim in `docs/CONVENTIONS.md` (PR #372). Session 113 R1 caught stale citations in `docs/GIT.md` + `docs/DA-REVIEW.md` (PR #373). In both cases the spec body asserted content the cited doc no longer contained.
+- **Co-edit parallel** — Session 115 R1 on PR #375 caught `.github/copilot-instructions.md` parallel false-terminal-allow-list drift alongside the primary `docs/CONVENTIONS.md` table edit. Session 117 R_n on PR #377 caught predicate drift between `docs/DEVELOPMENT.md §Post-PR flow` and `.claude/agents/copilot-surrogate.md` (the co-edit file R1's scope-sweep had missed).
 
 ### Stale forward-reference sweep
 
