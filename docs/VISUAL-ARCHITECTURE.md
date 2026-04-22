@@ -772,7 +772,7 @@ flowchart LR
 
     subgraph Publish["Changesets"]
         Changeset["pnpm changeset\n(create .md file)"] --> Version["changeset version\n(bump versions)"]
-        Version --> GroupCL["group-changelog.ts\n(gitmoji headers)"]
+        Version --> GroupCL["group-changelog.ts\n(regroup gitmoji bullets)"]
         GroupCL --> VersionPR["Version PR\n(auto-created)"]
         VersionPR --> Merge["Merge PR"]
         Merge --> NPM["changeset publish\n→ npm registry"]

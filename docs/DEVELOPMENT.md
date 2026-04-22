@@ -426,7 +426,7 @@ Independent versioning managed by `@changesets/cli`. Coordinated v1.0.0 release 
 1. Include a changeset in your PR: `pnpm changeset`
 2. Squash merge PR to main
 3. Push to main fires the release workflow, which creates a "Version Packages" PR (bumps versions + changelogs)
-4. `scripts/group-changelog.ts` post-processes changelogs with gitmoji category headers
+4. `scripts/group-changelog.ts` post-processes changelogs for `core`, `terminal`, and `chief-clancy` — regroups gitmoji-prefixed bullets under category headers when present (see [GIT.md §Changelog Format](GIT.md#changelog-format))
 5. Merge the version PR → `changesets/action` publishes to npm + creates GitHub Releases
 
 **New packages start private.** Set `"private": true` in `package.json` when scaffolding. Only flip to `false` and add a changeset in the final PR when the package is ready (README written, API stable). This prevents `changesets/action` from auto-publishing before the package is complete.
