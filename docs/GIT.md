@@ -22,7 +22,16 @@ All work branches from `main` and merges back to `main` via PR.
 ### Rules
 
 - **If it runs, it needs a PR.** TypeScript (`packages/*/src/`), tests, executable markdown, package.json, CI config (`.github/`) — always via branch + PR.
-- **If it's only read by humans/agents for context, direct to main is fine — but only when no branch/PR is open.** Decision docs (`docs/decisions/`), glossary, architecture docs (`docs/`), CLAUDE.md doc link updates, README badge/link fixes, typo corrections. If you have an open feature branch, commit doc changes there instead — pushing to main while a branch is open creates divergent history and merge conflicts on squash merge.
+- **If it's only read by humans/agents for context, direct to main is fine — but only when no branch/PR is open.** Decision docs (`docs/decisions/`), glossary, architecture docs (`docs/`), CLAUDE.md doc link updates, README badge/link fixes, typo corrections, and `fix(docs)` drift-fix commits meeting the predicate below. If you have an open feature branch, commit doc changes there instead — pushing to main while a branch is open creates divergent history and merge conflicts on squash merge.
+
+**`fix(docs)` drift-fix predicate — all four must hold:**
+
+1. **Not executable markdown.** The file is read for context, not executed as a command or workflow. The definition below covers the exclusion list. When the edit touches any file under that list, use the PR flow.
+2. **Grep-falsifiable drift.** The edit corrects a claim provable false by `grep`/`read` against code, `pnpm-lock.yaml`, an npm registry, or another on-disk ground-truth source. Applies to factual drift (wrong filename, wrong line number, stale version pin, miscounted enumeration, superseded behaviour claim). Does not apply to taste changes, new rule additions, or rule-body rewrites — those need PR review regardless of size.
+3. **Low-LOC.** LOC touched (insertions + deletions per `git show --numstat`) ≤ 50 across all files in the commit (dial; adjust if a cluster of clean direct-to-main commits consistently runs larger).
+4. **Not on the policy-doc blast-radius list** at [`docs/DEVELOPMENT.md §Auto-merge criteria`](DEVELOPMENT.md#auto-merge-criteria) — currently `/CLAUDE.md`, `/docs/DEVELOPMENT.md`, `/docs/DA-REVIEW.md`, `/docs/SELF-REVIEW.md`, `/docs/CONVENTIONS.md`, `/docs/RATIONALIZATIONS.md`, `/docs/GIT.md`, `/docs/TESTING.md`. Drift-fixes on those docs go through the PR flow (Alex-merge). The list is the source of truth; re-check it rather than recite from memory.
+
+When any predicate fails, use the PR flow.
 
 **What is "executable markdown"?** Any markdown file containing instructions that Claude will execute as part of a command or workflow:
 
@@ -31,7 +40,7 @@ All work branches from `main` and merges back to `main` via PR.
 - `packages/terminal/src/templates/CLAUDE.md` — template injected into user projects
 - `packages/terminal/src/agents/*.md` — agent prompts
 
-Docs in `docs/` are informational — Claude reads them for context but doesn't execute them as commands. They're safe for direct-to-main.
+Docs in `docs/` are informational — Claude reads them for context but doesn't execute them as commands. They're outside the "if it runs, it needs a PR" carve-out above; direct-to-main eligibility follows the `fix(docs)` predicate (the blast-radius predicate above carves out policy-doc blast-radius files as PR-required).
 
 - Delete branches after merging
 - CI must pass before merging
