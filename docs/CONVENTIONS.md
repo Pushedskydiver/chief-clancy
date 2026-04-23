@@ -57,10 +57,7 @@ If this meta grows beyond ~400 words or ~1 page, promote to a future `docs/AUTHO
 | `scan`                     | `scan`                        |
 | `dev`                      | `dev`, `core`                 |
 | `terminal`                 | `terminal`, `core`, `dev`     |
-| `chat`¹                    | `chat`, `core`                |
 | `wrapper` (`chief-clancy`) | `wrapper`, `terminal`, `plan` |
-
-¹ `chat` is registered in `eslint.config.ts`; `packages/chat/` does not exist on disk today.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for dependency-direction rationale.
 
