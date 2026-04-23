@@ -20,10 +20,10 @@ Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash comman
 
 ## Architecture rules
 
-- **Core imports nothing from terminal, brief, plan, or chat** — enforced by eslint-plugin-boundaries
-- **Brief and plan are fully standalone** — no imports from core, terminal, or chat
+- **Core imports nothing from terminal, brief, plan, dev, or scan** — enforced by eslint-plugin-boundaries
+- **Brief, plan, and scan are fully standalone** — no core/terminal deps
 - **Terminal imports from core and dev** — enforced by eslint-plugin-boundaries
-- **Dependency direction:** core ← terminal ← chief-clancy wrapper. Brief and plan are standalone (no core/terminal deps)
+- **Dependency direction:** core ← dev ← terminal ← chief-clancy wrapper. Brief, plan, and scan are standalone (no core/terminal deps)
 - **Brief and plan have three installation modes:** standalone (no board), standalone+board (credentials via `/clancy:board-setup`), terminal (full pipeline via `npx chief-clancy`). Detection uses `.clancy/.env` + `.clancy/clancy-implement.js` presence
 
 ## Code conventions
@@ -129,7 +129,7 @@ Code is organised by **capability directories** that map to future packages. See
 | ---------------------------------- | -------------- | ----------------------------------------------------------------------------------- |
 | `packages/terminal/src/installer/` | terminal       | Installer modules                                                                   |
 | `packages/terminal/src/roles/`     | terminal       | 3 on-disk roles (implementer, reviewer, setup) — planner and strategist are virtual |
-| `packages/terminal/src/agents/`    | terminal       | 7 agent prompts                                                                     |
+| `packages/terminal/src/agents/`    | terminal       | 2 agent prompts (`devils-advocate`, `verification-gate`)                            |
 | `packages/terminal/src/shared/`    | terminal       | Terminal utilities (ansi, prompt, notify)                                           |
 | `packages/terminal/src/hooks/`     | terminal       | Pre-built CommonJS hooks                                                            |
 
