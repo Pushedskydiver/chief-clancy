@@ -296,7 +296,7 @@ This is a monorepo with seven packages:
 | [`@chief-clancy/plan`](./packages/plan)         | Standalone implementation planner — `npx @chief-clancy/plan`               |
 | [`@chief-clancy/dev`](./packages/dev)           | Standalone ticket executor — `npx @chief-clancy/dev`                       |
 
-Dependency direction: `core` ← `dev` ← `terminal` ← `chief-clancy`. Brief and plan are standalone (no core/terminal deps). Scan is a shared content package consumed by dev, brief, plan, and terminal. See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full module map.
+Dependency direction: `core` ← `dev` ← `terminal` ← `chief-clancy`. Brief, plan, and scan are standalone (no core/terminal deps). See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full module map.
 
 ---
 
