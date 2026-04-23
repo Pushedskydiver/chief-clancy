@@ -26,7 +26,7 @@ Seven packages. Dependency direction is strict: `core ← dev ← terminal ← c
 
 - `scan` — no package dependencies
 - `brief` and `plan` — standalone (declare `scan` as a workspace sibling for installer sequencing only; zero code imports from scan)
-- `dev` — depends on `core` and `scan` (uses `core` for board integrations, schemas, shared utilities)
+- `dev` — imports from `core` (board integrations, schemas, shared utilities); declares `scan` as a workspace sibling for installer sequencing only (zero code imports from scan)
 
 No reverse imports. Enforced by eslint-plugin-boundaries.
 
@@ -71,7 +71,7 @@ graph TD
         scanAgents["agents/ (5 specialists)"]
     end
 
-    subgraph dev["@chief-clancy/dev (standalone from terminal — uses core + scan)"]
+    subgraph dev["@chief-clancy/dev (standalone from terminal — imports core; bundles scan assets)"]
         devInstaller["installer/"]
         devPipeline["pipeline/\n(phase orchestrator)"]
         devLifecycle["lifecycle/\n(ticket lifecycle modules)"]
