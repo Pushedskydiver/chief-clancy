@@ -5,7 +5,7 @@ Clancy uses a 3-layer QA architecture: unit tests (co-located across five packag
 ## Quick reference
 
 ```bash
-pnpm test                        # All unit tests (via Turbo, for every package with a `test` script)
+pnpm test                        # All tests (unit + integration; via Turbo, for every package with a `test` script)
 pnpm typecheck                   # tsc --noEmit (all packages)
 pnpm lint                        # ESLint (all packages)
 
@@ -27,10 +27,10 @@ Module-level tests with `vi.mock()`. Co-located with source files across all fiv
 ### How to run
 
 ```bash
-pnpm test                                            # all unit tests
+pnpm test                                            # all tests across all packages (unit + terminal integration)
 pnpm vitest run packages/core/src/board              # subset by path (core)
 pnpm vitest run packages/dev/src/lifecycle           # subset by path (dev)
-pnpm vitest run packages/terminal/src/installer      # subset by path (terminal)
+pnpm vitest run packages/terminal/src/installer      # subset by path (terminal unit tests)
 ```
 
 ### File structure
@@ -92,7 +92,56 @@ Used across `core/shared` (env-parser, remote), `dev/lifecycle/*`, `dev/prompt-b
 
 ---
 
-## Layer 2: E2E tests
+## Layer 2: Integration tests
+
+Multi-module tests with real filesystem, git, and bundle output — external HTTP mocked via DI at the boundary. Terminal-only; lives under `packages/terminal/test/integration/` and runs as part of `pnpm test` (no separate command).
+
+### How to run
+
+```bash
+cd packages/terminal
+pnpm test                                                              # all terminal tests (units + integration)
+pnpm vitest run test/integration                                       # integration only
+pnpm vitest run test/integration/pipeline                              # one subdirectory
+pnpm vitest run test/integration/pipeline/github-happy-path.test.ts    # one file
+```
+
+### File structure
+
+```
+packages/terminal/test/integration/
+├── bundle/
+│   └── runtime-smoke.test.ts              — dist/bundle ESM runtimes load without crashing
+├── hooks/
+│   └── bundle-smoke.test.ts               — dist/hooks CJS hooks load; PreToolUse subset verifies JSON decision output
+├── installer/
+│   └── install.test.ts                    — full `runInstall` against real temp dirs
+└── pipeline/
+    ├── github-happy-path.test.ts          — 13-phase pipeline, GitHub board, canned responses
+    ├── jira-happy-path.test.ts            — Jira board
+    ├── linear-happy-path.test.ts          — Linear board
+    ├── shortcut-happy-path.test.ts        — Shortcut board
+    ├── notion-happy-path.test.ts          — Notion board
+    ├── azdo-happy-path.test.ts            — Azure DevOps board
+    ├── pipeline-abort-scenarios.test.ts   — preflight fail, lock contention, feasibility abort, env validation
+    └── pipeline-helpers.ts                — shared pipeline fixture (temp repo + DI fetcher + Claude simulator)
+```
+
+### How they work
+
+- **Real intra-process boundaries, canned external APIs.** Integration tests use dependency injection at the HTTP boundary — a mock fetcher returns canned board-API responses — while everything inside the boundary is real: filesystem, git (temp repos with bare remotes), child_process for hook bundle loading, actual esbuild output for bundle smoke.
+- **Bundle smoke** (`bundle/` + `hooks/`) loads each `dist/bundle/*.js` (ESM runtime scripts) and `dist/hooks/*.js` (CJS hooks) and catches bundling regressions — missing imports, broken tree-shaking, zod locale stub issues, CJS format errors. Requires `pnpm build` to have run first.
+- **Installer** (`installer/install.test.ts`) exercises `runInstall` against real temp directories: manifests are validated, backups exercised, fresh installs and updates both covered.
+- **Pipeline** (`pipeline/*-happy-path.test.ts`) creates a real temp git repo with a bare remote, injects a canned board-API fetcher, simulates Claude via the `claude-simulator` helper, and asserts the full 13-phase pipeline produces the expected side effects (branches, lock cleanup, progress entries). Per-board happy-paths share infrastructure via `pipeline-helpers.ts`. Quality, cost, and progress files are all wired via DI-injected adapters (see `pipeline-helpers.ts`), but only branches/lock/progress are asserted in the happy-path suite.
+- **Abort scenarios** (`pipeline/pipeline-abort-scenarios.test.ts`) cover the paths not reached by per-board happy-paths: preflight ping failure, feasibility `INFEASIBLE`, active-session lock contention, stale-lock cleanup, unsafe env input validation.
+
+### Distinct from Layer 1 / Layer 3
+
+Where unit tests (Layer 1) verify a single module in isolation with `vi.mock()` and E2E tests (Layer 3) hit real board APIs with real tickets, Layer 2 sits between: multiple modules composed, real intra-process infrastructure, canned external infrastructure. Runs on every CI (no credentials needed, no scheduled cron); catches regressions Layer 1 can't (bundle output, pipeline wiring, lock contention) and Layer 3 can't catch early enough (every-PR feedback rather than weekly).
+
+---
+
+## Layer 3: E2E tests
 
 Real APIs, real git operations, real ticket creation. Tests exercise the full pipeline against production board APIs with Claude simulated.
 
