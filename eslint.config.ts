@@ -50,7 +50,6 @@ export default defineConfig(
         { type: 'dev', pattern: 'packages/dev/*' },
         { type: 'scan', pattern: 'packages/scan/*' },
         { type: 'terminal', pattern: 'packages/terminal/*' },
-        { type: 'chat', pattern: 'packages/chat/*' },
         { type: 'wrapper', pattern: 'packages/chief-clancy/*' },
       ],
     },
@@ -129,10 +128,6 @@ export default defineConfig(
                 { to: { type: 'core' } },
                 { to: { type: 'dev' } },
               ],
-            },
-            {
-              from: { type: 'chat' },
-              allow: [{ to: { type: 'chat' } }, { to: { type: 'core' } }],
             },
             {
               from: { type: 'wrapper' },
