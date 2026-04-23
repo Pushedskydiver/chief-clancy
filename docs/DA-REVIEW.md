@@ -160,8 +160,8 @@ Workflow `.md` files in `src/{commands,workflows,agents}/` are runtime artifacts
 
 ## Architecture & imports
 
-- [ ] No cross-package imports violating dependency direction (core ← terminal ← wrapper)
-- [ ] No boundary violations (core importing from terminal or chat)
+- [ ] No cross-package imports violating dependency direction (core ← dev ← terminal ← wrapper)
+- [ ] No boundary violations (core importing from terminal, brief, plan, dev, scan, or chief-clancy)
 - [ ] Should this be exported? Who calls it? If exported from a **package-entry `src/index.ts`**, is it genuinely cross-package public API? Internal modules consumed via `~/` deep imports should not appear in the package-entry barrel.
 - [ ] New public exports land at the correct surface: cross-package library consumers import from `src/index.ts`; `core/` additionally exposes deep paths under its wildcard subtrees. No new internal `index.ts` barrels under `src/` — see [Folder structure](#folder-structure) below.
 

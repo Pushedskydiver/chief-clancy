@@ -22,7 +22,7 @@ Interactive diagrams showing how packages, roles, commands, and flows connect. R
 
 ## 1. Package Boundaries
 
-Seven packages. Dependency direction is strict: `core ← terminal ← chief-clancy`. The standalone packages each have their own `npx @chief-clancy/{pkg}` entry point and can be installed independently of `terminal`:
+Seven packages. Dependency direction is strict: `core ← dev ← terminal ← chief-clancy`. The standalone packages each have their own `npx @chief-clancy/{pkg}` entry point and can be installed independently of `terminal`:
 
 - `scan` — no package dependencies
 - `brief` and `plan` — standalone (declare `scan` as a workspace sibling for installer sequencing only; zero code imports from scan)

@@ -40,7 +40,7 @@ See [package evolution strategy](decisions/PACKAGE-EVOLUTION.md) for the target 
 
 Package-scope decisions satisfy two independent constraints — layering AND cohesion. Check both before locking.
 
-1. **Layering** (dependency direction): does this introduce a forbidden import? Drag heavy deps into a light-deps package? Cross the documented `core ← terminal ← chief-clancy` chain?
+1. **Layering** (dependency direction): does this introduce a forbidden import? Drag heavy deps into a light-deps package? Cross the documented `core ← dev ← terminal ← chief-clancy` chain?
 2. **Cohesion** (package focus): does this match what the package is _for_? Would a reader of the package's README expect to find this command here?
 
 Layering violations break the build (hard constraint). Cohesion violations pass the build but accumulate scope creep (soft constraint). Both matter; cohesion is easier to ignore because nothing breaks immediately — locked-decision docs become load-bearing and the missing constraint propagates across every PR built on top.
