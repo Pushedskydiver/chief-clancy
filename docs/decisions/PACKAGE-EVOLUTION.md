@@ -32,12 +32,12 @@ scan        (zero runtime deps — markdown/asset-only)
 
 core        (domain model, types, schemas, board APIs, shared utilities)
 
-brief    ← scan                 (prompt + markdown installer; no core import in current shape)
-plan     ← scan                 (prompt + markdown installer; no core import in current shape)
+brief    ← scan                 (prompt + markdown installer; scan is workspace-asset-only, zero code imports)
+plan     ← scan                 (prompt + markdown installer; scan is workspace-asset-only, zero code imports)
 design                          (future — scope TBD)
-dev      ← core, scan, zod      (pipeline, lifecycle, executor)
+dev      ← core, scan           (pipeline, lifecycle, executor — imports core; scan is workspace-asset-only, zero code imports)
 
-terminal ← core, dev            (installer + hooks + runners; transitively uses scan via dev)
+terminal ← core, dev            (installer + hooks + runners)
 chat                            (future — sibling to terminal, not a chain)
 cli                             (future — interactive install wizard)
 ```

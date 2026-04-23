@@ -15,16 +15,16 @@ chief-clancy                  — CLI wrapper (npx chief-clancy)
         └── @chief-clancy/dev  — pipeline, lifecycle, executor runtime
 
 Own npx entry (install independently of terminal):
-@chief-clancy/brief           — depends on scan
-@chief-clancy/plan            — depends on scan
-@chief-clancy/dev             — depends on core + scan (ticket executor runtime)
+@chief-clancy/brief           — strategic brief generator (bundles scan assets at install)
+@chief-clancy/plan            — implementation planner (bundles scan assets at install)
+@chief-clancy/dev             — ticket executor runtime; imports core (bundles scan assets at install)
 
 Library/asset-only (bundled into consumer installers — no npx, no installer):
 @chief-clancy/scan            — agents/commands/workflows distribution
 @chief-clancy/core            — board abstractions, schemas, shared utilities
 ```
 
-**Dependency direction: core ← dev ← terminal ← chief-clancy.** `brief`, `plan`, and `dev` each ship their own `npx @chief-clancy/{pkg}` entry and installer surface. `scan` and `core` are library/asset-only and flow into consumer installers. Dep chain: `scan` has no package deps; `brief` and `plan` depend on `scan`; `dev` depends on `core` and `scan`. No reverse imports. Enforced by `eslint-plugin-boundaries`.
+**Dependency direction: core ← dev ← terminal ← chief-clancy.** `brief`, `plan`, and `dev` each ship their own `npx @chief-clancy/{pkg}` entry and installer surface. `scan` and `core` are library/asset-only and flow into consumer installers. Import layer (ESLint-enforced): `scan`, `brief`, and `plan` import nothing cross-package; `dev` imports `core`; `terminal` imports `core` and `dev`; `chief-clancy` imports `terminal` and `plan`. Workspace layer: `brief`, `plan`, and `dev` declare `scan` as a workspace dep for installer-time asset bundling (no TypeScript imports from scan). No reverse imports. Enforced by `eslint-plugin-boundaries`.
 
 | Package                  | Purpose                                                                                                                                                                       | Published      |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
