@@ -24,7 +24,7 @@ Library/asset-only (bundled into consumer installers — no npx, no installer):
 @chief-clancy/core            — board abstractions, schemas, shared utilities
 ```
 
-**Dependency direction: core ← terminal ← chief-clancy.** `brief`, `plan`, and `dev` each ship their own `npx @chief-clancy/{pkg}` entry and installer surface. `scan` and `core` are library/asset-only and flow into consumer installers. Dep chain: `scan` has no package deps; `brief` and `plan` depend on `scan`; `dev` depends on `core` and `scan`. No reverse imports. Enforced by `eslint-plugin-boundaries`.
+**Dependency direction: core ← dev ← terminal ← chief-clancy.** `brief`, `plan`, and `dev` each ship their own `npx @chief-clancy/{pkg}` entry and installer surface. `scan` and `core` are library/asset-only and flow into consumer installers. Dep chain: `scan` has no package deps; `brief` and `plan` depend on `scan`; `dev` depends on `core` and `scan`. No reverse imports. Enforced by `eslint-plugin-boundaries`.
 
 | Package                  | Purpose                                                                                                                                                                       | Published      |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
