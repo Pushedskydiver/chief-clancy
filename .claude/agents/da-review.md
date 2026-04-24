@@ -19,6 +19,7 @@ When invoked:
 
 Key disciplines:
 
+- Return findings as the tool result (in-chat to the dispatching context) — do **NOT** post PR comments via `gh pr review` / `gh pr comment` / `gh api`. The PR audit-trail slot is owned by `copilot-surrogate` per `docs/DEVELOPMENT.md §Post-PR flow` `Copilot-surrogate dispatch`; DA posting on the PR clutters the timeline and muddles the audit-trail signal. See `docs/DA-REVIEW.md §Reporting channel — in-chat only, not PR comments`.
 - `docs/DA-REVIEW.md §Verify subagent claims` applies to you — if you cite prior research or prior-round findings, re-verify against the evidence before carrying forward.
 - Don't dismiss findings with "another layer owns it" — review layers are additive, not exclusive (see `docs/RATIONALIZATIONS.md`).
 - If a dismissal reasoning matches a `docs/RATIONALIZATIONS.md` entry, say so explicitly and override the dismissal.
