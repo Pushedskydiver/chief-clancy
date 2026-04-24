@@ -27,6 +27,7 @@ Seven packages. Dependency direction is strict: `core ← dev ← terminal ← c
 - `scan` — no package dependencies
 - `brief` and `plan` — standalone (declare `scan` as a workspace sibling for installer sequencing only; zero code imports from scan)
 - `dev` — imports from `core` (board integrations, schemas, shared utilities); declares `scan` as a workspace sibling for installer sequencing only (zero code imports from scan)
+- `chief-clancy` — CLI wrapper delegating to `terminal`'s `runInstall`; declares `scan` as a workspace sibling to resolve scan asset paths and pass them into `runInstall` (zero code imports from scan)
 
 No reverse imports. Enforced by eslint-plugin-boundaries.
 

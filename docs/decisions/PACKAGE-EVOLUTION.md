@@ -38,6 +38,7 @@ design                          (future — scope TBD)
 dev      ← core, scan           (pipeline, lifecycle, executor — imports core; scan is workspace-asset-only, zero code imports)
 
 terminal ← core, dev            (installer + hooks + runners)
+chief-clancy ← terminal, brief, plan, scan  (CLI wrapper; delegates to terminal's runInstall, passes brief + plan + scan asset paths)
 chat                            (future — sibling to terminal, not a chain)
 cli                             (future — interactive install wizard)
 ```
