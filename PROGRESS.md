@@ -106,15 +106,16 @@ On load:
    - If Dependabot has opened ≥1 security-advisory PR during β: prioritise triaging. Route via existing blast-radius Alex-handoff. Pnpm-v10 two-page-disagreement resolved toward `/supported-ecosystems-and-repositories` if PRs fire.
    - If still no Dependabot activity: β window continues through 2026-05-07. γ doesn't ship until window elapses OR earlier live-fire evidence.
    - If γ is ready to ship: follow `.claude/research/dependency-automation/proposals.md §7.3.γ`. γ is blast-radius → Alex-merge.
-5. **All named + novel carry-forwards from Sessions 126-127 are resolved.** Nothing in the drift-fix backlog to work on unless new drift surfaces. If Alex redirects to an adjacent observation from Session 127:
+5. **READBACK BEFORE ACTION** (new Session 128 discipline, extends loading-instruction-course-correction n=3 from reactive to proactive). After completing steps 1-4 (read PROGRESS.md; Dependabot check; decision-branch selection), produce a 3-5 sentence readback to Alex summarising: (a) your understanding of current state as loaded, (b) which decision branch from step 4 applies, (c) your proposed first concrete action. **WAIT for Alex confirmation** before any edits, PR actions, or subagent dispatches. This catches assumption drift at the earliest point, before work commits. If Alex pushes back, course-correct before acting — do not proceed on stale loading-instructions.
+6. **All named + novel carry-forwards from Sessions 126-127 are resolved.** Nothing in the drift-fix backlog to work on unless new drift surfaces. If Alex redirects to an adjacent observation from Session 127:
    - `docs/ARCHITECTURE.md:27` workspace-layer sentence omits chief-clancy from scan-declarers list. Pre-existing from PR #393. Would require widening the 3-way taxonomy to 4-way; coordinated edit across ARCHITECTURE L18-20, L27, VISUAL-ARCHITECTURE L28-29, PACKAGE-EVOLUTION L35-38, scan/package.json:4. Medium-scope; auto-merge-eligible (no blast-radius touched).
    - `packages/scan/README.md:7` 5-way consumer enumeration outlier vs 3-way taxonomy in 4 sibling docs. Pre-existing. Single-file edit, auto-merge-eligible.
-6. **Protocol discipline reminders (held through Session 127; do not forget):**
+7. **Protocol discipline reminders (held through Session 127; do not forget):**
    - Surrogate is a PR-side review step, not Claude-side verification. Dispatch during the review gate (after push, as part of `docs/DEVELOPMENT.md §Post-PR flow` step 1), NOT post-merge. For mandatory-on-drift-fix PRs (commit type `fix(docs)` / `fix(decisions)`), dispatch is required even when Copilot UNREACHABLE.
    - Post the surrogate audit comment on the PR before merge. Per `docs/DEVELOPMENT.md:450` — "the comment is the audit trail". Consuming findings in-chat without posting the audit comment skips the durable trail.
    - Synonym-variant grep. When sweeping a named-edge claim (e.g. dependency chain, import direction) across docs, enumerate known synonyms AND arrow-form / phrase-form variants and OR them into the pattern. Session 127's n=2 caught PACKAGE-EVOLUTION.md's arrow form that the phrase-form grep missed. Watch n=3.
-7. **Re-verify blast-radius status** at load for any file you plan to touch — loading-instruction-course-correction n=3 discipline applies. Primary sources: `docs/DEVELOPMENT.md §Auto-merge criteria §Exceptions` (L499-503) + `.github/CODEOWNERS §Policy surfaces`.
-8. **Carry-overs from Session 127:**
+8. **Re-verify blast-radius status** at load for any file you plan to touch — loading-instruction-course-correction n=3 discipline applies. Primary sources: `docs/DEVELOPMENT.md §Auto-merge criteria §Exceptions` (L499-503) + `.github/CODEOWNERS §Policy surfaces`.
+9. **Carry-overs from Session 127:**
    - Phase 7 β window open through ≥2026-05-07. 0 Dependabot PRs at session close.
    - Kept-prose cross-doc drift — **n=4 PROMOTION-READY.** Past threshold; Alex-initiated rule-body codification PR when ready.
    - Synonym-variant grep gap — n=2. Watch n=3.
@@ -127,7 +128,7 @@ On load:
    - Copilot UNREACHABLE n=18. Skip POST.
    - §Archival maintenance — 25 consecutive applications. Session 128 handoff archives Session 124 if detail band grows to N=5.
    - §Measurement protocol third-10-window — data point 5 recorded.
-9. **If Alex redirects on load** (priority shift, new urgent ask), follow the redirect — §Next workstreams is a default, not a contract.
+10. **If Alex redirects on load** (priority shift, new urgent ask), follow the redirect — §Next workstreams is a default, not a contract.
 
 ---
 
