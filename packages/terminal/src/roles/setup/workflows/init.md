@@ -847,19 +847,7 @@ Which Jira status should Clancy pick planning tickets from?
 If [1]: store `CLANCY_PLAN_STATUS="Backlog"` in `.clancy/.env`.
 If [2]: prompt for the value, store as `CLANCY_PLAN_STATUS` in `.clancy/.env`. Wrap in double quotes.
 
-**GitHub:** Output:
-
-```
-The Planner role picks issues from a separate queue for planning.
-
-Which GitHub label should Clancy pick planning issues from?
-
-[1] needs-refinement (default)
-[2] Enter a different label name
-```
-
-If [1]: store `CLANCY_LABEL_PLAN="needs-refinement"` in `.clancy/.env`.
-If [2]: prompt for the value, store as `CLANCY_LABEL_PLAN` in `.clancy/.env`. Wrap in double quotes.
+**GitHub:** Skip — GitHub has no separate queue concept. The planning queue is the `CLANCY_LABEL_PLAN` label already captured in Step 4c-2 (Pipeline Labels). No additional prompt.
 
 **Linear:** Output:
 
