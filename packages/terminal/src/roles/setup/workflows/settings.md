@@ -104,12 +104,10 @@ Pipeline Labels
   {If CLANCY_LABEL or CLANCY_PLAN_LABEL set:}
   ⚠ CLANCY_LABEL and CLANCY_PLAN_LABEL are deprecated. Use CLANCY_LABEL_BUILD and CLANCY_LABEL_PLAN.
 
-{If Planner enabled:}
+{If Planner enabled AND (Jira OR Linear):}
 Planner
 {If Jira:}
   [P1] Plan queue status  {CLANCY_PLAN_STATUS:-Backlog}
-{If GitHub:}
-  [P1] Plan label         {CLANCY_LABEL_PLAN:-needs-refinement}
 {If Linear:}
   [P1] Plan state type    {CLANCY_PLAN_STATE_TYPE:-backlog}
 {If Jira:}
@@ -666,22 +664,6 @@ Common values: Backlog, To Refine, Unrefined
 
 If [1]: remove `CLANCY_PLAN_STATUS` from `.clancy/.env` (uses default).
 If [2]: prompt `What status name should /clancy:plan fetch from?` then write `CLANCY_PLAN_STATUS=<value>` to `.clancy/.env`.
-
----
-
-### [P1] Plan label (GitHub only)
-
-```
-Plan label — current: {value or "needs-refinement"}
-Which label marks issues for /clancy:plan to refine?
-Create this label in GitHub first if it doesn't exist.
-
-[1] needs-refinement (default)
-[2] Enter a different label name
-```
-
-If [1]: remove `CLANCY_LABEL_PLAN` from `.clancy/.env` (uses default).
-If [2]: prompt `What label should /clancy:plan filter by?` then write `CLANCY_LABEL_PLAN=<value>` to `.clancy/.env`.
 
 ---
 
