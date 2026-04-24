@@ -69,7 +69,7 @@ Clancy moves tickets on your board when it picks up and completes implementation
 
 **Linear:** Set these to the exact workflow state name shown in your Linear team settings (e.g. "In Progress", "Done", "Ready for Review").
 
-**GitHub:** Issues don't have status columns — they're `open` or `closed`. Clancy uses **labels as queues** (e.g. `needs-refinement` → `clancy`) and closes issues on completion. Status transition env vars are ignored for GitHub.
+**GitHub:** Issues don't have status columns — they're `open` or `closed`. Clancy uses **labels as queues** (e.g. `clancy:plan` → `clancy:build`) and closes issues on completion. Status transition env vars are ignored for GitHub.
 
 **Shortcut:** Set these to the exact workflow state name (e.g. "In Progress", "Done"). Clancy resolves the `workflow_state_id` via the workflows API.
 

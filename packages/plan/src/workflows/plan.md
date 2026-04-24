@@ -450,7 +450,7 @@ RESPONSE=$(curl -s \
   "https://api.github.com/repos/$GITHUB_REPO/issues?state=open&assignee=$GITHUB_USERNAME&labels=$CLANCY_LABEL_PLAN&per_page=<N>")
 ```
 
-- `CLANCY_LABEL_PLAN` is the pipeline label for the planning queue (default: `clancy:plan`). Falls back to `CLANCY_PLAN_LABEL` if `CLANCY_LABEL_PLAN` is not set. If neither is set, defaults to `needs-refinement`.
+- `CLANCY_LABEL_PLAN` is the pipeline label for the planning queue (recommended: `clancy:plan`). Falls back to `CLANCY_PLAN_LABEL` if `CLANCY_LABEL_PLAN` is not set. If neither is set, no label filter is applied.
 - Filter out PRs (entries with `pull_request` key)
 - For each issue, fetch comments: `GET /repos/$GITHUB_REPO/issues/{number}/comments`
 
@@ -500,7 +500,7 @@ query {
 Build a WIQL query using planning-specific env vars:
 
 - `CLANCY_PLAN_STATUS` defaults to `New` if not set (Azure DevOps uses `New`, `Active`, `Resolved`, `Closed`, `Removed`)
-- Tag clause: include `AND [System.Tags] CONTAINS '$CLANCY_LABEL_PLAN'` if `CLANCY_LABEL_PLAN` is set (falls back to `CLANCY_PLAN_LABEL`). If neither is set, defaults to `clancy:plan`.
+- Tag clause: include `AND [System.Tags] CONTAINS '$CLANCY_LABEL_PLAN'` if `CLANCY_LABEL_PLAN` is set (falls back to `CLANCY_PLAN_LABEL`). If neither is set, omit the tag clause — matches the bracketed `[AND [System.Tags] CONTAINS ...]` shape of the full WIQL below.
 - Assigned to: `AND [System.AssignedTo] = @Me`
 
 Full WIQL: `SELECT [System.Id] FROM WorkItems WHERE [System.TeamProject] = '$AZDO_PROJECT' AND [System.State] = '$CLANCY_PLAN_STATUS' [AND [System.Tags] CONTAINS '$CLANCY_LABEL_PLAN'] AND [System.AssignedTo] = @Me ORDER BY [Microsoft.VSTS.Common.Priority] ASC`
@@ -624,7 +624,7 @@ If no tickets found:
 
 Then display board-specific guidance:
 
-- **GitHub:** `For GitHub: planning uses the "$CLANCY_LABEL_PLAN" label (default: clancy:plan, fallback: $CLANCY_PLAN_LABEL or needs-refinement). Apply that label to issues you want planned.`
+- **GitHub:** `For GitHub: planning uses the "$CLANCY_LABEL_PLAN" label (default: clancy:plan; legacy fallback: $CLANCY_PLAN_LABEL). Apply that label to issues you want planned.`
 - **Jira:** `Check that CLANCY_PLAN_STATUS (currently: "$CLANCY_PLAN_STATUS") matches a status in your Jira project, and that tickets in that status are assigned to you.`
 - **Linear:** `Check that CLANCY_PLAN_STATE_TYPE (currently: "$CLANCY_PLAN_STATE_TYPE") is a valid Linear state type (backlog, unstarted, started, completed, canceled, triage), and that tickets in that state are assigned to you in team $LINEAR_TEAM_ID.`
 - **Azure DevOps:** `Check that CLANCY_PLAN_STATUS (currently: "${CLANCY_PLAN_STATUS || 'New'}") matches a state in your Azure DevOps project, and that work items in that state are assigned to you. Tag "${CLANCY_LABEL_PLAN || 'clancy:plan'}" must be applied.`

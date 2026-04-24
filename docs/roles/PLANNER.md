@@ -135,14 +135,14 @@ Existing behaviour, unchanged. Board ticket transport, queue transitions, and th
 
 The planner fetches from a **separate queue** to the implementer, targeting earlier-stage tickets:
 
-| Board        | Default filter                   | Env var to customise     |
-| ------------ | -------------------------------- | ------------------------ |
-| Jira         | `status = "Backlog"`             | `CLANCY_PLAN_STATUS`     |
-| GitHub       | Label: `needs-refinement`        | `CLANCY_PLAN_LABEL`      |
-| Linear       | `state.type: "backlog"`          | `CLANCY_PLAN_STATE_TYPE` |
-| Shortcut     | Workflow state type: `"backlog"` | `CLANCY_PLAN_STATE_TYPE` |
-| Notion       | Status property filter           | `CLANCY_PLAN_STATUS`     |
-| Azure DevOps | Work item state filter           | `CLANCY_PLAN_STATUS`     |
+| Board        | Default filter                               | Env var to customise                                    |
+| ------------ | -------------------------------------------- | ------------------------------------------------------- |
+| Jira         | `status = "Backlog"`                         | `CLANCY_PLAN_STATUS`                                    |
+| GitHub       | Label: `clancy:plan` (or `needs-refinement`) | `CLANCY_LABEL_PLAN` (falls back to `CLANCY_PLAN_LABEL`) |
+| Linear       | `state.type: "backlog"`                      | `CLANCY_PLAN_STATE_TYPE`                                |
+| Shortcut     | Workflow state type: `"backlog"`             | `CLANCY_PLAN_STATE_TYPE`                                |
+| Notion       | Status property filter                       | `CLANCY_PLAN_STATUS`                                    |
+| Azure DevOps | Work item state filter                       | `CLANCY_PLAN_STATUS`                                    |
 
 `CLANCY_PLAN_STATE_TYPE` accepts one of: `backlog`, `unstarted`, `started`, `completed`, `canceled`, `triage`.
 
@@ -161,7 +161,7 @@ Additional filters vary by board:
 
 **GitHub:** Issues don't have status columns — they're either `open` or `closed`. Clancy uses **labels as queues** instead:
 
-1. **You** add the `needs-refinement` label to issues you want planned (this is a manual step)
+1. **You** add the `clancy:plan` label (or `needs-refinement` if using legacy `CLANCY_PLAN_LABEL`) to issues you want planned (this is a manual step)
 2. `/clancy:plan` picks up issues with that label
 3. `/clancy:approve-plan` adds `CLANCY_LABEL_BUILD` (falls back to `CLANCY_LABEL`), then removes `CLANCY_LABEL_PLAN` (falls back to `CLANCY_PLAN_LABEL`). Crash-safe: add before remove.
 4. `/clancy:implement` picks up issues filtered by `CLANCY_LABEL_BUILD` (falls back to `CLANCY_LABEL`, otherwise all open assigned issues)
