@@ -463,7 +463,14 @@ After opening a PR, Claude runs the following sequence before considering the PR
    Without this, Copilot re-raises the same comment on the next push ([community #190754](https://github.com/orgs/community/discussions/190754)).
 
 4. **Auto-merge decision** — walk [§Auto-merge criteria](#auto-merge-criteria). If all gates pass and no exception fires, squash-merge. Otherwise, surface to Alex with a one-line summary of which gate/exception blocked.
-5. **Post-merge** — pull `main`, prune remotes (`git fetch --prune origin`), delete local branch, verify the release workflow (if a changeset merged). If `release.yml` posts red on the merge commit, stop-the-line and surface to Alex — publish-step failures are idempotent-recoverable via `pnpm changeset publish` but shouldn't proceed silently.
+5. **Post-merge** — atomic cleanup in one command, then verify the release workflow (if a changeset merged):
+
+   ```bash
+   git checkout main && git pull --ff-only && git fetch --prune origin && git branch -D <branch>
+   ```
+
+   Runs four actions as a single chain: switch to main, fast-forward local main, prune remote-tracking refs for deleted branches, force-delete the local feature branch (force is required because squash-merge gives the local branch tip a different sha than main). If `release.yml` posts red on the merge commit, stop-the-line and surface to Alex — publish-step failures are idempotent-recoverable via `pnpm changeset publish` but shouldn't proceed silently.
+
 6. **Next pickup** — run `gh issue list --label ready` before claiming the next workstream ticket. Any issue here pre-empts the next planned ticket. See [§Issue queue](#issue-queue) below.
 
 ---
