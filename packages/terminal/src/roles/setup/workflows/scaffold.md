@@ -513,10 +513,6 @@ GITHUB_REPO=owner/repo-name
 # Create the label in GitHub first, then add it to any issue you want Clancy to pick up.
 # CLANCY_LABEL="clancy"
 
-# ─── Planner Queue (optional — requires CLANCY_ROLES to include "planner") ───
-# Label for backlog issues that /clancy:plan fetches from (default: needs-refinement)
-# CLANCY_PLAN_LABEL="needs-refinement"
-
 # ─── Git ──────────────────────────────────────────────────────────────────────
 # Base integration branch. Clancy branches from here when an issue has no milestone.
 # When an issue has a milestone, Clancy auto-creates milestone/{slug} from this branch.
