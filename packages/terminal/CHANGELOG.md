@@ -1,5 +1,15 @@
 # @chief-clancy/terminal
 
+## 0.3.3
+
+### Patch Changes
+
+- [#400](https://github.com/Pushedskydiver/chief-clancy/pull/400) [`b393d6b`](https://github.com/Pushedskydiver/chief-clancy/commit/b393d6b6d0078d12c6b40127aba6af5850b0fb9c) Thanks [@Pushedskydiver](https://github.com/Pushedskydiver)! - Fix documentation drift around the `needs-refinement` / `CLANCY_PLAN_LABEL` deprecation.
+  - `packages/plan/src/workflows/plan.md`: tighten empty-queue GitHub guidance — drop the redundant `needs-refinement` mention from the fallback parenthetical; keep `CLANCY_LABEL_PLAN` (default: `clancy:plan`) with `CLANCY_PLAN_LABEL` as legacy fallback.
+  - `packages/terminal/src/roles/setup/workflows/scaffold.md`: remove a stale `.env.example` block that presented `CLANCY_PLAN_LABEL="needs-refinement"` as current — the pipeline-labels block later in the same file already handles this correctly via `CLANCY_LABEL_PLAN="clancy:plan"` with the deprecated-var note.
+
+  Repo-internal docs (`docs/roles/PLANNER.md`) also updated to match the canonical form in `docs/guides/CONFIGURATION.md`.
+
 ## 0.3.2
 
 ### Patch Changes
