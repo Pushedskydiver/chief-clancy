@@ -292,6 +292,22 @@ Scenario-organized router. Maps trigger situations to the docs Claude consults +
 
 ---
 
+### §11 — Surfacing a decision point that requires Alex input
+
+**When**: Claude reaches a decision point during a session where Alex input is needed — scope calls, fold-direction choices, branch selection on load, ambiguous policy interpretation. NOT triggered by pure questions of fact, confirmation prompts for hard-to-reverse actions (those need yes/no), or mid-implementation routine choices.
+
+**Protocol** (per [`docs/DEVELOPMENT.md §Decision-point presentation shape`](DEVELOPMENT.md#decision-point-presentation-shape)):
+
+1. Present 2-4 options with an explicit recommendation and the evidence behind it.
+2. Include explicit pushback-tolerance — Alex can override with "Option B" (or similar) without re-explaining the option-space.
+3. Boundary heuristic: if Claude can articulate two genuinely different downstream consequences for two different options, the choice is a decision point. Otherwise proceed without surfacing.
+
+**Evidence**: n=14 observed across Sessions 119, 123, 127, 128, 131, 132, 134 prior to codification (longest-tracked Claude→Alex pattern in `PROGRESS.md` of any class). Codification PR introducing the rule cited as the first Observed instance.
+
+**Cross-refs**: [`docs/DEVELOPMENT.md §Decision-point presentation shape`](DEVELOPMENT.md#decision-point-presentation-shape).
+
+---
+
 ## Updates to this doc
 
 - **New scenario added at n=3 occurrences**: when a drift class surfaces in 3 separate sessions, codify as a new INDEX scenario via §7 protocol (rule-of-three).

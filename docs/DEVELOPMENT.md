@@ -142,6 +142,27 @@ This pattern surfaced two outright wrong claims in the Phase D plan grill (Sessi
 
 If you spot something worth improving outside the current task scope, list it as a NOTICED block — don't fix it inline. Drive-by refactors mixed with feature work make both harder to review and debug. See [SELF-REVIEW.md "NOTICED BUT NOT TOUCHING"](SELF-REVIEW.md#noticed-but-not-touching).
 
+### Decision-point presentation shape
+
+When surfacing a decision point that requires Alex input — scope calls, fold-direction choices, branch selection on load, ambiguous policy interpretation — present 2-4 options with an explicit recommendation, the evidence behind it, and explicit pushback-tolerance. Alex can override with "Option B" (or similar) without re-explaining the option-space.
+
+```
+Three options on how to scope this PR:
+- **Option A: ...** — pros/cons.
+- **Option B: ...** — pros/cons.
+- **Option C: ...** — pros/cons.
+
+Recommendation: Option A — because constraint X / tradeoff Y. Pushback welcome.
+```
+
+Why all three pieces: the recommendation lets work proceed without blocking on re-framing; the explicit alternatives let Alex redirect with one word; the pushback-tolerance prose makes the recommendation safe to surface — otherwise future-Claude reads "explicit recommendation" and skips the runner-ups under "the recommendation is what matters" drift. Mode-agnostic: applies regardless of harness mode.
+
+**Non-triggers**: pure questions of fact ("did X ship?"), confirmation prompts for hard-to-reverse actions (those need explicit yes/no, not options), mid-implementation routine choices where alternatives differ only in incidentals.
+
+**Boundary heuristic**: if Claude can articulate two genuinely different downstream consequences for two different options, the choice is a decision point. Otherwise proceed without surfacing.
+
+n=14 observed (Sessions 119, 123, 127, 128, 131, 132, 134) prior to codification — longest-tracked Claude→Alex pattern in `PROGRESS.md` of any class.
+
 ---
 
 ## Session handoff
