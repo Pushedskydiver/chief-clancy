@@ -294,7 +294,7 @@ Scenario-organized router. Maps trigger situations to the docs Claude consults +
 
 ### §11 — Surfacing a decision point that requires Alex input
 
-**When**: Claude reaches a decision point during a session where Alex input is needed — scope calls, fold-direction choices, branch selection on load, ambiguous policy interpretation. NOT triggered by pure questions of fact, confirmation prompts for hard-to-reverse actions (those need yes/no), or mid-implementation routine choices.
+**When**: Claude reaches a decision point during a session where Alex input is needed — scope calls, fold-direction choices, branch selection on load, ambiguous policy interpretation. NOT triggered by pure questions of fact, confirmation prompts for hard-to-reverse actions (those need yes/no, not options), or mid-implementation routine choices where alternatives differ only in incidentals.
 
 **Protocol** (per [`docs/DEVELOPMENT.md §Decision-point presentation shape`](DEVELOPMENT.md#decision-point-presentation-shape)):
 
