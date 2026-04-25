@@ -119,6 +119,18 @@ _Caught: PR #277 (Copilot) — ">10 rows" was ambiguous about header/separator l
 
 ---
 
+## Spec grilling
+
+### Fold-incompleteness in multi-section folds
+
+When a grill finding's fold edits a definition, taxonomy, classification, or rubric that propagates across multiple spec sections, the named target sections may not enumerate every place the term appears. Adjacent dependent prose can carry the old definition while the named targets carry the new one. After landing the fold, grep the whole spec for the changed term/definition; mark the finding FOLDED only after the grep returns coherent.
+
+This is the [§Post-restructure consistency sweep](DA-REVIEW.md#post-restructure-consistency-sweep) applied to grill-finding folds — a fold counts as a rewrite of a load-bearing model when it changes a definition, taxonomy, classification, or rubric.
+
+_Caught: Layer 3 empirical-test-plan spec arc — Session 131 R3 caught a sub-issue-bundling fold (R2-M1 closed deferral-classification sub-issue, missed score-pinning sub-issue under the same finding name); Session 132 R4 caught an Option-C ripple-miss fold (the post-R3 v3→v4 fold landed in §3 + §4 + §6 sub-table + §10, didn't ripple into §6 prose lines 153/159 + §8 VALID row). Both R-grills caught the gap via structural-coherence audit (R3) and adjacent-prose ripple check (R4); the proposed whole-spec-grep discipline at fold time would have closed each gap one round earlier. v5 nit-clean R5 confirms the discipline works once applied._
+
+---
+
 ## How this file is used
 
 - When dispatched via `@agent-da-review`, the project subagent's system prompt instructs it to read `docs/DA-REVIEW.md` targeted sections, `docs/CONVENTIONS.md` sections the diff touches, and this file as part of the standard brief; `docs/RATIONALIZATIONS.md` is consulted only when about to dismiss a finding. Compliance is best-effort, not mechanically enforced (see `.claude/agents/da-review.md`)
