@@ -137,12 +137,12 @@ Scenario-organized router. Maps trigger situations to the docs Claude consults +
 
 **Affected files**:
 
-- **Observed** (subset of PR #396 matching this scenario — PR #396 also co-mingled a §1 sibling-sweep adding 5 architectural-doc files; this PR adds the REVIEW-PATTERNS.md fold-incompleteness entry):
+- **Observed** (subset of PR #396 matching this scenario — PR #396 also co-mingled a §1 sibling-sweep adding 5 architectural-doc files; [PR #403](https://github.com/Pushedskydiver/chief-clancy/pull/403) adds the REVIEW-PATTERNS.md fold-incompleteness entry):
   - `docs/DA-REVIEW.md` (rule body)
   - `docs/DEVELOPMENT.md` (Review Gate or Post-PR flow)
   - `docs/SELF-REVIEW.md` (companion-rule symmetry)
   - `.claude/agents/da-review.md` (if agent behavior changes)
-  - `docs/REVIEW-PATTERNS.md` (when the rule body itself comes from an observed pattern; cited evidence: this PR, fold-incompleteness pattern from Sessions 131-132)
+  - `docs/REVIEW-PATTERNS.md` (when the rule body itself comes from an observed pattern; cited evidence: PR #403, fold-incompleteness pattern from Sessions 131-132)
 - **Derived**:
   - `CLAUDE.md` (if a CLAUDE-surface rule)
   - `.github/copilot-instructions.md`
