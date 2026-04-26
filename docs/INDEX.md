@@ -308,6 +308,24 @@ Scenario-organized router. Maps trigger situations to the docs Claude consults +
 
 ---
 
+### §12 — Session-history archive maintenance
+
+**When**: archiving one or more `PROGRESS.md` session entries to `docs/history/SESSIONS.md` (preemptive at handoff or catch-up later — multi-session batch archival is one §12 trigger, not several).
+
+**Affected files**:
+
+- **Observed** (n=5 archival actions across Sessions 131-135):
+  - `docs/history/SESSIONS.md` (append row(s))
+  - `PROGRESS.md` (collapse session entry to one-line summary)
+
+**Protocol**: follow [`docs/DEVELOPMENT.md §Archival maintenance`](DEVELOPMENT.md#archival-maintenance) for token-threshold trigger, row format, and direct-to-main commit rationale. No PR — archival is a direct-to-main commit per [`docs/DEVELOPMENT.md §PROGRESS.md updates commit direct to main`](DEVELOPMENT.md#progressmd-updates-commit-direct-to-main).
+
+**Evidence**: n=5 raw archival actions across Sessions 131-135 (`f5ca0da` Sessions 126+127, `1063d82` Session 128, `9e1695f` Session 129, `8de366a` Session 130, `de93464` Session 131). Recurring hygiene rather than typical drift; the n=3 threshold at `§Updates to this doc` applies because future SESSIONS.md format / PR-cite drift on the routed-to surface is the operationalized hazard.
+
+**Cross-refs**: [`docs/DEVELOPMENT.md §Archival maintenance`](DEVELOPMENT.md#archival-maintenance), [`docs/DEVELOPMENT.md §PROGRESS.md updates commit direct to main`](DEVELOPMENT.md#progressmd-updates-commit-direct-to-main), [`docs/history/SESSIONS.md`](history/SESSIONS.md) (header explains the format).
+
+---
+
 ## Updates to this doc
 
 - **New scenario added at n=3 occurrences**: when a drift class surfaces in 3 separate sessions, codify as a new INDEX scenario via §7 protocol (rule-of-three).
