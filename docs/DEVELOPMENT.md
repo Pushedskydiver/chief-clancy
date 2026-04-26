@@ -224,7 +224,7 @@ If Routines-based automation is eventually warranted, scope is `PostCompact` hoo
 
 ### Archival maintenance
 
-At session start or at handoff time, check `PROGRESS.md`'s detailed-sessions band (everything between `## Next workstreams` and `## Session archive`). If it contains more than 5 entries OR the band exceeds ~10k tokens, compress the oldest entry to a one-line row in [`history/SESSIONS.md`](history/SESSIONS.md) and update the `§Session archive` pointer text in `PROGRESS.md` to include the newly archived session number.
+At session start or at handoff time, check `PROGRESS.md`'s detailed-sessions band (everything between `## Next workstreams` and `## Session archive`). If it contains more than 5 entries OR the band exceeds ~10k tokens, compress the oldest entry to a one-line row in [`history/SESSIONS.md`](history/SESSIONS.md).
 
 **Row format:** `| N | YYYY-MM-DD | Headline (one-line summary) | [#X](url), [#Y](url) |` — PR numbers render as GitHub links for click-through; `—` when a session shipped no PRs.
 
