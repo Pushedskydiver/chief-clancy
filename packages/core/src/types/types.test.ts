@@ -237,9 +237,14 @@ describe('ProgressStatus constants', () => {
   });
 
   it('FAILED_STATUSES contains failure statuses', () => {
-    const expected: ProgressStatus[] = ['SKIPPED', 'PUSH_FAILED', 'TIME_LIMIT'];
+    const expected: ProgressStatus[] = [
+      'SKIPPED',
+      'PUSH_FAILED',
+      'PR_CREATION_FAILED',
+      'TIME_LIMIT',
+    ];
     expect(expected.every((s) => FAILED_STATUSES.has(s))).toBe(true);
-    expect(FAILED_STATUSES.size).toBe(3);
+    expect(FAILED_STATUSES.size).toBe(4);
   });
 
   it('status sets are mutually exclusive for non-overlapping statuses', () => {

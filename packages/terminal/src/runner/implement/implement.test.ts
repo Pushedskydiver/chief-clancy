@@ -241,14 +241,18 @@ describe('runImplement — error propagation', () => {
   });
 });
 
-// ─── End-to-end stderr-tee chain ─────────────────────────────────────────────
+// ─── Stderr-tee chain through the invoke phase ──────────────────────────────
 //
-// PR-1 LOW-3 deferral resolved here. Exercises the full chain: runImplement
-// → buildPipelineDeps → makeInvokePhase → invokeClaudeSession (real, not
-// mocked at this file level) → injected streamingSpawn. A custom runPipeline
-// populates the context fields the invoke phase reads, then calls deps.invoke
-// directly so the captured stderr surfaces through error.message into the
-// aborted display.
+// PR-1 LOW-3 deferral resolved here. Exercises the chain: buildPipelineDeps
+// → makeInvokePhase → invokeClaudeSession (real, not mocked at this file
+// level) → injected streamingSpawn. The custom `runPipeline` shim populates
+// the context fields the invoke phase reads, then calls `deps.invoke(ctx)`
+// directly and translates the tagged error into a PipelineResult.aborted
+// shape — it does NOT exercise the production `runPipeline` orchestrator's
+// own abort-construction path (covered separately by run-pipeline.test.ts's
+// "stops after invoke failure with tagged stderr message" case + the
+// in-file aborted-display test above). Combined, those three tests cover
+// streamingSpawn → invoke → orchestrator → display.
 
 describe('runImplement — stderr tee through invoke phase', () => {
   it('surfaces captured stderr from streamingSpawn into the aborted display', async () => {

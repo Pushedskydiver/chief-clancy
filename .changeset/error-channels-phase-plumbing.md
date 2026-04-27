@@ -36,11 +36,17 @@ now halts the deliver phase as `ok: false` and writes a new
 autopilot loop continues to the next ticket per `stop-condition.ts`'s
 `deliver`-non-fatal classification.
 
-**Side-effects of the new `PR_CREATION_FAILED` status.** The enum is added
-to the type union only — it is not yet a member of `DELIVERED_STATUSES`,
-`COMPLETED_STATUSES`, or `FAILED_STATUSES`. Operator-visible via
-PROGRESS.md and the new aborted-pipeline error display. `pr-retry` (which
-scans for `PUSHED` entries) no longer auto-retries PR-creation-failed
-deliveries — operator intervention is the new contract for that path.
-Future refinement may classify `PR_CREATION_FAILED` into the existing sets
-or update `pr-retry`'s scan to include it.
+**`PR_CREATION_FAILED` status-set membership.** Added to `FAILED_STATUSES`
+(operator-visible failure surface — counted in AFK session reports
+alongside `PUSH_FAILED` / `SKIPPED` / `TIME_LIMIT`). Deliberately NOT
+added to `DELIVERED_STATUSES`: the branch is on the remote, but classifying
+it as already-delivered would let `resume.ts` skip the manual retry path,
+defeating the operator-driven retry contract. NOT added to
+`COMPLETED_STATUSES`: the work is not completed when PR creation fails.
+`pr-retry` (which scans for `PUSHED`) does not auto-retry these — operator
+intervention is the contract.
+
+**Round-trip-safe parser.** `dev/lifecycle/progress.ts:VALID_STATUSES`
+extended to include `PR_CREATION_FAILED` so `parseProgressFile` round-trips
+the new entries (regression test added covering every literal in
+`ProgressStatus`).

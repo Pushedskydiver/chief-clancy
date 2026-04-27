@@ -178,7 +178,7 @@ async function runPhases(
   const feasibility = await deps.feasibility(ctx);
   if (!feasibility.ok) return abortAt('feasibility', feasibility.error.message);
 
-  return runDeliveryPhases(ctx, deps);
+  return runPostFeasibilityPhases(ctx, deps);
 }
 
 /**
@@ -186,9 +186,10 @@ async function runPhases(
  *
  * Extracted from {@link runPhases} so each function stays within the
  * 50-line per-function lint cap. The split is mechanical, not semantic
- * — these phases run sequentially after feasibility passes.
+ * — these are simply the phases that run sequentially once feasibility
+ * has passed.
  */
-async function runDeliveryPhases(
+async function runPostFeasibilityPhases(
   ctx: RunContext,
   deps: PipelineDeps,
 ): Promise<PipelineResult> {
