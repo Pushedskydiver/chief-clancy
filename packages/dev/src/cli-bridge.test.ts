@@ -1,10 +1,13 @@
+import type {
+  SpawnSyncFn,
+  StreamingSpawnFn,
+  StreamingSpawnResult,
+} from './types/spawn.js';
 import type { SpawnSyncReturns } from 'node:child_process';
 
 import { describe, expect, it, vi } from 'vitest';
 
 import { invokeClaudePrint, invokeClaudeSession } from './cli-bridge.js';
-
-type SpawnSyncFn = Parameters<typeof invokeClaudePrint>[0]['spawn'];
 
 type SpawnResultOverrides = Partial<
   Omit<SpawnSyncReturns<string>, 'stdout'> & { readonly stdout: string | null }
@@ -25,15 +28,33 @@ function createSpawnResult(
   };
 }
 
+function createStreamingResult(
+  overrides: Partial<StreamingSpawnResult> = {},
+): StreamingSpawnResult {
+  return {
+    stdout: '',
+    stderr: '',
+    status: 0,
+    signal: null,
+    ...overrides,
+  };
+}
+
 describe('invokeClaudePrint', () => {
-  it('returns captured stdout on success', () => {
+  it('returns captured stdout and stderr on success', () => {
     const spawn = vi
       .fn<SpawnSyncFn>()
-      .mockReturnValue(createSpawnResult({ stdout: 'response text' }));
+      .mockReturnValue(
+        createSpawnResult({ stdout: 'response text', stderr: 'log line' }),
+      );
 
     const result = invokeClaudePrint({ prompt: 'test prompt', spawn });
 
-    expect(result).toEqual({ stdout: 'response text', ok: true });
+    expect(result).toEqual({
+      stdout: 'response text',
+      stderr: 'log line',
+      ok: true,
+    });
   });
 
   it('passes prompt via stdin pipe', () => {
@@ -89,6 +110,7 @@ describe('invokeClaudePrint', () => {
     const result = invokeClaudePrint({ prompt: 'test', spawn });
 
     expect(result.stdout).toBe('');
+    expect(result.stderr).toBe('');
   });
 
   it('returns ok false when process is killed by signal', () => {
@@ -112,89 +134,133 @@ describe('invokeClaudePrint', () => {
       expect.objectContaining({ stdio: ['pipe', 'pipe', 'pipe'] }),
     );
   });
+
+  it('truncates stderr to the trailing 4 KiB', () => {
+    const longStderr = 'x'.repeat(8192);
+    const spawn = vi
+      .fn<SpawnSyncFn>()
+      .mockReturnValue(createSpawnResult({ stderr: longStderr }));
+
+    const result = invokeClaudePrint({ prompt: 'test', spawn });
+
+    expect(result.stderr).toContain('stderr truncated');
+    expect(result.stderr.endsWith('x'.repeat(4096))).toBe(true);
+  });
 });
 
 describe('invokeClaudeSession', () => {
-  it('returns true on successful exit', () => {
-    const spawn = vi.fn<SpawnSyncFn>().mockReturnValue(createSpawnResult());
+  it('returns ok true and empty stderr on successful exit', async () => {
+    const spawn = vi
+      .fn<StreamingSpawnFn>()
+      .mockResolvedValue(createStreamingResult());
 
-    const result = invokeClaudeSession({ prompt: 'implement it', spawn });
+    const result = await invokeClaudeSession({
+      prompt: 'implement it',
+      spawn,
+    });
 
-    expect(result).toBe(true);
+    expect(result).toEqual({ ok: true, stderr: '' });
   });
 
-  it('streams stdout and stderr to terminal', () => {
-    const spawn = vi.fn<SpawnSyncFn>().mockReturnValue(createSpawnResult());
+  it('does not include -p flag', async () => {
+    const spawn = vi
+      .fn<StreamingSpawnFn>()
+      .mockResolvedValue(createStreamingResult());
 
-    invokeClaudeSession({ prompt: 'test', spawn });
-
-    expect(spawn).toHaveBeenCalledWith(
-      'claude',
-      expect.any(Array),
-      expect.objectContaining({ stdio: ['pipe', 'inherit', 'inherit'] }),
-    );
-  });
-
-  it('does not include -p flag', () => {
-    const spawn = vi.fn<SpawnSyncFn>().mockReturnValue(createSpawnResult());
-
-    invokeClaudeSession({ prompt: 'test', spawn });
+    await invokeClaudeSession({ prompt: 'test', spawn });
 
     const args = spawn.mock.calls[0][1];
     expect(args).not.toContain('-p');
   });
 
-  it('includes model flag when specified', () => {
-    const spawn = vi.fn<SpawnSyncFn>().mockReturnValue(createSpawnResult());
+  it('includes model flag when specified', async () => {
+    const spawn = vi
+      .fn<StreamingSpawnFn>()
+      .mockResolvedValue(createStreamingResult());
 
-    invokeClaudeSession({ prompt: 'test', model: 'sonnet', spawn });
+    await invokeClaudeSession({ prompt: 'test', model: 'sonnet', spawn });
 
     expect(spawn).toHaveBeenCalledWith(
       'claude',
       ['--dangerously-skip-permissions', '--model', 'sonnet'],
-      expect.any(Object),
+      expect.objectContaining({ input: 'test' }),
     );
   });
 
-  it('returns false on non-zero exit', () => {
+  it('returns ok false on non-zero exit', async () => {
     const spawn = vi
-      .fn<SpawnSyncFn>()
-      .mockReturnValue(createSpawnResult({ status: 1 }));
+      .fn<StreamingSpawnFn>()
+      .mockResolvedValue(createStreamingResult({ status: 1 }));
 
-    const result = invokeClaudeSession({ prompt: 'test', spawn });
+    const result = await invokeClaudeSession({ prompt: 'test', spawn });
 
-    expect(result).toBe(false);
+    expect(result.ok).toBe(false);
   });
 
-  it('returns false when spawn error occurs', () => {
-    const spawn = vi
-      .fn<SpawnSyncFn>()
-      .mockReturnValue(createSpawnResult({ error: new Error('ENOENT') }));
+  it('returns ok false when spawn error occurs', async () => {
+    const spawn = vi.fn<StreamingSpawnFn>().mockResolvedValue(
+      createStreamingResult({
+        status: null,
+        error: new Error('ENOENT'),
+      }),
+    );
 
-    const result = invokeClaudeSession({ prompt: 'test', spawn });
+    const result = await invokeClaudeSession({ prompt: 'test', spawn });
 
-    expect(result).toBe(false);
+    expect(result.ok).toBe(false);
   });
 
-  it('returns false when process is killed by signal', () => {
+  it('returns ok false when process is killed by signal', async () => {
     const spawn = vi
-      .fn<SpawnSyncFn>()
-      .mockReturnValue(createSpawnResult({ status: null, signal: 'SIGTERM' }));
+      .fn<StreamingSpawnFn>()
+      .mockResolvedValue(
+        createStreamingResult({ status: null, signal: 'SIGTERM' }),
+      );
 
-    const result = invokeClaudeSession({ prompt: 'test', spawn });
+    const result = await invokeClaudeSession({ prompt: 'test', spawn });
 
-    expect(result).toBe(false);
+    expect(result.ok).toBe(false);
   });
 
-  it('passes prompt via stdin', () => {
-    const spawn = vi.fn<SpawnSyncFn>().mockReturnValue(createSpawnResult());
+  it('passes prompt via input option', async () => {
+    const spawn = vi
+      .fn<StreamingSpawnFn>()
+      .mockResolvedValue(createStreamingResult());
 
-    invokeClaudeSession({ prompt: 'full prompt text', spawn });
+    await invokeClaudeSession({ prompt: 'full prompt text', spawn });
 
     expect(spawn).toHaveBeenCalledWith(
       'claude',
       expect.any(Array),
       expect.objectContaining({ input: 'full prompt text' }),
     );
+  });
+
+  it('returns captured stderr on failure', async () => {
+    const spawn = vi.fn<StreamingSpawnFn>().mockResolvedValue(
+      createStreamingResult({
+        status: 1,
+        stderr: 'auth error: invalid token',
+      }),
+    );
+
+    const result = await invokeClaudeSession({ prompt: 'test', spawn });
+
+    expect(result.stderr).toContain('auth error: invalid token');
+  });
+
+  it('truncates stderr to the trailing 4 KiB', async () => {
+    const longStderr = 'y'.repeat(8192);
+    const spawn = vi.fn<StreamingSpawnFn>().mockResolvedValue(
+      createStreamingResult({
+        status: 1,
+        stderr: longStderr,
+      }),
+    );
+
+    const result = await invokeClaudeSession({ prompt: 'test', spawn });
+
+    expect(result.stderr).toContain('stderr truncated');
+    expect(result.stderr.endsWith('y'.repeat(4096))).toBe(true);
   });
 });

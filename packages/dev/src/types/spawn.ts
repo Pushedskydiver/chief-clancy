@@ -18,6 +18,30 @@ export type SpawnSyncFn = (
   },
 ) => SpawnSyncReturns<string>;
 
+/** Result of a streaming spawn — captured buffers + exit info. */
+export type StreamingSpawnResult = {
+  readonly stdout: string;
+  readonly stderr: string;
+  readonly status: number | null;
+  readonly signal: NodeJS.Signals | null;
+  readonly error?: Error;
+};
+
+/**
+ * Async streaming process spawner.
+ *
+ * Production implementations tee child stdout/stderr live to the terminal
+ * while accumulating captured buffers. Resolves once the process exits.
+ * Test implementations return `Promise.resolve(...)` with synthetic buffers.
+ */
+export type StreamingSpawnFn = (
+  command: string,
+  args: readonly string[],
+  options: {
+    readonly input: string;
+  },
+) => Promise<StreamingSpawnResult>;
+
 /** Minimal console interface for injecting log output. */
 export type ConsoleLike = {
   readonly log: (message: string) => void;

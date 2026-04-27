@@ -17,10 +17,12 @@ import type {
   ProgressFs,
   QualityFs,
   SpawnSyncFn,
+  StreamingSpawnFn,
+  StreamingSpawnResult,
 } from '@chief-clancy/dev';
 import type { SpawnSyncReturns } from 'node:child_process';
 
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import {
   appendFileSync,
   existsSync,
@@ -177,6 +179,72 @@ function isDirectory(filePath: string): boolean {
   }
 }
 
+/**
+ * Build a real-Node {@link StreamingSpawnFn} for autonomous Claude sessions.
+ *
+ * Spawns the child with all three pipes captured, tees stdout/stderr live to
+ * the parent process so the operator sees Claude's output as it happens, and
+ * accumulates both streams into buffers returned in the resolved result.
+ *
+ * @returns An async streaming spawn function suitable for `invokeClaudeSession`.
+ */
+/** Class wrapper around a string-chunk accumulator (lint-functional exempt). */
+class ChunkAccumulator {
+  // eslint-disable-next-line functional/prefer-readonly-type -- accumulator must be mutable to capture streaming chunks
+  private readonly chunks: string[] = [];
+  public push(chunk: string): void {
+    this.chunks.push(chunk);
+  }
+  public toString(): string {
+    return this.chunks.join('');
+  }
+}
+
+export function makeStreamingSpawn(): StreamingSpawnFn {
+  return (command, args, options) =>
+    new Promise<StreamingSpawnResult>((resolve) => {
+      const child = spawn(command, [...args], {
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+
+      const stdoutAcc = new ChunkAccumulator();
+      const stderrAcc = new ChunkAccumulator();
+
+      child.stdout?.setEncoding('utf8');
+      child.stderr?.setEncoding('utf8');
+
+      child.stdout?.on('data', (chunk: string) => {
+        stdoutAcc.push(chunk);
+        process.stdout.write(chunk);
+      });
+      child.stderr?.on('data', (chunk: string) => {
+        stderrAcc.push(chunk);
+        process.stderr.write(chunk);
+      });
+
+      child.on('error', (error) => {
+        resolve({
+          stdout: stdoutAcc.toString(),
+          stderr: stderrAcc.toString(),
+          status: null,
+          signal: null,
+          error,
+        });
+      });
+      child.on('close', (code, signal) => {
+        resolve({
+          stdout: stdoutAcc.toString(),
+          stderr: stderrAcc.toString(),
+          status: code,
+          signal,
+        });
+      });
+
+      child.stdin?.write(options.input);
+      child.stdin?.end();
+    });
+}
+
 /** Build a ListPlansFs adapter from real node:fs functions. */
 export function makePlanFs(): ListPlansFs {
   return {
@@ -193,6 +261,7 @@ async function main(): Promise<void> {
 
   const spawnFn: SpawnSyncFn = (cmd, args, opts) =>
     spawnSync(cmd, [...args], { ...opts, stdio: [...opts.stdio] });
+  const streamingSpawnFn = makeStreamingSpawn();
   const fetchFn: FetchFn = globalThis.fetch.bind(globalThis);
 
   const shared = {
@@ -205,6 +274,7 @@ async function main(): Promise<void> {
     envFs: makeEnvFs(),
     qualityFs: makeQualityFs(),
     spawn: spawnFn,
+    streamingSpawn: streamingSpawnFn,
     fetch: fetchFn,
     runPipeline,
     console,

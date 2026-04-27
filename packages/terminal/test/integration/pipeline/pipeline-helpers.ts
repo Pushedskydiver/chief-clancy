@@ -237,6 +237,7 @@ export function setupPipeline(opts: SetupOpts): PipelineSetup {
     envFs: fs.envFs,
     qualityFs: fs.qualityFs,
     spawn: sim.spawn,
+    streamingSpawn: sim.streamingSpawn,
     fetch: opts.fetcher,
     buildPrompt,
     buildReworkPrompt,

@@ -342,6 +342,7 @@ function setupLocalPipeline(opts: LocalSetupOpts = {}): LocalPipelineSetup {
     envFs,
     qualityFs,
     spawn: sim.spawn,
+    streamingSpawn: sim.streamingSpawn,
     fetch: fetcher,
     buildPrompt,
     buildReworkPrompt,

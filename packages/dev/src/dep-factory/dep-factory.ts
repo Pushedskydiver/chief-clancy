@@ -15,7 +15,7 @@ import type { QualityFs } from '../lifecycle/quality/quality.js';
 import type { RunContext } from '../pipeline/context.js';
 import type { PipelineDeps } from '../pipeline/run-pipeline.js';
 import type { AppendFn } from '../types/progress.js';
-import type { SpawnSyncFn } from '../types/spawn.js';
+import type { SpawnSyncFn, StreamingSpawnFn } from '../types/spawn.js';
 import type { InvokePhaseDeps } from './invoke-phase.js';
 import type {
   Board,
@@ -87,6 +87,7 @@ type DepFactoryOpts = {
   readonly envFs: EnvFileSystem;
   readonly qualityFs: QualityFs;
   readonly spawn: SpawnSyncFn;
+  readonly streamingSpawn: StreamingSpawnFn;
   readonly fetch: FetchFn;
   readonly buildPrompt: InvokePhaseDeps['buildPrompt'];
   readonly buildReworkPrompt: InvokePhaseDeps['buildReworkPrompt'];
@@ -264,7 +265,7 @@ function wireTicketPhases(opts: DepFactoryOpts, progress: AppendFn) {
 }
 
 function wireGitAndInvoke(opts: DepFactoryOpts) {
-  const { projectRoot, exec, lockFs, spawn } = opts;
+  const { projectRoot, exec, lockFs, streamingSpawn } = opts;
 
   return {
     branchSetup: (ctx: RunContext) =>
@@ -291,7 +292,7 @@ function wireGitAndInvoke(opts: DepFactoryOpts) {
       }),
 
     invoke: makeInvokePhase({
-      spawn,
+      streamingSpawn,
       buildPrompt: opts.buildPrompt,
       buildReworkPrompt: opts.buildReworkPrompt,
     }),

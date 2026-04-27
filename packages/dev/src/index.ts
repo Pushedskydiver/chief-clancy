@@ -11,7 +11,13 @@ export const PACKAGE_NAME = '@chief-clancy/dev' as const;
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export type { AppendFn } from './types/progress.js';
-export type { ConsoleLike, SpawnSyncFn, StdioValue } from './types/spawn.js';
+export type {
+  ConsoleLike,
+  SpawnSyncFn,
+  StdioValue,
+  StreamingSpawnFn,
+  StreamingSpawnResult,
+} from './types/spawn.js';
 
 // ─── Lifecycle re-exports ───────────────────────────────────────────────────
 

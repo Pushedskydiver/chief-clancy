@@ -23,6 +23,7 @@ import {
   makeLockFs,
   makeProgressFs,
   makeQualityFs,
+  makeStreamingSpawn,
 } from './adapters.js';
 import { displayOutcome, notifyIfConfigured } from './loop-output.js';
 
@@ -68,6 +69,7 @@ function buildRunTicket(
           ...spawnOpts,
           stdio: [...spawnOpts.stdio],
         }),
+      streamingSpawn: makeStreamingSpawn(),
       fetch: globalThis.fetch.bind(globalThis),
       buildPrompt,
       buildReworkPrompt,

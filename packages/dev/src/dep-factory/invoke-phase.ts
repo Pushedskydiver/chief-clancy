@@ -5,7 +5,7 @@
  * Prompt builders are injected so this module has no terminal dependency.
  */
 import type { RunContext } from '../pipeline/context.js';
-import type { SpawnSyncFn } from '../types/spawn.js';
+import type { StreamingSpawnFn } from '../types/spawn.js';
 import type { BoardProvider } from '@chief-clancy/core';
 
 import { invokeClaudeSession } from '../cli-bridge.js';
@@ -34,7 +34,7 @@ type BuildReworkPromptFn = (opts: {
 
 /** Dependencies for creating an invoke phase closure. */
 export type InvokePhaseDeps = {
-  readonly spawn: SpawnSyncFn;
+  readonly streamingSpawn: StreamingSpawnFn;
   readonly buildPrompt: BuildPromptFn;
   readonly buildReworkPrompt: BuildReworkPromptFn;
 };
@@ -76,12 +76,13 @@ export function makeInvokePhase(
           tdd,
         });
 
-    return Promise.resolve().then(() => ({
-      ok: invokeClaudeSession({
-        prompt,
-        model: config.env.CLANCY_MODEL,
-        spawn: deps.spawn,
-      }),
-    }));
+    // PR-1 buildability shim — drops captured stderr from the new session
+    // return shape. PR-2 widens this consumer to forward `error.message`
+    // through the tagged-error union added to PipelineDeps.invoke.
+    return invokeClaudeSession({
+      prompt,
+      model: config.env.CLANCY_MODEL,
+      spawn: deps.streamingSpawn,
+    }).then((result) => ({ ok: result.ok }));
   };
 }
