@@ -15,18 +15,37 @@ type FeasibilityTicket = {
   readonly description: string;
 };
 
-/** Result from the feasibility check function. */
-type FeasibilityCheckResult = {
-  readonly isFeasible: boolean;
-  readonly reason?: string;
-};
+/**
+ * Result from the feasibility check function.
+ *
+ * The `check-failed` kind is shape parity with the rest of `PipelineDeps`'
+ * tagged-error contract; `checkFeasibility` is fail-open at the lifecycle
+ * layer (subprocess + parse failures collapse to `{ isFeasible: true }`),
+ * so the variant is unreachable in practice. Documented intentionally for
+ * future widening if Alex flips fail-open to fail-closed.
+ */
+type FeasibilityCheckResult =
+  | { readonly isFeasible: true }
+  | { readonly isFeasible: false; readonly reason: string }
+  | {
+      readonly isFeasible: false;
+      readonly error: {
+        readonly kind: 'check-failed';
+        readonly message: string;
+      };
+    };
 
 /** Structured result of the feasibility phase. */
-type FeasibilityPhaseResult = {
-  readonly ok: boolean;
-  readonly skipped: boolean;
-  readonly reason?: string;
-};
+type FeasibilityPhaseResult =
+  | { readonly ok: true; readonly skipped: boolean }
+  | {
+      readonly ok: false;
+      readonly skipped: false;
+      readonly error: {
+        readonly kind: 'not-feasible' | 'check-failed';
+        readonly message: string;
+      };
+    };
 
 /** Progress append function (pre-wired with fs + projectRoot by terminal). */
 type AppendFn = (opts: {
@@ -79,10 +98,13 @@ export async function feasibilityPhase(
       summary: ticket.title,
       status: 'SKIPPED',
     });
+    if ('error' in result) {
+      return { ok: false, skipped: false, error: result.error };
+    }
     return {
       ok: false,
       skipped: false,
-      reason: result.reason ?? 'not implementable as code changes',
+      error: { kind: 'not-feasible', message: result.reason },
     };
   }
 

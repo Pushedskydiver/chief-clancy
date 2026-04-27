@@ -61,10 +61,16 @@ export type PipelineDeps = {
   >;
   // Dry-run (phase 5) is an inline ctx.dryRun check — no dependency needed.
   /** Feasibility — Claude feasibility check. */
-  readonly feasibility: (ctx: RunContext) => Promise<{
-    readonly ok: boolean;
-    readonly reason?: string;
-  }>;
+  readonly feasibility: (ctx: RunContext) => Promise<
+    | { readonly ok: true; readonly skipped: boolean }
+    | {
+        readonly ok: false;
+        readonly error: {
+          readonly kind: 'not-feasible' | 'check-failed';
+          readonly message: string;
+        };
+      }
+  >;
   /** Branch setup — git branch operations + lock write. */
   readonly branchSetup: (ctx: RunContext) => Promise<
     | { readonly ok: true }
@@ -76,9 +82,24 @@ export type PipelineDeps = {
   /** Transition — move ticket to In Progress. */
   readonly transition: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
   /** Invoke — run Claude session. */
-  readonly invoke: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
+  readonly invoke: (ctx: RunContext) => Promise<
+    | { readonly ok: true }
+    | {
+        readonly ok: false;
+        readonly error: { readonly kind: 'unknown'; readonly message: string };
+      }
+  >;
   /** Deliver — push + PR creation. */
-  readonly deliver: (ctx: RunContext) => Promise<{ readonly ok: boolean }>;
+  readonly deliver: (ctx: RunContext) => Promise<
+    | { readonly ok: true }
+    | {
+        readonly ok: false;
+        readonly error: {
+          readonly kind: 'push-failed' | 'pr-creation-failed';
+          readonly message: string;
+        };
+      }
+  >;
   /** Cost — log estimated token cost. */
   readonly cost: (ctx: RunContext) => { readonly ok: boolean };
   /** Cleanup — completion data + notification. */
@@ -135,12 +156,7 @@ async function runPhases(
 ): Promise<PipelineResult> {
   // Preflight
   const preflight = await deps.preflight(ctx);
-  if (!preflight.ok)
-    return {
-      status: 'aborted',
-      phase: 'preflight',
-      error: preflight.error.message,
-    };
+  if (!preflight.ok) return abortAt('preflight', preflight.error.message);
 
   // Epic completion (informational — never aborts)
   await deps.epicCompletion(ctx);
@@ -153,44 +169,43 @@ async function runPhases(
 
   // Ticket fetch
   const ticket = await deps.ticketFetch(ctx);
-  if (!ticket.ok)
-    return {
-      status: 'aborted',
-      phase: 'ticket-fetch',
-      error: ticketErrorMessage(ticket),
-    };
+  if (!ticket.ok) return abortAt('ticket-fetch', ticketErrorMessage(ticket));
 
   // Dry-run gate
   if (ctx.dryRun) return { status: 'dry-run' };
 
   // Feasibility
   const feasibility = await deps.feasibility(ctx);
-  if (!feasibility.ok)
-    return {
-      status: 'aborted',
-      phase: 'feasibility',
-      error: feasibility.reason,
-    };
+  if (!feasibility.ok) return abortAt('feasibility', feasibility.error.message);
 
+  return runDeliveryPhases(ctx, deps);
+}
+
+/**
+ * Run branch-setup → transition → invoke → deliver → cost → cleanup.
+ *
+ * Extracted from {@link runPhases} so each function stays within the
+ * 50-line per-function lint cap. The split is mechanical, not semantic
+ * — these phases run sequentially after feasibility passes.
+ */
+async function runDeliveryPhases(
+  ctx: RunContext,
+  deps: PipelineDeps,
+): Promise<PipelineResult> {
   // Branch setup
   const branch = await deps.branchSetup(ctx);
-  if (!branch.ok)
-    return {
-      status: 'aborted',
-      phase: 'branch-setup',
-      error: branch.error.message,
-    };
+  if (!branch.ok) return abortAt('branch-setup', branch.error.message);
 
   // Transition (best-effort — never aborts)
   await deps.transition(ctx);
 
   // Invoke Claude session
   const invoke = await deps.invoke(ctx);
-  if (!invoke.ok) return { status: 'aborted', phase: 'invoke' };
+  if (!invoke.ok) return abortAt('invoke', invoke.error.message);
 
   // Deliver
   const deliver = await deps.deliver(ctx);
-  if (!deliver.ok) return { status: 'aborted', phase: 'deliver' };
+  if (!deliver.ok) return abortAt('deliver', deliver.error.message);
 
   // Cost (best-effort — never aborts)
   deps.cost(ctx);
@@ -199,6 +214,11 @@ async function runPhases(
   await deps.cleanup(ctx);
 
   return { status: 'completed' };
+}
+
+/** Build an aborted PipelineResult for a phase + error message. */
+function abortAt(phase: string, error: string | undefined): PipelineResult {
+  return { status: 'aborted', phase, error };
 }
 
 /**

@@ -9,6 +9,7 @@ export type ProgressStatus =
   | 'PR_CREATED'
   | 'PUSHED'
   | 'PUSH_FAILED'
+  | 'PR_CREATION_FAILED'
   | 'LOCAL'
   | 'PLAN'
   | 'APPROVE_PLAN'

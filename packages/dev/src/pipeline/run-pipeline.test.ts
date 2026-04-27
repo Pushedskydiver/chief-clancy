@@ -19,7 +19,7 @@ function makeDeps(overrides: Partial<PipelineDeps> = {}): PipelineDeps {
     prRetry: vi.fn().mockResolvedValue({ results: [] }),
     reworkDetection: vi.fn().mockResolvedValue({ isDetected: false }),
     ticketFetch: vi.fn().mockResolvedValue({ ok: true }),
-    feasibility: vi.fn().mockResolvedValue({ ok: true }),
+    feasibility: vi.fn().mockResolvedValue({ ok: true, skipped: false }),
     branchSetup: vi.fn().mockResolvedValue({ ok: true }),
     transition: vi.fn().mockResolvedValue({ ok: true }),
     invoke: vi.fn().mockResolvedValue({ ok: true }),
@@ -96,9 +96,9 @@ describe('runPipeline — happy path', () => {
         order.push('ticketFetch');
         return { ok: true };
       }),
-      feasibility: vi.fn(async () => {
+      feasibility: vi.fn<PipelineDeps['feasibility']>(async () => {
         order.push('feasibility');
-        return { ok: true };
+        return { ok: true, skipped: false };
       }),
       branchSetup: vi.fn<PipelineDeps['branchSetup']>(async () => {
         order.push('branchSetup');
@@ -108,11 +108,11 @@ describe('runPipeline — happy path', () => {
         order.push('transition');
         return { ok: true };
       }),
-      invoke: vi.fn(async () => {
+      invoke: vi.fn<PipelineDeps['invoke']>(async () => {
         order.push('invoke');
         return { ok: true };
       }),
-      deliver: vi.fn(async () => {
+      deliver: vi.fn<PipelineDeps['deliver']>(async () => {
         order.push('deliver');
         return { ok: true };
       }),
@@ -235,12 +235,16 @@ describe('runPipeline — early exits', () => {
 
   it('stops after feasibility failure', async () => {
     const deps = makeDeps({
-      feasibility: vi.fn().mockResolvedValue({ ok: false }),
+      feasibility: vi.fn<PipelineDeps['feasibility']>().mockResolvedValue({
+        ok: false,
+        error: { kind: 'not-feasible', message: 'requires hardware' },
+      }),
     });
     const result = await runPipeline(makeCtx(), deps);
 
     expect(result.status).toBe('aborted');
     expect(result.phase).toBe('feasibility');
+    expect(result.error).toBe('requires hardware');
     expect(deps.branchSetup).not.toHaveBeenCalled();
   });
 
@@ -259,27 +263,52 @@ describe('runPipeline — early exits', () => {
     expect(deps.transition).not.toHaveBeenCalled();
   });
 
-  it('stops after invoke failure', async () => {
+  it('stops after invoke failure with tagged stderr message', async () => {
     const deps = makeDeps({
-      invoke: vi.fn().mockResolvedValue({ ok: false }),
+      invoke: vi.fn<PipelineDeps['invoke']>().mockResolvedValue({
+        ok: false,
+        error: { kind: 'unknown', message: 'auth: token expired' },
+      }),
     });
     const result = await runPipeline(makeCtx(), deps);
 
     expect(result.status).toBe('aborted');
     expect(result.phase).toBe('invoke');
+    expect(result.error).toBe('auth: token expired');
     expect(deps.deliver).not.toHaveBeenCalled();
   });
 
-  it('stops after deliver failure', async () => {
+  it('stops after deliver failure with tagged push-failed message', async () => {
     const deps = makeDeps({
-      deliver: vi.fn().mockResolvedValue({ ok: false }),
+      deliver: vi.fn<PipelineDeps['deliver']>().mockResolvedValue({
+        ok: false,
+        error: {
+          kind: 'push-failed',
+          message: 'git push to remote failed (no stderr captured)',
+        },
+      }),
     });
     const result = await runPipeline(makeCtx(), deps);
 
     expect(result.status).toBe('aborted');
     expect(result.phase).toBe('deliver');
+    expect(result.error).toBe('git push to remote failed (no stderr captured)');
     expect(deps.cost).not.toHaveBeenCalled();
     expect(deps.cleanup).not.toHaveBeenCalled();
+  });
+
+  it('stops after deliver failure with tagged pr-creation-failed message', async () => {
+    const deps = makeDeps({
+      deliver: vi.fn<PipelineDeps['deliver']>().mockResolvedValue({
+        ok: false,
+        error: { kind: 'pr-creation-failed', message: 'API 500' },
+      }),
+    });
+    const result = await runPipeline(makeCtx(), deps);
+
+    expect(result.status).toBe('aborted');
+    expect(result.phase).toBe('deliver');
+    expect(result.error).toBe('API 500');
   });
 });
 
@@ -429,7 +458,10 @@ describe('runPipeline — cleanup', () => {
     const ctx = makeCtx();
     ctx.setLockOwner(true);
     const deps = makeDeps({
-      deliver: vi.fn().mockResolvedValue({ ok: false }),
+      deliver: vi.fn<PipelineDeps['deliver']>().mockResolvedValue({
+        ok: false,
+        error: { kind: 'push-failed', message: 'push failed' },
+      }),
     });
     await runPipeline(ctx, deps);
 

@@ -15,11 +15,17 @@ type FeasibilityTicket = {
   readonly description: string;
 };
 
-/** Result of a feasibility check. */
-type FeasibilityResult = {
-  readonly isFeasible: boolean;
-  readonly reason?: string;
-};
+/**
+ * Result of a feasibility check.
+ *
+ * Discriminated union so the phase boundary can fold `reason` into a
+ * tagged `error.message` for `not-feasible`. Fail-open means subprocess
+ * or parse failures collapse to `{ isFeasible: true }`; the
+ * `check-failed` kind on the wider phase-level union is unreachable here.
+ */
+type FeasibilityResult =
+  | { readonly isFeasible: true }
+  | { readonly isFeasible: false; readonly reason: string };
 
 /**
  * Build the feasibility evaluation prompt.
@@ -65,7 +71,9 @@ export function parseFeasibilityResponse(stdout: string): FeasibilityResult {
   const line = (lines.at(-1) ?? '').trim();
 
   if (/^INFEASIBLE/i.test(line)) {
-    const reason = line.replace(/^INFEASIBLE:?\s*/i, '').trim() || undefined;
+    const reason =
+      line.replace(/^INFEASIBLE:?\s*/i, '').trim() ||
+      'not implementable as code changes';
     return { isFeasible: false, reason };
   }
 

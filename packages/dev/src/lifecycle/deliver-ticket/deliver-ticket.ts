@@ -178,12 +178,19 @@ function readVerificationWarning(opts: DeliverOpts): string | undefined {
   return undefined;
 }
 
-/** Append delivery progress based on outcome. */
+/**
+ * Append delivery progress based on outcome.
+ *
+ * Skips writing on `outcome.type === 'failed'` so the phase layer can write
+ * `PR_CREATION_FAILED` (a more specific status) as the sole entry instead
+ * of a misleading `PUSHED`.
+ */
 function appendDeliveryProgress(
   opts: DeliverOpts,
   outcome: ReturnType<typeof deliveryOutcome>,
 ): void {
   if (opts.shouldSkipLog) return;
+  if (outcome.type === 'failed') return;
 
   const { status, prNumber } = progressForOutcome(outcome);
   appendProgress(opts.progressFs, opts.projectRoot, {
