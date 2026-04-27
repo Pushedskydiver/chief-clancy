@@ -4,7 +4,7 @@ Recurring findings from Copilot, DA review, and self-review across sessions. Whe
 
 This is a **living document** — add patterns from real catches, not hypotheticals.
 
-**Last updated:** 2026-04-13
+**Last updated:** 2026-04-27
 
 ---
 
@@ -123,11 +123,15 @@ _Caught: PR #277 (Copilot) — ">10 rows" was ambiguous about header/separator l
 
 ### Fold-incompleteness in multi-section folds
 
-When a grill finding's fold edits a definition, taxonomy, classification, or rubric that propagates across multiple spec sections, the named target sections may not enumerate every place the term appears. Adjacent dependent prose can carry the old definition while the named targets carry the new one. After landing the fold, grep the whole spec for the changed term/definition; mark the finding FOLDED only after the grep returns coherent.
+When a grill finding's fold edits a definition, taxonomy, classification, or rubric that propagates across multiple spec sections, the named target sections may not enumerate every place the term appears. Adjacent dependent prose can carry the old definition while the named targets carry the new one. After landing the fold, run a **3-axis post-fold sweep** before declaring the finding FOLDED:
+
+1. **Direct-term axis** — grep the whole spec for the changed term/definition; mark FOLDED only after the grep returns coherent. (Original PR #403 rule.)
+2. **Derived-cardinality axis** — grep for every count, cardinality, and list-membership statement that depends on the changed term: sample sizes (e.g., `n=12` → `n=9` after dropping a condition), tally counts (`4 conditions` → `3 conditions`), hook-script enumerations, time budgets, run-tally numbers. The dropped term may not appear, but its derived consequences propagate silently. (R7 Session 137 catch on Layer 3 v5.2 C3-drop ripple — n=12→9, "4 conditions"→"3 conditions", "3 hook scripts"→"2 hook scripts" across §2/§4/§9/§12/§13.)
+3. **Qualifier-word axis** — when a surgical fold edit _adds_ qualifier words ("active", "valid", "operative", "pending", "current", etc.) to a count or membership statement, check the qualifier against existing usage of the _same_ qualifier elsewhere in the spec. Fold-introduced drift can collide with prior qualifier usage even when the dropped-term and derived-cardinality axes are clean. (R8 Session 138 catch — v6.2 M1 fold added `All 3 active conditions (C0/C1/C2)` qualifier that collided with existing usage of "active conditions" = `{C1, C2}` treatment-only across §3 H_null + §10 triage table.)
 
 This is the [§Post-restructure consistency sweep](DA-REVIEW.md#post-restructure-consistency-sweep) applied to grill-finding folds — a fold counts as a rewrite of a load-bearing model when it changes a definition, taxonomy, classification, or rubric.
 
-_Caught: Layer 3 empirical-test-plan spec arc — Session 131 R3 caught a sub-issue-bundling fold (R2-M1 closed deferral-classification sub-issue, missed score-pinning sub-issue under the same finding name); Session 132 R4 caught an Option-C ripple-miss fold (the post-R3 v3→v4 fold landed in §3 + §4 + §6 sub-table + §10, didn't ripple into §6 prose lines 153/159 + §8 VALID row). Both R-grills caught the gap via structural-coherence audit (R3) and adjacent-prose ripple check (R4); the proposed whole-spec-grep discipline at fold time would have closed each gap one round earlier. v5 nit-clean R5 confirms the discipline works once applied._
+_Caught (n=7 across 6 sessions): Layer 3 spec arc — Session 131 R3 caught a sub-issue-bundling fold (R2-M1 closed deferral-classification sub-issue, missed score-pinning sub-issue under the same finding name); Session 132 R4 caught an Option-C ripple-miss fold (post-R3 v3→v4 fold landed in §3 + §4 + §6 sub-table + §10, didn't ripple into §6 prose lines 153/159 + §8 VALID row); Session 137 R6 caught axis-1 inherited C3-drop direct-token ripple; Session 137 R7 caught axis-2 inherited C3-drop derived-cardinality ripple (n=12→9, "4 conditions"→"3 conditions"); Session 138 R8 caught axis-3 fold-introduced qualifier-word collision ("active" qualifier addition); Session 140 Step D R1 caught axis-2 inherited count-transfer (n=5/5 sibling-enumeration claim transferred without re-counting against full corpus); Session 141 PR #407 R1 caught axis-1 terminology drift ("post-action context injection" vs canonical `PreToolUse` API naming). The 3-axis sweep at fold time would have closed each gap one round earlier. Empirical confirmation that the discipline works once applied: axis-1 originally codified at v5-nit-clean R5 (Session 132); axes 2 + 3 confirmed working at v6.2 + v6.2.1 LOCKED (Sessions 137-138); v7.1 NIT-CLEAN R_n (Session 141) confirms all 3 axes hold under combined load._
 
 ---
 
