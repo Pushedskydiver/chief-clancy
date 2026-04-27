@@ -19,6 +19,7 @@ import type {
   QualityFs,
   RunContext,
   SpawnSyncFn,
+  StreamingSpawnFn,
 } from '@chief-clancy/dev';
 
 import {
@@ -49,6 +50,7 @@ type ImplementOpts = {
   readonly envFs: EnvFileSystem;
   readonly qualityFs: QualityFs;
   readonly spawn: SpawnSyncFn;
+  readonly streamingSpawn: StreamingSpawnFn;
   readonly fetch: FetchFn;
   readonly runPipeline: RunPipelineFn;
   readonly console: ConsoleLike;
@@ -121,6 +123,7 @@ export async function runImplement(opts: ImplementOpts): Promise<void> {
     envFs: opts.envFs,
     qualityFs: opts.qualityFs,
     spawn: opts.spawn,
+    streamingSpawn: opts.streamingSpawn,
     fetch: opts.fetch,
     buildPrompt,
     buildReworkPrompt,

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeInvokePhase } from './invoke-phase.js';
 
 vi.mock('../cli-bridge.js', () => ({
-  invokeClaudeSession: vi.fn(() => true),
+  invokeClaudeSession: vi.fn(() => Promise.resolve({ ok: true, stderr: '' })),
 }));
 
 const buildPrompt = vi.fn(() => 'fresh-prompt');
@@ -34,8 +34,12 @@ describe('makeInvokePhase', () => {
   });
 
   it('builds a fresh prompt and delegates to invokeClaudeSession', async () => {
-    const spawn = vi.fn();
-    const invoke = makeInvokePhase({ spawn, buildPrompt, buildReworkPrompt });
+    const streamingSpawn = vi.fn();
+    const invoke = makeInvokePhase({
+      streamingSpawn,
+      buildPrompt,
+      buildReworkPrompt,
+    });
 
     const result = await invoke(createCtx());
 
@@ -51,14 +55,18 @@ describe('makeInvokePhase', () => {
     expect(invokeClaudeSession).toHaveBeenCalledWith({
       prompt: 'fresh-prompt',
       model: 'opus',
-      spawn,
+      spawn: streamingSpawn,
     });
     expect(result).toEqual({ ok: true });
   });
 
   it('builds a rework prompt when ctx.isRework is true', async () => {
-    const spawn = vi.fn();
-    const invoke = makeInvokePhase({ spawn, buildPrompt, buildReworkPrompt });
+    const streamingSpawn = vi.fn();
+    const invoke = makeInvokePhase({
+      streamingSpawn,
+      buildPrompt,
+      buildReworkPrompt,
+    });
 
     await invoke(
       createCtx({
@@ -78,10 +86,17 @@ describe('makeInvokePhase', () => {
 
   it('returns ok: false when session fails', async () => {
     const { invokeClaudeSession } = await import('../cli-bridge.js');
-    vi.mocked(invokeClaudeSession).mockReturnValueOnce(false);
+    vi.mocked(invokeClaudeSession).mockResolvedValueOnce({
+      ok: false,
+      stderr: 'auth error',
+    });
 
-    const spawn = vi.fn();
-    const invoke = makeInvokePhase({ spawn, buildPrompt, buildReworkPrompt });
+    const streamingSpawn = vi.fn();
+    const invoke = makeInvokePhase({
+      streamingSpawn,
+      buildPrompt,
+      buildReworkPrompt,
+    });
 
     const result = await invoke(createCtx());
 
@@ -89,8 +104,12 @@ describe('makeInvokePhase', () => {
   });
 
   it('forwards TDD flag from config', async () => {
-    const spawn = vi.fn();
-    const invoke = makeInvokePhase({ spawn, buildPrompt, buildReworkPrompt });
+    const streamingSpawn = vi.fn();
+    const invoke = makeInvokePhase({
+      streamingSpawn,
+      buildPrompt,
+      buildReworkPrompt,
+    });
 
     await invoke(
       createCtx({
@@ -107,8 +126,12 @@ describe('makeInvokePhase', () => {
   });
 
   it('defaults prFeedback to empty array for rework', async () => {
-    const spawn = vi.fn();
-    const invoke = makeInvokePhase({ spawn, buildPrompt, buildReworkPrompt });
+    const streamingSpawn = vi.fn();
+    const invoke = makeInvokePhase({
+      streamingSpawn,
+      buildPrompt,
+      buildReworkPrompt,
+    });
 
     await invoke(
       createCtx({

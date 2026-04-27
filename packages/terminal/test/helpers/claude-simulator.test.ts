@@ -128,4 +128,34 @@ describe('createClaudeSimulator', () => {
     const call: SimulatorCall = sim.calls[0];
     expect(call.stdio).toEqual(['pipe', 'pipe', 'pipe']);
   });
+
+  it('exposes a streamingSpawn that records calls into the same log', async () => {
+    const sim = createClaudeSimulator({ stdout: 'live', stderr: 'log' });
+
+    const result = await sim.streamingSpawn(
+      'claude',
+      ['--dangerously-skip-permissions'],
+      { input: 'prompt' },
+    );
+
+    expect(result.stdout).toBe('live');
+    expect(result.stderr).toBe('log');
+    expect(result.status).toBe(0);
+    expect(sim.calls).toHaveLength(1);
+    expect(sim.calls[0]).toEqual({
+      command: 'claude',
+      args: ['--dangerously-skip-permissions'],
+      input: 'prompt',
+    });
+  });
+
+  it('streamingSpawn surfaces spawn errors with status null', async () => {
+    const spawnError = new Error('ENOENT');
+    const sim = createClaudeSimulator({ error: spawnError });
+
+    const result = await sim.streamingSpawn('claude', [], { input: '' });
+
+    expect(result.error).toBe(spawnError);
+    expect(result.status).toBeNull();
+  });
 });

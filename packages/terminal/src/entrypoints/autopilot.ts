@@ -21,6 +21,7 @@ import type {
   QualityFs,
   RunContext,
   SpawnSyncFn,
+  StreamingSpawnFn,
 } from '@chief-clancy/dev';
 
 import { spawnSync } from 'node:child_process';
@@ -48,6 +49,7 @@ import {
   makeLockFs,
   makeProgressFs,
   makeQualityFs,
+  makeStreamingSpawn,
 } from './implement.js';
 
 type RunPipelineFn = (
@@ -65,6 +67,7 @@ type IterationOpts = {
   readonly envFs: EnvFileSystem;
   readonly qualityFs: QualityFs;
   readonly spawn: SpawnSyncFn;
+  readonly streamingSpawn: StreamingSpawnFn;
   readonly fetch: FetchFn;
   readonly runPipeline: RunPipelineFn;
   readonly argv: readonly string[];
@@ -135,6 +138,7 @@ export function buildRunIteration(
       envFs: opts.envFs,
       qualityFs: opts.qualityFs,
       spawn: opts.spawn,
+      streamingSpawn: opts.streamingSpawn,
       fetch: opts.fetch,
       buildPrompt,
       buildReworkPrompt,
@@ -202,6 +206,7 @@ async function main(): Promise<void> {
   const fetchFn: FetchFn = globalThis.fetch.bind(globalThis);
   const spawnFn: SpawnSyncFn = (cmd, args, opts) =>
     spawnSync(cmd, [...args], { ...opts, stdio: [...opts.stdio] });
+  const streamingSpawnFn = makeStreamingSpawn();
 
   await runAutopilot({
     maxIterations: parseMaxIterations(env.MAX_ITERATIONS),
@@ -216,6 +221,7 @@ async function main(): Promise<void> {
       envFs,
       qualityFs,
       spawn: spawnFn,
+      streamingSpawn: streamingSpawnFn,
       fetch: fetchFn,
       runPipeline,
       argv: process.argv,

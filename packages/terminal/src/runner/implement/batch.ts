@@ -20,6 +20,7 @@ import type {
   QualityFs,
   RunContext,
   SpawnSyncFn,
+  StreamingSpawnFn,
 } from '@chief-clancy/dev';
 
 import {
@@ -54,6 +55,7 @@ type BatchOpts = {
   readonly envFs: EnvFileSystem;
   readonly qualityFs: QualityFs;
   readonly spawn: SpawnSyncFn;
+  readonly streamingSpawn: StreamingSpawnFn;
   readonly fetch: FetchFn;
   readonly runPipeline: RunPipelineFn;
   readonly console: ConsoleLike;
@@ -221,6 +223,7 @@ async function runOnePlan(
     envFs: opts.envFs,
     qualityFs: opts.qualityFs,
     spawn: opts.spawn,
+    streamingSpawn: opts.streamingSpawn,
     fetch: opts.fetch,
     buildPrompt,
     buildReworkPrompt,

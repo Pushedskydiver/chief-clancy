@@ -17,6 +17,7 @@ import type {
   ProgressFs,
   QualityFs,
   SpawnSyncFn,
+  StreamingSpawnFn,
 } from '@chief-clancy/dev';
 
 import { execFileSync } from 'node:child_process';
@@ -207,44 +208,57 @@ function createE2ERepo(
 // ── Claude simulator with commit side effects ───────────────────
 
 /**
- * Create a Claude simulator that produces a real commit.
+ * Create Claude simulator spawn pair that produces a real commit.
  *
- * When the pipeline calls `spawn('claude', ...)`, this wrapper:
+ * When either the sync (`invokeClaudePrint`) or async streaming
+ * (`invokeClaudeSession`) spawn fires for `claude`, the wrapper:
  * 1. Creates a dummy implementation file
  * 2. Commits it to the current branch
  * 3. Returns exit code 0 (simulating successful Claude invocation)
  *
  * @param workDir - The repo working directory.
  * @param ticketKey - Used to name the implementation file.
- * @returns A SpawnSyncFn that can be injected into buildPipelineDeps.
+ * @returns Both spawn functions for injection into buildPipelineDeps.
  */
-function createE2ESimulator(workDir: string, ticketKey: string): SpawnSyncFn {
+function createE2ESimulator(
+  workDir: string,
+  ticketKey: string,
+): { readonly spawn: SpawnSyncFn; readonly streamingSpawn: StreamingSpawnFn } {
   const sim = createClaudeSimulator({ exitCode: 0 });
+
+  const sideEffect = () => {
+    const slug = ticketKey.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    const filePath = join(workDir, 'src', `${slug}.ts`);
+    mkdirSync(join(filePath, '..'), { recursive: true });
+    writeFileSync(
+      filePath,
+      `/** Implementation for ${ticketKey}. */\nexport function impl(): string {\n  return '${ticketKey} implemented';\n}\n`,
+    );
+    execFileSync('git', ['add', '-A'], { cwd: workDir, stdio: 'pipe' });
+    execFileSync(
+      'git',
+      ['commit', '-m', `feat(${ticketKey}): implement ticket`],
+      { cwd: workDir, stdio: 'pipe' },
+    );
+  };
 
   const wrappedSpawn: SpawnSyncFn = (command, args, options) => {
     const result = sim.spawn(command, args, options);
-
-    // After Claude "runs", create a real commit so deliver can PR
-    if (command === 'claude' && result.status === 0) {
-      const slug = ticketKey.toLowerCase().replace(/[^a-z0-9]/g, '-');
-      const filePath = join(workDir, 'src', `${slug}.ts`);
-      mkdirSync(join(filePath, '..'), { recursive: true });
-      writeFileSync(
-        filePath,
-        `/** Implementation for ${ticketKey}. */\nexport function impl(): string {\n  return '${ticketKey} implemented';\n}\n`,
-      );
-      execFileSync('git', ['add', '-A'], { cwd: workDir, stdio: 'pipe' });
-      execFileSync(
-        'git',
-        ['commit', '-m', `feat(${ticketKey}): implement ticket`],
-        { cwd: workDir, stdio: 'pipe' },
-      );
-    }
-
+    if (command === 'claude' && result.status === 0) sideEffect();
     return result;
   };
 
-  return wrappedSpawn;
+  const wrappedStreamingSpawn: StreamingSpawnFn = async (
+    command,
+    args,
+    options,
+  ) => {
+    const result = await sim.streamingSpawn(command, args, options);
+    if (command === 'claude' && result.status === 0) sideEffect();
+    return result;
+  };
+
+  return { spawn: wrappedSpawn, streamingSpawn: wrappedStreamingSpawn };
 }
 
 // ── Pipeline setup ──────────────────────────────────────────────
@@ -271,7 +285,10 @@ type E2ESetupOpts = {
  */
 export function setupE2EPipeline(opts: E2ESetupOpts): E2EPipelineSetup {
   const repo = createE2ERepo(opts.remoteUrl, opts.envVars);
-  const spawn = createE2ESimulator(repo.workDir, opts.ticketKey);
+  const { spawn, streamingSpawn } = createE2ESimulator(
+    repo.workDir,
+    opts.ticketKey,
+  );
   const fs = createRealFs();
 
   const deps = buildPipelineDeps({
@@ -284,6 +301,7 @@ export function setupE2EPipeline(opts: E2ESetupOpts): E2EPipelineSetup {
     envFs: fs.envFs,
     qualityFs: fs.qualityFs,
     spawn,
+    streamingSpawn,
     fetch: globalThis.fetch,
     buildPrompt,
     buildReworkPrompt,

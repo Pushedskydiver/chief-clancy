@@ -73,6 +73,7 @@ describe('buildRunIteration', () => {
         mkdir: vi.fn(),
       },
       spawn: vi.fn(),
+      streamingSpawn: vi.fn(),
       fetch: vi.fn(),
       runPipeline,
       argv: ['node', 'script.js'],

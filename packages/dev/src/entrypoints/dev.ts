@@ -38,6 +38,7 @@ import {
   makeLockFs,
   makeProgressFs,
   makeQualityFs,
+  makeStreamingSpawn,
 } from './adapters.js';
 
 type LoadEnvResult =
@@ -177,6 +178,7 @@ function makePipelineDeps(
     qualityFs: makeQualityFs(),
     spawn: (cmd, args, opts) =>
       spawnSync(cmd, [...args], { ...opts, stdio: [...opts.stdio] }),
+    streamingSpawn: makeStreamingSpawn(),
     fetch: globalThis.fetch.bind(globalThis),
     buildPrompt,
     buildReworkPrompt,
