@@ -12,6 +12,7 @@
 /.github/instructions/**        @Pushedskydiver
 /.github/copilot-instructions.md @Pushedskydiver
 /.github/CODEOWNERS             @Pushedskydiver
+/.github/dependabot.yml         @Pushedskydiver
 
 # Root-level monorepo config
 /package.json                   @Pushedskydiver
