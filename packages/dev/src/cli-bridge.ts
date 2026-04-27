@@ -30,7 +30,7 @@ type ClaudeSessionResult = {
   readonly stderr: string;
 };
 
-const STDERR_TAIL_BYTES = 4096;
+const STDERR_TAIL_CHARS = 4096;
 
 function buildArgs(base: readonly string[], model?: string): readonly string[] {
   return model ? [...base, '--model', model] : base;
@@ -45,15 +45,18 @@ function isStreamingSuccess(result: StreamingSpawnResult): boolean {
 }
 
 /**
- * Truncate stderr to the trailing 4 KiB to bound the boundary-layer error
- * payload. Production stderr from a long Claude session can run into MB; the
- * outer pipeline result is a single-line display surface, so a tail of the
- * trailing context is enough to explain a failure.
+ * Truncate stderr to the trailing 4096 UTF-16 code units to bound the
+ * boundary-layer error payload. Production stderr from a long Claude session
+ * can run into MB; the outer pipeline result is a single-line display surface,
+ * so a tail of the trailing context is enough to explain a failure. Note: cap
+ * is in JS string length (code units), not bytes — for ASCII stderr (the
+ * common case) the two are equivalent; for multibyte content the byte count
+ * may be larger.
  */
 function tailStderr(stderr: string): string {
-  if (stderr.length <= STDERR_TAIL_BYTES) return stderr;
-  const truncated = stderr.slice(-STDERR_TAIL_BYTES);
-  return `…(stderr truncated, last ${STDERR_TAIL_BYTES} bytes shown)…\n${truncated}`;
+  if (stderr.length <= STDERR_TAIL_CHARS) return stderr;
+  const truncated = stderr.slice(-STDERR_TAIL_CHARS);
+  return `…(stderr truncated, last ${STDERR_TAIL_CHARS} characters shown)…\n${truncated}`;
 }
 
 /**

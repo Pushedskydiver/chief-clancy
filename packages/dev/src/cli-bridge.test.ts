@@ -146,6 +146,30 @@ describe('invokeClaudePrint', () => {
     expect(result.stderr).toContain('stderr truncated');
     expect(result.stderr.endsWith('x'.repeat(4096))).toBe(true);
   });
+
+  it('does not truncate stderr at the exact boundary (4096 chars)', () => {
+    const exactStderr = 'a'.repeat(4096);
+    const spawn = vi
+      .fn<SpawnSyncFn>()
+      .mockReturnValue(createSpawnResult({ stderr: exactStderr }));
+
+    const result = invokeClaudePrint({ prompt: 'test', spawn });
+
+    expect(result.stderr).toBe(exactStderr);
+    expect(result.stderr).not.toContain('stderr truncated');
+  });
+
+  it('truncates stderr just past the boundary (4097 chars)', () => {
+    const overStderr = 'a'.repeat(4097);
+    const spawn = vi
+      .fn<SpawnSyncFn>()
+      .mockReturnValue(createSpawnResult({ stderr: overStderr }));
+
+    const result = invokeClaudePrint({ prompt: 'test', spawn });
+
+    expect(result.stderr).toContain('stderr truncated');
+    expect(result.stderr.endsWith('a'.repeat(4096))).toBe(true);
+  });
 });
 
 describe('invokeClaudeSession', () => {
@@ -262,5 +286,35 @@ describe('invokeClaudeSession', () => {
 
     expect(result.stderr).toContain('stderr truncated');
     expect(result.stderr.endsWith('y'.repeat(4096))).toBe(true);
+  });
+
+  it('does not truncate stderr at the exact boundary (4096 chars)', async () => {
+    const exactStderr = 'b'.repeat(4096);
+    const spawn = vi.fn<StreamingSpawnFn>().mockResolvedValue(
+      createStreamingResult({
+        status: 1,
+        stderr: exactStderr,
+      }),
+    );
+
+    const result = await invokeClaudeSession({ prompt: 'test', spawn });
+
+    expect(result.stderr).toBe(exactStderr);
+    expect(result.stderr).not.toContain('stderr truncated');
+  });
+
+  it('truncates stderr just past the boundary (4097 chars)', async () => {
+    const overStderr = 'b'.repeat(4097);
+    const spawn = vi.fn<StreamingSpawnFn>().mockResolvedValue(
+      createStreamingResult({
+        status: 1,
+        stderr: overStderr,
+      }),
+    );
+
+    const result = await invokeClaudeSession({ prompt: 'test', spawn });
+
+    expect(result.stderr).toContain('stderr truncated');
+    expect(result.stderr.endsWith('b'.repeat(4096))).toBe(true);
   });
 });
