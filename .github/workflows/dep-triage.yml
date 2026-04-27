@@ -46,12 +46,16 @@ jobs:
           tmpdir=$(mktemp -d)
           trap 'rm -rf "$tmpdir"' EXIT
 
-          # GITHUB_TOKEN with `vulnerability-alerts: read` returns 0 alerts
-          # on the default URL and on single-state queries; only the explicit
-          # comma-separated multi-state form returns alerts (Actions run
-          # 25007707174 — 0 vs 16). Cause not isolated (token-scope filter,
-          # gh client, or REST surface). Multi-state form is required to
-          # keep the auto-close-on-resolved path below live.
+          # `dependabot/alerts` list endpoint is intermittently empty
+          # regardless of URL shape — the same query has been observed
+          # returning 0 alerts and 16 alerts within minutes (likely cache
+          # or replica staleness; cause not isolated). The explicit state list
+          # is defensive (covers the auto-close iteration's filter below
+          # — fetch is the superset, including `open` for the stale-and-
+          # open classifier above), not corrective; the auto-close path
+          # may silently no-op when the list endpoint is in an empty-
+          # state cache window. Individual alert records remain accessible
+          # by number even when the list returns empty.
           gh api "repos/$REPO/dependabot/alerts?state=open,fixed,dismissed,auto_dismissed" \
             --paginate > "$tmpdir/alerts.json"
           alert_count=$(jq 'length' "$tmpdir/alerts.json")
