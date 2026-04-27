@@ -38,7 +38,9 @@ function makeDeps(
   overrides: Partial<FeasibilityPhaseDeps> = {},
 ): FeasibilityPhaseDeps {
   return {
-    checkFeasibility: vi.fn(() => Promise.resolve({ isFeasible: true })),
+    checkFeasibility: vi.fn(() =>
+      Promise.resolve({ isFeasible: true } as const),
+    ),
     appendProgress: vi.fn(),
     ...overrides,
   };
@@ -57,21 +59,51 @@ describe('feasibilityPhase', () => {
     expect(result.skipped).toBe(false);
   });
 
-  it('returns ok: false when ticket is not feasible', async () => {
+  it('returns ok: false with not-feasible error when ticket is not feasible', async () => {
     const ctx = makePopulatedCtx();
     const deps = makeDeps({
       checkFeasibility: vi.fn(() =>
         Promise.resolve({
           isFeasible: false,
           reason: 'requires infrastructure changes',
-        }),
+        } as const),
       ),
     });
 
     const result = await feasibilityPhase(ctx, deps);
 
     expect(result.ok).toBe(false);
-    expect(result.reason).toBe('requires infrastructure changes');
+    if (!result.ok) {
+      expect(result.error).toEqual({
+        kind: 'not-feasible',
+        message: 'requires infrastructure changes',
+      });
+    }
+  });
+
+  it('returns ok: false with check-failed error when checker surfaces one', async () => {
+    const ctx = makePopulatedCtx();
+    const deps = makeDeps({
+      checkFeasibility: vi.fn(() =>
+        Promise.resolve({
+          isFeasible: false,
+          error: {
+            kind: 'check-failed' as const,
+            message: 'subprocess crashed',
+          },
+        } as const),
+      ),
+    });
+
+    const result = await feasibilityPhase(ctx, deps);
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toEqual({
+        kind: 'check-failed',
+        message: 'subprocess crashed',
+      });
+    }
   });
 
   it('appends SKIPPED progress when not feasible', async () => {
@@ -81,7 +113,7 @@ describe('feasibilityPhase', () => {
         Promise.resolve({
           isFeasible: false,
           reason: 'needs hardware',
-        }),
+        } as const),
       ),
     });
 
@@ -116,7 +148,9 @@ describe('feasibilityPhase', () => {
 
   it('passes ticket metadata and model to checkFeasibility', async () => {
     const ctx = makePopulatedCtx({ configEnv: { CLANCY_MODEL: 'sonnet' } });
-    const checkFeasibility = vi.fn(() => Promise.resolve({ isFeasible: true }));
+    const checkFeasibility = vi.fn(() =>
+      Promise.resolve({ isFeasible: true } as const),
+    );
     const deps = makeDeps({ checkFeasibility });
 
     await feasibilityPhase(ctx, deps);
@@ -131,24 +165,13 @@ describe('feasibilityPhase', () => {
     );
   });
 
-  it('uses default reason when checkFeasibility returns no reason', async () => {
-    const ctx = makePopulatedCtx();
-    const deps = makeDeps({
-      checkFeasibility: vi.fn(() => Promise.resolve({ isFeasible: false })),
-    });
-
-    const result = await feasibilityPhase(ctx, deps);
-
-    expect(result.ok).toBe(false);
-    expect(result.reason).toBe('not implementable as code changes');
-  });
-
-  it('returns ok: true with default reason undefined when feasible', async () => {
+  it('returns ok: true (no error field) when feasible', async () => {
     const ctx = makePopulatedCtx();
     const deps = makeDeps();
 
     const result = await feasibilityPhase(ctx, deps);
 
-    expect(result.reason).toBeUndefined();
+    expect(result.ok).toBe(true);
+    expect('error' in result).toBe(false);
   });
 });

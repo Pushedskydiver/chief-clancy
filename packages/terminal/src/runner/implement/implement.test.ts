@@ -152,6 +152,20 @@ describe('runImplement — display', () => {
     expect(logOutput(opts)).toContain('unknown');
   });
 
+  it('prints abort reason when error is present', async () => {
+    const opts = createMockOpts({
+      runPipeline: vi.fn().mockResolvedValue({
+        status: 'aborted',
+        phase: 'invoke',
+        error: 'auth: token expired',
+      }),
+    });
+
+    await runImplement(opts);
+
+    expect(logOutput(opts)).toContain('auth: token expired');
+  });
+
   // ─── Display — resumed ──────────────────────────────────────────────────
 
   it('prints resumed message', async () => {
@@ -224,5 +238,67 @@ describe('runImplement — error propagation', () => {
     });
 
     await expect(runImplement(opts)).rejects.toThrow('Pipeline crash');
+  });
+});
+
+// ─── Stderr-tee chain through the invoke phase ──────────────────────────────
+//
+// PR-1 LOW-3 deferral resolved here. Exercises the chain: buildPipelineDeps
+// → makeInvokePhase → invokeClaudeSession (real, not mocked at this file
+// level) → injected streamingSpawn. The custom `runPipeline` shim populates
+// the context fields the invoke phase reads, then calls `deps.invoke(ctx)`
+// directly and translates the tagged error into a PipelineResult.aborted
+// shape — it does NOT exercise the production `runPipeline` orchestrator's
+// own abort-construction path (covered separately by run-pipeline.test.ts's
+// "stops after invoke failure with tagged stderr message" case + the
+// in-file aborted-display test above). Combined, those three tests cover
+// streamingSpawn → invoke → orchestrator → display.
+
+describe('runImplement — stderr tee through invoke phase', () => {
+  it('surfaces captured stderr from streamingSpawn into the aborted display', async () => {
+    const fakeStreamingSpawn = vi.fn().mockResolvedValue({
+      stdout: '',
+      stderr: 'auth: token expired\nclaude: refusing to start',
+      status: 1,
+      signal: null,
+    });
+
+    const opts = createMockOpts({
+      streamingSpawn: fakeStreamingSpawn,
+      runPipeline: async (ctx, deps) => {
+        ctx.setPreflight(
+          {
+            provider: 'github',
+            env: {
+              CLANCY_TDD: 'false',
+              CLANCY_MODEL: 'opus',
+            },
+          } as never,
+          {} as never,
+        );
+        ctx.setTicket({
+          key: 'GH-1',
+          title: 'End-to-end stderr capture',
+          description: 'Trigger an invoke failure with non-empty stderr.',
+          parentInfo: 'none',
+          blockers: 'None',
+        });
+        ctx.setRework({ isRework: false });
+        const result = await deps.invoke(ctx);
+        if (result.ok) return { status: 'completed' };
+        return {
+          status: 'aborted',
+          phase: 'invoke',
+          error: result.error.message,
+        };
+      },
+    });
+
+    await runImplement(opts);
+
+    expect(fakeStreamingSpawn).toHaveBeenCalledOnce();
+    const output = logOutput(opts);
+    expect(output).toContain('aborted at invoke');
+    expect(output).toContain('auth: token expired');
   });
 });

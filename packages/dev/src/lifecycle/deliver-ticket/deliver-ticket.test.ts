@@ -209,6 +209,20 @@ describe('deliverViaPullRequest', () => {
     expect(result.outcome.type).toBe('failed');
   });
 
+  it('does not append progress on failed outcome (phase layer writes PR_CREATION_FAILED)', async () => {
+    const failFetchFn = vi.fn(() =>
+      Promise.resolve(new Response('Server Error', { status: 500 })),
+    );
+    const opts = {
+      ...makeOpts(),
+      fetchFn: failFetchFn,
+    };
+
+    await deliverViaPullRequest(opts);
+
+    expect(opts.progressFs.appendFile).not.toHaveBeenCalled();
+  });
+
   it('threads singleChildParent through to PR body', async () => {
     const opts = {
       ...makeOpts(),

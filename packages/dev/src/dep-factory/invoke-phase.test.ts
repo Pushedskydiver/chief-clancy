@@ -84,11 +84,11 @@ describe('makeInvokePhase', () => {
     );
   });
 
-  it('returns ok: false when session fails', async () => {
+  it('returns tagged unknown error with captured stderr when session fails', async () => {
     const { invokeClaudeSession } = await import('../cli-bridge.js');
     vi.mocked(invokeClaudeSession).mockResolvedValueOnce({
       ok: false,
-      stderr: 'auth error',
+      stderr: 'auth error: token expired',
     });
 
     const streamingSpawn = vi.fn();
@@ -100,7 +100,35 @@ describe('makeInvokePhase', () => {
 
     const result = await invoke(createCtx());
 
-    expect(result).toEqual({ ok: false });
+    expect(result).toEqual({
+      ok: false,
+      error: { kind: 'unknown', message: 'auth error: token expired' },
+    });
+  });
+
+  it('falls back to generic message when stderr is empty on failure', async () => {
+    const { invokeClaudeSession } = await import('../cli-bridge.js');
+    vi.mocked(invokeClaudeSession).mockResolvedValueOnce({
+      ok: false,
+      stderr: '',
+    });
+
+    const streamingSpawn = vi.fn();
+    const invoke = makeInvokePhase({
+      streamingSpawn,
+      buildPrompt,
+      buildReworkPrompt,
+    });
+
+    const result = await invoke(createCtx());
+
+    expect(result).toEqual({
+      ok: false,
+      error: {
+        kind: 'unknown',
+        message: 'Claude session exited non-zero (no stderr captured)',
+      },
+    });
   });
 
   it('forwards TDD flag from config', async () => {

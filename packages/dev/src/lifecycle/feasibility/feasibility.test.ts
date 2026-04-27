@@ -56,10 +56,10 @@ describe('parseFeasibilityResponse', () => {
     });
   });
 
-  it('returns infeasible without reason when none given', () => {
+  it('returns infeasible with default reason when none given', () => {
     expect(parseFeasibilityResponse('INFEASIBLE')).toEqual({
       isFeasible: false,
-      reason: undefined,
+      reason: 'not implementable as code changes',
     });
   });
 
@@ -144,7 +144,7 @@ describe('parseFeasibilityResponse property-based', () => {
           .filter((s) => !/^\s*INFEASIBLE/i.test(s)),
         (stdout) => {
           const result = parseFeasibilityResponse(stdout);
-          return result.isFeasible === true && result.reason === undefined;
+          return result.isFeasible === true;
         },
       ),
     );

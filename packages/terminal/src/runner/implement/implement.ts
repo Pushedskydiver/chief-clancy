@@ -77,6 +77,7 @@ function displayResult(
         dim(`⏹ Pipeline aborted at ${result.phase ?? 'unknown'}`) +
           dim(` (${elapsed})`),
       );
+      if (result.error) out.log(dim(`   ${result.error}`));
       break;
 
     case 'resumed':

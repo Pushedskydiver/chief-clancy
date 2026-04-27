@@ -160,7 +160,7 @@ describe('deliverPhase — fresh delivery', () => {
     expect(deps.recordDelivery).toHaveBeenCalledOnce();
   });
 
-  it('returns ok: false when push fails', async () => {
+  it('returns push-failed tagged error when push fails', async () => {
     const ctx = setupCtx({ isRework: false });
     const deps = makeDeps({
       deliverViaPullRequest: vi
@@ -170,6 +170,12 @@ describe('deliverPhase — fresh delivery', () => {
     const result = await deliverPhase(ctx, deps);
 
     expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.kind).toBe('push-failed');
+      expect(result.error.message).toBe(
+        'git push to remote failed (no stderr captured)',
+      );
+    }
     expect(deps.recordDelivery).not.toHaveBeenCalled();
   });
 
@@ -185,6 +191,73 @@ describe('deliverPhase — fresh delivery', () => {
     expect(deps.appendProgress).toHaveBeenCalledWith(
       expect.objectContaining({ status: 'PUSH_FAILED', key: 'PROJ-1' }),
     );
+  });
+
+  it('returns pr-creation-failed tagged error when PR API fails after push', async () => {
+    const ctx = setupCtx({ isRework: false });
+    const deps = makeDeps({
+      deliverViaPullRequest: vi.fn().mockResolvedValue({
+        isPushed: true,
+        outcome: {
+          type: 'failed',
+          error: 'API 500',
+          manualUrl: 'https://example.com/compare',
+        },
+        prResult: {
+          ok: false,
+          error: { kind: 'unknown', message: 'API 500' },
+        },
+      }),
+    });
+    const result = await deliverPhase(ctx, deps);
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.kind).toBe('pr-creation-failed');
+      expect(result.error.message).toBe('API 500');
+    }
+    expect(deps.recordDelivery).not.toHaveBeenCalled();
+  });
+
+  it('logs PR_CREATION_FAILED progress when PR API fails after push', async () => {
+    const ctx = setupCtx({ isRework: false });
+    const deps = makeDeps({
+      deliverViaPullRequest: vi.fn().mockResolvedValue({
+        isPushed: true,
+        outcome: { type: 'failed', error: 'API 500' },
+        prResult: {
+          ok: false,
+          error: { kind: 'unknown', message: 'API 500' },
+        },
+      }),
+    });
+    await deliverPhase(ctx, deps);
+
+    expect(deps.appendProgress).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: 'PR_CREATION_FAILED',
+        key: 'PROJ-1',
+      }),
+    );
+  });
+
+  it('returns ok: true when PR already exists (alreadyExists branch)', async () => {
+    const ctx = setupCtx({ isRework: false });
+    const deps = makeDeps({
+      deliverViaPullRequest: vi.fn().mockResolvedValue({
+        isPushed: true,
+        outcome: { type: 'exists' },
+        prResult: {
+          ok: false,
+          alreadyExists: true,
+          error: { kind: 'unknown', message: 'PR already exists' },
+        },
+      }),
+    });
+    const result = await deliverPhase(ctx, deps);
+
+    expect(result.ok).toBe(true);
+    expect(deps.recordDelivery).toHaveBeenCalledOnce();
   });
 
   it('removes build label after successful delivery', async () => {
@@ -309,7 +382,7 @@ describe('deliverPhase — rework delivery', () => {
     );
   });
 
-  it('returns ok: false when rework push fails', async () => {
+  it('returns push-failed tagged error when rework push fails', async () => {
     const ctx = setupCtx({ isRework: true });
     const deps = makeDeps({
       deliverViaPullRequest: vi
@@ -319,6 +392,31 @@ describe('deliverPhase — rework delivery', () => {
     const result = await deliverPhase(ctx, deps);
 
     expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.kind).toBe('push-failed');
+    }
+    expect(deps.recordRework).not.toHaveBeenCalled();
+  });
+
+  it('returns pr-creation-failed when rework PR API fails after push', async () => {
+    const ctx = setupCtx({ isRework: true });
+    const deps = makeDeps({
+      deliverViaPullRequest: vi.fn().mockResolvedValue({
+        isPushed: true,
+        outcome: { type: 'failed', error: 'rework API 503' },
+        prResult: {
+          ok: false,
+          error: { kind: 'unknown', message: 'rework API 503' },
+        },
+      }),
+    });
+    const result = await deliverPhase(ctx, deps);
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.kind).toBe('pr-creation-failed');
+      expect(result.error.message).toBe('rework API 503');
+    }
     expect(deps.recordRework).not.toHaveBeenCalled();
   });
 

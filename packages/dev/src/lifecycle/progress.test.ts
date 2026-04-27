@@ -1,4 +1,5 @@
 import type { ProgressFs } from './progress.js';
+import type { ProgressStatus } from '@chief-clancy/core/types/progress.js';
 
 import fc from 'fast-check';
 import { describe, expect, it, vi } from 'vitest';
@@ -328,6 +329,46 @@ describe('parseProgressFile', () => {
     expect(entries).toHaveLength(2);
     expect(entries[0]?.status).toBe('DONE');
     expect(entries[1]?.status).toBe('PR_CREATED');
+  });
+
+  it('round-trips every status in the union (write → parse)', () => {
+    // Schema-pair guard: VALID_STATUSES (runtime) must cover the standard-
+    // format literals in ProgressStatus, and SLUG_STATUSES must cover the
+    // slug-format literals — when a new literal is added to one, the other
+    // must follow or parseProgressFile silently drops the entry. Standard
+    // and slug literals route through different parser branches; both are
+    // covered here.
+    const writerFs = mockFs();
+    const standardStatuses: readonly ProgressStatus[] = [
+      'DONE',
+      'SKIPPED',
+      'PR_CREATED',
+      'PUSHED',
+      'PUSH_FAILED',
+      'PR_CREATION_FAILED',
+      'LOCAL',
+      'PLAN',
+      'APPROVE_PLAN',
+      'REWORK',
+      'EPIC_PR_CREATED',
+      'TIME_LIMIT',
+      'RESUMED',
+    ];
+    const slugStatuses: readonly ProgressStatus[] = ['BRIEF', 'APPROVE_BRIEF'];
+    const allStatuses = [...standardStatuses, ...slugStatuses];
+
+    allStatuses.forEach((status, index) => {
+      appendProgress(writerFs, '/root', {
+        key: `PROJ-${index + 1}`,
+        summary: `Status ${status}`,
+        status,
+      });
+    });
+
+    const fs = readerFs(writerFs.written.join(''));
+    const entries = parseProgressFile(fs, '/root');
+
+    expect(entries.map((e) => e.status)).toEqual(allStatuses);
   });
 });
 

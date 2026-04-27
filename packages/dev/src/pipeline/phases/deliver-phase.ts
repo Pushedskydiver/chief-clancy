@@ -7,16 +7,26 @@
  */
 import type { RunContext } from '../context.js';
 import type { ProgressStatus } from '@chief-clancy/core/types/progress.js';
+import type { PrCreationResult } from '@chief-clancy/core/types/remote.js';
 
 /** Structured result of the deliver phase. */
-type DeliverPhaseResult = {
-  readonly ok: boolean;
-};
+type DeliverPhaseResult =
+  | { readonly ok: true }
+  | {
+      readonly ok: false;
+      readonly error: {
+        readonly kind: 'push-failed' | 'pr-creation-failed';
+        readonly message: string;
+      };
+    };
 
 /** Minimal delivery result from the pre-wired deliver function. */
 type DeliveryResult = {
   readonly isPushed: boolean;
+  readonly prResult?: PrCreationResult;
 };
+
+const PUSH_FAILED_MESSAGE = 'git push to remote failed (no stderr captured)';
 
 /** Options passed to the pre-wired deliver function. */
 type DeliverCallOpts = {
@@ -99,15 +109,8 @@ async function deliverRework(
     parent: parentKey,
   });
 
-  if (!result.isPushed) {
-    deps.appendProgress({
-      key: ticket.key,
-      summary: ticket.title,
-      status: 'PUSH_FAILED',
-      parent: parentKey,
-    });
-    return { ok: false };
-  }
+  const failure = detectDeliveryFailure({ result, ticket, parentKey, deps });
+  if (failure) return failure;
 
   deps.appendProgress({
     key: ticket.key,
@@ -119,21 +122,27 @@ async function deliverRework(
 
   deps.recordRework();
   await safeRemoveBuildLabel(ticket.key, deps);
-
-  if (ctx.reworkPrNumber != null) {
-    try {
-      await deps.postReworkActions({
-        prNumber: ctx.reworkPrNumber,
-        feedback: ctx.prFeedback ?? [],
-        discussionIds: ctx.reworkDiscussionIds,
-        reviewers: ctx.reworkReviewers,
-      });
-    } catch {
-      // Best-effort — post-rework actions failure never blocks delivery
-    }
-  }
+  await safePostReworkActions(ctx, deps);
 
   return { ok: true };
+}
+
+/** Run post-rework actions when a rework PR number is known. Best-effort. */
+async function safePostReworkActions(
+  ctx: RunContext,
+  deps: DeliverPhaseDeps,
+): Promise<void> {
+  if (ctx.reworkPrNumber == null) return;
+  try {
+    await deps.postReworkActions({
+      prNumber: ctx.reworkPrNumber,
+      feedback: ctx.prFeedback ?? [],
+      discussionIds: ctx.reworkDiscussionIds,
+      reviewers: ctx.reworkReviewers,
+    });
+  } catch {
+    // Best-effort — post-rework actions failure never blocks delivery
+  }
 }
 
 /** Deliver a fresh ticket: push + PR, quality tracking. */
@@ -154,6 +163,33 @@ async function deliverFresh(
     singleChildParent,
   });
 
+  const failure = detectDeliveryFailure({ result, ticket, parentKey, deps });
+  if (failure) return failure;
+
+  deps.recordDelivery();
+  await safeRemoveBuildLabel(ticket.key, deps);
+
+  return { ok: true };
+}
+
+/** Options bag for {@link detectDeliveryFailure}. */
+type DetectFailureOpts = {
+  readonly result: DeliveryResult;
+  readonly ticket: { readonly key: string; readonly title: string };
+  readonly parentKey: string | undefined;
+  readonly deps: DeliverPhaseDeps;
+};
+
+/**
+ * Detect a delivery failure (push or PR-creation) and write the
+ * corresponding progress entry. Returns the tagged failure result, or
+ * `undefined` when delivery succeeded and the caller should continue.
+ */
+function detectDeliveryFailure(
+  opts: DetectFailureOpts,
+): DeliverPhaseResult | undefined {
+  const { result, ticket, parentKey, deps } = opts;
+
   if (!result.isPushed) {
     deps.appendProgress({
       key: ticket.key,
@@ -161,13 +197,41 @@ async function deliverFresh(
       status: 'PUSH_FAILED',
       parent: parentKey,
     });
-    return { ok: false };
+    return {
+      ok: false,
+      error: { kind: 'push-failed', message: PUSH_FAILED_MESSAGE },
+    };
   }
 
-  deps.recordDelivery();
-  await safeRemoveBuildLabel(ticket.key, deps);
+  const prFailure = prCreationFailure(result);
+  if (prFailure) {
+    deps.appendProgress({
+      key: ticket.key,
+      summary: ticket.title,
+      status: 'PR_CREATION_FAILED',
+      parent: parentKey,
+    });
+    return {
+      ok: false,
+      error: { kind: 'pr-creation-failed', message: prFailure.message },
+    };
+  }
 
-  return { ok: true };
+  return undefined;
+}
+
+/**
+ * Detect a real PR-creation failure (excludes already-exists case).
+ *
+ * @returns The underlying failure when the PR API call returned a tagged
+ *   error and the PR did not already exist; `undefined` otherwise.
+ */
+function prCreationFailure(
+  result: DeliveryResult,
+): { readonly message: string } | undefined {
+  const pr = result.prResult;
+  if (!pr || pr.ok || pr.alreadyExists === true) return undefined;
+  return { message: pr.error.message };
 }
 
 /** Remove build label after delivery. Best-effort — never blocks. */
