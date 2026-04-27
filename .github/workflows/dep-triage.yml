@@ -1,0 +1,177 @@
+name: Dependabot triage
+
+# Detects stale Dependabot security advisories and opens triage issues
+# with per-class hints (Class A = transient ERR_PNPM_FETCH_5xx flake;
+# Class B = parent exact-pin requiring pnpm.overrides). Per gamma-spec.md
+# v0.2 §3 (Phase 7.3.γ-2). Workflow is informational, not a PR gate
+# (anti-scope §4 — no required-check promotion).
+
+on:
+  schedule:
+    # Monday 08:00 UTC — 2h buffer after dependabot.yml schedule.time '06:00'
+    # to absorb Dependabot retries + log-publication latency.
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+    inputs:
+      stale-threshold-days:
+        description: 'Minimum advisory age (days) before triage'
+        type: number
+        default: 7
+
+concurrency:
+  group: dep-triage
+  cancel-in-progress: false # let in-flight scans finish; queue follow-ups
+
+permissions:
+  issues: write
+  contents: read
+  actions: read
+  vulnerability-alerts: read # NOT security-events — that's CodeQL only
+
+jobs:
+  triage:
+    name: Detect + classify stale Dependabot alerts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Triage stale alerts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          STALE_DAYS: ${{ github.event.inputs.stale-threshold-days || 7 }}
+        run: |
+          set -euo pipefail
+
+          stale_seconds=$((STALE_DAYS * 86400))
+          now_ts=$(date -u +%s)
+          tmpdir=$(mktemp -d)
+          trap 'rm -rf "$tmpdir"' EXIT
+
+          gh api "repos/$REPO/dependabot/alerts" --paginate > "$tmpdir/alerts.json"
+          alert_count=$(jq 'length' "$tmpdir/alerts.json")
+          echo "Fetched $alert_count alerts total"
+
+          # Stale-and-open alerts → classify + triage
+          jq -r --argjson now "$now_ts" --argjson stale "$stale_seconds" '
+            .[] | select(.state == "open")
+            | select((($now - (.created_at | fromdateiso8601)) > $stale))
+            | [.number, .security_vulnerability.package.name, .created_at,
+               .security_advisory.severity, (.security_advisory.cve_id // "no-cve"),
+               .html_url] | @tsv
+          ' "$tmpdir/alerts.json" > "$tmpdir/stale.tsv"
+
+          stale_count=$(wc -l < "$tmpdir/stale.tsv" | tr -d ' ')
+          echo "Stale-and-open alerts: $stale_count"
+
+          while IFS=$'\t' read -r n pkg created severity cve url; do
+            [ -z "$n" ] && continue
+            # Defensive: if date -u -d ever fails (non-ISO8601 surprise),
+            # fall back to age_days=0 rather than aborting the run mid-loop.
+            created_ts=$(date -u -d "$created" +%s 2>/dev/null || echo "$now_ts")
+            age_days=$(( (now_ts - created_ts) / 86400 ))
+            echo "::group::alert #$n ($pkg, ${age_days}d, $severity)"
+
+            # Anchored substring `for <pkg> - Update` avoids prefix-overlap
+            # false positives (e.g. `for vite` would otherwise match `for vitest`).
+            run_json=$(gh run list --workflow="Dependabot Updates" --limit 50 \
+              --json databaseId,displayTitle,conclusion,createdAt,url --jq "
+                [.[] | select(.displayTitle | contains(\"for $pkg - Update\"))
+                     | select(.conclusion == \"failure\")]
+                | sort_by(.createdAt) | last // empty
+              ")
+            run_id=$(echo "$run_json" | jq -r '.databaseId // empty')
+            run_url=$(echo "$run_json" | jq -r '.url // empty')
+
+            class_hint="unknown"
+            class_recipe="Manual log inspection: \`gh api repos/$REPO/actions/runs/<id>/logs\`."
+
+            if [ -n "$run_id" ]; then
+              if gh api "repos/$REPO/actions/runs/$run_id/logs" > "$tmpdir/log-$run_id.zip" 2>/dev/null; then
+                unzip -qq "$tmpdir/log-$run_id.zip" -d "$tmpdir/log-$run_id" 2>/dev/null || true
+                class_a_code=""
+                class_b=""
+                if grep -rqE 'ERR_PNPM_FETCH_5[0-9]{2}' "$tmpdir/log-$run_id" 2>/dev/null; then
+                  class_a_code=$(grep -rhE 'ERR_PNPM_FETCH_5[0-9]{2}' "$tmpdir/log-$run_id" 2>/dev/null \
+                                 | grep -oE '5[0-9]{2}' | head -1 || true)
+                fi
+                if grep -rqE 'latest possible version of .* that can be installed is' "$tmpdir/log-$run_id" 2>/dev/null; then
+                  class_b="yes"
+                fi
+
+                if [ -n "$class_a_code" ] && [ -n "$class_b" ]; then
+                  class_hint="B with A flake co-occurrence"
+                  class_recipe="Class B (parent exact-pin) confirmed; transient ${class_a_code} flake also present. Add \`pnpm.overrides\` per PR #386 model AND retry the run."
+                elif [ -n "$class_b" ]; then
+                  class_hint="B (parent exact-pin)"
+                  class_recipe="Add \`pnpm.overrides\` to root \`package.json\`. Identify parent via \`npm view <parent>@<version> dependencies\`. PR #386 is the model."
+                elif [ -n "$class_a_code" ]; then
+                  class_hint="A (flake)"
+                  class_recipe="Transient ${class_a_code} on Dependabot proxy. Retry via \`gh api repos/$REPO/actions/runs/$run_id/rerun -X POST\` or wait for next tick. If 3+ retries persist-fail, escalate to manual fix."
+                fi
+              fi
+            fi
+
+            issue_title="[dep-triage] $pkg — alert #$n stale (${age_days}d) — Class $class_hint"
+            search_prefix="[dep-triage] $pkg — alert #$n"
+            # --limit 200 caps candidate set; GitHub Search tokenization drops
+            # em-dash/brackets so the `startswith` post-filter is the actual
+            # idempotency guard. Default --limit 30 risks dedupe miss if >30
+            # open issues match the tokenized search.
+            existing=$(gh issue list --state open --limit 200 --search "$search_prefix in:title" \
+              --json number,title \
+              --jq ".[] | select(.title | startswith(\"$search_prefix\")) | .number" \
+              | head -1 || true)
+
+            body_file="$tmpdir/issue-$n.md"
+            {
+              echo "**Stale Dependabot security advisory** — open ${age_days} days (threshold ${STALE_DAYS}d)."
+              echo
+              echo "- Alert: [#$n]($url)"
+              echo "- Package: \`$pkg\`"
+              echo "- Severity: $severity"
+              echo "- CVE: $cve"
+              echo "- Failed run: ${run_url:-none found}"
+              echo "- Class hint: **$class_hint**"
+              echo
+              echo "### Recipe"
+              echo "$class_recipe"
+              echo
+              echo "---"
+              echo
+              echo "_Auto-generated by \`.github/workflows/dep-triage.yml\`. Closes automatically when the underlying alert resolves._"
+            } > "$body_file"
+
+            if [ -n "$existing" ]; then
+              echo "Updating issue #$existing"
+              gh issue comment "$existing" \
+                --body "Re-classified $(date -u +%FT%TZ): Class $class_hint.${run_url:+ Latest failed run: $run_url}"
+            else
+              echo "Opening new issue"
+              gh issue create --title "$issue_title" --body-file "$body_file"
+            fi
+            echo "::endgroup::"
+          done < "$tmpdir/stale.tsv"
+
+          # Resolved alerts → auto-close any open triage issues
+          jq -r '
+            .[] | select(.state == "fixed" or .state == "dismissed" or .state == "auto_dismissed")
+            | [.number, .security_vulnerability.package.name, .state] | @tsv
+          ' "$tmpdir/alerts.json" > "$tmpdir/resolved.tsv"
+
+          while IFS=$'\t' read -r n pkg state; do
+            [ -z "$n" ] && continue
+            search_prefix="[dep-triage] $pkg — alert #$n"
+            # --limit 200 caps candidate set; GitHub Search tokenization drops
+            # em-dash/brackets so the `startswith` post-filter is the actual
+            # idempotency guard. Default --limit 30 risks dedupe miss if >30
+            # open issues match the tokenized search.
+            existing=$(gh issue list --state open --limit 200 --search "$search_prefix in:title" \
+              --json number,title \
+              --jq ".[] | select(.title | startswith(\"$search_prefix\")) | .number" \
+              | head -1 || true)
+            if [ -n "$existing" ]; then
+              echo "Closing issue #$existing (alert state=$state)"
+              gh issue close "$existing" --comment "Resolved: alert state = $state"
+            fi
+          done < "$tmpdir/resolved.tsv"
+
+          echo "Triage complete: $stale_count stale-and-open alerts processed."
