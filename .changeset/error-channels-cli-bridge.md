@@ -4,7 +4,8 @@
 ---
 
 `invokeClaudeSession` switches to async streaming spawn and returns
-`Promise<{ ok, stderr }>` with the captured trailing 4 KiB of stderr.
+`Promise<{ ok, stderr }>` with the trailing 4096-char tail of captured
+stderr (UTF-16 code units, not bytes — for ASCII the two are equivalent).
 `invokeClaudePrint` adds `stderr` to its existing `{ stdout, ok }` return.
 A new `StreamingSpawnFn` type + `streamingSpawn` field on
 `buildPipelineDeps` opts let the terminal entrypoint inject a real-Node

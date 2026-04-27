@@ -135,7 +135,7 @@ describe('invokeClaudePrint', () => {
     );
   });
 
-  it('truncates stderr to the trailing 4 KiB', () => {
+  it('truncates stderr to the trailing 4096 chars', () => {
     const longStderr = 'x'.repeat(8192);
     const spawn = vi
       .fn<SpawnSyncFn>()
@@ -273,7 +273,7 @@ describe('invokeClaudeSession', () => {
     expect(result.stderr).toContain('auth error: invalid token');
   });
 
-  it('truncates stderr to the trailing 4 KiB', async () => {
+  it('truncates stderr to the trailing 4096 chars', async () => {
     const longStderr = 'y'.repeat(8192);
     const spawn = vi.fn<StreamingSpawnFn>().mockResolvedValue(
       createStreamingResult({

@@ -67,7 +67,7 @@ function tailStderr(stderr: string): string {
  * the response and surface failure context.
  *
  * @param options - The print invocation options.
- * @returns Captured stdout, captured stderr (4 KiB tail), and process success.
+ * @returns Captured stdout, captured stderr (4096-char tail), and process success.
  */
 export function invokeClaudePrint(
   options: ClaudePrintInvokeOptions,
@@ -98,7 +98,7 @@ export function invokeClaudePrint(
  * to `process.stdout` / `process.stderr`). Resolves once the session exits.
  *
  * @param options - The session invocation options.
- * @returns Process success flag plus the trailing 4 KiB of captured stderr.
+ * @returns Process success flag plus the trailing 4096-char tail of captured stderr.
  */
 export async function invokeClaudeSession(
   options: ClaudeSessionInvokeOptions,
