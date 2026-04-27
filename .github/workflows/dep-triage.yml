@@ -64,7 +64,10 @@ jobs:
 
           while IFS=$'\t' read -r n pkg created severity cve url; do
             [ -z "$n" ] && continue
-            age_days=$(( (now_ts - $(date -u -d "$created" +%s)) / 86400 ))
+            # Defensive: if date -u -d ever fails (non-ISO8601 surprise),
+            # fall back to age_days=0 rather than aborting the run mid-loop.
+            created_ts=$(date -u -d "$created" +%s 2>/dev/null || echo "$now_ts")
+            age_days=$(( (now_ts - created_ts) / 86400 ))
             echo "::group::alert #$n ($pkg, ${age_days}d, $severity)"
 
             # Anchored substring `for <pkg> - Update` avoids prefix-overlap
