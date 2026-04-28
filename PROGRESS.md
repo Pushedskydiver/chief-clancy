@@ -4,7 +4,7 @@ Living state document for the Clancy monorepo. Records the current state, the ph
 
 ## Next workstreams (after Session 148)
 
-Ordering updated 2026-04-28 Session 149 — Item 4 audit-spec v0.5 → v0.6 regime-change compression (378 → 113 lines per Alex direction post-R5 verification-rate regression to 66.7%); audit-spec is now a decision record, not iterative research artefact. PR-3 spec drafted + grilled to v0.3 LOCKED pre-R3 at `.claude/research/progress-md-purpose-audit/pr3-pattern-trackers-spec.md` (gitignored, project-root). 1 path-fix shipped to main (`1887ab3`); 0 PRs. Active workstreams unchanged at 4. Mid-iteration handoff hypothesis DISCONFIRMED at n=2 per R5 evidence (codification rejected; refinement saved to `feedback_iterate_spec_grill_until_solid.md`).
+Ordering updated 2026-04-28 Session 150 — Item 4 refocused per Alex post-PR-3-spec-R3 (verification rate regressed R2 92.9% → R3 84.2% with fresh BLOCKING + drift-self-application n=2). Session 150 in-conversation R4 dispatch returned ~77% verification rate (2B+5M+4L+2F); findings NOT folded to v0.5 since refocus was decided instead per discipline-task-fit insight. PR-3 spec at v0.4 LOCKED frozen as gitignored historical artefact (not promoted, not discarded). PR-1 standalone is the active scope (no PR-3 dependency); PR-2 + PR-3 deferred-pending-empirical-evidence (re-surface only if dogfeeding-removal in PR-1 surfaces a tracker-update gap or SESSIONS.md write-side burden). Spec-grill discipline-task-fit hypothesis saved as `feedback_specgrill_discipline_task_fit.md` (codification candidate at n=3 if PR-1 ships cleanly with DA-on-diff alone). Active workstreams unchanged at 4.
 
 1. **Phase 7 — Dependency automation.** **7.3.α/β DONE** (Session 125 — see Sessions 141-142 entries for evidence). **7.3.γ DONE Session 143**: γ-PR-1 [#409](https://github.com/Pushedskydiver/chief-clancy/pull/409) `ae3097a` (Alex-merge — DA-waiver carve-out + `.github/dependabot.yml` `schedule.time: '06:00'` anchor + `groups:` block with `applies-to: security-updates` + `/.github/dependabot.yml` blast-radius mirror in DEVELOPMENT.md + CODEOWNERS) + γ-PR-2 [#410](https://github.com/Pushedskydiver/chief-clancy/pull/410) `b49d5e7` (Alex-merge — `.github/workflows/dep-triage.yml` 177-line stale-alert detector with per-class hint via `gh api .../actions/runs/{id}/logs` grep). γ-2 dry-run via `workflow_dispatch` ([run `25006937765`](https://github.com/Pushedskydiver/chief-clancy/actions/runs/25006937765)) completed cleanly post-merge: "Fetched 0 alerts total → Triage complete: 0 stale-and-open alerts processed" — validates YAML syntax + permissions + bash safety + grep patterns end-to-end. Spec at `~/.claude/research/dependency-automation/gamma-spec.md` v0.2 (gitignored): R1 returned 2B+3M+4L+2F = 11 findings, fold v0.2, R_n NIT-CLEAN. Spec-grill arc-shape pattern advances to **n=5** (purely-interpretive 2-round convergence; well past INDEX rule-of-three; codification candidate). **β trigger condition (c) ratified Session 143** (commit `189dfe4`): R1 caught the v0.1 framing claim "(a) effectively MET" was unsupported by literal text; Alex accepted Option (ii) (formalize (c) in PROGRESS.md) over Option (i) (wait for calendar 2026-05-07).
    - **Visibility-gap pattern RESOLVED Session 144 with cause re-attribution** (PR #411 `0d6fc16` + PR #412 `c99c260`, both Alex-merge): not GITHUB_TOKEN token-scope filtering — list endpoint is intermittently empty regardless of URL shape (likely cache or replica staleness in GitHub's serving layer; cause not isolated). Same query observed returning 0 alerts and 16 alerts within minutes; individual records remain accessible by number. Auto-close path is best-effort (may silently no-op when list endpoint is in empty-state cache window). YAML comment in `dep-triage.yml` carries the honest framing — do not "improve" it back to a causal-model claim. Self-caught non-stationarity lesson recorded; n=1 watch toward INDEX rule-of-three for promotion to `docs/REVIEW-PATTERNS.md`.
@@ -20,7 +20,7 @@ Ordering updated 2026-04-28 Session 149 — Item 4 audit-spec v0.5 → v0.6 regi
    - **Implication for γ design** (revised Session 142 after log inspection): γ's policy carve-out must account for **two distinct `security_update_not_possible` classes** (per Q3): **Class A** (transient flake — retryable; manual rerun via `gh api repos/.../actions/runs/{id}/rerun` or wait for next tick) and **Class B** (parent exact-pin — requires `pnpm.overrides`; PR #386 model). γ-2 detector option (Session 141) revised: instead of polling `network/updates/` (UI-only), use `gh api repos/.../actions/runs/{id}/logs` (publicly accessible) to fetch failure logs and class-classify. Three γ scopes now scoped: **(γ-1)** document both classes + manual recipes only; **(γ-2)** add `dep-triage.yml` workflow with class-hint output (~80-100 line workflow); **(γ-3)** auto-anchor / auto-override workflow (defer to Phase 8). Detail at `~/Desktop/alex/@chief-clancy/.claude/research/dependency-automation/dependabot-error-analysis.md` v0.2 §8.
 2. **Automated session handoff — AUDITED TWICE, DEFERRED.** Second-10-window audit ran Session 123 at `.claude/research/session-handoff/audit-2026-04-23.md` (gitignored) across Sessions 113-122. Result: CLEAN — 0/10 unplanned compactions, handoff-cost median ≈7k tokens (under the 8k threshold; mean drifted +2.4k vs Window 1 due to heavier session complexity, legitimate), 0/2 measured clarifying-question rate. Novel friction class surfaced (output-token-limit mid-draft, n=1 Session 121) — logged but not substrate-adoption-motivating (Routine substrate runs in cloud with fresh context; it'd hit the same intra-turn output limit). First-window audit lives at `audit-2026-04-21.md`. Substrate (Claude Code Routines + `PostCompact` hook) remains research preview. **Next revisit triggers:** (i) any single early-trigger breach from §Measurement protocol (3+ unplanned compactions in 5 sessions / handoff >5min on 2+ sessions / 2+ clarifying-question sessions in a row), OR (ii) drift over a **third 10-session window (Sessions 123-132)**: unplanned-compaction rate ≥2/10, handoff-cost median ≥8k tokens (Window 2 median 7k; trend upward), or clarifying-question rate ≥1/10. Hygiene note persists: backfill discipline degraded (Window 1: 4/7 measurable left TBD; Window 2: 8/10 left TBD) — worth formalising into §Measurement protocol as a session-load step.
 3. **Phase F** — `@chief-clancy/design` (Stitch integration). Deferred pending Phase 7. **Per Alex (Session 141): leave until last.**
-4. **PROGRESS.md/SESSIONS.md purpose audit + multi-PR sequence (PR-3 → PR-1 → PR-2).** Audit-spec at `.claude/research/progress-md-purpose-audit/spec.md` v0.6 LOCKED — **decision record, 113 lines** (compressed from v0.5 378-line audit-spec Session 149 per Alex direction post-R5 verification-rate regression to 66.7%). Three confirmed decisions intact: (1) drop dogfeeding from LI; (2) Job 3 destination = NEW `docs/PATTERN-TRACKERS.md`; (3) drop `docs/history/SESSIONS.md` + retire `docs/INDEX.md §12` + retire `docs/DEVELOPMENT.md §Archival maintenance`. **Multi-PR sequence**: PR-3 NEW PATTERN-TRACKERS.md + DEVELOPMENT.md State-surface row + `§Session handoff` operational step + `.github/CODEOWNERS` entry (4 surfaces; §7-eligible blast-radius Alex-merge) → PR-1 drop LI Step 8/9 dogfeeding + tracker move (PROGRESS.md only, direct-to-main; depends on PR-3) → PR-2 drop SESSIONS.md ceremony triple + flip cadence to 1-line stubs at new `## Older sessions` PROGRESS.md section (§7-eligible Alex-merge). PR-4/PR-5/PR-6 deferred (focus.md / LI generic-steps home / TBD-fill discipline). **Session 149 progress**: PR-3 spec drafted at `pr3-pattern-trackers-spec.md` v0.3 LOCKED post-R2-fold; verification rate trend R1 86.4% → R2 92.9% (improving but below ≥95% trigger). R3 dispatch is Session 150 primary work; per `feedback_iterate_spec_grill_until_solid.md` Session 149 update, R3 = continued discovery (NOT R_n verification — fold remains ramifying per R2 fresh-class findings). Fallback per audit-spec v0.6 §2: if PR-3's spec-grill arc takes 3+ rounds AND blocks PR-1 across 2+ handoff cycles, ship PR-1 standalone; defer PR-3 to fresh-context arc.
+4. **PROGRESS.md cleanup — refocused Session 150 to PR-1 standalone.** Audit-spec at `.claude/research/progress-md-purpose-audit/spec.md` v0.6 LOCKED retains the original 3 decisions, but Session 150 evidence (PR-3 spec arc R1-R4 with verification rate yo-yoing 86.4% → 92.9% → 84.2% → ~77% under drift-self-application n=2) led to a refocus per Alex's original Q1 ("is PROGRESS.md restating protocols?" = Decision 1 / PR-1 alone). **Active scope: PR-1 standalone** — codify no-dogfeeding-in-LI rule in `docs/DEVELOPMENT.md §Loading-instructions format` + retroactive PROGRESS.md trim of pre-rule verbose LIs (Sessions 147 + 148 LI blocks) + delete orphaned Session 143 LI block discovered in archived-stub area. **PR-2 + PR-3 deferred-pending-empirical-evidence**: re-surface only if PR-1 ships and (i) tracker-update bumps get missed without a destination doc (justifies PR-3) OR (ii) SESSIONS.md write-side burden becomes load-bearing (justifies PR-2). PR-3 spec at `pr3-pattern-trackers-spec.md` v0.4 LOCKED frozen as gitignored historical artefact. Spec-grill discipline-task-fit hypothesis (live-state-audit + doc-edit specs ramify under spec-grill; DA-on-diff is the right surface) saved as `feedback_specgrill_discipline_task_fit.md`. Decisions 4/5/6 (focus.md / LI generic-steps home / TBD-fill discipline) remain deferred.
 
 ### Recently closed (Session 147 cleanup)
 
@@ -307,43 +307,22 @@ On load:
    - **(E) Patterns at n=1 watch from Session 147 close**: Schema-pair-miss-DA-catch (n=1), branch-switched-to-main mid-session (n=1). All below codification threshold; only pursue if a new occurrence has fired since Session 147 close.
    - **(F) Alex redirects** — follow the redirect.
 7. **READBACK BEFORE ACTION** (Sessions 128-147 discipline held). After completing steps 1-6, produce a 3-5 sentence readback: (a) understanding of current state, (b) decision branch, (c) proposed first concrete action. **WAIT for Alex confirmation** before edits, PR actions, or subagent dispatches.
-8. **Apply rules shipped Sessions 102-147.**
-   - **PR #402**: INDEX consultation before policy-adjacent edits.
-   - **PR #403/PR #408**: 3-axis post-fold sweep (direct-term + derived-cardinality + qualifier-word).
-   - **PR #404**: 2-4 options + explicit recommendation + evidence + pushback-tolerance for Alex decision points.
-   - **PR #405**: §12 INDEX archival rule when archiving PROGRESS.md session entries.
-   - **PR #407**: codified rationalization "Text alone won't fire reliably — I'll add a hook to enforce it".
-   - **PR #409 (Session 143)**: Dependabot DA-waiver carve-out + `/.github/dependabot.yml` blast-radius path.
-   - **PR #410 (Session 143)**: dep-triage.yml workflow exists at `.github/workflows/dep-triage.yml`. Monday 08:00 UTC + on-demand `workflow_dispatch`. Reads `vulnerability-alerts: read`.
-   - **PR #411 + #412 (Session 144)**: dep-triage.yml fetch URL is `?state=open,fixed,dismissed,auto_dismissed`. Auto-close path is best-effort given list-endpoint intermittency.
-   - **PR #413 (Session 145)**: Bounded-fold 2-round arc rule in `docs/DEVELOPMENT.md §Two-phase grill discipline`.
-   - **PR #414 (Session 146)**: cli-bridge stderr capture. `invokeClaudeSession` is async + returns `Promise<{ ok, stderr }>`; `invokeClaudePrint` adds `stderr`; `StreamingSpawnFn` + `StreamingSpawnResult` exported from `@chief-clancy/dev`; `streamingSpawn` field on `buildPipelineDeps` opts.
-   - **PR #416 (Session 147)**: phase tagged-error plumbing. `PipelineDeps.{feasibility,invoke,deliver}` shapes are tagged discriminated unions; `feasibilityPhase` / `makeInvokePhase` / `deliverPhase` return tagged errors; new `PR_CREATION_FAILED` enum on `@chief-clancy/core` (in `FAILED_STATUSES` only); `appendDeliveryProgress` suppresses lifecycle write on `outcome.type === 'failed'`; terminal aborted display logs `result.error`. Behavior change: PR creation failure halts deliver phase + writes `PR_CREATION_FAILED` (was silently `PUSHED`); `pr-retry` does not auto-retry (operator intervention).
-9. **Protocol discipline reminders — codified, not transient:**
-   - DA reports in-chat only, surrogate posts audit comment on PR.
-   - DA pre-PR-open, surrogate post-PR-open. Sequence: write code → DA in-chat → fold → self-review → push + open PR → surrogate → audit comment → merge.
-   - **Verify subagent + own diagnostic claims before acting** per `docs/DA-REVIEW.md §Verify subagent claims`.
-   - **Spec-grill convergence**: bounded-fold 2-round arc is the codified expectation (PR #413).
-   - **Push direct-to-main commits in the same session** per Session 134 mitigation.
-   - **Force-push for fold-after-PR-open** is fine via `--force-with-lease` when surrogate catches load-bearing finding pre-merge. New-commit-then-push is also valid (Sessions 146-147 used that path for both DA and surrogate folds).
-   - **R_n NIT-CLEAN does NOT preclude DA findings** (Sessions 145-147 cumulative evidence). Spec-grill verifies spec internal-consistency; DA verifies diff-vs-codebase consistency; surrogate verifies file-level claim consistency at HEAD.
-   - **Schema-pair sweep when widening a literal-union type** (Session 147 evidence — DA caught B1 because `VALID_STATUSES` runtime allowlist was the paired surface that needed parallel update with `ProgressStatus` type union). Sweep for sibling allowlists when adding to a union. n=1 watch.
-10. **Carry-overs from Session 147:**
-    - Phase 7.3.γ COMPLETE through γ-3. δ trigger conditions: 90-day audit (~2026-07-22) OR Alex-elective earlier flip.
-    - **Error channels workstream COMPLETE** — both PR-1 (#414) and PR-2 (#416) shipped. Spec at `.claude/research/error-channels/spec.md` v0.3 LOCKED is now historical.
-    - **Visibility-gap pattern** — n=2 with cause re-attribution; codification candidate or close-out at n=3.
-    - **Non-stationarity self-caught lesson** (Branch E from Session 145 LI) — n=1 watch (Session 144); promotion candidate at n=2.
-    - **Envelope-vs-cause attribution** (Session 142 case) — n=1 watch; promotion candidate at n=2.
-    - **Pre-decision Explore-agent dispatch** novel n=1 — codification candidate at n=2.
-    - **Post-fold residue surrogate-catch** novel n=3 cumulative (Sessions 144 + 146 + 147) — past INDEX rule-of-three; codification candidate as a 4th axis or separate rule.
-    - **Schema-pair miss DA-catch** novel n=1 watch — codification candidate at n=2.
-    - **Branch-switched-to-main mid-session** novel n=1 watch — codification candidate at n=2.
-    - **Hallucination tracker n=51 consecutive clean rounds** (Sessions 131-147).
-    - Surrogate-on-rule-addition n=16 unchanged. Surrogate-on-drift-fix n=27 unchanged. Surrogate-on-engineering-PR advanced (PR #416 was a refactor with non-trivial behavior change). Copilot UNREACHABLE n=34 (advanced from 33 via PR #416).
-    - Loading-instruction-course-correction n=5 unchanged.
-    - §Measurement protocol fifth-10-window — data point 5 recorded; 5 remaining.
-    - Active workstreams now 4: Phase 7 (δ + 90-day audit) / session handoff / Phase F / minimal handoff prompt.
-11. **If Alex redirects on load** (priority shift, new urgent ask), follow the redirect — §Next workstreams is a default, not a contract.
+8. **Carry-overs from Session 147:**
+   - Phase 7.3.γ COMPLETE through γ-3. δ trigger conditions: 90-day audit (~2026-07-22) OR Alex-elective earlier flip.
+   - **Error channels workstream COMPLETE** — both PR-1 (#414) and PR-2 (#416) shipped. Spec at `.claude/research/error-channels/spec.md` v0.3 LOCKED is now historical.
+   - **Visibility-gap pattern** — n=2 with cause re-attribution; codification candidate or close-out at n=3.
+   - **Non-stationarity self-caught lesson** (Branch E from Session 145 LI) — n=1 watch (Session 144); promotion candidate at n=2.
+   - **Envelope-vs-cause attribution** (Session 142 case) — n=1 watch; promotion candidate at n=2.
+   - **Pre-decision Explore-agent dispatch** novel n=1 — codification candidate at n=2.
+   - **Post-fold residue surrogate-catch** novel n=3 cumulative (Sessions 144 + 146 + 147) — past INDEX rule-of-three; codification candidate as a 4th axis or separate rule.
+   - **Schema-pair miss DA-catch** novel n=1 watch — codification candidate at n=2.
+   - **Branch-switched-to-main mid-session** novel n=1 watch — codification candidate at n=2.
+   - **Hallucination tracker n=51 consecutive clean rounds** (Sessions 131-147).
+   - Surrogate-on-rule-addition n=16 unchanged. Surrogate-on-drift-fix n=27 unchanged. Surrogate-on-engineering-PR advanced (PR #416 was a refactor with non-trivial behavior change). Copilot UNREACHABLE n=34 (advanced from 33 via PR #416).
+   - Loading-instruction-course-correction n=5 unchanged.
+   - §Measurement protocol fifth-10-window — data point 5 recorded; 5 remaining.
+   - Active workstreams now 4: Phase 7 (δ + 90-day audit) / session handoff / Phase F / minimal handoff prompt.
+9. **If Alex redirects on load** (priority shift, new urgent ask), follow the redirect — §Next workstreams is a default, not a contract.
 
 ---
 
@@ -426,43 +405,22 @@ On load:
    - **(E) Patterns at n=1 watch from Session 146 close**: pre-decision Explore-agent-dispatch (n=1), DA-on-fold-residue-check axis (n=2 cumulative), husky/lint-staged auto-fix breaking `prefer-readonly-type` accumulator (n=1), auto-created `pr-XXX` branches (n=1). All below codification threshold; only pursue if a new occurrence has fired since Session 146 close.
    - **(F) Alex redirects** — follow the redirect.
 7. **READBACK BEFORE ACTION** (Sessions 128-146 discipline held). After completing steps 1-6, produce a 3-5 sentence readback: (a) understanding of current state, (b) decision branch, (c) proposed first concrete action. **WAIT for Alex confirmation** before edits, PR actions, or subagent dispatches.
-8. **Apply rules shipped Sessions 102-146.**
-   - **PR #402**: INDEX consultation before policy-adjacent edits.
-   - **PR #403/PR #408**: 3-axis post-fold sweep (direct-term + derived-cardinality + qualifier-word).
-   - **PR #404**: 2-4 options + explicit recommendation + evidence + pushback-tolerance for Alex decision points.
-   - **PR #405**: §12 INDEX archival rule when archiving PROGRESS.md session entries.
-   - **PR #407**: codified rationalization "Text alone won't fire reliably — I'll add a hook to enforce it".
-   - **PR #409 (Session 143)**: Dependabot DA-waiver carve-out + `/.github/dependabot.yml` blast-radius path.
-   - **PR #410 (Session 143)**: dep-triage.yml workflow exists at `.github/workflows/dep-triage.yml`. Monday 08:00 UTC + on-demand `workflow_dispatch`. Reads `vulnerability-alerts: read`.
-   - **PR #411 + #412 (Session 144)**: dep-triage.yml fetch URL is `?state=open,fixed,dismissed,auto_dismissed`. Auto-close path is best-effort given list-endpoint intermittency.
-   - **PR #413 (Session 145)**: **Bounded-fold 2-round arc rule** in `docs/DEVELOPMENT.md §Two-phase grill discipline`. Bounded folds (3-axis fold-incompleteness sweep returns clean) converge in 2 rounds; ramifying folds follow Post-fold audit pass + iterate.
-   - **PR #414 (Session 146)**: cli-bridge stderr capture — `invokeClaudeSession` is async + returns `Promise<{ ok, stderr }>`; `invokeClaudePrint` adds `stderr`; `StreamingSpawnFn` + `StreamingSpawnResult` exported from `@chief-clancy/dev`; `streamingSpawn` field on `buildPipelineDeps` opts; `makeStreamingSpawn` factory ships in both `dev/src/entrypoints/adapters.ts` and `terminal/src/entrypoints/implement.ts` (duplication structural per esbuild-self-contained-bundle pattern).
-9. **Protocol discipline reminders — codified, not transient:**
-   - DA reports in-chat only, surrogate posts audit comment on PR.
-   - DA pre-PR-open, surrogate post-PR-open. Sequence: write code → DA in-chat → fold → self-review → push + open PR → surrogate → audit comment → merge.
-   - **Verify subagent + own diagnostic claims before acting** per `docs/DA-REVIEW.md §Verify subagent claims`.
-   - **Spec-grill convergence**: bounded-fold 2-round arc is the **codified expectation** (PR #413). Apply per the rule's diagnostic — 3-axis fold-incompleteness sweep returns clean → expect 2 rounds.
-   - **Push direct-to-main commits in the same session** per Session 134 mitigation.
-   - **Force-push for fold-after-PR-open** is fine via `--force-with-lease` when surrogate catches load-bearing finding pre-merge. New-commit-then-push is also valid (Session 146 PR #414 used that path for both DA fold and surrogate fold).
-   - **R_n NIT-CLEAN does NOT preclude DA findings** (Session 146 PR #414 evidence — DA caught 3 LOW on diff-vs-codebase consistency that R_n correctly verified against v0.3 spec but didn't catch the applied-diff issues). n=2 cumulative (Session 145 + Session 146).
-   - **When recommendation hedging surfaces under Alex pushback, dispatch bounded research** to convert hand-wave into evidence-grounded decision before scope-locking. Session 146 evidence: Alex's "strong real evidence?" prompt led to Explore-agent dispatch that locked Option 2 with evidence rather than continuing to recommend on hand-wave. n=1 watch.
-   - **eslint-disable-next-line is allowed when intentionally-mutable structures need it** — precedent at `core/src/shared/cache.ts:3` + Session 146 `ChunkAccumulator` in `dev/src/entrypoints/adapters.ts` and `terminal/src/entrypoints/implement.ts`. Document the reason inline (`-- accumulator must be mutable to capture streaming chunks`). DO NOT let `eslint --fix` silently rewrite `string[]` → `readonly string[]` on accumulators — it will break `.push()` calls.
-10. **Carry-overs from Session 146:**
-    - Phase 7.3.γ COMPLETE through γ-3. δ trigger conditions: 90-day audit (~2026-07-22) OR Alex-elective earlier flip.
-    - **Error channels PR-2** — DEFAULT primary on load (per spec §4 v0.3 LOCKED).
-    - **Visibility-gap pattern** — n=2 with cause re-attribution; codification candidate or close-out at n=3.
-    - **Non-stationarity self-caught lesson** (Branch E from Session 145 LI) — n=1 watch (Session 144); promotion candidate at n=2.
-    - **Envelope-vs-cause attribution** (Session 142 case) — n=1 watch; promotion candidate at n=2.
-    - **Pre-decision Explore-agent dispatch** novel n=1 — codification candidate at n=2.
-    - **DA-on-fold-residue-check** novel n=2 cumulative (Session 144 PR #412 surrogate finding + Session 146 PR #414 surrogate finding) — codification candidate at n=3 (post-fold residue check axis to add to existing 3-axis sweep).
-    - **Husky/lint-staged auto-fix breaking accumulator** novel n=1 — codification candidate at n=2 (CONVENTIONS.md addition).
-    - **Auto-created `pr-XXX` branches** novel n=2 cumulative (pr-413 + pr-414 + earlier pr-412) — workaround/cleanup-only; not a load-bearing pattern.
-    - **Hallucination tracker n=49 consecutive clean rounds** (Sessions 131-146).
-    - Surrogate-on-rule-addition n=16 unchanged. Surrogate-on-drift-fix n=27 unchanged. Surrogate-on-engineering-PR advanced (PR #414 was a refactor not a rule promotion). Copilot UNREACHABLE n=33 (advanced from 32 via PR #414).
-    - Loading-instruction-course-correction n=5 unchanged.
-    - §Measurement protocol fifth-10-window — data point 4 recorded; 6 remaining.
-    - Active workstreams still 5: Phase 7 (δ + 90-day audit) / session handoff / error channels (PR-1 done; PR-2 next) / Phase F / minimal handoff prompt.
-11. **If Alex redirects on load** (priority shift, new urgent ask), follow the redirect — §Next workstreams is a default, not a contract.
+8. **Carry-overs from Session 146:**
+   - Phase 7.3.γ COMPLETE through γ-3. δ trigger conditions: 90-day audit (~2026-07-22) OR Alex-elective earlier flip.
+   - **Error channels PR-2** — DEFAULT primary on load (per spec §4 v0.3 LOCKED).
+   - **Visibility-gap pattern** — n=2 with cause re-attribution; codification candidate or close-out at n=3.
+   - **Non-stationarity self-caught lesson** (Branch E from Session 145 LI) — n=1 watch (Session 144); promotion candidate at n=2.
+   - **Envelope-vs-cause attribution** (Session 142 case) — n=1 watch; promotion candidate at n=2.
+   - **Pre-decision Explore-agent dispatch** novel n=1 — codification candidate at n=2.
+   - **DA-on-fold-residue-check** novel n=2 cumulative (Session 144 PR #412 surrogate finding + Session 146 PR #414 surrogate finding) — codification candidate at n=3 (post-fold residue check axis to add to existing 3-axis sweep).
+   - **Husky/lint-staged auto-fix breaking accumulator** novel n=1 — codification candidate at n=2 (CONVENTIONS.md addition).
+   - **Auto-created `pr-XXX` branches** novel n=2 cumulative (pr-413 + pr-414 + earlier pr-412) — workaround/cleanup-only; not a load-bearing pattern.
+   - **Hallucination tracker n=49 consecutive clean rounds** (Sessions 131-146).
+   - Surrogate-on-rule-addition n=16 unchanged. Surrogate-on-drift-fix n=27 unchanged. Surrogate-on-engineering-PR advanced (PR #414 was a refactor not a rule promotion). Copilot UNREACHABLE n=33 (advanced from 32 via PR #414).
+   - Loading-instruction-course-correction n=5 unchanged.
+   - §Measurement protocol fifth-10-window — data point 4 recorded; 6 remaining.
+   - Active workstreams still 5: Phase 7 (δ + 90-day audit) / session handoff / error channels (PR-1 done; PR-2 next) / Phase F / minimal handoff prompt.
+9. **If Alex redirects on load** (priority shift, new urgent ask), follow the redirect — §Next workstreams is a default, not a contract.
 
 ---
 
@@ -479,51 +437,6 @@ On load:
 ---
 
 **Session 142 (2026-04-27) — Dependabot `security_update_not_possible` investigation: workflow-log inspection corrected v0.1 cause attribution to TWO distinct failure classes (Class A 503 flake + Class B exact-pin). 4 PROGRESS.md correction patches applied direct-to-main + Session 138 archived. γ-2 spec drafting deferred to Session 143. Archived to [`docs/history/SESSIONS.md`](docs/history/SESSIONS.md) Session 146 close per §12 INDEX rule; full retrospective in `git log -p PROGRESS.md`.**
-
-### Session 143 loading instructions
-
-On load:
-
-1. Read `PROGRESS.md` top-to-bottom (this Session 142 entry + §Next workstreams + Session 141 entry + Session 140 entry + Session 139 entry — detail band restored to N=4 (139-142); Session 138 archived to [`docs/history/SESSIONS.md`](docs/history/SESSIONS.md) this handoff per §12 INDEX rule).
-2. **Verify current sha via `git log --oneline -5`** — paste-prompt sha is "state at paste time"; repo may have advanced.
-3. **Push hygiene check** (Session 134 mitigation, held Sessions 135-142): run `git status` and `git log --oneline origin/main..HEAD` — if local main is ahead of origin/main, push immediately before any further work.
-4. **Standard Dependabot check**: `gh pr list --author "dependabot[bot]" --state all --limit 10` + `gh api repos/Pushedskydiver/chief-clancy/dependabot/alerts --jq '[.[] | select(.state=="open")] | length'`. If new alerts exist, surface count + class hint per Session 142 artefact §4 (Class A retryable / Class B needs `pnpm.overrides`).
-5. **PRIORITY ON LOAD: γ-2 spec drafting per Session 142 artefact §8 Option γ-2 (recommended)** — Alex confirmed direction at Session 142 close. Draft spec at `~/Desktop/alex/@chief-clancy/.claude/research/dependency-automation/gamma-spec.md` (gitignored) combining: (i) γ's existing scope (`docs/DEVELOPMENT.md §Auto-merge criteria` policy carve-out + `.github/CODEOWNERS` mirror + `.github/dependabot.yml` groups + `open-pull-requests-limit: 0` retained); (ii) γ-2 expansion (`dep-triage.yml` workflow with class-hint output via `gh api .../actions/runs/{id}/logs` grepping for `ERR_PNPM_FETCH_503` Class A vs `latest possible version of <pkg> that can be installed` Class B); (iii) anti-scope (no auto-anchor; no Renovate switch); (iv) test plan. Then **spec-grill** (R1 discovery + R_n verification per `docs/DEVELOPMENT.md §Two-phase grill discipline`) before any code moves. Then implement: workflow file + policy doc edits + branch/PR/DA/surrogate.
-6. **Decision point on load — five branches:**
-   - **(A) PRIMARY: γ-2 spec drafting + spec-grill + implementation** per step 5 above. Multi-segment work; pace via decision-point checkpoints.
-   - **(B) New Dependabot security PR fired since Session 142 close:** prioritise triaging per blast-radius Alex-handoff. γ-2 work defers.
-   - **(C) New Dependabot Updates workflow failure:** apply Session 142 artefact §3 class-classification recipe; manual fix per PR #386 model if needed. γ-2 spec design may inform real-time response.
-   - **(D) Bucket B: Item 3 (error channels) or Item 5 (minimal handoff prompt) per Session 141 cleanup** — Alex-elective.
-   - **(E) Alex redirects** — follow the redirect.
-7. **READBACK BEFORE ACTION** (Sessions 128-142 discipline held). After completing steps 1-6, produce a 3-5 sentence readback: (a) understanding of current state, (b) decision branch, (c) proposed first concrete action. **WAIT for Alex confirmation** before edits, PR actions, or subagent dispatches.
-8. **Apply rules shipped in PR #402 + PR #403 + PR #404 + PR #405 + PR #407 + PR #408.**
-   - **PR #402**: Before any Edit/Write on policy-adjacent paths: consult `docs/INDEX.md` for the matching scenario, then enumerate affected siblings + protocol steps.
-   - **PR #403 (now generalized via PR #408)**: when a spec-grill fold edits a definition, taxonomy, classification, or rubric, run the **3-axis post-fold sweep** (direct-term + derived-cardinality + qualifier-word) before declaring FOLDED.
-   - **PR #404**: when surfacing a decision point requiring Alex input — present 2-4 options + explicit recommendation + evidence + pushback-tolerance.
-   - **PR #405**: when archiving one or more `PROGRESS.md` session entries to `docs/history/SESSIONS.md`, follow `docs/INDEX.md §12` → `docs/DEVELOPMENT.md §Archival maintenance`.
-   - **PR #407**: codified rationalization "Text alone won't fire reliably — I'll add a hook to enforce it" — apply when tempted to reach for hook/agent mechanism over text.
-   - **PR #408**: 3-axis fold-completeness sweep generalization.
-9. **Protocol discipline reminders — codified, not transient:**
-   - DA reports in-chat only, surrogate posts audit comment on PR.
-   - DA pre-PR-open, surrogate post-PR-open. Sequence: write code → DA in-chat → fold → self-review → push + open PR → surrogate → audit comment → merge.
-   - **Verify subagent + own diagnostic claims before acting** per `docs/DA-REVIEW.md §Verify subagent claims`. **Session 142 evidence**: pull workflow run logs not just UI summary fields when investigating Dependabot/Actions failures.
-   - **Spec-grill convergence**: 2-round arc is now the empirically-established norm for purely-interpretive folds (n=4 evidence).
-   - **Push direct-to-main commits in the same session** per Session 134 mitigation.
-10. **Carry-overs from Session 142:**
-    - Phase 7 β window open through ≥2026-05-07. 0 open Dependabot alerts at Session 142 close. 0 Dependabot PRs.
-    - **Two-class failure breakdown empirically established** (Session 142 artefact v0.2 §3-§4): Class A flake (vite) + Class B exact-pin (handlebars). Both surface as `security_update_not_possible` with empty `conflicting-dependencies`. Workflow logs disambiguate.
-    - **γ-2 direction confirmed by Alex** at Session 142 close: stale-alert detector + class-hint workflow (~80-100 lines). Spec drafting + spec-grill + implementation deferred to Session 143 fresh context.
-    - **β trigger condition (c) MET (added Session 143)**: 2026-04-23 vite + handlebars failure runs + Session 142 v0.2 cause-attribution disambiguation = equivalent live-fire evidence per the new (c) condition added to Item 1. Session 142 carry-over text initially claimed (a) "effectively MET" — that was a re-interpretation of the literal condition; Session 143 R1 spec-grill caught the framing gap and Alex accepted Option (ii) to add explicit (c) instead. γ trigger fires now via (c).
-    - **Hallucination tracker n=29 consecutive clean rounds**.
-    - **Self-caught analytical error from incomplete sourcing** — v0.1 → v0.2 fold via external feedback. Novel pattern: incomplete-sourcing class is distinct from per-round hallucination class. Watch n=2.
-    - **Dependabot UX collapses distinct cause classes** novel n=1 watch.
-    - **Parent exact-pin blocks pnpm transitive bump** novel n=1 watch (Class B).
-    - **Workflow logs accessible via REST API** — `gh api repos/.../actions/runs/{id}/logs` works for Dependabot dynamic runs. Use this for γ-2 detector design.
-    - Surrogate-on-drift-fix n=26 unchanged. Surrogate-on-rule-addition n=13 unchanged. Copilot UNREACHABLE n=27 unchanged. (No PRs this session.)
-    - Loading-instruction-course-correction n=4 unchanged.
-    - §Measurement protocol fourth-10-window — data point 10 recorded; **WINDOW COMPLETE**. Session 143 opens 5th-10-window.
-    - Active workstreams still 5 (post-Session-141 cleanup): Phase 7 / session handoff / error channels / Phase F / minimal handoff prompt.
-11. **If Alex redirects on load** (priority shift, new urgent ask), follow the redirect — §Next workstreams is a default, not a contract.
 
 ---
 
