@@ -52,7 +52,7 @@ Your board tokens and API keys live in `.clancy/.env`. Although Claude doesn't n
 }
 ```
 
-This prevents Claude from reading these files regardless of what commands run. Clancy automatically adds `.clancy/.env` to `.gitignore` during init, but the deny list is an additional layer.
+This prevents Claude from reading these files regardless of what commands run. Clancy automatically adds `.clancy/` to `.gitignore` during init (which covers `.clancy/.env`, generated docs, and install bundles), but the deny list is an additional layer.
 
 ## Credential guard
 
@@ -85,7 +85,7 @@ Use the minimum permissions each integration requires:
 
 ## Webhook URLs
 
-If you configure Slack or Teams notifications, treat the webhook URL as a secret — anyone who has it can post to your channel. Keep `.clancy/.env` gitignored (Clancy does this automatically during init) and never share the URL.
+If you configure Slack or Teams notifications, treat the webhook URL as a secret — anyone who has it can post to your channel. Keep `.clancy/` gitignored (Clancy does this automatically during init) and never share the URL.
 
 ## Reporting vulnerabilities
 

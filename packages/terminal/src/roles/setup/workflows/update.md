@@ -214,6 +214,31 @@ If nothing was added, display nothing.
 
 ---
 
+## Step 4b — Migration check (.clancy/ gitignore fold)
+
+`.clancy/` is now gitignored entirely (covers credentials, generated docs, install bundles, version pin, and `.env.example` template). Projects init'd before this fold may still have tracked content under `.clancy/` and may not yet have the `.clancy/` line in `.gitignore`.
+
+Detect partial-migration state:
+
+1. Read the project's `.gitignore`. Set `gitignore_has_clancy = true` if a line exactly matching `.clancy/` is present (the legacy `.clancy/.env` line is NOT sufficient — it doesn't cover bundles, docs, version pin, or `.env.example`).
+2. Run `git ls-files .clancy/ 2>/dev/null` and capture the output. Set `has_tracked = true` if any output is returned.
+3. If both `gitignore_has_clancy` is true and `has_tracked` is false, skip silently — already migrated.
+4. Otherwise, print a one-time advisory listing **only the commands the user needs**:
+
+   ```
+   ℹ️  Migration: this project was init'd before .clancy/ became gitignored.
+      To migrate, run:
+
+   ```
+
+   - If `has_tracked` is true: print `   git rm --cached -r .clancy/`
+   - If `gitignore_has_clancy` is false: print `   grep -qxF '.clancy/' .gitignore || echo '.clancy/' >> .gitignore`
+   - If either condition triggered: print `   git commit -m "chore(clancy): gitignore .clancy/ — drop tracked artifacts"`
+
+5. Do NOT execute the commands. Surface only — the user runs them when ready. Idempotent: stops printing once both conditions clear.
+
+---
+
 ## Step 5 — Check for local patches
 
 After the update completes, check if the installer backed up any locally modified files:

@@ -25,7 +25,7 @@ Setup commands configure Clancy and keep it healthy.
 4. **Configure filters** (board path only) — label, sprint, status transitions
 5. **Git host** — conditional on board choice. Local mode: the standalone git host question (GitHub / GitLab / Bitbucket / Azure DevOps / Skip) is asked before the universal settings. Jira and Linear: Q2c asks the same question. GitHub Issues: Q2c is skipped because the `GITHUB_TOKEN` collected for the board also covers PR creation. Shortcut, Notion, and Azure DevOps: Q2c is currently skipped — for these boards the git host can be configured later via `/clancy:settings` if PR creation is needed
 6. **Optional roles** — enable Strategist, Planner, or other optional roles via `CLANCY_ROLES`
-7. **Scaffold** — creates `.clancy/` directory, copies runtime scripts, merges CLAUDE.md
+7. **Scaffold** — creates `.clancy/` directory, copies runtime scripts, merges CLAUDE.md. `.clancy/` is gitignored entirely — Clancy never commits inside it.
 
 To add a board later, run `/clancy:settings` and pick `[B] Connect a board`. To remove one, use `[D] Disconnect board` — your universal settings, roles, and git-host credentials are preserved.
 

@@ -136,9 +136,9 @@ Print `✅ CLAUDE.md cleaned up.` (or `✅ CLAUDE.md removed.` if deleted).
 
 Check whether `.gitignore` exists in the current project directory.
 
-If it does, check whether it contains the Clancy entries (`# Clancy credentials` and/or `.clancy/.env`):
+If it does, check whether it contains any of the Clancy entries (any of: `'# Clancy credentials'`, `'# Clancy'`, `'.clancy/.env'`, `'.clancy/'`). The first two are comment-line markers; the latter two are gitignore patterns. Older installs use the legacy pair (`'# Clancy credentials'` + `'.clancy/.env'`); newer installs use the current pair (`'# Clancy'` + `'.clancy/'`). Recognize both.
 
-**If found:** remove the `# Clancy credentials` comment line and the `.clancy/.env` line. Also remove any blank line immediately before or after the removed block to avoid leaving double blank lines. Write the cleaned file back.
+**If found:** remove whichever marker pair is present (and any blank line immediately before or after the removed block to avoid leaving double blank lines). Write the cleaned file back.
 
 If the file is now empty (or contains only whitespace) after removal, delete it entirely — Clancy created it during init.
 
@@ -165,6 +165,31 @@ Print `✅ .prettierignore cleaned up.` (or `✅ .prettierignore removed.` if de
 **If not found:** skip — Clancy didn't modify this file.
 
 **If .prettierignore does not exist:** skip.
+
+---
+
+## Step 5b — Commit cleanup
+
+After cleaning up CLAUDE.md, .gitignore, and .prettierignore (Steps 3–5), offer to commit the parent-project changes. `.clancy/` itself is gitignored, so this commit only stages parent-project files; the `.clancy/` directory removal in Step 6 is local-filesystem-only and does not appear in `git status`.
+
+If neither `CLAUDE.md` nor `.gitignore` was modified by Steps 3–4 (e.g. Clancy markers were already absent), silent skip — no prompt, no commit, no print.
+
+Otherwise:
+
+```
+Commit the Clancy deregistration to git? (recommended) [Y/n]
+```
+
+If yes (or enter):
+
+```bash
+git add CLAUDE.md .gitignore
+git commit -m "chore(clancy): uninstall — deregister from CLAUDE.md and gitignore"
+```
+
+If `CLAUDE.md` was not modified by Step 3, omit it from `git add`. If `.gitignore` was not modified by Step 4, omit it too. Only stage files that actually changed.
+
+If no: skip the commit silently. The user can commit manually later.
 
 ---
 
