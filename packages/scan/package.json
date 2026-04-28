@@ -1,6 +1,6 @@
 {
   "name": "@chief-clancy/scan",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "Codebase scanning agents and workflows for Clancy — bundled into consumer installers (brief, plan, dev, and chief-clancy)",
   "author": "Alex Clapperton",
   "license": "MIT",
