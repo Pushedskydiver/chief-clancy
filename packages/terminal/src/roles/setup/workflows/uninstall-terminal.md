@@ -136,7 +136,7 @@ Print `✅ CLAUDE.md cleaned up.` (or `✅ CLAUDE.md removed.` if deleted).
 
 Check whether `.gitignore` exists in the current project directory.
 
-If it does, check whether it contains any of the Clancy entries (any of: `'# Clancy credentials'`, `'# Clancy'`, `'.clancy/.env'`, `'.clancy/'`). The first two are comment-line markers; the latter two are gitignore patterns. Older installs use the legacy pair (`'# Clancy credentials'` + `'.clancy/.env'`); newer installs use the current pair (`'# Clancy'` + `'.clancy/'`). Recognize both.
+If it does, check whether it contains any of the Clancy entries (any of: `'# Clancy credentials'`, `'# Clancy'`, `'.clancy/.env'`, `'.clancy/'`). The first two are comment-line markers; the latter two are gitignore patterns. Match each marker as an **exact line** (after stripping leading/trailing whitespace) — `'# Clancy'` must NOT match `'# Clancy credentials'` despite the substring overlap. Older installs use the legacy pair (`'# Clancy credentials'` + `'.clancy/.env'`); newer installs use the current pair (`'# Clancy'` + `'.clancy/'`). Recognize both.
 
 **If found:** remove **every** Clancy marker pair present — both legacy and current pairs may coexist (e.g. after a migration or a re-init across the gitignore fold), so clean up all of them. Also remove any blank line immediately before or after each removed block to avoid leaving double blank lines. Write the cleaned file back.
 

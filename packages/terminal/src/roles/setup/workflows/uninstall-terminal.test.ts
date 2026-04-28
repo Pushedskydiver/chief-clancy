@@ -82,8 +82,12 @@ describe('uninstall-terminal workflow', () => {
       )?.[0] ?? '';
 
     expect(step4).toBeTruthy();
+    // gitignore patterns
     expect(step4).toMatch(/'\.clancy\/'/);
     expect(step4).toMatch(/'\.clancy\/\.env'/);
+    // comment-line markers (legacy and current)
+    expect(step4).toMatch(/'# Clancy credentials'/);
+    expect(step4).toMatch(/'# Clancy'/);
   });
 
   it('Step 5b commits CLAUDE.md and .gitignore cleanup', () => {
