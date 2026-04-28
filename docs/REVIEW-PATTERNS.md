@@ -4,7 +4,7 @@ Recurring findings from Copilot, DA review, and self-review across sessions. Whe
 
 This is a **living document** — add patterns from real catches, not hypotheticals.
 
-**Last updated:** 2026-04-27
+**Last updated:** 2026-04-29
 
 ---
 
@@ -120,6 +120,27 @@ _Caught: PR #277 (Copilot) — ">10 rows" was ambiguous about header/separator l
 ---
 
 ## Spec grilling
+
+### Discipline-task fit — code-design specs only
+
+Before dispatching `@agent-spec-grill`, classify the spec by what it specifies:
+
+1. **Code changes** (file list, functions, tests) → spec-grill applies. [Bounded-fold 2-round arc](DEVELOPMENT.md#two-phase-grill-discipline) for non-ramifying folds.
+2. **Doc edits informed by live state** (PROGRESS.md citations, doc inventories, tracker counts) → **skip spec-grill**. Open the PR with the doc edit; let DA grill the diff at PR-open. The diff is the stable review surface.
+3. **Hybrid** — spec-grill the code part; mark live-state as "implementer-time re-walk" + verify via DA on diff.
+
+Code-design specs have two separate stable review surfaces — design grilled by spec-grill, diff grilled by DA at PR-open. Live-state-audit + doc-edit specs collapse three jobs into one artefact: (a) audit findings against a mutating source (citations break round-over-round); (b) prescribe doc edits + initial-population from that mutating source (no separate diff to review — the diff is the spec content); (c) self-defend rationale via fold logs that bloat monotonically. Spec-grill's "find-it-all" brief amplifies all three drift surfaces, and the bounded-fold convergence rubric does not apply: doc-edit initial-population is unfalsifiable until the doc exists and is used.
+
+_Confirming (n=3, code-design, all bounded-fold 2-round arcs → R_n NIT-CLEAN):_
+
+- _[PR #409](https://github.com/Pushedskydiver/chief-clancy/pull/409) + [PR #410](https://github.com/Pushedskydiver/chief-clancy/pull/410) — dependency-automation γ-spec (Session 143)._
+- _[PR #414](https://github.com/Pushedskydiver/chief-clancy/pull/414) + [PR #416](https://github.com/Pushedskydiver/chief-clancy/pull/416) — error-channels (single spec arc, shipped as PR-1 Session 146 + PR-2 Session 147)._
+- _[PR #419](https://github.com/Pushedskydiver/chief-clancy/pull/419) — clancy-gitignored (Session 151). DA-on-diff at PR-open caught two cross-doc cascades (sibling-doc kept-prose drift, standalone-package symmetric-edit gap) that spec-grill structurally couldn't see._
+
+_Disconfirming (n=2, live-state-audit + doc-edit, both diverged from bounded-fold — one compressed, one deferred):_
+
+- _Audit-spec for `PROGRESS.md`/`SESSIONS.md` purpose — Sessions 148-149, R1-R5; converged via regime-change compression at v0.6 (378 → 113 lines)._
+- _PR-3 pattern-trackers spec — Sessions 149-150, R1-R4 with verification rate yo-yoing 86.4% → 92.9% → 84.2% → ~77%; deferred-pending-evidence._
 
 ### Fold-incompleteness in multi-section folds
 
