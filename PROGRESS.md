@@ -2,9 +2,11 @@
 
 Living state document for the Clancy monorepo. Records the current state, the phase ledger, and the next decision. Session-by-session detail lives in git history (each phase's PRs are tagged + commit messages reference them).
 
-## Next workstreams (after Session 150)
+## Next workstreams (after Session 151)
 
-Ordering updated 2026-04-28 Session 150 close — **PR-1 SHIPPED** ([PR #418](https://github.com/Pushedskydiver/chief-clancy/pull/418) `7499c0f` Alex-merge): no-dogfeeding-in-LI rule codified to `docs/DEVELOPMENT.md §Loading-instructions format` + retroactive PROGRESS.md trim. Item 4 refocused mid-session post-PR-3-spec-R3+R4 (verification-rate yo-yo R1 86.4% → R2 92.9% → R3 84.2% → R4 ~77% with drift-self-application n=2); spec-grill discipline-task-fit hypothesis saved as `feedback_specgrill_discipline_task_fit.md`. PR-3 spec at v0.4 LOCKED frozen as gitignored historical artefact. **PR-2 + PR-3 deferred-pending-empirical-evidence** — re-surface only if (i) dogfeeding-removal in PR-1 surfaces a tracker-update gap (justifies PR-3) OR (ii) SESSIONS.md write-side burden becomes load-bearing (justifies PR-2). Active workstreams unchanged at 4. Session 146 archived per `docs/INDEX.md §12` rule + embedded Session 147 LI deleted per the just-shipped `docs/DEVELOPMENT.md §Archival maintenance` rule (rule self-application).
+Updated 2026-04-28 Session 151 close — **`.clancy/` gitignored fold SHIPPED** ([PR #419](https://github.com/Pushedskydiver/chief-clancy/pull/419) `a717ac3` Alex-merge): closes Alex-reported pollution (`.clancy/` had bundle scripts + version.json + package.json sitting in untracked-not-gitignored limbo after init). Two-commit lifecycle: `/clancy:init` commits parent files; `/clancy:uninstall-terminal` commits parent cleanup; `/clancy:map-codebase` and `/clancy:update-docs` no longer commit. 5 packages bumped minor (terminal/scan/brief/plan/dev). **Spec-grill discipline-task-fit hypothesis CONFIRMED at n=3** — code-design specs bound under spec-grill (this PR's spec converged in 2-round arc); promotion to `docs/REVIEW-PATTERNS.md §Spec grilling` ready as a candidate Alex-elective workstream. Active workstreams unchanged at 4. Session 147 archived per `docs/INDEX.md §12` rule.
+
+(Prior context: Session 150 close — PR-1 SHIPPED [#418](https://github.com/Pushedskydiver/chief-clancy/pull/418) `7499c0f` codified no-dogfeeding-in-LI rule; PR-2 + PR-3 of the audit-spec workstream remain deferred-pending-empirical-evidence per spec-grill discipline-task-fit hypothesis.)
 
 1. **Phase 7 — Dependency automation.** **7.3.α/β DONE** (Session 125 — see Sessions 141-142 entries for evidence). **7.3.γ DONE Session 143**: γ-PR-1 [#409](https://github.com/Pushedskydiver/chief-clancy/pull/409) `ae3097a` (Alex-merge — DA-waiver carve-out + `.github/dependabot.yml` `schedule.time: '06:00'` anchor + `groups:` block with `applies-to: security-updates` + `/.github/dependabot.yml` blast-radius mirror in DEVELOPMENT.md + CODEOWNERS) + γ-PR-2 [#410](https://github.com/Pushedskydiver/chief-clancy/pull/410) `b49d5e7` (Alex-merge — `.github/workflows/dep-triage.yml` 177-line stale-alert detector with per-class hint via `gh api .../actions/runs/{id}/logs` grep). γ-2 dry-run via `workflow_dispatch` ([run `25006937765`](https://github.com/Pushedskydiver/chief-clancy/actions/runs/25006937765)) completed cleanly post-merge: "Fetched 0 alerts total → Triage complete: 0 stale-and-open alerts processed" — validates YAML syntax + permissions + bash safety + grep patterns end-to-end. Spec at `~/.claude/research/dependency-automation/gamma-spec.md` v0.2 (gitignored): R1 returned 2B+3M+4L+2F = 11 findings, fold v0.2, R_n NIT-CLEAN. Spec-grill arc-shape pattern advances to **n=5** (purely-interpretive 2-round convergence; well past INDEX rule-of-three; codification candidate). **β trigger condition (c) ratified Session 143** (commit `189dfe4`): R1 caught the v0.1 framing claim "(a) effectively MET" was unsupported by literal text; Alex accepted Option (ii) (formalize (c) in PROGRESS.md) over Option (i) (wait for calendar 2026-05-07).
    - **Visibility-gap pattern RESOLVED Session 144 with cause re-attribution** (PR #411 `0d6fc16` + PR #412 `c99c260`, both Alex-merge): not GITHUB_TOKEN token-scope filtering — list endpoint is intermittently empty regardless of URL shape (likely cache or replica staleness in GitHub's serving layer; cause not isolated). Same query observed returning 0 alerts and 16 alerts within minutes; individual records remain accessible by number. Auto-close path is best-effort (may silently no-op when list endpoint is in empty-state cache window). YAML comment in `dep-triage.yml` carries the honest framing — do not "improve" it back to a causal-model claim. Self-caught non-stationarity lesson recorded; n=1 watch toward INDEX rule-of-three for promotion to `docs/REVIEW-PATTERNS.md`.
@@ -33,6 +35,108 @@ Ordering updated 2026-04-28 Session 150 close — **PR-1 SHIPPED** ([PR #418](ht
 - **(former Item 7) Phase 6.2 optional follow-ons** — explicitly archived not-load-bearing Session 141. (c) §Claim-extraction bucket expansion (always-audit-kept-prose on restructure PRs even when Copilot reachable) — closed without shipping; reconsider only if future evidence shows reachable-but-Copilot-missed drift on main. (f) mechanical pre-commit grep-audit for link integrity + literal identifiers — closed without shipping; narrow coverage (~1/4 Seed findings) doesn't justify the maintenance burden. Both can re-surface as new workstream items if priorities reverse.
 
 **Policy-surface widening** (`.claude/agents/**`, `docs/decisions/**`, `CONTRIBUTING.md`, `.github/ISSUE_TEMPLATE/**`, `.github/pull_request_template.md` → CODEOWNERS + §Auto-merge blast-radius exception list) is deliberately deferred. Revisit only if Phase 7.0 audit surfaces a concrete reason.
+
+---
+
+**Session 151 (2026-04-28) — `.clancy/` gitignored fold SHIPPED ([PR #419](https://github.com/Pushedskydiver/chief-clancy/pull/419) `a717ac3` Alex-merge, blast-radius pre-1.0 minor on `terminal` 0.4.1→0.5.0 + `scan` 0.2.3→0.3.0 + `brief` 0.4.0→0.5.0 + `plan` 0.7.2→0.8.0 + `dev` 0.11.0→0.12.0; auto-version PR #420 `d10dd08` followed). Resolves Alex-reported pollution (`.clancy/clancy-autopilot.js` 240KB + `clancy-implement.js` 240KB + `version.json` + `package.json` were sitting in untracked-not-gitignored limbo after init). Spec-grill discipline-task-fit hypothesis CONFIRMED at n=3.** Loaded per Session 150 LI Branch (C) DEFAULT (Alex-elective). Sha verified `b89e9a2` matched paste-prompt; push hygiene clean; 0 Dependabot PRs; 0 new "Dependabot Updates" workflow runs since Session 147 close.
+
+**Workstream pipeline (Session 151):**
+
+1. **3-question evidence base via parallel research agents**: Q1 (`.clancy/docs/` consumers — 6 consumers all optional with graceful no-docs fallback; map-codebase non-deterministic across runs); Q2 (chief-clancy npm cadence ~2.3 releases/day mean across 117 versions; bundles ship pre-built byte-deterministic from CI); Q3 (comparable-tool convention — bundle scripts UNIVERSALLY gitignored across 11 surveyed CLIs, zero counter-examples). Alex confirmed gitignore-everything direction including `.env.example` (regenerated by init based on board choice = install artifact, not maintained schema).
+
+2. **Spec at `.claude/research/clancy-gitignore/spec.md` v0.3 LOCKED** via 2-round arc per `feedback_specgrill_discipline_task_fit.md`. R1 (3B+6M+6L+4F = 16 findings at 100% verification) → fold v0.2 → R_n (1 NEW BLOCKING NB1 = test discriminator regex pair non-discriminating against back-compat-broken implementation; 9 CONFIRMED at 100%) → fold v0.3 NIT-CLEAN.
+
+3. **Implementation per spec §7 TDD vertical-slice**: 18 file surfaces / 13 §7 steps across 4 commits. PAUSE-mid-implementation at branch checkpoint per Alex direction (heading home), resumed cleanly via `git checkout chore/clancy-gitignored` + continued from §7 step 5. Quality suite: 774/774 terminal tests + 13/13 uninstall-terminal workflow assertions, lint/typecheck/format/knip/publint/attw all clean.
+
+4. **DA pre-PR-open** (`da-review` subagent): 1 BLOCKING + 4 MATERIAL + 3 LOW at 100% verification (29% defect rate). Folded in commit `f898a4c`:
+   - **B1**: `update.md` Step 4b migration advisory had a staging gap (gitignore append wasn't `git add`'d before commit); fix added `git add .gitignore` step.
+   - **M1**: `uninstall-terminal.md` Step 4 said "remove whichever marker pair" (singular); hybrid state can have both legacy + current pairs after migration; fixed to "remove EVERY marker pair".
+   - **M2**: branch-conditional commit messages (3 forms matching the 3 trigger combinations).
+   - **M3**: `README.md:277` + `docs/ARCHITECTURE.md:369` had `(gitignored)` only on `.env`, implying only `.env` was gitignored; fixed via header note.
+   - **M4**: brief/plan/dev `board-setup.md` standalone-package workflows wrote `.clancy/.env` (asymmetric with terminal post-fold); fixed to `.clancy/`; changeset extended bumping brief/plan/dev as minor (5 packages total).
+   - **L1**: `init.md` Step 4b "unchanged" prose narrative broadened.
+
+5. **Surrogate post-PR-open** (`copilot-surrogate` per Copilot UNREACHABLE n=35 → n=36 advance): 0B + 0M + 5L. Verdict ship-as-is. Folded F1 + F5 in commit `0b6db08`:
+   - **F1**: extended `uninstall-terminal.test.ts` Step 4 marker assertions to also verify `'# Clancy credentials'` + `'# Clancy'` comment-line markers (test description over-promised vs. coverage).
+   - **F5**: clarified `uninstall-terminal.md` Step 4 prose with explicit "exact line" match requirement (preventing substring-overlap ambiguity between `'# Clancy'` and `'# Clancy credentials'`).
+   - Skipped F2 (pre-existing kept-prose drift not from this PR), F3 (cosmetic operator-UX command ordering), F4 (semver judgment — minor defensible per surrogate's own analysis).
+
+6. **Audit-trail comment** posted ([#issuecomment-4337752219](https://github.com/Pushedskydiver/chief-clancy/pull/419#issuecomment-4337752219)).
+
+7. **Alex-merge → `a717ac3`** (squash); auto-version PR #420 → `d10dd08` Alex-merge; release.yml runs both green (databaseId 25068559116 + 25068718753); npm publishes verified at 17:47:12-27Z; GitHub Releases created. INDEX §10 protocol fully verified.
+
+8. **Memory update**: `feedback_specgrill_discipline_task_fit.md` Session 151 entry — n=3 CONFIRMED (3 confirming code-design + 2 disconfirming live-state-audit/doc-edit = n=5 total observations); promotion candidate to `docs/REVIEW-PATTERNS.md §Spec grilling` ready.
+
+**Major novel patterns Session 151:**
+
+1. **Spec-grill discipline-task-fit n=3 CONFIRMED** — code-design spec for clancy-gitignore converged in 2-round arc with 100% verification rates. **DA-on-diff at PR-open caught the cross-doc cascades spec-grill structurally couldn't see** (M3 + M4 — both diff-aware findings, only visible after diff existed). Empirical separation between code-design (spec-grill bounds) and live-state-audit/doc-edit (spec-grill ramifies) robust across n=5 total observations. Promotion to `docs/REVIEW-PATTERNS.md §Spec grilling` ready.
+
+2. **DA-on-diff cascade catch novel n=2** (M3 + M4 cluster) — sibling-doc kept-prose invalidation proactive sweep (M3) and standalone-package symmetric-edit gap (M4) both required diff-existence to surface. Pattern reinforces discipline-task-fit hypothesis.
+
+3. **Mid-implementation pause + resume novel n=1** — Alex-directed pause mid-§7 (after step 4); committed WIP to feature branch + pushed; resumed cleanly with `git checkout chore/clancy-gitignored` + continued from §7 step 5. Branch-checkpoint pattern generalises to any mid-PR-implementation interruption.
+
+4. **Hallucination tracker n=53** consecutive clean rounds (Sessions 131-151). Advanced via 5 subagent dispatches Session 151 (1 Plan + 2 spec-grill + 1 da-review + 1 copilot-surrogate); all clean of fabricated catches under verify-subagent-claims discipline.
+
+5. **Surrogate-on-engineering-PR advanced** (PR #419 was a substantive workflow + test change with 18 file surfaces). Surrogate-on-rule-addition unchanged at n=17. Surrogate-on-drift-fix unchanged at n=28. Copilot UNREACHABLE n=36 (advanced from 35).
+
+6. **Turbo cache-miss bundle-build race n=3** — Session 127 logged at n=1; advanced to n=3 Session 151 (full `pnpm test` failed 17 tests in `bundle-smoke.test.ts` with `Unexpected end of JSON input` from empty hook stdout; tests pass cleanly when terminal package run directly via `pnpm --filter`). Codification candidate at n=4.
+
+7. **Auto Mode held cleanly** through 5 subagent dispatches + 18-file substantive code change + 4-commit fold cycle + PR open + audit comment + post-merge cleanup + memory update + this handoff. Per Auto Mode "course corrections are normal" — Alex pause-mid-implementation handled in-stride.
+
+**Session 151 file inventory.**
+
+| Path                                                                     | Action                               | Notes                                                                                                                           |
+| ------------------------------------------------------------------------ | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/scan/src/workflows/{map-codebase,update-docs}.md`              | UPDATE (PR #419)                     | `a717ac3` Alex-merge; drop commit steps                                                                                         |
+| `packages/terminal/src/roles/setup/workflows/init.md`                    | UPDATE (PR #419)                     | Step 4 line 691 (`.gitignore` line `.clancy/`); Step 4b parent-only stage; final-output addenda                                 |
+| `packages/terminal/src/roles/setup/workflows/init.test.ts`               | NEW (PR #419)                        | 5 lifecycle assertions                                                                                                          |
+| `packages/terminal/src/roles/setup/workflows/scaffold.md`                | UPDATE (PR #419)                     | gitignore template + `# Clancy` header                                                                                          |
+| `packages/terminal/src/roles/setup/workflows/scaffold.test.ts`           | NEW (PR #419)                        | 5 lifecycle assertions                                                                                                          |
+| `packages/terminal/src/roles/setup/workflows/uninstall-terminal.md`      | UPDATE (PR #419)                     | Step 4 dual-marker exact-line + new Step 5b commit cleanup                                                                      |
+| `packages/terminal/src/roles/setup/workflows/uninstall-terminal.test.ts` | UPDATE (PR #419)                     | Extended with Step 4 4-marker (legacy + current) + Step 5b commit assertions                                                    |
+| `packages/terminal/src/roles/setup/workflows/update.md`                  | UPDATE (PR #419)                     | New Step 4b migration advisory with branch-conditional commit messages                                                          |
+| `packages/{brief,plan,dev}/src/workflows/board-setup.md`                 | UPDATE (PR #419)                     | Suggest `.clancy/` not `.clancy/.env` (symmetric with terminal)                                                                 |
+| `docs/guides/{SECURITY,TROUBLESHOOTING}.md` + `docs/roles/SETUP.md`      | UPDATE (PR #419)                     | Cascade                                                                                                                         |
+| `README.md` + `docs/ARCHITECTURE.md`                                     | UPDATE (PR #419)                     | Cross-doc consistency post-fold (M3)                                                                                            |
+| `.changeset/clancy-gitignored.md`                                        | NEW (PR #419)                        | terminal + scan + brief + plan + dev all minor                                                                                  |
+| `.claude/research/clancy-gitignore/spec.md`                              | NEW (gitignored, project-root)       | v0.3 LOCKED 2-round arc                                                                                                         |
+| `~/.claude/.../memory/feedback_specgrill_discipline_task_fit.md`         | UPDATE (memory)                      | n=3 CONFIRMED entry                                                                                                             |
+| `PROGRESS.md`                                                            | UPDATE — direct-to-main this handoff | Session 151 entry + §Next workstreams refresh + Session 152 LI + Session 147 collapsed per §12 + Session 150 metric TBDs filled |
+| `docs/history/SESSIONS.md`                                               | UPDATE — direct-to-main this handoff | Session 147 row added per §12 INDEX rule                                                                                        |
+
+**Session 151 handoff metrics.** (Window-5 audit, data point 9 of 5th-10-window — 1 remaining.)
+
+- Trigger: phase boundary (PR #419 SHIPPED end-to-end + PR #420 auto-version Alex-merge + INDEX §10 release pipeline verified; `feedback_specgrill_discipline_task_fit.md` n=3 CONFIRMED). Plus context utilisation signal (very heavy session).
+- Context at trigger: ~85-90% of pre-compaction budget (manual estimate; well past 60% sooner-of threshold).
+- Handoff turn cost: ~30-35k tokens estimated (this entry + §Next workstreams refresh + Session 152 LI + Session 147 collapse + Session 150 TBDs fill + SESSIONS.md row).
+- Unplanned compaction: no.
+- Time from "handoff now" decision to next-session first productive tool call: TBD (recorded by Session 152).
+- `PROGRESS.md` quality signal: TBD (recorded by Session 152).
+
+### Session 152 loading instructions
+
+On load (lean per `docs/DEVELOPMENT.md §Loading-instructions format` no-dogfeeding rule):
+
+1. Read `PROGRESS.md` top-to-bottom (this Session 151 entry + §Next workstreams + Sessions 148-150 entries — detail band restored to N=4 (148-151); Session 147 archived to [`docs/history/SESSIONS.md`](docs/history/SESSIONS.md) Session 151 close per §12 INDEX rule).
+2. Verify current sha (`git log --oneline -5`); push hygiene check (`git status` + `git log origin/main..HEAD`); standard Dependabot check.
+3. **No PRIMARY workstream — Alex-elective from §Next workstreams.** Active workstreams 4: Phase 7 (δ + 90-day audit), session handoff (deferred), Phase F (Stitch — leave until last per Alex Session 141), PROGRESS.md cleanup (PR-1 done; PR-2/PR-3 deferred-pending-evidence).
+4. **Decision branches:**
+   - **(A) New Dependabot security PR fired** — prioritise triaging.
+   - **(B) New Dependabot Updates workflow failure** — apply Session 142 artefact §3 class-classification recipe.
+   - **(C) Codification PR for spec-grill discipline-task-fit** — n=3 CONFIRMED Session 151; promotion to `docs/REVIEW-PATTERNS.md §Spec grilling` is a §7-eligible Alex-merge candidate. Concise rule: "code-design specs use spec-grill bounded-fold; live-state-audit + doc-edit specs skip spec-grill, ship and DA-on-diff."
+   - **(D) Alex-elective workstream from §Next workstreams** — DEFAULT in absence of A/B/C signal.
+   - **(E) Alex redirects** — follow the redirect.
+5. **READBACK BEFORE ACTION** — produce a 3-5 sentence readback (current state / decision branch / proposed first concrete action) and **wait for Alex confirmation** before edits, PR actions, or subagent dispatches.
+6. **Carry-overs from Session 151:**
+   - **Spec-grill discipline-task-fit n=3 CONFIRMED** — codification ready (Branch C above).
+   - **DA-on-diff cascade catch** novel n=2 (M3 + M4 cluster) — codification candidate at n=3.
+   - **Mid-implementation pause + resume** novel n=1 — branch-checkpoint pattern generalises; codification candidate at n=2.
+   - **Hallucination tracker n=53** consecutive clean rounds (Sessions 131-151).
+   - Surrogate-on-engineering-PR advanced. UNREACHABLE n=36. On-rule-addition n=17 unchanged. On-drift-fix n=28 unchanged. Loading-instruction-course-correction n=5 unchanged.
+   - **Turbo cache-miss bundle-build race n=3** — codification candidate at n=4.
+   - §Measurement protocol fifth-10-window — data point 9 recorded; 1 remaining.
+   - Active workstreams 4: Phase 7 / session handoff / Phase F / PROGRESS.md cleanup-deferred.
+7. **If Alex redirects on load**, follow the redirect — §Next workstreams is a default, not a contract.
 
 ---
 
@@ -90,8 +194,8 @@ Ordering updated 2026-04-28 Session 150 close — **PR-1 SHIPPED** ([PR #418](ht
 - Context at trigger: ~80-85% of pre-compaction budget (manual estimate; well past 60% sooner-of threshold).
 - Handoff turn cost: ~25-30k tokens estimated (this entry + §Next workstreams refresh + Session 151 LI + Session 146 archive + Session 149 metric TBDs fill).
 - Unplanned compaction: no.
-- Time from "handoff now" decision to next-session first productive tool call: TBD (recorded by Session 151).
-- `PROGRESS.md` quality signal: TBD (recorded by Session 151).
+- Time from "handoff now" decision to next-session first productive tool call: ~1-2 min (Session 151 ran 4 verification commands in parallel as the first action after PROGRESS.md read — git log + git status + gh pr list + gh run list).
+- `PROGRESS.md` quality signal: **clean — no factual errors caught at cold-load**. Session 150 LI's Branch (C) DEFAULT drove cleanly into Alex-elective from §Next workstreams; the `.clancy/` gitignore investigation Alex surfaced organically was a new workstream (not LI-driven), not an LI-quality issue.
 
 ### Session 151 loading instructions
 
@@ -308,104 +412,7 @@ On load (lean shape per `feedback_no_dogfeeding_protocols.md` — first applicat
 
 ---
 
-**Session 147 (2026-04-27) — Error-channels PR-2 SHIPPED ([PR #416](https://github.com/Pushedskydiver/chief-clancy/pull/416) `19a2d0a` Alex-merge, blast-radius pre-1.0 minor on `dev` 0.10.0→0.11.0 + patch on `terminal` 0.4.0→0.4.1 + patch on `core` 4.0.0→4.0.1; auto-version PR #417 `fd00f9c` followed). Closes the phase-tagged-error plumbing half of the Session 98 deferred design question. **Error-channels workstream COMPLETE** — both PR-1 and PR-2 shipped. Active workstreams reduced from 5 → 4.** PR-2 selected on load per Session 147 loading instructions DEFAULT primary (Branch C); sha verified `c400240` matched paste-prompt, push hygiene clean, 0 Dependabot PRs, 0 new "Dependabot Updates" workflow runs since Session 146 close (only the 2 original 2026-04-23 β-activation failures still exist).
-
-**Workstream pipeline (Session 147):**
-
-1. **Spec-faithful implementation** of spec v0.3 LOCKED §4 — feasibility tagged-error (`{ kind: 'not-feasible' | 'check-failed' }`, α keep-fail-open with `check-failed` shape parity), invoke tagged-error (`{ kind: 'unknown', message }` consuming PR-1's stderr, empty-stderr fallback), deliver tagged-error (`{ kind: 'push-failed' | 'pr-creation-failed' }`, generic push-failed message + halt-loud pr-creation-failed + `appendDeliveryProgress` suppression on `outcome.type === 'failed'` + new `PR_CREATION_FAILED` core enum), display layer (terminal aborted branch logs `result.error`). 16 files / 583 insertions / 126 deletions in initial commit `a73de97`. Branch `chore/error-channels-phase-plumbing`.
-2. **DA pre-PR-open** (da-review subagent) — 1 BLOCKING + 2 MATERIAL + 4 LOW + 2 FYI. **B1 BLOCKING**: `dev/lifecycle/progress.ts:VALID_STATUSES` (runtime parser allowlist) was missing `PR_CREATION_FAILED` — `parseProgressFile` would silently drop new entries at every read site (resume detection, session reports, future tooling). Schema-pair miss: type union widened in `core/types/progress.ts` but runtime allowlist not. Fix: add to allowlist + round-trip regression test. **M1**: `PR_CREATION_FAILED` deferred-classification on status sets too vague — added to `FAILED_STATUSES` only (NOT `DELIVERED_STATUSES` per resume.ts retry contract; NOT `COMPLETED_STATUSES` per work-not-completed semantic); `types.test.ts` invariant `FAILED_STATUSES.size: 3 → 4`. **M2**: e2e test "End-to-end" comment overstated scope — bypasses orchestrator's `abortAt` mapping. Reframed to honest "chain-not-orchestrator" scope; pointed readers to complementary `run-pipeline.test.ts` cases. **L1**: `runDeliveryPhases` rename → `runPostFeasibilityPhases` (function actually starts at branch-setup). All folded in commit `aac02c9` (7 files / 78 insertions / 20 deletions).
-3. **Surrogate post-PR-open** (copilot-surrogate fallback per Copilot UNREACHABLE n=34) — APPROVE recommendation; 25 claims extracted, 23 verified, 2 LOW. **S1 LOW**: round-trip test docstring overclaimed "every status in the union" — covered 13 of 15 standard-format literals; `BRIEF`/`APPROVE_BRIEF` route through separate `SLUG_STATUSES` parser branch. Folded in commit `db9b021` (1 file / 12 insertions / 6 deletions) — extended test to drive both standard + slug literals, guarding the full Schema pair (`VALID_STATUSES` + `SLUG_STATUSES` against `ProgressStatus` union). **S2 LOW**: pre-existing test name `"calls all 13 phases + invoke"` double-counts invoke (NOTICED-BUT-NOT-TOUCHING per surrogate; pre-existing in main). Audit-trail comment posted ([#issuecomment-4330729967](https://github.com/Pushedskydiver/chief-clancy/pull/416#issuecomment-4330729967)).
-4. **Quality suite** clean across 3 commits: 879 (core) + 126 (brief) + 326 (plan) + 1224 (dev) + 762 (terminal) = 3317 tests passing; lint, typecheck, format:check, knip, publint, attw all clean.
-5. **Alex-merge** of PR #416 → `19a2d0a` (squash-merge); auto-version PR #417 `fd00f9c` followed (tags: `core@4.0.1`, `dev@0.11.0`, `terminal@0.4.1`, `chief-clancy@0.9.46`).
-
-**Major novel patterns Session 147**:
-
-1. **Schema-pair miss caught at DA pre-PR-open novel n=1** — type union widening in `core/types/progress.ts` was applied per spec; runtime parser allowlist `VALID_STATUSES` in `dev/lifecycle/progress.ts` was the paired surface that needed parallel update. Spec did not enumerate this pair explicitly. DA's 3-axis fold-incompleteness sweep (axis-1 direct-term grep for status enumerations) caught it. Lesson: **when widening a literal-union type, sweep for sibling allowlists**. Promotion candidate at n=2 — codify in `docs/REVIEW-PATTERNS.md` as a Schema-pair sweep heuristic.
-2. **Post-fold residue surrogate-catch n=3 cumulative** (Session 144 PR #412 + Session 146 PR #414 S1 + Session 147 S1) — DA fold lands the primary fix; surrogate's whole-file-at-HEAD read catches a downstream consequence the DA fold's diff-scope didn't fully sweep. Session 147 S1: B1 fold added `PR_CREATION_FAILED` to `VALID_STATUSES` and added a round-trip test, but the test docstring claimed "every status" while only including standard-format literals; surrogate caught the slug-format coverage gap. **Past INDEX rule-of-three threshold; codification candidate as a 4th axis to existing 3-axis sweep**, OR as a separate "surrogate-as-fold-residue-catcher" rule.
-3. **Behavior-change-in-plumbing-PR honest framing** — spec §4.3.2 explicitly endorsed "fail loudly" posture (halt deliver phase on PR-creation-failed; previously silently mapped to `PUSHED`). PR-2 surfaces the behavior change in the changeset with downstream consequences enumerated (skips `recordDelivery` / `removeBuildLabel` / `cost` / `cleanup`; `pr-retry` no longer auto-retries — operator intervention required). Pattern: when a "plumbing" PR includes a behavior change, name it explicitly in the changeset rather than burying as a refactor. Already established practice; this PR reinforces.
-4. **Bounded-fold 2-round arc rule self-applied to PR-2 spec** — implementation worked from spec v0.3 LOCKED converged Session 146 (R1 MATERIAL-CLEAN → R_n NIT-CLEAN); no spec re-grilling needed. n=8 cumulative meta-evidence for PR #413 rule.
-5. **DA-then-Surrogate layered residue check** — DA fold covered B1+M1+M2+L1+L2+L3+L4 (all severities except deferred FYIs); surrogate caught S1 (a residue from B1's fold-applied round-trip test) which DA's diff-scope didn't capture (DA viewed initial-impl diff; the slug-coverage gap appeared only after the B1 fold landed). Reaffirms Sessions 145-146 lesson: surrogate's whole-file-at-HEAD read catches post-fold residue that DA's pre-fold diff-scope cannot. n=3 cumulative.
-6. **Branch-switched-to-main mid-session novel n=1 watch** — between surrogate dispatch and the next user turn, a hook or external automation switched the working-tree branch from `chore/error-channels-phase-plumbing` to `main`. The system-reminders for several files surfaced pre-PR-2 file content (file state at main HEAD `c400240`); switching back via `git checkout chore/error-channels-phase-plumbing` restored the work intact (commits already pushed, no work lost). Cause not isolated; possibly a pre-commit hook or VS Code automation. Watch n=2.
-7. **Hallucination tracker n=51 consecutive clean rounds** (Sessions 131-147; advanced through 2 subagent dispatches this session: 1 da-review + 1 copilot-surrogate; both clean of fabricated catches).
-8. **Auto Mode held cleanly** through 2 subagent dispatches + spec-faithful 16-file substantive implementation + 3-commit fold cycle + PR open + surrogate fold + auto-merge wait + this handoff.
-
-**Session 147 file inventory.**
-
-| Path                                                               | Action                               | Notes                                                                                                                                                    |
-| ------------------------------------------------------------------ | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/core/src/types/progress.ts`                              | UPDATE (PR #416)                     | `19a2d0a` Alex-merge; new `PR_CREATION_FAILED` literal in `ProgressStatus` + added to `FAILED_STATUSES`                                                  |
-| `packages/core/src/types/types.test.ts`                            | UPDATE (PR #416)                     | `FAILED_STATUSES.size: 3 → 4` invariant                                                                                                                  |
-| `packages/dev/src/dep-factory/invoke-phase.ts`                     | UPDATE (PR #416)                     | Removed PR-1 buildability shim; tagged-error union surface                                                                                               |
-| `packages/dev/src/dep-factory/invoke-phase.test.ts`                | UPDATE (PR #416)                     | Tagged-error assertions + empty-stderr fallback test                                                                                                     |
-| `packages/dev/src/lifecycle/deliver-ticket/deliver-ticket.ts`      | UPDATE (PR #416)                     | `appendDeliveryProgress` suppression on `outcome.type === 'failed'`                                                                                      |
-| `packages/dev/src/lifecycle/deliver-ticket/deliver-ticket.test.ts` | UPDATE (PR #416)                     | Suppression regression test                                                                                                                              |
-| `packages/dev/src/lifecycle/feasibility/feasibility.ts`            | UPDATE (PR #416)                     | Widened `FeasibilityResult` to discriminated union; non-empty default reason                                                                             |
-| `packages/dev/src/lifecycle/feasibility/feasibility.test.ts`       | UPDATE (PR #416)                     | Updated assertions for non-empty default                                                                                                                 |
-| `packages/dev/src/lifecycle/progress.ts`                           | UPDATE (PR #416)                     | DA B1 fold: `VALID_STATUSES` runtime allowlist includes `PR_CREATION_FAILED`                                                                             |
-| `packages/dev/src/lifecycle/progress.test.ts`                      | UPDATE (PR #416)                     | DA B1 + surrogate S1 fold: round-trip test covers all 15 statuses (13 standard + 2 slug)                                                                 |
-| `packages/dev/src/pipeline/phases/deliver-phase.ts`                | UPDATE (PR #416)                     | Tagged-error union; `PR_CREATION_FAILED` write; `detectDeliveryFailure` + `safePostReworkActions` helpers (max-lines lint compliance)                    |
-| `packages/dev/src/pipeline/phases/deliver-phase.test.ts`           | UPDATE (PR #416)                     | New `pr-creation-failed` tests (fresh + rework) + `alreadyExists` regression guard                                                                       |
-| `packages/dev/src/pipeline/phases/feasibility.ts`                  | UPDATE (PR #416)                     | Widened `FeasibilityCheckResult` + `FeasibilityPhaseResult` to discriminated unions; `'error' in result` narrow at phase boundary                        |
-| `packages/dev/src/pipeline/phases/feasibility.test.ts`             | UPDATE (PR #416)                     | New `not-feasible` + `check-failed` shape-parity tests; `as const` mock annotations                                                                      |
-| `packages/dev/src/pipeline/run-pipeline.ts`                        | UPDATE (PR #416)                     | Widened `PipelineDeps.{feasibility,invoke,deliver}` shapes; forwarding to `error.message`; `runPostFeasibilityPhases` + `abortAt` helpers                |
-| `packages/dev/src/pipeline/run-pipeline.test.ts`                   | UPDATE (PR #416)                     | Tagged-shape mocks; new pr-creation-failed test                                                                                                          |
-| `packages/terminal/src/runner/implement/implement.ts`              | UPDATE (PR #416)                     | `aborted` branch logs `result.error` indented underneath                                                                                                 |
-| `packages/terminal/src/runner/implement/implement.test.ts`         | UPDATE (PR #416)                     | "prints abort reason when error is present" + "stderr tee through invoke phase" (PR-1 LOW-3 deferral resolved)                                           |
-| `.changeset/error-channels-phase-plumbing.md`                      | NEW (PR #416)                        | Minor `dev`, patch `terminal`, patch `core`; documents behavior change + status-set classification rationale                                             |
-| `.claude/research/error-channels/spec.md`                          | (no change)                          | v0.3 LOCKED Session 146; Session 147 worked from frozen spec — no spec re-grilling                                                                       |
-| `PROGRESS.md`                                                      | UPDATE — direct-to-main this handoff | Session 147 entry + §Next workstreams refresh (5 → 4 active) + Session 148 loading instructions + Session 143 collapsed + Session 146 metric TBDs filled |
-| `docs/history/SESSIONS.md`                                         | UPDATE (this handoff)                | Session 143 row added per `docs/INDEX.md §12` archival-maintenance rule                                                                                  |
-
-**Session 147 handoff metrics.** (Window-5 audit, data point 5 of 5th-10-window — 5 remaining.)
-
-- Trigger: phase boundary (PR-2 shipped via §7 full pipeline; **error-channels workstream COMPLETE** — both PR-1 and PR-2 done). Plus context utilisation signal (heavy session: 1 da-review + 1 copilot-surrogate dispatch + spec-faithful 16-file substantive code change + 3-commit fold cycle + PR open + this handoff).
-- Context at trigger: ~80-85% of pre-compaction budget (manual estimate; well past 60% sooner-of threshold).
-- Handoff turn cost: ~30-35k tokens (this entry + §Next workstreams refresh + Session 148 loading instructions + Session 143 collapsed-line + SESSIONS.md row + Session 146 metric TBD-fill).
-- Unplanned compaction: no.
-- Time from "handoff now" decision to next-session first productive tool call: ~1-2 min (Session 148 ran 4 verification commands in parallel as the first action after PROGRESS.md read — `git log --oneline -5` + `git status && git log origin/main..HEAD` + `gh pr list --author "dependabot[bot]"` + `gh run list --workflow="Dependabot Updates"`).
-- `PROGRESS.md` quality signal: **clean — no factual errors caught.** Session 147's LI drove (C)-DEFAULT-primary path successfully into Item 4 selection; §Next workstreams wording was internally consistent through Session 148's reframing; LI Step 8 + 9 dogfeeding pattern is the load-bearing finding Session 148's audit-arc surfaced (not a Session-147-quality issue — the dogfeeding shape was inherited from prior sessions).
-
-**Session 146 handoff metrics — TBDs filled retrospectively (Session 147 close).**
-
-- See above (Session 146 metrics block).
-
-### Session 148 loading instructions
-
-On load:
-
-1. Read `PROGRESS.md` top-to-bottom (this Session 147 entry + §Next workstreams + Session 146 entry + Session 145 entry + Session 144 entry — detail band restored to N=4 (144-147); Session 143 archived to [`docs/history/SESSIONS.md`](docs/history/SESSIONS.md) this handoff per §12 INDEX rule).
-2. **Verify current sha via `git log --oneline -5`** — paste-prompt sha is "state at paste time"; repo may have advanced.
-3. **Push hygiene check** (Session 134 mitigation, held Sessions 135-147): run `git status` and `git log --oneline origin/main..HEAD` — if local main is ahead of origin/main, push immediately.
-4. **Standard Dependabot check**: `gh pr list --author "dependabot[bot]" --state all --limit 10`. Note: `gh api .../dependabot/alerts` list endpoint is intermittently empty (Session 144 finding); use `gh api .../dependabot/alerts/{number}` for individual lookups when needed. If new Dependabot PRs opened, surface count + class hint per Session 142 artefact §4 + Session 143 dep-triage.yml class taxonomy.
-5. **PRIMARY workstream on load: Alex-elective from §Next workstreams.** Active workstreams now 4 (error-channels COMPLETE Session 147):
-   - **(1)** Phase 7 — δ + 90-day audit (trigger upstream: ~2026-07-22 OR Alex-elective earlier flip)
-   - **(2)** Automated session handoff — DEFERRED (no early-trigger breach since Session 123 audit)
-   - **(3)** Phase F — Stitch integration (per Alex Session 141: leave until last)
-   - **(4)** Minimal handoff prompt shape — eligible §7-eligible PR (pure research/design, fresh-context-friendly)
-6. **Decision point on load — six branches:**
-   - **(A) New Dependabot security PR fired**: prioritise triaging per blast-radius Alex-handoff. dep-triage.yml may have already opened a triage issue — verify.
-   - **(B) New Dependabot Updates workflow failure**: apply Session 142 artefact §3 class-classification recipe; manual fix per PR #386 model if needed. Check via `gh run list --workflow="Dependabot Updates" --limit 5 --json conclusion,createdAt`.
-   - **(C) Alex-elective workstream from §Next workstreams** — DEFAULT in absence of A/B signal; recommended Item 4 (minimal handoff prompt — pure research/design, fresh-context-friendly) unless Alex picks otherwise.
-   - **(D) Codification PRs eligible at n≥3 cumulative**: post-fold residue check as a 4th axis to the 3-axis sweep (n=3 cumulative; past INDEX rule-of-three). §7 PR shipping addition to `docs/REVIEW-PATTERNS.md` or `docs/DA-REVIEW.md`.
-   - **(E) Patterns at n=1 watch from Session 147 close**: Schema-pair-miss-DA-catch (n=1), branch-switched-to-main mid-session (n=1). All below codification threshold; only pursue if a new occurrence has fired since Session 147 close.
-   - **(F) Alex redirects** — follow the redirect.
-7. **READBACK BEFORE ACTION** (Sessions 128-147 discipline held). After completing steps 1-6, produce a 3-5 sentence readback: (a) understanding of current state, (b) decision branch, (c) proposed first concrete action. **WAIT for Alex confirmation** before edits, PR actions, or subagent dispatches.
-8. **Carry-overs from Session 147:**
-   - Phase 7.3.γ COMPLETE through γ-3. δ trigger conditions: 90-day audit (~2026-07-22) OR Alex-elective earlier flip.
-   - **Error channels workstream COMPLETE** — both PR-1 (#414) and PR-2 (#416) shipped. Spec at `.claude/research/error-channels/spec.md` v0.3 LOCKED is now historical.
-   - **Visibility-gap pattern** — n=2 with cause re-attribution; codification candidate or close-out at n=3.
-   - **Non-stationarity self-caught lesson** (Branch E from Session 145 LI) — n=1 watch (Session 144); promotion candidate at n=2.
-   - **Envelope-vs-cause attribution** (Session 142 case) — n=1 watch; promotion candidate at n=2.
-   - **Pre-decision Explore-agent dispatch** novel n=1 — codification candidate at n=2.
-   - **Post-fold residue surrogate-catch** novel n=3 cumulative (Sessions 144 + 146 + 147) — past INDEX rule-of-three; codification candidate as a 4th axis or separate rule.
-   - **Schema-pair miss DA-catch** novel n=1 watch — codification candidate at n=2.
-   - **Branch-switched-to-main mid-session** novel n=1 watch — codification candidate at n=2.
-   - **Hallucination tracker n=51 consecutive clean rounds** (Sessions 131-147).
-   - Surrogate-on-rule-addition n=16 unchanged. Surrogate-on-drift-fix n=27 unchanged. Surrogate-on-engineering-PR advanced (PR #416 was a refactor with non-trivial behavior change). Copilot UNREACHABLE n=34 (advanced from 33 via PR #416).
-   - Loading-instruction-course-correction n=5 unchanged.
-   - §Measurement protocol fifth-10-window — data point 5 recorded; 5 remaining.
-   - Active workstreams now 4: Phase 7 (δ + 90-day audit) / session handoff / Phase F / minimal handoff prompt.
-9. **If Alex redirects on load** (priority shift, new urgent ask), follow the redirect — §Next workstreams is a default, not a contract.
+**Session 147 (2026-04-27) — Error-channels PR-2 SHIPPED ([PR #416](https://github.com/Pushedskydiver/chief-clancy/pull/416) `19a2d0a` Alex-merge, blast-radius pre-1.0 minor on `dev` 0.10.0→0.11.0 + patch on `terminal` 0.4.0→0.4.1 + patch on `core` 4.0.0→4.0.1; auto-version PR #417 `fd00f9c` followed). Closes the phase-tagged-error plumbing half of the Session 98 deferred design question. **Error-channels workstream COMPLETE** — both PR-1 and PR-2 shipped. Active workstreams reduced 5 → 4. **Major novel patterns**: Schema-pair miss DA-catch novel n=1; Post-fold residue surrogate-catch n=3 cumulative (past INDEX rule-of-three); DA-then-Surrogate layered residue check n=3; Branch-switched-to-main mid-session novel n=1 watch; Hallucination tracker n=51. Archived to [`docs/history/SESSIONS.md`](docs/history/SESSIONS.md) Session 151 close per §12 INDEX rule; full retrospective in `git log -p PROGRESS.md`.**
 
 ---
 
