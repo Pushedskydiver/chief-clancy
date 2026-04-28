@@ -99,19 +99,12 @@ Also check: if `PLAYWRIGHT_ENABLED=true` in `.clancy/.env`, verify `.clancy/docs
 
 ---
 
-## Step 6 — Commit
+## Step 6 — Final message
 
-```bash
-git add .clancy/docs/
-git commit -m "docs(clancy): map codebase — generate .clancy/docs/"
-```
-
----
-
-## Step 7 — Final message
+`.clancy/` is gitignored — files written are local-only and require no commit.
 
 ```
-✅ Codebase mapped — 10 files written to .clancy/docs/
+✅ Codebase mapped — 10 files written to .clancy/docs/ (gitignored — local-only)
 
 "Case closed. All files accounted for." — Run /clancy:implement to pick up your first ticket, or /clancy:autopilot to process the queue.
 ```
