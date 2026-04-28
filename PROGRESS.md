@@ -2,9 +2,9 @@
 
 Living state document for the Clancy monorepo. Records the current state, the phase ledger, and the next decision. Session-by-session detail lives in git history (each phase's PRs are tagged + commit messages reference them).
 
-## Next workstreams (after Session 147)
+## Next workstreams (after Session 148)
 
-Ordering updated 2026-04-27 Session 147 — error-channels PR-2 SHIPPED ([PR #416](https://github.com/Pushedskydiver/chief-clancy/pull/416) `19a2d0a` Alex-merge, blast-radius — pre-1.0 minor on `@chief-clancy/dev` 0.10.0→0.11.0 + patch on `@chief-clancy/terminal` 0.4.0→0.4.1 + patch on `@chief-clancy/core` 4.0.0→4.0.1; auto-version PR #417 `fd00f9c` followed). **Error-channels workstream COMPLETE** — both PR-1 (Session 146) and PR-2 (Session 147) shipped, closing the Session 98 deferred design question. Active workstreams reduced from 5 → 4: Phase 7 (δ + 90-day audit), session handoff (deferred), Phase F (per Alex leave-until-last), minimal handoff prompt.
+Ordering updated 2026-04-28 Session 148 — Item 4 reframed mid-session per Alex Q1-3 grill ("is there stuff in PROGRESS.md that shouldn't be in there?") from "minimal handoff prompt shape" to **PROGRESS.md/SESSIONS.md purpose audit + multi-PR sequence (PR-3 → PR-1 → PR-2)**. Audit-spec at `~/.claude/research/progress-md-purpose-audit/spec.md` (gitignored) v0.4 LOCKED post-R3-fold; R4 returned 2 BLOCKING + 4 MATERIAL (verification rate 92.3%, below strict §0 ≥95% trigger); mid-iteration handoff to Session 149 per Alex direction (NOT scope reduction — fold same R4 findings with fresh context). 0 PRs shipped Session 148 (research arc; multi-PR sequence pending). Active workstreams unchanged at 4: Phase 7 (δ + 90-day audit), session handoff (deferred), Phase F (per Alex leave-until-last), PROGRESS.md/SESSIONS.md audit (Item 4, in progress).
 
 1. **Phase 7 — Dependency automation.** **7.3.α/β DONE** (Session 125 — see Sessions 141-142 entries for evidence). **7.3.γ DONE Session 143**: γ-PR-1 [#409](https://github.com/Pushedskydiver/chief-clancy/pull/409) `ae3097a` (Alex-merge — DA-waiver carve-out + `.github/dependabot.yml` `schedule.time: '06:00'` anchor + `groups:` block with `applies-to: security-updates` + `/.github/dependabot.yml` blast-radius mirror in DEVELOPMENT.md + CODEOWNERS) + γ-PR-2 [#410](https://github.com/Pushedskydiver/chief-clancy/pull/410) `b49d5e7` (Alex-merge — `.github/workflows/dep-triage.yml` 177-line stale-alert detector with per-class hint via `gh api .../actions/runs/{id}/logs` grep). γ-2 dry-run via `workflow_dispatch` ([run `25006937765`](https://github.com/Pushedskydiver/chief-clancy/actions/runs/25006937765)) completed cleanly post-merge: "Fetched 0 alerts total → Triage complete: 0 stale-and-open alerts processed" — validates YAML syntax + permissions + bash safety + grep patterns end-to-end. Spec at `~/.claude/research/dependency-automation/gamma-spec.md` v0.2 (gitignored): R1 returned 2B+3M+4L+2F = 11 findings, fold v0.2, R_n NIT-CLEAN. Spec-grill arc-shape pattern advances to **n=5** (purely-interpretive 2-round convergence; well past INDEX rule-of-three; codification candidate). **β trigger condition (c) ratified Session 143** (commit `189dfe4`): R1 caught the v0.1 framing claim "(a) effectively MET" was unsupported by literal text; Alex accepted Option (ii) (formalize (c) in PROGRESS.md) over Option (i) (wait for calendar 2026-05-07).
    - **Visibility-gap pattern RESOLVED Session 144 with cause re-attribution** (PR #411 `0d6fc16` + PR #412 `c99c260`, both Alex-merge): not GITHUB_TOKEN token-scope filtering — list endpoint is intermittently empty regardless of URL shape (likely cache or replica staleness in GitHub's serving layer; cause not isolated). Same query observed returning 0 alerts and 16 alerts within minutes; individual records remain accessible by number. Auto-close path is best-effort (may silently no-op when list endpoint is in empty-state cache window). YAML comment in `dep-triage.yml` carries the honest framing — do not "improve" it back to a causal-model claim. Self-caught non-stationarity lesson recorded; n=1 watch toward INDEX rule-of-three for promotion to `docs/REVIEW-PATTERNS.md`.
@@ -20,7 +20,7 @@ Ordering updated 2026-04-27 Session 147 — error-channels PR-2 SHIPPED ([PR #41
    - **Implication for γ design** (revised Session 142 after log inspection): γ's policy carve-out must account for **two distinct `security_update_not_possible` classes** (per Q3): **Class A** (transient flake — retryable; manual rerun via `gh api repos/.../actions/runs/{id}/rerun` or wait for next tick) and **Class B** (parent exact-pin — requires `pnpm.overrides`; PR #386 model). γ-2 detector option (Session 141) revised: instead of polling `network/updates/` (UI-only), use `gh api repos/.../actions/runs/{id}/logs` (publicly accessible) to fetch failure logs and class-classify. Three γ scopes now scoped: **(γ-1)** document both classes + manual recipes only; **(γ-2)** add `dep-triage.yml` workflow with class-hint output (~80-100 line workflow); **(γ-3)** auto-anchor / auto-override workflow (defer to Phase 8). Detail at `~/Desktop/alex/@chief-clancy/.claude/research/dependency-automation/dependabot-error-analysis.md` v0.2 §8.
 2. **Automated session handoff — AUDITED TWICE, DEFERRED.** Second-10-window audit ran Session 123 at `.claude/research/session-handoff/audit-2026-04-23.md` (gitignored) across Sessions 113-122. Result: CLEAN — 0/10 unplanned compactions, handoff-cost median ≈7k tokens (under the 8k threshold; mean drifted +2.4k vs Window 1 due to heavier session complexity, legitimate), 0/2 measured clarifying-question rate. Novel friction class surfaced (output-token-limit mid-draft, n=1 Session 121) — logged but not substrate-adoption-motivating (Routine substrate runs in cloud with fresh context; it'd hit the same intra-turn output limit). First-window audit lives at `audit-2026-04-21.md`. Substrate (Claude Code Routines + `PostCompact` hook) remains research preview. **Next revisit triggers:** (i) any single early-trigger breach from §Measurement protocol (3+ unplanned compactions in 5 sessions / handoff >5min on 2+ sessions / 2+ clarifying-question sessions in a row), OR (ii) drift over a **third 10-session window (Sessions 123-132)**: unplanned-compaction rate ≥2/10, handoff-cost median ≥8k tokens (Window 2 median 7k; trend upward), or clarifying-question rate ≥1/10. Hygiene note persists: backfill discipline degraded (Window 1: 4/7 measurable left TBD; Window 2: 8/10 left TBD) — worth formalising into §Measurement protocol as a session-load step.
 3. **Phase F** — `@chief-clancy/design` (Stitch integration). Deferred pending Phase 7. **Per Alex (Session 141): leave until last.**
-4. **Minimal handoff prompt shape — eligible to pursue now (Layer 3 closed Session 141; Phase 7 90-day audit still upstream).** Premise: handoff prompt density (~700 words at Session 136 close) is a symptom of doc incompleteness, not a permanent fixture. Project docs (`PROGRESS.md` + `CLAUDE.md` + `docs/INDEX.md` + Session-N-loading-instructions inside Session-(N-1) entry) should be self-sufficient for cold session load — the paste-prompt should only need to trigger the load + provide a sha for drift detection (~30 words). Surfaced Session 136 (n=2 sessions noticed: Session 135 receive + Session 136 produce; n=1 watch toward rule-of-three). **Pure research/design work** (no code changes); good fresh-context candidate. Could ship as a §7-eligible PR proposing a minimal-handoff-template + corresponding doc tightening if needed.
+4. **PROGRESS.md/SESSIONS.md purpose audit + multi-PR sequence (PR-3 → PR-1 → PR-2).** Reframed mid-Session-148 from original "minimal handoff prompt shape" per Alex grill direction (Q1-3 + Q5 + Q6 Session 148: "is there stuff in PROGRESS.md that shouldn't be in there?" / "do we need SESSIONS.md?" / small-safe-simple PRs). Audit-spec at `~/.claude/research/progress-md-purpose-audit/spec.md` (gitignored) v0.4 LOCKED post-R3-fold, ~410 lines (compressed from v0.3 ~700 lines by deferring PR-3-internal questions to PR-3's own spec-grill arc). R4 returned 2 BLOCKING + 4 MATERIAL + 4 LOW + 3 FYI; verification rate trend 74% → 70% → 91.6% → 92.3% across R1-R4 (below strict §0 ≥95% trigger; spec-author drift identified as iteration bottleneck). Three user-confirmed decisions: (1) drop dogfeeding from LI per `feedback_no_dogfeeding_protocols.md` memory; (2) Job 3 destination = (α) NEW `docs/PATTERN-TRACKERS.md` (R1 flipped to (β) REVIEW-PATTERNS `## Trackers` on overstated structural-fit rationale; R2 reflipped back to (α) per Alex confirmation post-R2-B3 puncture); (3) drop `docs/history/SESSIONS.md` + retire `docs/INDEX.md §12` + retire `docs/DEVELOPMENT.md §Archival maintenance` (HIGH-confidence DROP verdict — 42 write-side commits / <10 read-side citations; `docs/DA-REVIEW.md:65` warns against citing rows as primary source; counterfactual coverage by `git log` is high). **Multi-PR sequence (per R1-M4 reorder)**: PR-3 NEW PATTERN-TRACKERS.md + State-surface row + `§Session handoff` operational step (lays tracker home; §7-eligible Alex-merge) → PR-1 drop LI Step 8/9 dogfeeding + tracker move (PROGRESS.md only, direct-to-main; depends on PR-3) → PR-2 drop SESSIONS.md ceremony triple + flip cadence to 1-line stubs at new `## Older sessions` PROGRESS.md section (§7-eligible Alex-merge). PR-4/PR-5/PR-6 deferred (focus.md / LI generic-steps home / TBD-fill discipline). **Session 149 primary work**: fold v0.4 → v0.5 per R4 findings (B1 phase-ledger fix at PROGRESS.md L649; M1 §2.1 arithmetic; M2 §0 protocol full-grep-evidence rule add; M3+M4 risk additions); dispatch R5 discovery; iterate per `feedback_iterate_spec_grill_until_solid.md`.
 
 ### Recently closed (Session 147 cleanup)
 
@@ -33,6 +33,108 @@ Ordering updated 2026-04-27 Session 147 — error-channels PR-2 SHIPPED ([PR #41
 - **(former Item 7) Phase 6.2 optional follow-ons** — explicitly archived not-load-bearing Session 141. (c) §Claim-extraction bucket expansion (always-audit-kept-prose on restructure PRs even when Copilot reachable) — closed without shipping; reconsider only if future evidence shows reachable-but-Copilot-missed drift on main. (f) mechanical pre-commit grep-audit for link integrity + literal identifiers — closed without shipping; narrow coverage (~1/4 Seed findings) doesn't justify the maintenance burden. Both can re-surface as new workstream items if priorities reverse.
 
 **Policy-surface widening** (`.claude/agents/**`, `docs/decisions/**`, `CONTRIBUTING.md`, `.github/ISSUE_TEMPLATE/**`, `.github/pull_request_template.md` → CODEOWNERS + §Auto-merge blast-radius exception list) is deliberately deferred. Revisit only if Phase 7.0 audit surfaces a concrete reason.
+
+---
+
+**Session 148 (2026-04-28) — PROGRESS.md/SESSIONS.md purpose-audit research arc; spec v0.4 LOCKED post-R3-fold + R4 returned + mid-iteration handoff to fresh-context Session 149 per Alex direction Session 148 close.** Branch (C) primary on load (Alex-elective Item 4 from §Next workstreams DEFAULT per Session 147 LI); Alex reframed mid-session from "minimal handoff prompt shape" to first-principles audit ("is there stuff in PROGRESS.md that shouldn't be in there?" / "do we need SESSIONS.md?"). Sha verified `b8649dd` matched paste-prompt; push hygiene clean; 0 Dependabot PRs; 0 new "Dependabot Updates" workflow runs since Session 147 close (only the 2 original 2026-04-23 β-activation failures still exist). 0 PRs shipped Session 148 (research arc only; multi-PR sequence pending Session 149+).
+
+**Workstream pipeline (Session 148):**
+
+1. **Three parallel research agents dispatched** — Agent A (PROGRESS.md content audit + 5-job classification + dogfeeding inventory); Agent B (doc-set destination survey for each job); Agent C (`docs/history/SESSIONS.md` utility audit — DROP-vs-KEEP verdict). Returns: Job 1 (retrospective ledger) + Job 5 (handoff metrics) stay in PROGRESS.md per `docs/DEVELOPMENT.md:418` State-surface row 3; Job 3 (cross-session pattern trackers) is the only true gap; SESSIONS.md DROP verdict HIGH confidence (42 write-side commits vs <10 read-side citations across `.claude/research/`; `docs/DA-REVIEW.md:65` warns against citing rows as primary source; counterfactual coverage by `git log` is high). 2 research-agent fabrications detected via R1 grill: Agent A invented a "Session 146 LI step 5 ~750 chars inlined error-channels research-spec" example that does not exist; Agent C falsified "Session 82 date silently collapsed" claim (range preserved at SESSIONS.md L13).
+
+2. **Decision sequence to Alex via `docs/INDEX.md §11`** — three structural decisions: drop dogfeeding (Decision 1); Job-3 destination = (α) NEW `docs/PATTERN-TRACKERS.md` after R1+R2+R3 destination-flip arc resolved with Alex re-confirmation post-R2 (R1 M3 flipped to (β) REVIEW-PATTERNS section on overstated structural-fit rationale; R2 B3 punctured (β) — REVIEW-PATTERNS L122-134 is one entry not a "mega-pattern"; tracking-absence-vs-recurrence trigger mismatch); drop SESSIONS.md + retire `docs/INDEX.md §12` + retire `docs/DEVELOPMENT.md §Archival maintenance` (Decision 3). Decisions 4/5/6 deferred (focus.md / LI generic-steps home / TBD-fill).
+
+3. **Multi-PR sequence locked** (per R1 M4 reorder): PR-3 NEW PATTERN-TRACKERS.md + State-surface row + `§Session handoff` operational step (lays tracker home; §7-eligible Alex-merge) → PR-1 drop LI Step 8/9 dogfeeding + tracker move (PROGRESS.md only, direct-to-main; depends on PR-3) → PR-2 drop SESSIONS.md ceremony triple + flip cadence to 1-line stubs at new `## Older sessions` PROGRESS.md section (§7-eligible Alex-merge). Per Alex Q5 small/safe/simple.
+
+4. **Spec-grill arc R1 → R4** (4 rounds, ramifying fold per `docs/DEVELOPMENT.md:375`): R1 (3B+6M+5L+3F, 74% verification rate) → fold v0.1 → v0.2 → R2 (3B+7M+6L+3F, 70%) → fold v0.2 → v0.3 with §0 strict pre-LOCK protocol → R3 (2B+7M+5L+3F, 91.6%, anchor-conflation B1 — `rows 131/132/142` of SESSIONS.md don't exist as file lines; those are session-N table identifiers in column 1 at file lines 62/63/73) → fold v0.3 → v0.4 with anchor-sanity protocol added + ~290-line compression by deferring PR-3-internal questions to PR-3's own spec-grill arc → R4 (2B+4M+4L+3F, 92.3%, phase-ledger empirical-claim B1 — `## Phase ledger` IS at PROGRESS.md L649, my §0 grep was incomplete).
+
+5. **Spec-author drift identified as iteration bottleneck** — verification rate plateaued under §0 strict protocol's own ≥95% trigger across 4 rounds (74%→70%→91.6%→92.3%); each fold round closed some drift and introduced fresh drift. Root cause: spec author with full Session 148 context pattern-matches from inside the spec rather than verifying from outside. Mitigation = mid-iteration handoff to fresh-context author.
+
+6. **Mid-iteration handoff** — Alex chose Path B (hand off to fresh-context Session 149 for v0.5 fold) over Path A (continue in-session iteration). Per `feedback_iterate_spec_grill_until_solid.md` saved Session 148: distinct from scope reduction (which is "ship a smaller PR / defer issues"); mid-iteration handoff is "fold the same R4 findings, just with fresh context." R4 closing recommendation aligned ("v0.4 → v0.5 fold required, then R5 discovery").
+
+**Major novel patterns Session 148:**
+
+1. **Spec-author drift across iterative folds** novel n=1 — verification rate trend 74%→70%→91.6%→92.3% across R1-R4 ramifying-fold arc. §0 strict pre-LOCK protocol (added v0.3) catches some drift but isn't sufficient against author pattern-matching from inside the spec. Mitigation: mid-iteration handoff to fresh-context author. Codification candidate at n=2.
+
+2. **Decision-flip-then-reflip with user-confirmation gate** novel n=1 — Alex confirmed (α) new doc → R1 M3 evidence flipped to (β) REVIEW-PATTERNS section on overstated structural-fit rationale → R2 B3 punctured (β) rationale → spec author surfaced reflip BEFORE silently flipping again, Alex reconfirmed (α). Pattern: agent-evidence can flip a user-decision once, but if subsequent rounds puncture the flip rationale, surface back to user, don't silently reflip. Codification candidate at n=2.
+
+3. **PR-3-internal deferral as audit-spec compression** novel n=1 — v0.3 → v0.4 dropped ~290 lines (~700 → ~410) by deferring PATTERN-TRACKERS.md format spec / per-tracker contract / anti-duplication wording to PR-3's own spec-grill arc. Audit-spec stays meta; child-PR spec owns format details. Pattern: meta-specs should not nail child-spec internal details. Codification candidate at n=2.
+
+4. **Mid-iteration handoff (≠ scope reduction)** novel n=1 — when spec-author drift becomes the iteration bottleneck and verification rate plateaus, hand off to fresh-context author rather than continue. Saved as `feedback_iterate_spec_grill_until_solid.md`. Distinct from scope reduction; mid-iteration handoff preserves the iteration discipline (same findings folded, fresh author). Codification candidate at n=2.
+
+5. **§0 strict pre-LOCK verification protocol failure modes empirically discovered** novel n=2 cumulative — (i) row-identifier-vs-file-offset confusion (R3 B1, fold added anchor-sanity sub-rule); (ii) superficial grep / partial existence claim (R4 B1, fold target for v0.5 — add full-file-grep-evidence sub-rule). Pattern indicates protocol drift can happen even with explicit literal-cite-check discipline.
+
+6. **3 research agents in parallel as evidence-base substrate** novel n=1 — Session 148 dispatched 3 general-purpose agents in parallel; reports were independent + cross-validating + caught mutually-supporting evidence. R1 grill caught 2 fabrications across Agent A + Agent C reports. Pattern: when reframing a workstream first-principles, parallel agents beat serial dispatches; spec-grill on the synthesis catches agent fabrications.
+
+7. **Iterative ramifying-fold arc length pattern** novel n=1 — this audit-spec is at R4 with R5 pending; total likely 5-6+ rounds. Bounded folds converge in 2 rounds per PR #413; ramifying folds have no defined upper bound. Per-round-finding-count trend: R1 14 → R2 16 → R3 14 → R4 10. Declining but not yet zero. Worth tracking across future ramifying-fold specs.
+
+8. **Hallucination tracker at n=51 unchanged** — Session 148 had 0 da-review and 0 copilot-surrogate dispatches (no PRs shipped this session); tracker scope is review-subagents in code-PR workflows. Research-agent hallucination Session 148 = 2 (Agent A fabricated example; Agent C falsified Session 82 date claim) — different bucket; both caught at R1 grill via primary-source verification. Spec-grill subagent rounds R1-R4 produced no fabricated catches I detected (every R-finding I sampled was real).
+
+9. **Auto Mode held cleanly** through 3 research-agent + 4 spec-grill subagent dispatches + 4 spec-fold-rewrites + 1 Alex-decision-surface (decisions 1+2+3) + 1 Alex-decision-reconfirm (Decision 2 reflip α) + 1 mid-iteration-handoff-decision + this handoff entry. Per Auto Mode "course corrections are normal" — Alex reframes were handled in-stride.
+
+**Session 148 file inventory.**
+
+| Path                                                                       | Action                               | Notes                                                                                                                   |
+| -------------------------------------------------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `~/.claude/research/progress-md-purpose-audit/spec.md`                     | NEW (gitignored)                     | v0.1 → v0.2 → v0.3 → v0.4 LOCKED ~410 lines; pre-R5 at handoff                                                          |
+| `~/.claude/projects/.../memory/feedback_no_dogfeeding_protocols.md`        | NEW (memory)                         | Don't restate protocols already in `docs/*.md` inside PROGRESS.md / handoff prompts / LI blocks                         |
+| `~/.claude/projects/.../memory/feedback_iterate_spec_grill_until_solid.md` | NEW (memory)                         | Iterate until solid; don't scope down to escape grill cost; fix fold-quality protocol if verification rate drops        |
+| `~/.claude/projects/.../memory/MEMORY.md`                                  | UPDATE (memory)                      | Index entries for the 2 new feedback memories                                                                           |
+| `PROGRESS.md`                                                              | UPDATE — direct-to-main this handoff | Session 148 entry + §Next workstreams refresh + Session 149 LI + Session 144 collapsed + Session 147 metric TBDs filled |
+| `docs/history/SESSIONS.md`                                                 | UPDATE — direct-to-main this handoff | Session 144 row added per `docs/INDEX.md §12` archival-maintenance rule                                                 |
+
+**Session 148 handoff metrics.** (Window-5 audit, data point 6 of 5th-10-window — 4 remaining.)
+
+- Trigger: phase boundary (v0.4 LOCKED + R4 returned with continued ramifying findings + Alex-directed mid-iteration handoff to fresh context Session 149 for v0.5 fold). Plus context utilisation signal (~70-75% manual estimate; very heavy session: 3 research-agent + 4 spec-grill subagent dispatches + 4 spec rewrites + 1 destination flip-and-reflip arc + this handoff entry).
+- Context at trigger: ~70-75% of pre-compaction budget (manual estimate; past 60% sooner-of threshold).
+- Handoff turn cost: ~30-35k tokens estimated (this entry + §Next workstreams refresh + Session 149 LI + Session 144 collapsed-line + SESSIONS.md row + Session 147 metric TBD-fill).
+- Unplanned compaction: no.
+- Time from "handoff now" decision to next-session first productive tool call: TBD (recorded by Session 149).
+- `PROGRESS.md` quality signal: TBD (recorded by Session 149).
+
+### Session 149 loading instructions
+
+On load (lean shape per `feedback_no_dogfeeding_protocols.md` — first application of no-dogfeeding-in-LI; if Session 149 cold-loads with friction, log as PR-1 empirical-test pre-shipping):
+
+1. Read `PROGRESS.md` top-to-bottom (this Session 148 entry + §Next workstreams + Sessions 145-147 entries — detail band restored to N=4 (145-148); Session 144 archived to [`docs/history/SESSIONS.md`](docs/history/SESSIONS.md) this handoff per §12 INDEX rule).
+2. Verify current sha (`git log --oneline -5`); push hygiene check (`git status` + `git log origin/main..HEAD`); standard Dependabot check (`gh pr list --author "dependabot[bot]" --state all --limit 10` + `gh run list --workflow="Dependabot Updates" --limit 5 --json conclusion,createdAt`).
+3. **PRIMARY workstream on load: PROGRESS.md/SESSIONS.md purpose-audit — fold v0.4 → v0.5 + R5 dispatch.** Spec at `~/.claude/research/progress-md-purpose-audit/spec.md` (gitignored) v0.4 LOCKED. R4 surfaced 2 BLOCKING + 4 MATERIAL + 4 LOW + 3 FYI; verification rate 92.3% below strict §0 ≥95% trigger. Specific fold targets per R4 closing recommendation:
+   - **B1**: PROGRESS.md `## Phase ledger` IS at L649 (re-verified Session 148 close). Reframe spec §0 verification log entry + §1.1 row 2 — phase ledger has a discrete section; out of scope for THIS audit (separate workstream if a refresh is needed). v0.5 §1.1 row 2 changes to: "phase ledger is `## Phase ledger` at PROGRESS.md L649; out of scope for this audit (separate workstream if a refresh is needed)."
+   - **B2**: §3.3 wording stays correct; B1 fix resolves B2.
+   - **M1**: §2.1 L117 — change "L131-132 (newly-shipped API alerts, 1 bullet)" to "L131 + L132 (newly-shipped API alerts, 2 bullets)"; reconciliation: 11 DOGFED + 8 legitimate session-resident = 19 total bullets where each LI line counts as one bullet.
+   - **M2**: §0 protocol — add row 6: "Negative existence claims (`X does not exist in file F`) must cite the grep command + full output; partial greps that miss matches downstream of cursor invalidate the claim."
+   - **M3**: §5.4 — add R-S5 self-attestation drift risk.
+   - **M4**: §5 — add R-S6 stuck-state risk for PR-1-standalone-without-PR-3-ever-shipping.
+   - **L1-L4**: optional fold per R4; can defer to PR-implementation specs (R4 explicitly said L1-L4 are "optional fold; can defer to PR-implementation").
+4. **After fold**: dispatch R5 discovery (NOT R_n verification — R4 surfaced fresh BLOCKING). If R5 returns NIT-CLEAN at ≥95% verification rate, R6 verification suffices; otherwise iterate per `feedback_iterate_spec_grill_until_solid.md`.
+5. **Session 148 context recap — what's STABLE in v0.4** (do NOT relitigate without strong new evidence):
+   - 5-job classification of PROGRESS.md (Job 1 retrospective + Job 2 forward state + Job 3 trackers + Job 4 LI + Job 5 metrics)
+   - 8-case mixed-class carve-out (§1.1) — except phase-ledger row needs B1 fix
+   - Decision 1: drop dogfeeding from LI (PR-1)
+   - Decision 2: Job 3 trackers → NEW `docs/PATTERN-TRACKERS.md` (PR-3) — Alex confirmed twice (post-R2 reflip held)
+   - Decision 3: drop SESSIONS.md + retire §12 + retire §Archival maintenance (PR-2)
+   - Decisions 4/5/6 deferred (focus.md / LI generic-steps / TBD-fill)
+   - PR sequencing: PR-3 → PR-1 → PR-2 (R1 M4 fold)
+   - PR-3-internal questions deferred to PR-3's own spec-grill arc (R3 closing)
+6. **Decision branches:**
+   - **(A) New Dependabot security PR fired** — prioritise triaging.
+   - **(B) New Dependabot Updates workflow failure** — apply Session 142 artefact §3 class-classification recipe; manual fix per PR #386 model if needed.
+   - **(C) PRIMARY: v0.5 fold + R5 dispatch** per step 3-4 above — DEFAULT in absence of A/B signal.
+   - **(D) Alex redirects** — follow the redirect.
+7. **READBACK BEFORE ACTION** — produce a 3-5 sentence readback (current state / decision branch / proposed first concrete action) and **wait for Alex confirmation** before edits, PR actions, or subagent dispatches. Especially given the meta-iteration arc; confirm fold scope before applying.
+8. **Carry-overs from Session 148:**
+   - Phase 7.3.γ COMPLETE through γ-3 (per Session 144 archival). 7.3.δ trigger conditions: 90-day audit (~2026-07-22) OR Alex-elective earlier flip.
+   - **Item 4 audit-arc IN PROGRESS** — Session 149 fold + R5 dispatch is primary work; multi-PR sequence pending (PR-3 → PR-1 → PR-2).
+   - **Spec-author drift novel n=1** — addressed by mid-iteration handoff; if Session 149 fold-quality is empirically better with fresh context, n=1 → codification candidate at n=2.
+   - **Decision-flip-then-reflip with user-confirmation gate** novel n=1 — codification candidate at n=2.
+   - **PR-3-internal deferral as audit-spec compression** novel n=1 — codification candidate at n=2.
+   - **Mid-iteration handoff (≠ scope reduction)** novel n=1 — recorded; saved as `feedback_iterate_spec_grill_until_solid.md`.
+   - **§0 strict pre-LOCK verification protocol failure modes** novel n=2 cumulative (anchor-conflation R3 + superficial-grep R4) — codification target inside spec §0 itself, not a separate `docs/*.md` rule yet.
+   - **Hallucination tracker n=51 unchanged** (no da-review or copilot-surrogate dispatches Session 148). Research-agent hallucination Session 148 = 2 (Agent A + Agent C, both caught at R1 grill).
+   - Surrogate-on-rule-addition n=16 unchanged. Surrogate-on-drift-fix n=27 unchanged. Copilot UNREACHABLE n=34 unchanged. Loading-instruction-course-correction n=5 unchanged (no LI course-corrections this session — Item 4 reframe is Alex-directed, not LI-error).
+   - §Measurement protocol fifth-10-window — data point 6 recorded; 4 remaining.
+   - Active workstreams 4: Phase 7 (δ + 90-day audit) / session handoff / Phase F / PROGRESS.md/SESSIONS.md audit (in progress).
+9. **If Alex redirects on load** (priority shift, new urgent ask), follow the redirect — §Next workstreams is a default, not a contract.
 
 ---
 
@@ -90,8 +192,8 @@ Ordering updated 2026-04-27 Session 147 — error-channels PR-2 SHIPPED ([PR #41
 - Context at trigger: ~80-85% of pre-compaction budget (manual estimate; well past 60% sooner-of threshold).
 - Handoff turn cost: ~30-35k tokens (this entry + §Next workstreams refresh + Session 148 loading instructions + Session 143 collapsed-line + SESSIONS.md row + Session 146 metric TBD-fill).
 - Unplanned compaction: no.
-- Time from "handoff now" decision to next-session first productive tool call: TBD (recorded by Session 148).
-- `PROGRESS.md` quality signal: TBD (recorded by Session 148).
+- Time from "handoff now" decision to next-session first productive tool call: ~1-2 min (Session 148 ran 4 verification commands in parallel as the first action after PROGRESS.md read — `git log --oneline -5` + `git status && git log origin/main..HEAD` + `gh pr list --author "dependabot[bot]"` + `gh run list --workflow="Dependabot Updates"`).
+- `PROGRESS.md` quality signal: **clean — no factual errors caught.** Session 147's LI drove (C)-DEFAULT-primary path successfully into Item 4 selection; §Next workstreams wording was internally consistent through Session 148's reframing; LI Step 8 + 9 dogfeeding pattern is the load-bearing finding Session 148's audit-arc surfaced (not a Session-147-quality issue — the dogfeeding shape was inherited from prior sessions).
 
 **Session 146 handoff metrics — TBDs filled retrospectively (Session 147 close).**
 
@@ -374,98 +476,7 @@ On load:
 
 ---
 
-**Session 144 (2026-04-27) — Phase 7.3.γ-3 visibility-gap follow-up: 2 PRs shipped + post-merge framing-correction discovery + non-stationarity self-caught lesson. PR [#411](https://github.com/Pushedskydiver/chief-clancy/pull/411) `0d6fc16` (Alex-merge, blast-radius — explicit multi-state query for `dependabot/alerts` fetch in `dep-triage.yml`) + PR [#412](https://github.com/Pushedskydiver/chief-clancy/pull/412) `c99c260` (Alex-merge, blast-radius — comment-correction dropping the wrong causal-model framing PR #411 shipped). Visibility-gap pattern n=1 → n=2 with cause re-attribution: not GITHUB_TOKEN token-scope filtering, but list-endpoint intermittency in GitHub's serving layer (cache or replica staleness; cause not isolated). Phase 7.3.γ scope COMPLETE through γ-3; next is 7.3.δ on existing trigger conditions.** Branch (A) PRIMARY (visibility-gap follow-up per Session 143 loading instructions step 5) selected on load — sha verified `6ba7eb2` matched paste-prompt, push hygiene clean, 0 Dependabot PRs, 0 open alerts at session start.
-
-**5-probe diagnostic on `debug/dep-triage-visibility` branch** (since deleted post-investigation, run [`25007707174`](https://github.com/Pushedskydiver/chief-clancy/actions/runs/25007707174)). Probes 1-5 against `gh api .../dependabot/alerts` from GITHUB_TOKEN with `vulnerability-alerts: read`: default URL = 0 alerts; `?state=open,fixed,dismissed,auto_dismissed` = 16 alerts (15 fixed + 1 auto_dismissed); `?state=open` / `?state=fixed` / `?state=auto_dismissed` = 0 each. Hypothesis at the time: "GITHUB_TOKEN default-filters to `state=open`; explicit multi-state form is the workaround." This framing was load-bearing-wrong (caught post-merge, see below).
-
-**PR #411 review pipeline.** DA pre-PR-open caught **2 MATERIAL** (M1 causal-model overclaim "default-filters to `state=open`" not supported by data — single-state queries also returned 0; M2 same in commit body) + **1 LOW** (run-ID linking to file) + **5 FYI**. M1+M2+L1 folded by reframing comment + commit body to observed-empirical ("returns 0 on default and single-state queries; only multi-state returns; cause not isolated"). Surrogate post-PR-open (Copilot UNREACHABLE n=29) caught **1 LOW** (line-range "154-175" was pre-fix numbering; post-fix is 161-182) + **1 FYI**; LOW folded in PR body, commit message left as-is (squash-merge replaces it). Diff: 1 file, 8 insertions / 1 deletion.
-
-**Post-merge dry-run framing-correction.** [Run `25008593023`](https://github.com/Pushedskydiver/chief-clancy/actions/runs/25008593023) on `main` under shipped multi-state URL returned `Fetched 0 alerts total` — same as Session 143's pre-fix baseline. Investigation revealed: same minute, same token, `?state=fixed` returned 15 from local PAT; multi-state returned 0; `?per_page=100` (no state) returned 16; individual records `/dependabot/alerts/{1..16}` all return real `state=fixed` records. Pattern: list endpoint is intermittently empty regardless of URL shape; the same query returns 0 and 16 within minutes. URL shape isn't the lever; cause not isolated. PR #411's framing was based on a single-moment 5-probe diagnostic treated as a stable causal model — actually a transient state observation.
-
-**PR #412 review pipeline.** DA pre-PR-open caught **1 MATERIAL** ("matches the auto-close iteration's filter below" overstates set-relationship — fetch is the superset including `open` for stale-and-open classifier above; rewording adds load-bearing context) + **2 LOW** (1 hedge-asymmetry "GitHub's CDN layer" → "serving layer" in commit body; 1 deferred as DA-confirmed-precise) + **2 FYI** (self-caught lesson sound; forward-fix-vs-revert defensible). M1+L1 folded. Surrogate post-PR-open (Copilot UNREACHABLE n=30 → n=31 watch) caught **2 LOW** (F1 yml/commit-body hedge-asymmetry "edge-cache" → "cache or replica staleness" — folded via force-push `9e30a4b`; F2 paraphrase fidelity in commit body — deferred as defensible inferential bridge) + **1 UNCHECKED** (semantic/historical). Schema-pair check confirmed exact-union (fetch 4 states = stale {open} ∪ auto-close {fixed,dismissed,auto_dismissed}, no unused state, no unread state). Diff: 1 file, 10 insertions / 6 deletions; pure prose change.
-
-**Forward-fix-vs-revert decision** applied PR #404 §Decision-point shape inline: revert PR #411 would restore default-URL fetch which is demonstrably-broken-in-the-same-cache-window (returns 0 either way); revert leaves wrong commit message permanently in `git log`; forward-fix replaces wrong prose with corrected framing in the most-recent log entry. Forward-fix is the cleaner narrative + same in-tree result + zero behavioral cost. Surrogate validated no `RATIONALIZATIONS.md §Stay in scope` violation.
-
-**Major novel patterns Session 144**:
-
-1. **Self-caught analytical error from non-stationary external system** — Session 143 finding ("GITHUB_TOKEN default-filters to open-only") was based on a single 5-probe diagnostic at one moment in time; Session 144 caught the error by re-running and observing 0 vs 16 within minutes on the same query. Lesson: diagnostic snapshots from non-stationary external systems shouldn't be treated as ground truth without N>1 sampling over time. Promotion candidate to `docs/REVIEW-PATTERNS.md` at n=2.
-2. **Visibility-gap pattern reframed** — Session 143 carry-over was n=1 token-scope-attribution; Session 144 advances to n=2 with cause re-attribution to list-endpoint intermittency in GitHub's serving layer (cache or replica staleness; cause not isolated). Codification candidate or close-out as known-unknown at n=3.
-3. **Drift-fix on a fix-PR** novel n=1 watch — PR #411 was a `🐛 fix(dep-triage)`; PR #412 was a `📝 docs(dep-triage)` correcting #411's factual claims. Pattern: when a fix carries factual claims that the fix's own diagnostic data couldn't fully verify, post-merge re-verification is necessary.
-4. **Force-push for fold-after-PR-open** novel n=1 watch — F1 from surrogate caught hedge-asymmetry; force-pushed `9e30a4b` aligned yml comment with commit body. Cheap pre-merge cleanup; standard `--force-with-lease` discipline.
-5. **Forward-fix vs revert** decision-point applied novel n=1 — when wrong-prose is shipped + revert restores demonstrably-broken behavior, forward-fix is cleaner narrative + same in-tree result. Self-applied PR #404 §Decision-point shape during decision.
-6. **Schema-pair check exact-union finding** novel n=1 — surrogate verified fetch URL (4 states) = stale-classifier {open} ∪ auto-close-iteration {fixed,dismissed,auto_dismissed} exactly; no unused state, no unread state. Confirmed M1 fold added load-bearing context.
-7. **Self-caught incomplete-sourcing class advances n=2 → n=3** — Session 142 (workflow logs not pulled), Session 143 (PROGRESS.md text re-interpretation without re-verification), Session 144 (single-moment diagnostic treated as model). Codification candidate threshold met at n=3.
-8. **Hallucination tracker n=37 consecutive clean rounds** (Sessions 131-144; advanced through 4 subagent dispatches: 2 DA + 2 surrogate this session).
-9. **Auto Mode held cleanly** through 5-probe diagnostic + branch creation + workflow_dispatch + log inspection + 2 PRs through full Review-Gate pipeline + post-merge investigation pivot + framing-correction PR + cleanup + this handoff.
-
-**Session 144 file inventory.**
-
-| Path                               | Action                               | Notes                                                                                                                                       |
-| ---------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.github/workflows/dep-triage.yml` | UPDATE (PR #411 + #412)              | PR #411: line 49 `gh api` URL changed to explicit `?state=open,fixed,dismissed,auto_dismissed`; PR #412: 9-line YAML comment block reframed |
-| `PROGRESS.md`                      | UPDATE — direct-to-main this handoff | Session 144 entry + §Next workstreams refresh + Session 145 loading instructions + Session 140 collapsed + Session 143 TBDs filled          |
-| `docs/history/SESSIONS.md`         | UPDATE (this handoff)                | Session 140 row added per `docs/INDEX.md §12` archival-maintenance rule                                                                     |
-| `debug/dep-triage-visibility`      | CREATED + DELETED                    | Diagnostic-only branch; 5-probe visibility test; deleted post-investigation                                                                 |
-
-**Session 144 handoff metrics.** (Window-5 audit, data point 2 of 5th-10-window — 8 remaining.)
-
-- Trigger: phase boundary (Phase 7.3.γ-3 visibility-gap thread closed via 2 PRs + post-merge framing-correction shipped + visibility-gap workstream resolved + non-stationarity self-caught lesson recorded; next concrete work is Phase 7.3.δ which has its own trigger conditions upstream + separate research). Plus context utilisation signal (~70-80% of pre-compaction budget at handoff decision; very heavy session).
-- Context at trigger: ~70-80% of pre-compaction budget (manual estimate; well past 60% sooner-of threshold).
-- Handoff turn cost: ~30-35k tokens (this entry + §Next workstreams refresh + Session 145 loading instructions + Session 140 collapsed-line + SESSIONS.md row + Session 143 TBD-fill).
-- Unplanned compaction: no.
-- Time from "handoff now" decision to next-session first productive tool call: TBD (recorded by Session 145).
-- `PROGRESS.md` quality signal: TBD (recorded by Session 145).
-
-### Session 145 loading instructions
-
-On load:
-
-1. Read `PROGRESS.md` top-to-bottom (this Session 144 entry + §Next workstreams + Session 143 entry + Session 142 entry + Session 141 entry — detail band restored to N=4 (141-144); Session 140 archived to [`docs/history/SESSIONS.md`](docs/history/SESSIONS.md) this handoff per §12 INDEX rule).
-2. **Verify current sha via `git log --oneline -5`** — paste-prompt sha is "state at paste time"; repo may have advanced.
-3. **Push hygiene check** (Session 134 mitigation, held Sessions 135-144): run `git status` and `git log --oneline origin/main..HEAD` — if local main is ahead of origin/main, push immediately.
-4. **Standard Dependabot check**: `gh pr list --author "dependabot[bot]" --state all --limit 10`. Note: `gh api .../dependabot/alerts` list endpoint is intermittently empty (Session 144 finding); use `gh api .../dependabot/alerts/{number}` for individual lookups when needed. If new Dependabot PRs opened, surface count + class hint per Session 142 artefact §4 + Session 143 dep-triage.yml class taxonomy.
-5. **No PRIORITY visibility-gap follow-up** — visibility-gap workstream RESOLVED Session 144 with cause re-attribution. The auto-close path in `dep-triage.yml` is acknowledged as best-effort (may silently no-op when the list endpoint is in an empty-state cache window). No further action required unless: (a) auto-close failures observed in production AND a triage issue piles up uncaught, OR (b) GitHub publishes documentation explaining the list-endpoint behavior, OR (c) Alex elects to investigate further.
-6. **Decision point on load — six branches:**
-   - **(A) New Dependabot security PR fired**: prioritise triaging per blast-radius Alex-handoff. dep-triage.yml may have already opened a triage issue — verify.
-   - **(B) New Dependabot Updates workflow failure**: apply Session 142 artefact §3 class-classification recipe; manual fix per PR #386 model if needed. Check via `gh run list --workflow="Dependabot Updates" --limit 5 --json conclusion,createdAt`.
-   - **(C) Bucket B: Item 3 (error channels) or Item 5 (minimal handoff prompt) per §Next workstreams** — Alex-elective.
-   - **(D) Spec-grill arc-shape codification PR** (n=5 evidence past INDEX rule-of-three; Session 143/144 carry-over). Pure docs PR adding the pattern to `docs/REVIEW-PATTERNS.md` or `docs/DEVELOPMENT.md §Two-phase grill discipline`.
-   - **(E) Non-stationarity codification PR** (n=2 candidate — Session 144 self-caught lesson). Pure docs PR adding the pattern to `docs/REVIEW-PATTERNS.md` ("when verifying empirical claims about non-stationary external systems, sample N>1 over time before treating any moment's result as a stable model"). Smaller scope than (D).
-   - **(F) Self-caught incomplete-sourcing codification PR** (n=3 — INDEX rule-of-three threshold met across Sessions 142+143+144). Could be combined with (E) or shipped separately.
-   - **(G) Alex redirects** — follow the redirect.
-7. **READBACK BEFORE ACTION** (Sessions 128-144 discipline held). After completing steps 1-6, produce a 3-5 sentence readback: (a) understanding of current state, (b) decision branch, (c) proposed first concrete action. **WAIT for Alex confirmation** before edits, PR actions, or subagent dispatches.
-8. **Apply rules shipped Sessions 102-144.**
-   - **PR #402**: INDEX consultation before policy-adjacent edits.
-   - **PR #403/PR #408**: 3-axis post-fold sweep (direct-term + derived-cardinality + qualifier-word).
-   - **PR #404**: 2-4 options + explicit recommendation + evidence + pushback-tolerance for Alex decision points.
-   - **PR #405**: §12 INDEX archival rule when archiving PROGRESS.md session entries.
-   - **PR #407**: codified rationalization "Text alone won't fire reliably — I'll add a hook to enforce it".
-   - **PR #409 (Session 143)**: Dependabot DA-waiver carve-out + `/.github/dependabot.yml` blast-radius path.
-   - **PR #410 (Session 143)**: dep-triage.yml workflow exists at `.github/workflows/dep-triage.yml`. Monday 08:00 UTC + on-demand `workflow_dispatch`. Reads `vulnerability-alerts: read` (the canonical permission key — NOT `security-events`).
-   - **PR #411 + #412 (Session 144)**: dep-triage.yml fetch URL is `?state=open,fixed,dismissed,auto_dismissed` (defensive; covers stale-classifier {open} + auto-close-iteration {fixed,dismissed,auto_dismissed} union exactly). Auto-close path is best-effort given list-endpoint intermittency. The YAML comment carries the honest framing — do not "improve" it back to a causal-model claim.
-9. **Protocol discipline reminders — codified, not transient:**
-   - DA reports in-chat only, surrogate posts audit comment on PR.
-   - DA pre-PR-open, surrogate post-PR-open. Sequence: write code → DA in-chat → fold → self-review → push + open PR → surrogate → audit comment → merge.
-   - **Verify subagent + own diagnostic claims before acting** per `docs/DA-REVIEW.md §Verify subagent claims`. **Session 142+143+144 evidence** (incomplete-sourcing class n=3 — INDEX rule-of-three): single-moment diagnostic snapshots from non-stationary external systems are state observations, not models. Sample N>1 over time before generalizing.
-   - **Spec-grill convergence**: 2-round arc is now n=5 evidence for purely-interpretive folds; codification candidate.
-   - **Push direct-to-main commits in the same session** per Session 134 mitigation.
-   - **Force-push for fold-after-PR-open** is fine via `--force-with-lease` when surrogate catches a load-bearing finding pre-merge (Session 144 PR #412 example).
-10. **Carry-overs from Session 144:**
-    - Phase 7.3.γ COMPLETE through γ-3. δ trigger conditions: 90-day audit (~2026-07-22) OR Alex-elective earlier flip.
-    - **Visibility-gap pattern reframed** — n=2 with cause re-attribution to GitHub serving-layer intermittency. Auto-close path acknowledged as best-effort. Codification candidate or close-out at n=3.
-    - **Non-stationarity self-caught lesson** — n=1 watch (this session is the n=1 case); promotion candidate at n=2.
-    - **Self-caught incomplete-sourcing class n=3** (Sessions 142+143+144) — INDEX rule-of-three threshold met. Codification candidate.
-    - **Spec-grill arc-shape pattern n=5** — codification candidate (unchanged from Session 143 — no new spec-grill arcs this session).
-    - **Forward-fix vs revert decision-point** — novel n=1 watch.
-    - **Force-push fold-after-PR-open** — novel n=1 watch.
-    - **Drift-fix on a fix-PR** — novel n=1 watch.
-    - **Hallucination tracker n=37 consecutive clean rounds**.
-    - Surrogate-on-rule-addition n=15 (PR #411 fix-on-workflow + PR #412 docs-on-workflow). Surrogate-on-drift-fix n=27 (advanced via PR #412 — although `📝 docs` not `🐛 fix(docs)` strictly, treat as Copilot-UNREACHABLE fallback dispatch). Copilot UNREACHABLE n=31 (advanced from 29 via PR #411 + PR #412).
-    - Loading-instruction-course-correction n=4 unchanged.
-    - §Measurement protocol fifth-10-window — data point 2 recorded; 8 remaining.
-    - Active workstreams still 5: Phase 7 (δ + 90-day audit) / session handoff / error channels / Phase F / minimal handoff prompt.
-    - **Spec-grill arc-shape codification PR** + **Non-stationarity codification PR** + **Self-caught incomplete-sourcing codification PR** are all eligible §7-rule-promotion workstreams (could be bundled or shipped separately).
-11. **If Alex redirects on load** (priority shift, new urgent ask), follow the redirect — §Next workstreams is a default, not a contract.
+**Session 144 (2026-04-27) — Phase 7.3.γ-3 visibility-gap follow-up COMPLETE: 2 PRs shipped — PR [#411](https://github.com/Pushedskydiver/chief-clancy/pull/411) `0d6fc16` (multi-state query for `dependabot/alerts` fetch in `dep-triage.yml`) + PR [#412](https://github.com/Pushedskydiver/chief-clancy/pull/412) `c99c260` (comment-correction dropping the wrong causal-model framing). Visibility-gap pattern n=1 → n=2 with cause re-attribution: list-endpoint intermittency in GitHub serving layer (cache or replica staleness; cause not isolated). Phase 7.3.γ scope COMPLETE through γ-3. Archived to [`docs/history/SESSIONS.md`](docs/history/SESSIONS.md) Session 148 close per §12 INDEX rule; full retrospective in `git log -p PROGRESS.md`.**
 
 ---
 
