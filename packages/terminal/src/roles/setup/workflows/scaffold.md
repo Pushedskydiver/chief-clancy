@@ -282,23 +282,25 @@ Never overwrite the entire file. Always preserve existing content.
 
 ## .gitignore check
 
-Read the project's `.gitignore`. If `.clancy/.env` is not present, append:
+Read the project's `.gitignore`. If `.clancy/` is not present, append:
 
 ```
 
-# Clancy credentials
+# Clancy
 
-.clancy/.env
+.clancy/
 
 ```
+
+`.clancy/` is gitignored entirely — credentials, generated docs, install bundles, version pin, and `.env.example` template are all local-only.
 
 If no `.gitignore` exists, create one with:
 
 ```
 
-# Clancy credentials
+# Clancy
 
-.clancy/.env
+.clancy/
 
 # Dependencies
 

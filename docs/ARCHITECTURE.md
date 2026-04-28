@@ -346,6 +346,8 @@ Every package follows this:
 
 After running the installers:
 
+The whole `.clancy/` tree is gitignored — Clancy never commits anything inside it. Entries below are local-only.
+
 ```
 .claude/
   commands/clancy/            — slash command files (brief, plan, dev, terminal)
@@ -366,7 +368,7 @@ After running the installers:
   costs.log                   — duration-based token cost estimates per ticket
   lock.json                   — lock file for crash recovery (transient)
   session-report.md           — AFK session summary (after /clancy:autopilot)
-  .env                        — board credentials (gitignored)
+  .env                        — board credentials
   .env.example                — credential template
 ```
 

@@ -688,23 +688,27 @@ Create `.clancy/` directory and the following:
    - If CLAUDE.md exists without `<!-- clancy:start -->`: append the Clancy section to the end
    - If CLAUDE.md exists with `<!-- clancy:start -->`: replace only the content between the markers
    - Never overwrite the entire file
-6. Check `.gitignore` — if `.clancy/.env` is not listed, append it
+6. Check `.gitignore` — if `.clancy/` is not listed, append it. (`.clancy/` is gitignored entirely — credentials, generated docs, install bundles, version pin, and `.env.example` template are all local-only.)
 
 ---
 
 ## Step 4b — Commit scaffold
 
-After scaffolding, ask the user whether to commit the scaffolded files:
+`.clancy/` is gitignored — never stage anything inside it. Step 4b only commits parent-project changes (CLAUDE.md and .gitignore).
+
+If Step 4 produced no net file modification — i.e. both `CLAUDE.md` and `.gitignore` are byte-identical to their pre-Step-4 state (e.g. re-init on an already-registered project, or a fresh init on a project that already had a Clancy CLAUDE.md block AND a `.clancy/` line in `.gitignore`) — silent skip: no prompt, no commit, no print.
+
+Otherwise, ask the user whether to commit the parent-project changes:
 
 ```
-Commit the Clancy scaffold to git? (recommended) [Y/n]
+Commit the Clancy registration to git? (recommended) [Y/n]
 ```
 
-If yes (or enter): commit everything created (excluding `.clancy/.env` which contains credentials):
+If yes (or enter):
 
 ```bash
-git add .clancy/.env.example .clancy/docs/ CLAUDE.md .gitignore
-git commit -m "chore(clancy): initialise — scaffold docs templates and config"
+git add CLAUDE.md .gitignore
+git commit -m "chore(clancy): initialise — register Clancy in CLAUDE.md and gitignore"
 ```
 
 If `CLAUDE.md` was not modified (it already existed and was not changed), omit it from the `git add`. If `.gitignore` was not modified, omit it too. Only stage files that actually changed.
@@ -1186,6 +1190,7 @@ If no: output "Run /clancy:map-codebase when you're ready." then continue to fin
 - Docs: `.clancy/docs/` (10 files)
 - Config: `.clancy/.env`
 - CLAUDE.md: updated
+- .clancy/: gitignored — codebase docs and progress log are local-only
 
 Next steps:
   /clancy:map-codebase  — scan your codebase
@@ -1208,6 +1213,7 @@ If Planner was enabled, also include: `/clancy:plan --from <brief> — create im
 - Docs: `.clancy/docs/` (10 files)
 - Config: `.clancy/.env`
 - CLAUDE.md: updated
+- .clancy/: gitignored — codebase docs and progress log are local-only
 
 "Clancy's on the beat." — Run /clancy:plan to refine backlog tickets, /clancy:dry-run to preview, or /clancy:implement to pick up a ticket.
 ```

@@ -122,4 +122,4 @@ For standalone packages: `/clancy:update-brief`, `/clancy:update-plan`, `/clancy
 /clancy:uninstall
 ```
 
-Removes slash commands from your chosen location. Cleans up the `<!-- clancy:start -->` / `<!-- clancy:end -->` block from `CLAUDE.md` (or deletes it entirely if Clancy created it) and removes the `.clancy/.env` entry from `.gitignore`. Optionally removes `.clancy/` (credentials and docs).
+Removes slash commands from your chosen location. Cleans up the `<!-- clancy:start -->` / `<!-- clancy:end -->` block from `CLAUDE.md` (or deletes it entirely if Clancy created it) and removes the `.clancy/` entry from `.gitignore` (or the legacy `.clancy/.env` entry if the project was init'd before the gitignore fold). Optionally removes `.clancy/` (credentials and docs).

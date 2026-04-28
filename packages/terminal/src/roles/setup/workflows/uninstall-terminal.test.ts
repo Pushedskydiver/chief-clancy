@@ -74,4 +74,32 @@ describe('uninstall-terminal workflow', () => {
   it('still offers .clancy/ removal separately', () => {
     expect(content).toContain('Remove it too? This cannot be undone.');
   });
+
+  it('Step 4 marker recognition handles both new and legacy gitignore formats', () => {
+    const step4 =
+      content.match(
+        /## Step 4 — Clean up \.gitignore[\s\S]*?(?=^## Step 5)/m,
+      )?.[0] ?? '';
+
+    expect(step4).toBeTruthy();
+    // gitignore patterns
+    expect(step4).toMatch(/'\.clancy\/'/);
+    expect(step4).toMatch(/'\.clancy\/\.env'/);
+    // comment-line markers (legacy and current)
+    expect(step4).toMatch(/'# Clancy credentials'/);
+    expect(step4).toMatch(/'# Clancy'/);
+  });
+
+  it('Step 5b commits CLAUDE.md and .gitignore cleanup', () => {
+    const step5b =
+      content.match(
+        /## Step 5b — Commit cleanup[\s\S]*?(?=^## Step 6)/m,
+      )?.[0] ?? '';
+
+    expect(step5b).toBeTruthy();
+    expect(step5b).toMatch(/git add CLAUDE\.md \.gitignore/);
+    expect(step5b).toMatch(
+      /chore\(clancy\): uninstall — deregister from CLAUDE\.md and gitignore/,
+    );
+  });
 });

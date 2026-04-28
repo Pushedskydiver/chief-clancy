@@ -258,6 +258,8 @@ For a visual overview of how roles, commands, and flows connect, see the [Visual
 
 ## What gets created
 
+The whole `.clancy/` tree is gitignored — Clancy never commits anything inside it. Entries below are local-only.
+
 ```
 .clancy/
   clancy-implement.js — picks up one ticket, implements, commits, creates PR
@@ -274,7 +276,7 @@ For a visual overview of how roles, commands, and flows connect, see the [Visual
     DEFINITION-OF-DONE.md
     CONCERNS.md
   progress.txt        — append-only log of completed tickets
-  .env                — your board credentials (gitignored)
+  .env                — your board credentials
   .env.example        — credential template for your board
 ```
 

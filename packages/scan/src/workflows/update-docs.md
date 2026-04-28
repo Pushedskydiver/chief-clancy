@@ -73,21 +73,16 @@ Same as map-codebase Step 3, but only for the selected agents.
 
 ---
 
-## Step 5 — Verify and commit
+## Step 5 — Verify
 
-Verify each updated file is non-empty.
-
-```bash
-git add .clancy/docs/
-git commit -m "docs(clancy): update-docs — refresh .clancy/docs/"
-```
+Verify each updated file is non-empty. `.clancy/` is gitignored — refreshed files are local-only and require no commit.
 
 ---
 
 ## Step 6 — Final message
 
 ```
-✅ Docs updated — {N} files refreshed.
+✅ Docs updated — {N} files refreshed (gitignored — local-only).
 
 Updated: {file list}
 
