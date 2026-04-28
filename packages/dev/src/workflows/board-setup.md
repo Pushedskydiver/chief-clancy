@@ -274,14 +274,14 @@ Where `{BOARD_CREDENTIALS}` is the board-specific key=value pairs collected in S
 
 ### Check .gitignore
 
-Check if `.gitignore` exists and contains `.clancy/.env` (or a pattern that covers it, like `.clancy/` or `*.env`).
+Check if `.gitignore` exists and contains `.clancy/` (a pattern like `*.env` is NOT sufficient — `.clancy/` covers credentials and any future Clancy artifacts).
 
 If not covered, show:
 
 ```
-⚠️  Add .clancy/.env to your .gitignore to keep credentials out of version control:
+⚠️  Add .clancy/ to your .gitignore to keep credentials and local artifacts out of version control:
 
-  echo '.clancy/.env' >> .gitignore
+  echo '.clancy/' >> .gitignore
 ```
 
 ---

@@ -696,7 +696,7 @@ Create `.clancy/` directory and the following:
 
 `.clancy/` is gitignored — never stage anything inside it. Step 4b only commits parent-project changes (CLAUDE.md and .gitignore).
 
-If both `CLAUDE.md` and `.gitignore` are unchanged (re-init on a project already registered with Clancy), silent skip — no prompt, no commit, no print.
+If Step 4 produced no net file modification — i.e. both `CLAUDE.md` and `.gitignore` are byte-identical to their pre-Step-4 state (e.g. re-init on an already-registered project, or a fresh init on a project that already had a Clancy CLAUDE.md block AND a `.clancy/` line in `.gitignore`) — silent skip: no prompt, no commit, no print.
 
 Otherwise, ask the user whether to commit the parent-project changes:
 

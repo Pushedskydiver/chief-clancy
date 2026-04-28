@@ -138,7 +138,7 @@ Check whether `.gitignore` exists in the current project directory.
 
 If it does, check whether it contains any of the Clancy entries (any of: `'# Clancy credentials'`, `'# Clancy'`, `'.clancy/.env'`, `'.clancy/'`). The first two are comment-line markers; the latter two are gitignore patterns. Older installs use the legacy pair (`'# Clancy credentials'` + `'.clancy/.env'`); newer installs use the current pair (`'# Clancy'` + `'.clancy/'`). Recognize both.
 
-**If found:** remove whichever marker pair is present (and any blank line immediately before or after the removed block to avoid leaving double blank lines). Write the cleaned file back.
+**If found:** remove **every** Clancy marker pair present — both legacy and current pairs may coexist (e.g. after a migration or a re-init across the gitignore fold), so clean up all of them. Also remove any blank line immediately before or after each removed block to avoid leaving double blank lines. Write the cleaned file back.
 
 If the file is now empty (or contains only whitespace) after removal, delete it entirely — Clancy created it during init.
 

@@ -222,8 +222,8 @@ Detect partial-migration state:
 
 1. Read the project's `.gitignore`. Set `gitignore_has_clancy = true` if a line exactly matching `.clancy/` is present (the legacy `.clancy/.env` line is NOT sufficient — it doesn't cover bundles, docs, version pin, or `.env.example`).
 2. Run `git ls-files .clancy/ 2>/dev/null` and capture the output. Set `has_tracked = true` if any output is returned.
-3. If both `gitignore_has_clancy` is true and `has_tracked` is false, skip silently — already migrated.
-4. Otherwise, print a one-time advisory listing **only the commands the user needs**:
+3. If `gitignore_has_clancy` is true AND `has_tracked` is false, skip silently — already migrated.
+4. Otherwise, print a one-time advisory listing **only the commands the user needs**. Each command must stage its changes before the commit, so a `git add .gitignore` step is included whenever the gitignore branch fires:
 
    ```
    ℹ️  Migration: this project was init'd before .clancy/ became gitignored.
@@ -232,8 +232,13 @@ Detect partial-migration state:
    ```
 
    - If `has_tracked` is true: print `   git rm --cached -r .clancy/`
-   - If `gitignore_has_clancy` is false: print `   grep -qxF '.clancy/' .gitignore || echo '.clancy/' >> .gitignore`
-   - If either condition triggered: print `   git commit -m "chore(clancy): gitignore .clancy/ — drop tracked artifacts"`
+   - If `gitignore_has_clancy` is false, print BOTH lines (the append modifies `.gitignore` in-place; `git add` then stages it for the commit):
+     - `   grep -qxF '.clancy/' .gitignore || echo '.clancy/' >> .gitignore`
+     - `   git add .gitignore`
+   - Then print the commit, branch-conditional on which conditions fired:
+     - `has_tracked` true AND `gitignore_has_clancy` false: `   git commit -m "chore(clancy): gitignore .clancy/ — drop tracked artifacts"`
+     - `has_tracked` true AND `gitignore_has_clancy` true: `   git commit -m "chore(clancy): drop tracked .clancy/ artifacts"`
+     - `has_tracked` false AND `gitignore_has_clancy` false: `   git commit -m "chore(clancy): gitignore .clancy/"`
 
 5. Do NOT execute the commands. Surface only — the user runs them when ready. Idempotent: stops printing once both conditions clear.
 
