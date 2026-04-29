@@ -88,15 +88,16 @@ Compare installed vs latest:
 
 Exit.
 
-**If update available**, fetch the changelog from GitHub and show what's new BEFORE updating:
+**If update available**, fetch the GitHub release notes for the latest version and show what's new BEFORE updating. The tag contains `@` which must be URL-encoded:
 
 ```bash
-curl -s https://raw.githubusercontent.com/Pushedskydiver/chief-clancy/main/CHANGELOG.md
+# Tag: chief-clancy@0.9.47 → URL-encoded: chief-clancy%400.9.47
+curl -sf "https://api.github.com/repos/Pushedskydiver/chief-clancy/releases/tags/chief-clancy%40{latest}"
 ```
 
-The CHANGELOG uses `## [X.Y.Z]` headings. Extract all content from the `## [{latest}]` heading down to (but not including) the `## [{installed}]` heading.
+Parse the `body` field from the JSON response.
 
-If the changelog fetch fails (network error, non-200), skip the "What's New" section and show: `Could not fetch changelog. View changes at github.com/Pushedskydiver/chief-clancy/blob/main/CHANGELOG.md`
+If the fetch fails (network error, 404, parse failure), skip the "What's New" section and show: `Could not fetch changelog. View changes at https://github.com/Pushedskydiver/chief-clancy/releases`
 
 Display:
 
@@ -114,21 +115,23 @@ Display:
 
 ────────────────────────────────────────────────────────────
 
-⚠️  **Note:** The update performs a clean install of Clancy command folders:
-- `.claude/commands/clancy/` will be replaced
-- `.claude/clancy/workflows/` will be replaced
+⚠️  **This update will replace:**
+- `.claude/commands/clancy/` — slash commands
+- `.claude/clancy/workflows/` — workflow files
+- `.clancy/clancy-implement.js` and `.clancy/clancy-autopilot.js` — bundled runtime scripts
+- `.clancy/version.json` and `.clancy/package.json` — runtime metadata
 
-If you've modified any Clancy files directly, they'll be automatically backed up
-to `.claude/clancy/local-patches/` before overwriting.
+Modified files in `.claude/commands/clancy/` and `.claude/clancy/workflows/` are
+automatically backed up to `.claude/clancy/local-patches/` before overwriting.
 
-Your project files are preserved:
-- `.clancy/docs/`, `.clancy/.env`, `.clancy/progress.txt` ✅
-- `CLAUDE.md` ✅
-- Custom commands not in `commands/clancy/` ✅
-- Custom hooks ✅
+**This update may add missing defaults to:**
+- `.clancy/.env` — appends pipeline label defaults if absent (see Step 4a)
 
-Note: `.clancy/clancy-implement.js` and `.clancy/clancy-autopilot.js` **will be replaced** with
-the latest bundled versions. The rest of `.clancy/` is untouched.
+**This update will not touch:**
+- `.clancy/docs/`, `.clancy/progress.txt`
+- `CLAUDE.md`
+- Custom commands outside `commands/clancy/`
+- Custom hooks
 ```
 
 **AFK mode check:** If `--afk` flag is passed OR `CLANCY_MODE=afk` in `.clancy/.env`, **skip the confirmation and proceed automatically.** Do not prompt — auto-approve the update.
@@ -165,6 +168,7 @@ This touches:
 - `.claude/commands/clancy/` — slash commands (replaced)
 - `.claude/clancy/workflows/` — workflow files (replaced)
 - `.clancy/clancy-implement.js` and `.clancy/clancy-autopilot.js` — bundled runtime scripts (replaced)
+- `.clancy/version.json` and `.clancy/package.json` — runtime metadata (replaced)
 
 It never modifies:
 
@@ -287,7 +291,7 @@ Display completion message:
 
 "New badge, same Chief." — Start a new Claude Code session to pick up the updated commands.
 
-View full changelog: github.com/Pushedskydiver/chief-clancy/blob/main/CHANGELOG.md
+View full changelog: https://github.com/Pushedskydiver/chief-clancy/releases
 ```
 
 ### New role hints
