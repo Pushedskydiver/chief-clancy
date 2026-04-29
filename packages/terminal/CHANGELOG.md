@@ -1,5 +1,17 @@
 # @chief-clancy/terminal
 
+## 0.5.1
+
+### Patch Changes
+
+- [#422](https://github.com/Pushedskydiver/chief-clancy/pull/422) [`1de2145`](https://github.com/Pushedskydiver/chief-clancy/commit/1de21454ee181e0d97ccd48cf96cc92df1f68c12) Thanks [@Pushedskydiver](https://github.com/Pushedskydiver)! - Fix `/clancy:update-terminal` workflow: fetch changelog from the GitHub
+  releases API (URL-encoded `chief-clancy@{version}` tag) instead of the
+  non-existent repo-root `CHANGELOG.md` (changesets emits per-package
+  CHANGELOGs, never a root one — the previous fetch always 404'd). Also
+  restructures the update notice prose into unified replaces/preserves
+  lists so the "two `.clancy/` files will be replaced" footnote no longer
+  appears to take back the "your project files are preserved" promise.
+
 ## 0.5.0
 
 ### Minor Changes

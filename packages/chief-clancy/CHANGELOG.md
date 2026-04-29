@@ -1,5 +1,12 @@
 # chief-clancy
 
+## 0.9.48
+
+### Patch Changes
+
+- Updated dependencies [[`1de2145`](https://github.com/Pushedskydiver/chief-clancy/commit/1de21454ee181e0d97ccd48cf96cc92df1f68c12)]:
+  - @chief-clancy/terminal@0.5.1
+
 ## 0.9.47
 
 ### Patch Changes
