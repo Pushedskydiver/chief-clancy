@@ -7,7 +7,7 @@ updates:
     schedule:
       interval: 'weekly'
       time: '06:00' # UTC; without this GitHub randomises the tick-time per docs
-    open-pull-requests-limit: 0 # security-only; no routine version updates yet
+    open-pull-requests-limit: 5 # version-updates only (matches Dependabot's documented default); security-updates use the separate non-configurable 10-PR cap
     labels:
       - 'dependabot-autoskip'
     groups:
@@ -16,4 +16,10 @@ updates:
         dependency-type: production
       development-deps:
         applies-to: security-updates
+        dependency-type: development
+      production-version-deps:
+        applies-to: version-updates
+        dependency-type: production
+      development-version-deps:
+        applies-to: version-updates
         dependency-type: development
