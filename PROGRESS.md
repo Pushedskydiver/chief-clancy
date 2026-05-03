@@ -21,7 +21,7 @@ Other Session 152 ships: PR #421 `58307de` codified spec-grill discipline-task-f
      - Q3 (revised Session 142 after log inspection) "What happens when Dependabot can't auto-resolve a security advisory?" → **errors with `security_update_not_possible`. TWO distinct failure classes** (per cause-attribution above), both surfacing identically. Workflow logs ARE accessible via `gh api repos/.../actions/runs/{id}/logs` — visibility is NOT actually UI-restricted; v0.1 analysis was wrong on this point.
      - Q4 (new, surfaced Session 142) "What classes of pure-transitive vulnerability are unfixable by Dependabot today?" → Class B (parent exact-pin). Dependabot lacks logic to add `pnpm.overrides` automatically. Manual fix recipe documented (PR #386 model). Class A is retryable, not unfixable.
    - **Implication for γ design** (revised Session 142 after log inspection): γ's policy carve-out must account for **two distinct `security_update_not_possible` classes** (per Q3): **Class A** (transient flake — retryable; manual rerun via `gh api repos/.../actions/runs/{id}/rerun` or wait for next tick) and **Class B** (parent exact-pin — requires `pnpm.overrides`; PR #386 model). γ-2 detector option (Session 141) revised: instead of polling `network/updates/` (UI-only), use `gh api repos/.../actions/runs/{id}/logs` (publicly accessible) to fetch failure logs and class-classify. Three γ scopes now scoped: **(γ-1)** document both classes + manual recipes only; **(γ-2)** add `dep-triage.yml` workflow with class-hint output (~80-100 line workflow); **(γ-3)** auto-anchor / auto-override workflow (defer to Phase 8). Detail at `~/Desktop/alex/@chief-clancy/.claude/research/dependency-automation/dependabot-error-analysis.md` v0.2 §8.
-2. **Phase F** — `@chief-clancy/design` (Stitch integration). Deferred pending Phase 7. **Per Alex (Session 141): leave until last.**
+2. **Phase F — `@chief-clancy/design`.** Fresh research into the design-system / AI-assisted-design landscape. **Reframed Session 152 close**: the prior framing assumed Stitch as the integration target; Alex has surfaced new options worth surveying before committing. Scope: landscape survey of candidates (Stitch, design-tokens tooling, AI-assisted design tools, MCP-based Figma integration, etc. — not exhaustive, find what's emerged) → compare against Clancy's actual design surface needs → recommend a path. Research-spec shape (not code-design); per `feedback_specgrill_discipline_task_fit.md` (codified PR #421) this skips spec-grill, ships research artefact + DA-on-diff at PR-open if a code change ever follows. **Per Alex (Sessions 141 + 152): take a fresh look — don't anchor on Stitch.**
 3. **PROGRESS.md cleanup — refocused Session 150 to PR-1 standalone.** Audit-spec at `.claude/research/progress-md-purpose-audit/spec.md` v0.6 LOCKED retains the original 3 decisions, but Session 150 evidence (PR-3 spec arc R1-R4 with verification rate yo-yoing 86.4% → 92.9% → 84.2% → ~77% under drift-self-application n=2) led to a refocus per Alex's original Q1 ("is PROGRESS.md restating protocols?" = Decision 1 / PR-1 alone). **Active scope: PR-1 standalone** — codify no-dogfeeding-in-LI rule in `docs/DEVELOPMENT.md §Loading-instructions format` + retroactive PROGRESS.md trim of pre-rule verbose LIs (Sessions 147 + 148 LI blocks) + delete orphaned Session 143 LI block discovered in archived-stub area. **PR-2 + PR-3 deferred-pending-empirical-evidence**: re-surface only if PR-1 ships and (i) tracker-update bumps get missed without a destination doc (justifies PR-3) OR (ii) SESSIONS.md write-side burden becomes load-bearing (justifies PR-2). PR-3 spec at `pr3-pattern-trackers-spec.md` v0.4 LOCKED frozen as gitignored historical artefact. Spec-grill discipline-task-fit hypothesis (live-state-audit + doc-edit specs ramify under spec-grill; DA-on-diff is the right surface) saved as `feedback_specgrill_discipline_task_fit.md`. Decisions 4/5/6 (focus.md / LI generic-steps home / TBD-fill discipline) remain deferred.
 
 ### Recently closed (Session 152 cleanup)
@@ -39,6 +39,92 @@ Other Session 152 ships: PR #421 `58307de` codified spec-grill discipline-task-f
 - **(former Item 7) Phase 6.2 optional follow-ons** — explicitly archived not-load-bearing Session 141. (c) §Claim-extraction bucket expansion (always-audit-kept-prose on restructure PRs even when Copilot reachable) — closed without shipping; reconsider only if future evidence shows reachable-but-Copilot-missed drift on main. (f) mechanical pre-commit grep-audit for link integrity + literal identifiers — closed without shipping; narrow coverage (~1/4 Seed findings) doesn't justify the maintenance burden. Both can re-surface as new workstream items if priorities reverse.
 
 **Policy-surface widening** (`.claude/agents/**`, `docs/decisions/**`, `CONTRIBUTING.md`, `.github/ISSUE_TEMPLATE/**`, `.github/pull_request_template.md` → CODEOWNERS + §Auto-merge blast-radius exception list) is deliberately deferred. Revisit only if Phase 7.0 audit surfaces a concrete reason.
+
+---
+
+**Session 152 (2026-04-29) — five-PR session: spec-grill rule promoted, two terminal fixes (changelog + Turbo race), Phase 7 δ-PR-1 SHIPPED, automated-session-handoff workstream RETIRED post-Window-3+4 audit. Active workstreams 4 → 3.** Loaded per Session 151 LI Branch (C) DEFAULT (codification PR for spec-grill discipline-task-fit); after first ship, Alex surfaced two adjacent terminal bugs via direct observation; remaining work was Phase 7 + audit catch-up + Phase F reframing.
+
+**Workstream pipeline (Session 152):**
+
+1. **PR #421** `58307de` (Alex-merge) — codified spec-grill discipline-task-fit rule into `docs/REVIEW-PATTERNS.md §Spec grilling` per Session 151 n=3 confirming threshold. DA 0B/3M/5L/4F → 5 folds; surrogate UNREACHABLE n=37 → 0 findings. Memory `feedback_specgrill_discipline_task_fit.md` flipped from "candidate" to "promoted".
+
+2. **PR #422** `1de2145` (auto-merged via 10-min Copilot-UNREACHABLE hang fallback) — repaired `/clancy:update-terminal` workflow's broken changelog fetch (was fetching non-existent repo-root `CHANGELOG.md`; switched to GitHub releases API with URL-encoded `chief-clancy@{version}` tag, mirroring brief/plan/dev pattern) + restructured the contradictory "Your project files are preserved" / "Note: 2 .clancy/ files will be replaced" prose into unified replaces / may-add-defaults / does-not-touch lists. NEW `update.test.ts` pins both fixes. DA 0B/2M/1L/5F → folded; surrogate 0 findings. Auto-version PR #423 followed; published `@chief-clancy/terminal@0.5.1` + `chief-clancy@0.9.48`.
+
+3. **PR #424** `0b08f02` (auto-merged via 10-min hang fallback) — closed the n=4 Turbo cache-miss bundle-build race via `test.dependsOn: ["^build", "build"]` in `turbo.json`. The race had been documented since Session 127 (PROGRESS.md L82) — fixed instead of codified. DA 0B/0M/2L/5F → dropped typecheck change for minimal scope; surrogate 0 findings. `skip-changeset` label applied (build-infra, not published).
+
+4. **PR #425** `29de0a3` (Alex-merge per blast-radius) — Phase 7.3.δ-PR-1: `.github/dependabot.yml` `open-pull-requests-limit: 0 → 5` + `groups:` block extended with version-update entries (`production-version-deps` + `development-version-deps`). Bot version-update PRs will start opening Mondays 06:00 UTC; Lockfile-hand-edit exception still routes them to Alex-handoff. DA 0B/3M/3L/3F → folded all 3 MATERIAL (M1 Dependabot-semantics correctness on the comment, M2 groups-block version-update coverage gap, M3 explicit `5` annotated as Dependabot default); surrogate 0 findings.
+
+5. **Direct-to-main `9d2cc89`** — PROGRESS.md edit retiring automated-session-handoff workstream + marking δ-PR-1 SHIPPED. Audit at `.claude/research/session-handoff/audit-2026-04-29.md` (gitignored) covered Window 3 (Sessions 123-132) + Window 4 (Sessions 133-142): unplanned-compaction rate 0/40 cumulative across all 4 windows audited; handoff-cost median crossed 8k threshold (Window 3 ≈19k, Window 4 ≈27k) but cause analysis showed substrate (cloud-run, fresh context) doesn't address the actual driver (session-complexity escalation, not handoff-friction breakdown). Recommendation option (B) — formally retire — accepted by Alex.
+
+6. **Memory cleanup** — promoted `feedback_specgrill_discipline_task_fit.md` (rule shipped marker), deleted `feedback_no_dogfeeding_protocols.md` (codified DEVELOPMENT.md §Loading-instructions format via PR #418 Session 150), deleted `project_readability_review.md` (Phase 5 fully complete incl. Rule 4 promoted Session 95), fixed stale line cite in `feedback_iterate_spec_grill_until_solid.md` (`docs/DEVELOPMENT.md:375` → §-anchor). MEMORY.md compacted from 79 → 24 lines (removed historical "Deleted" sections — recoverable via filesystem if needed).
+
+7. **Phase F reframed (Session 152 close)** — Alex direction: the prior framing assumed Stitch as the integration target; Alex has surfaced new options worth surveying before committing. Phase F kicks off Session 153 as fresh research.
+
+**Major novel patterns Session 152:**
+
+1. **Turbo cache-miss bundle-build race CLOSED at n=4** (was codification candidate per PROGRESS.md L82) — root cause was `test.dependsOn: ["^build"]` only triggering upstream builds, not own-package build. CI never hit it because `ci.yml` runs `pnpm build` before `pnpm test`; pre-push suite did because it relies on dist/ being fresh from prior `pnpm build`. One-line fix.
+
+2. **Spec-grill discipline-task-fit codification** — first promotion of the rule from `feedback_specgrill_discipline_task_fit.md` memory to `docs/REVIEW-PATTERNS.md §Spec grilling`. Self-applies: PR #421 itself was a doc-edit informed by accumulated session evidence; spec-grill skipped per the rule it's adding; DA-on-diff caught 5 folds; surrogate-on-rule-promotion clean.
+
+3. **DA-on-diff cascade catch advanced** — PR #425 DA caught M1 (comment factually wrong on Dependabot semantics) + M2 (groups-block version-update coverage gap, contradicting PROGRESS.md L13 framing). M2 in particular was a cross-doc consistency catch (PROGRESS.md L13 said groups block was already prepared; reality was different). n stays at 2 — these are within-PR catches, not the cross-doc invalidation pattern that the n=2 tracker counts.
+
+4. **Substrate-adoption workstream retired with cause analysis** — first formal retirement of an active workstream where the metric drifted but the substrate doesn't address the cause. Pattern: when a metric crosses its threshold but the cause doesn't match the substrate's value proposition, retire rather than re-thresh; re-open de novo if a different signal emerges.
+
+5. **Hallucination tracker n=58** consecutive clean rounds (Sessions 131-152). Advanced via 5 subagent dispatches Session 152 (3 DA + 2 surrogate); all clean of fabricated catches under verify-subagent-claims discipline.
+
+6. **Surrogate trackers advanced** — surrogate-on-rule-promotion (PR #421), surrogate-on-engineering-PR (PR #422), surrogate-on-config-addition (PR #424 turbo.json + PR #425 dependabot.yml). Copilot UNREACHABLE n=37 → n=40 (PR #421 + #422 + #424 + #425 — note: PR #423 is auto-version, no surrogate dispatch).
+
+7. **Two auto-merges via 10-min hang fallback** — PR #422 + PR #424 both auto-merged after Copilot UNREACHABLE detection + 10-min hang. PR #425 went Alex-merge per blast-radius exception. Per `docs/DEVELOPMENT.md` §Auto-merge criteria + Copilot-unreachable detection.
+
+8. **Auto Mode held cleanly** through 5 PRs + 5 subagent dispatches + audit-research-doc + memory cleanup + 2 direct-to-main PROGRESS.md edits + Phase F reframing + this handoff.
+
+**Session 152 file inventory.**
+
+| Path                                                                                                              | Action                                           | Notes                                                      |
+| ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | ---------------------------------------------------------- |
+| `docs/REVIEW-PATTERNS.md`                                                                                         | UPDATE (PR #421)                                 | New §Spec grilling sub-rule "Discipline-task fit"          |
+| `packages/terminal/src/roles/setup/workflows/update.md`                                                           | UPDATE (PR #422)                                 | Changelog fetch + notice prose fix                         |
+| `packages/terminal/src/roles/setup/workflows/update.test.ts`                                                      | NEW (PR #422)                                    | Pins both fixes                                            |
+| `.changeset/terminal-update-workflow-changelog-fetch.md`                                                          | NEW → consumed (PR #422 → PR #423)               | terminal patch bump                                        |
+| `turbo.json`                                                                                                      | UPDATE (PR #424)                                 | `test.dependsOn: ["^build", "build"]`                      |
+| `.github/dependabot.yml`                                                                                          | UPDATE (PR #425)                                 | `0 → 5` + groups extension                                 |
+| `.claude/research/session-handoff/audit-2026-04-29.md`                                                            | NEW (gitignored)                                 | Window 3+4 audit                                           |
+| `~/.claude/.../memory/{feedback_specgrill_discipline_task_fit,feedback_iterate_spec_grill_until_solid,MEMORY}.md` | UPDATE                                           | Promotion marker + cite fix + index compaction             |
+| `~/.claude/.../memory/{feedback_no_dogfeeding_protocols,project_readability_review}.md`                           | DELETE                                           | Codified into docs / Phase 5 fully complete                |
+| `PROGRESS.md`                                                                                                     | UPDATE — direct-to-main `9d2cc89` + this handoff | Workstream retirement + δ-PR-1 SHIPPED + Session 152 entry |
+
+**Session 152 handoff metrics.** (Window-5 audit, data point 10 of 5th-10-window — final.)
+
+- Trigger: phase boundary (5 PRs merged + audit shipped + workstream retired) + heavy session.
+- Context at trigger: ~75-85% of pre-compaction budget (manual estimate; very heavy session).
+- Handoff turn cost: ~15-20k tokens (this entry; lighter than typical Window 4 sessions because §Next workstreams was already updated in `9d2cc89` and the substrate-adoption-retirement entry already lives in §Recently closed).
+- Unplanned compaction: no.
+- Time from "handoff now" decision to next-session first productive tool call: TBD (recorded by Session 153).
+- `PROGRESS.md` quality signal: TBD (recorded by Session 153).
+
+### Session 153 loading instructions
+
+On load:
+
+1. Read `PROGRESS.md` top-to-bottom (this Session 152 entry + §Next workstreams + Sessions 149-151 entries — detail band currently N=4 (149-152); Session 148 due for §12 archive, deferred from Session 152 close per light-handoff option).
+2. Verify current sha (`git log --oneline -5`); push hygiene check; standard Dependabot check (`gh pr list --author "dependabot[bot]" --state all --limit 10` + `gh run list --workflow="Dependabot Updates" --limit 5`). **Watch for first bot version-update PRs** — δ-PR-1 shipped Session 152; first Monday tick post-merge fires 2026-05-04 06:00 UTC.
+3. **PRIMARY workstream: Phase F fresh research** per Alex direction Session 152 close. Drop the Stitch-as-target presumption. Scope: landscape survey of design-system / AI-assisted-design candidates → compare against Clancy's actual design surface needs → recommend a path. Research-spec shape per `feedback_specgrill_discipline_task_fit.md` (codified PR #421) — skips spec-grill, ships research artefact + DA-on-diff at PR-open if a code change ever follows.
+4. **Decision branches:**
+   - **(A) New Dependabot security PR fired** — prioritise triaging.
+   - **(B) New Dependabot version-update PR fired** (δ-PR-1 first-tick observation) — cadence/content/edge-case evidence collection; route to Alex-handoff per Lockfile-hand-edit exception.
+   - **(C) PRIMARY: Phase F fresh research** per step 3 above — DEFAULT in absence of A/B signal.
+   - **(D) Alex redirects** — follow the redirect.
+5. **READBACK BEFORE ACTION** — produce a 3-5 sentence readback (current state / decision branch / proposed first concrete action — for Phase F that's the research-survey shape) and **wait for Alex confirmation** before edits, PR actions, or subagent dispatches.
+6. **Carry-overs from Session 152:**
+   - **Phase F reframed** — fresh research, no Stitch presumption.
+   - **Substrate-adoption RETIRED** — re-open de novo if unplanned compactions ≥2/10 ever fires.
+   - **§12 archive debt** — Session 148 due for one-line archive to SESSIONS.md (deferred from Session 152 close).
+   - **DA-on-diff cascade catch n=2 unchanged** (PR #425's M1+M2 were within-PR catches, not cross-doc-after-shipping pattern).
+   - **Mid-implementation pause+resume n=1 unchanged** (no occurrences Session 152).
+   - **Hallucination tracker n=58** consecutive clean rounds (Sessions 131-152).
+   - Surrogate-on-rule-promotion advanced (PR #421); surrogate-on-engineering-PR advanced (PR #422); surrogate-on-config-addition advanced (PR #424 + PR #425). Copilot UNREACHABLE n=40.
+   - Active workstreams **3**: Phase 7 (δ-PR-2 awaiting evidence) / Phase F (FRESH RESEARCH primary) / PROGRESS.md cleanup (deferred-pending-evidence).
+7. **If Alex redirects on load**, follow the redirect — Phase F default is not a contract.
 
 ---
 
