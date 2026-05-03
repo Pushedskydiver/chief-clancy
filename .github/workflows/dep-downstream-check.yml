@@ -1,0 +1,106 @@
+# Posts an inventory comment on Dependabot PRs that mutate published-package
+# manifests (`packages/*/package.json`). Visibility surface for the
+# downstream-impact question — does this bump matter to consumers? —
+# without duplicating the pre-merge CI gate.
+#
+# Research: `.claude/research/dependabot-downstream-impact/spec.md` v0.1
+# (gitignored). Recommends Option A (lightweight inventory comment) over
+# Option B (post-merge tests — duplicates pre-merge CI) and Option C
+# (release-notes agent — premature for current dep mix).
+#
+# Design: lists the affected packages + reads the `dependabot-semver-*`
+# label that `dep-classify.yml` already adds (single source of truth for
+# semver classification — fetch-metadata's highest-semver-wins covers
+# 0.x→0.y as semver-minor and pre-release transitions correctly, neither
+# of which is straightforward to re-implement in shell). Per-dep version
+# transitions deliberately not extracted — the spec §11 recommends the
+# minimum-viable inventory; the diff itself is the per-dep source.
+#
+# Trigger: pull_request_target on closed PRs, gated to merged + bot author.
+# Security: post-merge means PR-author code has already passed branch
+# protection, so reading PR metadata is safe; we don't checkout PR head.
+# Action pin convention `@v<N>` matches codeql/release/ci/e2e/dep-classify.
+# Failure mode: workflow failure produces no comment, doesn't block the
+# merge (impossible — runs post-merge); fail-open is intentional.
+
+name: Dependabot downstream-impact check
+
+on:
+  pull_request_target:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  inventory:
+    if: github.event.pull_request.merged == true && github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inventory + post comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          SENTINEL: '<!-- dep-downstream-check -->'
+        run: |
+          set -euo pipefail
+
+          touched_packages=$(gh pr view "$PR_NUMBER" --json files --jq \
+            '[.files[].path | select(test("^packages/[^/]+/package\\.json$")) | capture("packages/(?<n>[^/]+)/").n] | unique')
+
+          if [ "$touched_packages" = "[]" ]; then
+            echo "No packages/*/package.json files touched — no consumer-visible impact possible."
+            exit 0
+          fi
+
+          # Detect semver level from the label dep-classify.yml added on PR open.
+          # Label-name regex matches dep-classify.yml's `dependabot-semver-*` outputs.
+          semver=$(gh pr view "$PR_NUMBER" --json labels --jq \
+            '[.labels[].name | select(test("^dependabot-semver-"))] | first // "(unclassified)"')
+
+          # Build comment, including SENTINEL for idempotent updates on re-run.
+          {
+            echo "$SENTINEL"
+            echo "## Downstream-impact check"
+            echo ""
+            echo "This Dependabot merge mutated published-package manifest(s):"
+            echo ""
+            echo "$touched_packages" | jq -r '.[] | "- `@chief-clancy/\(.)` (`packages/\(.)/package.json`)"'
+            echo ""
+            echo "Semver level (per \`dep-classify.yml\` label): **\`${semver}\`**"
+            echo ""
+            echo "**Action:**"
+            case "$semver" in
+              dependabot-semver-major)
+                echo "- 🚨 **MAJOR bump** — usage migration likely needed. Consider a follow-up PR; the API surface for the bumped dep may have changed."
+                ;;
+              dependabot-semver-minor|dependabot-semver-patch)
+                echo "- Caret-compatible runtime bumps: users auto-pickup on next install — no republish strictly required, but the next release-PR will carry the new range string."
+                echo "- If a usage migration is needed, draft a \`.changeset/*.md\` entry."
+                ;;
+              *)
+                echo "- Semver classification missing — \`dep-classify.yml\` may have failed or not run. Manually inspect the diff."
+                ;;
+            esac
+            echo ""
+            echo "<sub>Inventory only — does not run tests or parse release notes. Posted by [\`dep-downstream-check.yml\`](.github/workflows/dep-downstream-check.yml). See the [downstream-impact research spec](.claude/research/dependabot-downstream-impact/spec.md) for design rationale.</sub>"
+          } > /tmp/comment.md
+
+          # Idempotent post: if a sentinel-tagged comment exists, update it; otherwise create.
+          # `--paginate` ensures we see all comments on long-thread PRs (default 30/page);
+          # without it, the sentinel pages off after ~30 comments accumulate and we'd
+          # silently create duplicates.
+          existing_id=$(gh api --paginate "repos/$GH_REPO/issues/$PR_NUMBER/comments" --jq \
+            ".[] | select(.body | startswith(\"$SENTINEL\")) | .id" | head -n1)
+
+          if [ -n "$existing_id" ]; then
+            gh api "repos/$GH_REPO/issues/comments/$existing_id" -X PATCH \
+              -f body="$(cat /tmp/comment.md)" >/dev/null
+            echo "Updated existing downstream-impact comment (id $existing_id) on PR #$PR_NUMBER"
+          else
+            gh pr comment "$PR_NUMBER" --body-file /tmp/comment.md
+            echo "Posted new downstream-impact comment to PR #$PR_NUMBER"
+          fi
