@@ -1,0 +1,81 @@
+# Classifies Dependabot PRs by max-semver-bump and adds one of three labels:
+# dependabot-semver-{patch,minor,major}. Read by docs/DEVELOPMENT.md
+# §Auto-merge criteria — patch+minor unlock the package-manifest blast-radius
+# carve-out; major fires the §Dependabot major bump exception (Alex-handoff).
+#
+# Trigger: pull_request_target on dependabot[bot]-authored PRs only. We use
+# pull_request_target (not pull_request) because GitHub treats workflow runs
+# triggered by Dependabot on `pull_request` as having a read-only GITHUB_TOKEN
+# regardless of repo origin (per docs.github.com/en/code-security/dependabot/
+# working-with-dependabot/automating-dependabot-with-github-actions). We need
+# `pull-requests: write` to add labels, so pull_request_target is required.
+# Safe here because we don't checkout PR head — fetch-metadata reads PR
+# metadata via the GitHub API only; no PR-author-controlled code executes.
+#
+# Separate file from dep-triage.yml because triggers differ (pull_request_target
+# vs schedule) and failure surfaces don't share an audit trail.
+#
+# Action pin: `dependabot/fetch-metadata@v2` is a mutable major tag, matching
+# repo convention (codeql/release/ci/e2e all use `@v<N>`). The
+# pull_request_target + write permissions surface here makes a future @v2
+# retag a real supply-chain risk — accepted because (a) action is from a
+# trusted publisher (dependabot org), (b) UPDATE_TYPE output is a closed
+# enum so injection surface is narrow, (c) workflow fails closed (no label →
+# blast-radius fires unmodified). Revisit if a concrete advisory surfaces.
+#
+# Labels are auto-created on first run via `gh label create --force` so this
+# workflow is fully self-contained — no manual repo setup required. `--force`
+# upserts: re-running the workflow resets color/description to the values
+# below. Single source of truth is this file.
+
+name: Dependabot semver classification
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  classify:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Ensure labels exist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          gh label create dependabot-semver-patch --color 0e8a16 --description "Dependabot PR contains only semver-patch bumps (auto-merge eligible)" --force
+          gh label create dependabot-semver-minor --color fbca04 --description "Dependabot PR contains semver-minor bumps (auto-merge eligible; no contained majors)" --force
+          gh label create dependabot-semver-major --color d93f0b --description "Dependabot PR contains a semver-major bump (Alex-handoff per §Dependabot major bump exception)" --force
+
+      - name: Apply semver label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
+        run: |
+          set -euo pipefail
+          # Strip any prior semver label (rebase / synchronize handling)
+          gh pr edit "$PR_NUMBER" --remove-label dependabot-semver-patch --remove-label dependabot-semver-minor --remove-label dependabot-semver-major || true
+
+          case "$UPDATE_TYPE" in
+            "version-update:semver-patch") label="dependabot-semver-patch" ;;
+            "version-update:semver-minor") label="dependabot-semver-minor" ;;
+            "version-update:semver-major") label="dependabot-semver-major" ;;
+            *) echo "Unrecognised update-type: $UPDATE_TYPE — leaving PR unlabelled (fail-closed)"; exit 0 ;;
+          esac
+
+          gh pr edit "$PR_NUMBER" --add-label "$label"
+          echo "Applied $label to PR #$PR_NUMBER (update-type: $UPDATE_TYPE)"
