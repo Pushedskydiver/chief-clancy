@@ -246,7 +246,7 @@ describe('postCloudPrComment', () => {
     const mockFetch = vi.fn(() => Promise.reject(new Error('Network error')));
 
     const result = await postCloudPrComment({
-      fetchFn: mockFetch as never,
+      fetchFn: mockFetch,
       ...CLOUD_OPTS,
       prId: 10,
       body: 'comment',
@@ -485,7 +485,7 @@ describe('fetchPrReviewComments', () => {
     const mockFetch = vi.fn(() => Promise.reject(new Error('Network error')));
 
     const result = await fetchPrReviewComments({
-      fetchFn: mockFetch as never,
+      fetchFn: mockFetch,
       ...CLOUD_OPTS,
       prId: 10,
     });
@@ -676,7 +676,7 @@ describe('fetchServerPrReviewComments', () => {
     const mockFetch = vi.fn(() => Promise.reject(new Error('Network error')));
 
     const result = await fetchServerPrReviewComments({
-      fetchFn: mockFetch as never,
+      fetchFn: mockFetch,
       ...SERVER_OPTS,
       prId: 10,
     });

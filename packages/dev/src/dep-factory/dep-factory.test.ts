@@ -90,7 +90,7 @@ describe('buildPipelineDeps', () => {
 
   it('cleanup wires sendNotification with fetch', async () => {
     const mockOpts = createMockOpts();
-    mockOpts.fetch.mockResolvedValue({ ok: true } as Response);
+    mockOpts.fetch.mockResolvedValue({ ok: true });
     const deps = buildPipelineDeps(mockOpts);
     const ctx = {
       config: { env: { CLANCY_NOTIFY_WEBHOOK: 'https://hooks.slack.com/x' } },
@@ -123,7 +123,7 @@ describe('buildPipelineDeps', () => {
       ok: true,
       json: () =>
         Promise.resolve({ html_url: 'https://github.com/x/1', number: 1 }),
-    } as unknown as Response);
+    });
 
     const deps = buildPipelineDeps(mockOpts);
     const ctx = {

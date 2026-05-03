@@ -29,14 +29,14 @@ function githubEnv(): EnvParam {
   return {
     GITHUB_TOKEN: 'ghp_test',
     CLANCY_GIT_API_URL: undefined,
-  } as EnvParam;
+  };
 }
 
 function gitlabEnv(): EnvParam {
   return {
     GITLAB_TOKEN: 'glpat_test',
     CLANCY_GIT_API_URL: undefined,
-  } as EnvParam;
+  };
 }
 
 function bitbucketEnv(): EnvParam {
@@ -44,18 +44,18 @@ function bitbucketEnv(): EnvParam {
     BITBUCKET_USER: 'bbuser',
     BITBUCKET_TOKEN: 'bbtoken',
     CLANCY_GIT_API_URL: undefined,
-  } as EnvParam;
+  };
 }
 
 function azdoEnv(): EnvParam {
   return {
     AZDO_PAT: 'azdo_pat_test',
     CLANCY_GIT_API_URL: undefined,
-  } as EnvParam;
+  };
 }
 
 function emptyEnv(): EnvParam {
-  return { CLANCY_GIT_API_URL: undefined } as EnvParam;
+  return { CLANCY_GIT_API_URL: undefined };
 }
 
 const githubRemote: GitHubRemote = {

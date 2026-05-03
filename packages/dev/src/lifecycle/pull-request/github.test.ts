@@ -120,7 +120,7 @@ describe('createPullRequest', () => {
     const mockFetch = vi.fn(() => Promise.reject(new Error('Network error')));
 
     const result = await createPullRequest({
-      fetchFn: mockFetch as never,
+      fetchFn: mockFetch,
       ...BASE_OPTS,
       head: 'branch',
       base: 'main',
@@ -297,7 +297,7 @@ describe('checkPrReviewState', () => {
     const mockFetch = vi.fn(() => Promise.reject(new Error('Network error')));
 
     const result = await checkPrReviewState({
-      fetchFn: mockFetch as never,
+      fetchFn: mockFetch,
       ...reviewOpts,
     });
 
@@ -607,7 +607,7 @@ describe('fetchPrReviewComments', () => {
     const mockFetch = vi.fn(() => Promise.reject(new Error('Network error')));
 
     const result = await fetchPrReviewComments({
-      fetchFn: mockFetch as never,
+      fetchFn: mockFetch,
       ...BASE_OPTS,
       prNumber: 10,
     });
@@ -658,7 +658,7 @@ describe('postPrComment', () => {
     const mockFetch = vi.fn(() => Promise.reject(new Error('Network error')));
 
     const result = await postPrComment({
-      fetchFn: mockFetch as never,
+      fetchFn: mockFetch,
       ...BASE_OPTS,
       prNumber: 42,
       body: 'comment',
@@ -727,7 +727,7 @@ describe('requestReview', () => {
     const mockFetch = vi.fn(() => Promise.reject(new Error('Network error')));
 
     const result = await requestReview({
-      fetchFn: mockFetch as never,
+      fetchFn: mockFetch,
       ...BASE_OPTS,
       prNumber: 42,
       reviewers: ['reviewer1'],

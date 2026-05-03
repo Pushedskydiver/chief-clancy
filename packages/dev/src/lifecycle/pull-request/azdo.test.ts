@@ -219,7 +219,7 @@ describe('postPrComment', () => {
     const mockFetch = vi.fn(() => Promise.reject(new Error('Network error')));
 
     const result = await postPrComment({
-      fetchFn: mockFetch as never,
+      fetchFn: mockFetch,
       ...AZDO_OPTS,
       prId: 42,
       body: 'comment',
@@ -478,7 +478,7 @@ describe('checkPrReviewState', () => {
     const mockFetch = vi.fn(() => Promise.reject(new Error('Network error')));
 
     const result = await checkPrReviewState({
-      fetchFn: mockFetch as never,
+      fetchFn: mockFetch,
       ...AZDO_OPTS,
       branch: 'feature/test',
     });
@@ -622,7 +622,7 @@ describe('fetchPrReviewComments', () => {
     const mockFetch = vi.fn(() => Promise.reject(new Error('Network error')));
 
     const result = await fetchPrReviewComments({
-      fetchFn: mockFetch as never,
+      fetchFn: mockFetch,
       ...AZDO_OPTS,
       prId: 42,
     });

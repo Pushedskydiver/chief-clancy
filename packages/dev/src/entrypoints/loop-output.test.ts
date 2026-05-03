@@ -24,7 +24,7 @@ function makeOutcome(
 }
 
 function makeResult(status: PipelineResult['status']): PipelineResult {
-  return { status } as PipelineResult;
+  return { status };
 }
 
 // ─── displayOutcome ─────────────────────────────────────────────────────────
