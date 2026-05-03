@@ -6,9 +6,11 @@
 # Trigger: pull_request_target on dependabot[bot]-authored PRs only. We use
 # pull_request_target (not pull_request) because GitHub treats workflow runs
 # triggered by Dependabot on `pull_request` as having a read-only GITHUB_TOKEN
-# regardless of repo origin (per docs.github.com/en/code-security/dependabot/
-# working-with-dependabot/automating-dependabot-with-github-actions). We need
-# `pull-requests: write` to add labels, so pull_request_target is required.
+# regardless of repo origin (announced 2021-02-19; per github.blog/changelog/
+# 2021-02-19-github-actions-workflows-triggered-by-dependabot-prs-will-run-with-
+# read-only-permissions/ + docs.github.com/en/code-security/dependabot/
+# troubleshooting-dependabot/troubleshooting-dependabot-on-github-actions). We
+# need `pull-requests: write` to add labels, so pull_request_target is required.
 # Safe here because we don't checkout PR head — fetch-metadata reads PR
 # metadata via the GitHub API only; no PR-author-controlled code executes.
 #
