@@ -221,6 +221,8 @@ Scenario-organized router. Maps trigger situations to the docs Claude consults +
 
 **Note**: trigger-rule scope (when to consult INDEX) is broader than blast-radius (when Alex must merge). Editing `docs/GLOSSARY.md` triggers INDEX consultation but is auto-merge-eligible. Editing `/.github/workflows/release.yml` is blast-radius but NOT INDEX-routed (workflows are infra, not prose). Two distinct overlapping sets, different intents.
 
+**Note (Dependabot carve-out)**: `/package.json` and `/packages/*/package.json` carry a `dependabot[bot]`-author + label-conjunct carve-out per [`docs/DEVELOPMENT.md §Auto-merge criteria — Dependabot package-manifest carve-out`](DEVELOPMENT.md#auto-merge-criteria) — patch+minor bot PRs may auto-merge through these paths. INDEX §8 protocol still applies to Claude-author edits to those paths (this is a routing carve-out, not an authorship carve-out).
+
 **Cross-refs**: [`docs/DEVELOPMENT.md §Auto-merge criteria`](DEVELOPMENT.md#auto-merge-criteria), [`.github/CODEOWNERS`](../.github/CODEOWNERS).
 
 ---
