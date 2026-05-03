@@ -1,9 +1,15 @@
 version: 2
 updates:
   - package-ecosystem: 'npm'
-    directories:
-      - '/'
-      - '/packages/*'
+    # Single root entry — pnpm workspaces have one root lockfile; adding /packages/*
+    # triggers per-subdir `misconfigured_tooling` errors ("Dependabot should only
+    # update from the root workspace" — its own diagnostic) that accumulate and
+    # flip the run conclusion to failure at container-exit, even though the root
+    # scan still successfully creates PRs. Per-package devDeps (esbuild in
+    # packages/{dev,terminal}) bump via `pnpm update -r` from the root scan; if a
+    # future Dependabot updater drops -r, those bumps silently stop.
+    # Reference failed run: 25276716316 (2026-05-03).
+    directory: '/'
     schedule:
       interval: 'weekly'
       time: '06:00' # UTC; without this GitHub randomises the tick-time per docs
