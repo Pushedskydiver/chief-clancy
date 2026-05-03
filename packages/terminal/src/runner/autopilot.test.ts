@@ -19,7 +19,7 @@ function createMockOpts(overrides?: Partial<AutopilotOpts>): AutopilotOpts {
     quietEnd: undefined,
     webhookUrl: undefined,
     ...overrides,
-  } as unknown as AutopilotOpts;
+  };
 }
 
 describe('runAutopilot', () => {

@@ -17,7 +17,7 @@ type TokenOverrides = {
 
 /** Build a minimal SharedEnv with only token fields set. */
 function env(overrides: TokenOverrides = {}): SharedEnv {
-  return overrides as SharedEnv;
+  return overrides;
 }
 
 const GITHUB_REMOTE: RemoteInfo = {

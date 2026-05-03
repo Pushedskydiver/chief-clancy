@@ -12,10 +12,10 @@ import { join } from 'node:path';
 // ---------------------------------------------------------------------------
 
 /** The install target — global (`~/.claude`) or local (`./.claude`). */
-export type BriefInstallMode = 'global' | 'local';
+type BriefInstallMode = 'global' | 'local';
 
 /** All resolved destination paths for a brief installation. */
-export type BriefInstallPaths = {
+type BriefInstallPaths = {
   readonly commandsDest: string;
   readonly workflowsDest: string;
   readonly agentsDest: string;

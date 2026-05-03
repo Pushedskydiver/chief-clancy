@@ -12,10 +12,10 @@ import { join } from 'node:path';
 // ---------------------------------------------------------------------------
 
 /** The install target — global (`~/.claude`) or local (`./.claude`). */
-export type PlanInstallMode = 'global' | 'local';
+type PlanInstallMode = 'global' | 'local';
 
 /** All resolved destination paths for a plan installation. */
-export type PlanInstallPaths = {
+type PlanInstallPaths = {
   readonly commandsDest: string;
   readonly workflowsDest: string;
   readonly agentsDest: string;

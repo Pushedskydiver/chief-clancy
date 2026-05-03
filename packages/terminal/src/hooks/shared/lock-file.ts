@@ -27,7 +27,7 @@ export function readLockFile(cwd: string, deps: HookFs): LockData | null {
     const raw: unknown = JSON.parse(deps.readFileSync(lockPath, 'utf8'));
 
     // Safe: all LockData fields are optional — any plain object is a valid shape
-    return isPlainObject(raw) ? (raw as LockData) : null;
+    return isPlainObject(raw) ? raw : null;
   } catch {
     return null;
   }
