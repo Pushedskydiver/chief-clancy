@@ -174,7 +174,7 @@ describe('postMrNote', () => {
     const mockFetch = vi.fn(() => Promise.reject(new Error('Network error')));
 
     const result = await postMrNote({
-      fetchFn: mockFetch as never,
+      fetchFn: mockFetch,
       ...BASE_OPTS,
       mrIid: 5,
       body: 'comment',
@@ -463,7 +463,7 @@ describe('checkMrReviewState', () => {
     const mockFetch = vi.fn(() => Promise.reject(new Error('Network error')));
 
     const result = await checkMrReviewState({
-      fetchFn: mockFetch as never,
+      fetchFn: mockFetch,
       ...checkOpts,
     });
 
@@ -667,7 +667,7 @@ describe('fetchMrReviewComments', () => {
     const mockFetch = vi.fn(() => Promise.reject(new Error('Network error')));
 
     const result = await fetchMrReviewComments({
-      fetchFn: mockFetch as never,
+      fetchFn: mockFetch,
       ...BASE_OPTS,
       mrIid: 5,
     });

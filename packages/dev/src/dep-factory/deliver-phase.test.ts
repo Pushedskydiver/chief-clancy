@@ -38,18 +38,18 @@ type DeliverOpts = Parameters<typeof wireDeliver>[0];
 function createOpts(): DeliverOpts {
   return {
     projectRoot: '/tmp/test',
-    exec: vi.fn() as unknown as DeliverOpts['exec'],
+    exec: vi.fn(),
     progressFs: {
       readFile: vi.fn(),
       appendFile: vi.fn(),
       mkdir: vi.fn(),
-    } as unknown as DeliverOpts['progressFs'],
+    },
     qualityFs: {
       readFile: vi.fn(() => '{}'),
       writeFile: vi.fn(),
       mkdir: vi.fn(),
     } as unknown as DeliverOpts['qualityFs'],
-    fetch: vi.fn() as unknown as DeliverOpts['fetch'],
+    fetch: vi.fn(),
   };
 }
 

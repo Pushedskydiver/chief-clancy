@@ -223,7 +223,7 @@ describe('deliverEpicToBase', () => {
     });
 
     // PR body should contain child entries
-    const call = fetchFn.mock.calls[0] as [string, RequestInit];
+    const call = fetchFn.mock.calls[0];
     const body = JSON.parse(call[1].body as string) as { body: string };
     expect(body.body).toContain('PROJ-101');
     expect(body.body).toContain('PROJ-102');
@@ -244,7 +244,7 @@ describe('deliverEpicToBase', () => {
       baseBranch: 'main',
     });
 
-    const call = fetchFn.mock.calls[0] as [string, RequestInit];
+    const call = fetchFn.mock.calls[0];
     const body = JSON.parse(call[1].body as string) as { title: string };
     expect(body.title).toBe('feat(PROJ-100): Epic title');
   });
@@ -265,7 +265,7 @@ describe('deliverEpicToBase', () => {
       ticketType: 'Bug',
     });
 
-    const call = fetchFn.mock.calls[0] as [string, RequestInit];
+    const call = fetchFn.mock.calls[0];
     const body = JSON.parse(call[1].body as string) as { title: string };
     expect(body.title).toBe('fix(PROJ-100): Epic title');
   });
@@ -306,7 +306,7 @@ describe('deliverEpicToBase', () => {
 
     expect(result.ok).toBe(true);
     // PR body should still have the epic header even with no children
-    const call = fetchFn.mock.calls[0] as [string, RequestInit];
+    const call = fetchFn.mock.calls[0];
     const body = JSON.parse(call[1].body as string) as { body: string };
     expect(body.body).toContain('PROJ-100');
   });
