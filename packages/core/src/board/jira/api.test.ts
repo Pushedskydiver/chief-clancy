@@ -177,7 +177,7 @@ describe('pingJira', () => {
       vi.fn().mockResolvedValue({
         ok: true,
         arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
-      } as Response),
+      }),
     );
 
     const result = await pingJira({
@@ -195,7 +195,7 @@ describe('pingJira', () => {
         ok: false,
         status: 401,
         arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
-      } as Response),
+      }),
     );
 
     const result = await pingJira({

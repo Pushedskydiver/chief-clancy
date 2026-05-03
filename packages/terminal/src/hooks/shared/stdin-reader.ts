@@ -40,7 +40,7 @@ function safeParse(raw: string): HookEvent {
     const parsed: unknown = JSON.parse(raw);
 
     // Safe: all HookEvent fields are optional — any plain object is a valid shape
-    return isPlainObject(parsed) ? (parsed as HookEvent) : EMPTY;
+    return isPlainObject(parsed) ? parsed : EMPTY;
   } catch {
     return EMPTY;
   }

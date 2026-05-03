@@ -26,7 +26,7 @@ function makePage(id: string, extra: Record<string, unknown> = {}): NotionPage {
       Status: { type: 'status', status: { name: 'To-do' } },
       ...extra,
     },
-  } as NotionPage;
+  };
 }
 
 describe('notion helpers', () => {

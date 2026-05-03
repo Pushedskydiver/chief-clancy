@@ -18,7 +18,7 @@ import { detectDevInstallState } from './preflight.js';
 type DevInstallMode = 'global' | 'local';
 
 /** All resolved destination paths for a dev installation. */
-export type DevInstallPaths = {
+type DevInstallPaths = {
   readonly commandsDest: string;
   readonly workflowsDest: string;
   readonly agentsDest: string;
