@@ -16,11 +16,13 @@
 - `clancy:design write <variant-id>` — write an accepted variant to source
 - `clancy:design handoff <ticket>` — bundle DESIGN.json + accepted variant + accessibility assertions for downstream pipeline
 
-## Composition with Clancy
+## Composition with Clancy (planned)
 
-Standalone install (`npx @chief-clancy/design --local`) is the fast-path; the
-full pipeline (`npx chief-clancy`) bundles the Designer role alongside Brief /
-Plan / Dev. Same package source code, two install paths.
+When v0.1 ships, standalone install (`npx @chief-clancy/design --local`) will
+be the fast-path; the full pipeline (`npx chief-clancy`) will bundle the
+Designer role alongside Brief / Plan / Dev. Same package source code, two
+install paths. Slice 27 wires the bundled-mode integration; until then, the
+package is `private: true` and no `npx` entry point is published.
 
 ## Part of the Clancy monorepo
 
