@@ -37,6 +37,9 @@
     "dist",
     "bin"
   ],
+  "dependencies": {
+    "jiti": "^2.6.1"
+  },
   "scripts": {
     "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc --project tsconfig.build.json && tsc-alias --project tsconfig.build.json",
     "test": "vitest run",

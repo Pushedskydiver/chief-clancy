@@ -123,7 +123,11 @@ importers:
         specifier: ^4.4.2
         version: 4.4.2
 
-  packages/design: {}
+  packages/design:
+    dependencies:
+      jiti:
+        specifier: ^2.6.1
+        version: 2.6.1
 
   packages/dev:
     dependencies:
