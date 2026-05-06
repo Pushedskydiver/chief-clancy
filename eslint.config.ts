@@ -19,7 +19,17 @@ export default defineConfig(
 
   // ── Global ignores ────────────────────────────────────────────
   {
-    ignores: ['**/dist/', 'node_modules/', '.claude/hooks/', '**/bin/'],
+    ignores: [
+      '**/dist/',
+      'node_modules/',
+      '.claude/hooks/',
+      '**/bin/',
+      // Design-package detection fixtures intentionally include
+      // representative third-party-shaped configs (e.g. a TS file with a
+      // type-only import of `tailwindcss`). Scoped narrowly — other
+      // packages adding `test/fixtures/` should opt-in here explicitly.
+      'packages/design/test/fixtures/',
+    ],
   },
 
   // ── Type-checked linting ──────────────────────────────────────
