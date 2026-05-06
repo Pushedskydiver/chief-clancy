@@ -7,10 +7,13 @@
  * carried through as `unknown` so detection does not lose information.
  *
  * Resolution order matches Tailwind's own loader (`.js` → `.cjs` → `.mjs` →
- * `.ts`) so that projects shipping multiple config formats see the same file
- * read by both Tailwind and Clancy. `.ts` configs are loaded via `jiti` (the
- * canonical Node-ecosystem runtime TypeScript loader) so detection works
- * against modern TS-first Tailwind v3/v4 projects without a build step.
+ * `.ts`) for the four extensions Clancy detects. Tailwind v3 also supports
+ * `.cts` / `.mts`; those are out of scope for slice 2 (a `.cts`-only or
+ * `.mts`-only project will see Clancy return `null` while Tailwind happily
+ * reads the file). Adding the two formats is a follow-up if user demand
+ * surfaces. `.ts` configs are loaded via `jiti` (the canonical Node-ecosystem
+ * runtime TypeScript loader) so detection works against modern TS-first
+ * Tailwind v3/v4 projects without a build step.
  *
  * SECURITY: this function executes the project's tailwind config file as
  * JavaScript via `jiti`. Same trust posture as Tailwind / Vite / Vitest /
