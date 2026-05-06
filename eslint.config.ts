@@ -51,6 +51,7 @@ export default defineConfig(
         { type: 'scan', pattern: 'packages/scan/*' },
         { type: 'terminal', pattern: 'packages/terminal/*' },
         { type: 'wrapper', pattern: 'packages/chief-clancy/*' },
+        { type: 'design', pattern: 'packages/design/*' },
       ],
     },
     rules: {
@@ -135,7 +136,12 @@ export default defineConfig(
                 { to: { type: 'wrapper' } },
                 { to: { type: 'terminal' } },
                 { to: { type: 'plan' } },
+                { to: { type: 'design' } },
               ],
+            },
+            {
+              from: { type: 'design' },
+              allow: [{ to: { type: 'design' } }, { to: { type: 'scan' } }],
             },
           ],
         },
