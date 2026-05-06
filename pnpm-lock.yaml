@@ -123,6 +123,8 @@ importers:
         specifier: ^4.4.2
         version: 4.4.2
 
+  packages/design: {}
+
   packages/dev:
     dependencies:
       '@chief-clancy/core':

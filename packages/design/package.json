@@ -1,0 +1,46 @@
+{
+  "name": "@chief-clancy/design",
+  "version": "0.0.0",
+  "private": true,
+  "description": "AI-design tool for Claude Code — variant generation, canvas, and design-system documentation",
+  "author": "Alex Clapperton",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pushedskydiver/chief-clancy.git",
+    "directory": "packages/design"
+  },
+  "homepage": "https://github.com/Pushedskydiver/chief-clancy#readme",
+  "bugs": {
+    "url": "https://github.com/Pushedskydiver/chief-clancy/issues"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "ai",
+    "design",
+    "design-system",
+    "slash-commands",
+    "developer-tools"
+  ],
+  "type": "module",
+  "bin": {
+    "clancy-design": "./bin/design.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "scripts": {
+    "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc --project tsconfig.build.json && tsc-alias --project tsconfig.build.json",
+    "test": "vitest run",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  }
+}
