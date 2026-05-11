@@ -1,0 +1,4 @@
+{
+  "style": "default",
+  "tailwind": { "config": "tailwind.config.js" }
+}
