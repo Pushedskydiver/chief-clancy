@@ -56,6 +56,53 @@ describe('designSchema', () => {
     expect(missingHex.success).toBe(false);
   });
 
+  it('rejects empty-string identifier fields (version, color_palette.name)', () => {
+    const emptyVersion = z.safeParse(designSchema, { version: '' });
+    expect(emptyVersion.success).toBe(false);
+
+    const emptyColorName = z.safeParse(designSchema, {
+      version: '0.1',
+      color_palette: [{ name: '', hex: '#000' }],
+    });
+    expect(emptyColorName.success).toBe(false);
+  });
+
+  it('rejects invalid hex values on color_palette entries', () => {
+    const malformed = z.safeParse(designSchema, {
+      version: '0.1',
+      color_palette: [{ name: 'primary', hex: 'rgb(0,0,0)' }],
+    });
+    expect(malformed.success).toBe(false);
+
+    const wrongLength = z.safeParse(designSchema, {
+      version: '0.1',
+      color_palette: [{ name: 'primary', hex: '#abcde' }],
+    });
+    expect(wrongLength.success).toBe(false);
+  });
+
+  it('accepts 3-, 4-, 6-, and 8-digit hex color formats', () => {
+    for (const hex of ['#abc', '#abcd', '#aabbcc', '#aabbccdd']) {
+      const result = z.safeParse(designSchema, {
+        version: '0.1',
+        color_palette: [{ name: 'token', hex }],
+      });
+      expect(result.success).toBe(true);
+    }
+  });
+
+  it('preserves unknown top-level keys for forward-compatibility', () => {
+    const fixture = {
+      version: '0.1',
+      future_field: 'v0.2 will read this',
+      visual_theme: { mood: 'x', future_subfield: 'preserved' },
+    };
+    const parsed = z.safeParse(designSchema, fixture);
+    expect(parsed.success).toBe(true);
+    if (!parsed.success) return;
+    expect(parsed.data).toEqual(fixture);
+  });
+
   it('round-trips the full canonical 9-section structure', () => {
     const fixture = {
       version: '0.1',

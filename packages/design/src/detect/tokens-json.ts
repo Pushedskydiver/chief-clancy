@@ -9,9 +9,12 @@
  * unspecified).
  *
  * Output is the raw parsed DTCG tree — leaves carry `$value` / `$type` /
- * `$description`, groups carry nested child objects. Schema-level validation
- * (alias resolution, group `$type` inheritance, type-coerced values) defers
- * to slice 6's zod/mini `design.ts` schema.
+ * `$description`, groups carry nested child objects. v0.1 performs no DTCG
+ * semantic validation at any layer: alias resolution, group `$type`
+ * inheritance, `$type` enumeration, and `$value` coercion are deferred to a
+ * future slice when consuming layers surface concrete validity bugs. Slice
+ * 6's `schemas/design.ts` accepts the token tree as `Record<string, unknown>`
+ * without further checks.
  *
  * Known limitations:
  * - Filename matching is `tokens.json` exact-only (case-sensitive). The DTCG
@@ -21,7 +24,8 @@
  * - Files whose top-level JSON value is not a plain object (array, primitive,
  *   `null`) are silently dropped from the merge — `JSON.parse` succeeds but
  *   the `isPlainObject` filter rejects them, so the result is unaffected and
- *   no warning is emitted. Slice 6 schema will warn explicitly.
+ *   no warning is emitted. No downstream schema layer warns either (per the
+ *   v0.1 DTCG-semantic-validation deferral noted above).
  * - Multi-file token-vs-group collisions on the same key path (one file
  *   declares the path as a token via `$value`, another as a group via child
  *   keys) emit a `console.warn` and resolve last-wins. The merged tree
