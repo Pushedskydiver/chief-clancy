@@ -114,8 +114,9 @@ describe('detectConfidence (project-root scan)', () => {
   });
 
   it('does not follow symlinked components.json at root (security: path-traversal guard)', async () => {
-    // Same security posture as slices 2 + 3 + 4: `Dirent.isFile()` filters
-    // symlinks out. A symlinked components.json must not count as a signal.
+    // `readRootFiles` uses `Dirent.isFile()` (false for symlinks), matching
+    // slices 3 + 4. Slice 2 uses `existsSync` which follows symlinks; the
+    // confidence module's own probes do not inherit that gap.
     const { mkdtempSync, writeFileSync, symlinkSync, rmSync } =
       await import('node:fs');
     const { tmpdir } = await import('node:os');
