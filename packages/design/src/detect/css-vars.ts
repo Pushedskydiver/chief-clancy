@@ -1,21 +1,34 @@
 /**
  * CSS custom-property detection — Phase F slice 3.
  *
- * Recursively scans a project root for `*.css` files and extracts top-level
- * `--<name>: <value>` declarations into a flat last-wins map. Scope-bound
- * variables (e.g. `:root` vs `.dark`) are not differentiated at this slice;
- * slice 6 schema may revisit. Multi-line values are out of scope — the regex
- * stops at the first `;` or `}` on the declaration's line. Comments are not
- * stripped, so a `/* --fake: x; * /` inside a block comment would false-match;
- * unobserved in real-world stylesheets, documented as a known limitation.
+ * Recursively scans a project root for `*.css` files, strips block comments,
+ * and extracts top-level `--<name>: <value>` declarations into a flat
+ * last-wins map. Scope-bound variables (e.g. `:root` vs `.dark`) are not
+ * differentiated at this slice; slice 6 schema may revisit.
+ *
+ * Known limitations:
+ * - Multi-line values are out of scope — the regex stops at the first `;`
+ *   or `}` on the declaration's line.
+ * - Values containing semicolons (e.g. data URIs like
+ *   `url(data:image/svg+xml;base64,...)`) are silently truncated at the
+ *   first `;`. Proper CSS parser at slice 6 schema.
+ * - Filename matching is case-sensitive (`STYLES.CSS` is skipped). Rare in
+ *   modern toolchains.
  *
  * Directory exclusions (`node_modules`, `dist`, `.git`, `build`, `.next`,
- * `.turbo`) match Tailwind's content-scanner defaults for the same reason —
- * those trees are vendored, generated, or version-control internals and
- * carry no design-token authorship signal.
+ * `.turbo`) follow common build-output convention — vendored, generated,
+ * or version-control internals that carry no design-token authorship
+ * signal. Clancy-local list; extend as new conventions surface.
  *
  * Files are sorted alphabetically before aggregation so last-wins becomes
  * deterministic across filesystems (raw `readdir` order is unspecified).
+ *
+ * SECURITY: this function reads files in the project root. Entries are
+ * filtered through `Dirent.isFile()`, which returns false for symlinks,
+ * sockets, FIFOs, and block devices — preventing both path-traversal via
+ * symlink and `readFile` hangs on FIFOs. Same trust posture as slice 2's
+ * `detectTailwind`: do not point `clancy:design` at untrusted project
+ * roots.
  */
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -31,14 +44,26 @@ const EXCLUDE_DIRS = new Set([
   '.turbo',
 ]);
 
-const VAR_DECLARATION = /--([\w-]+)\s*:\s*([^;}]+?)\s*(?:;|$)/gm;
+const VAR_DECLARATION = /--([\w-]+)\s*:\s*([^;}]+?)\s*(?:;|}|$)/gm;
+
+const BLOCK_COMMENT = /\/\*[\s\S]*?\*\//g;
 
 const readDirSafe = async (
   dir: string,
-): Promise<readonly { readonly name: string; readonly isDir: boolean }[]> => {
+): Promise<
+  readonly {
+    readonly name: string;
+    readonly isDir: boolean;
+    readonly isFile: boolean;
+  }[]
+> => {
   try {
     const entries = await readdir(dir, { withFileTypes: true });
-    return entries.map((e) => ({ name: e.name, isDir: e.isDirectory() }));
+    return entries.map((e) => ({
+      name: e.name,
+      isDir: e.isDirectory(),
+      isFile: e.isFile(),
+    }));
   } catch {
     return [];
   }
@@ -47,7 +72,7 @@ const readDirSafe = async (
 const findCssFiles = async (dir: string): Promise<readonly string[]> => {
   const entries = await readDirSafe(dir);
   const localCss = entries
-    .filter((e) => !e.isDir && e.name.endsWith('.css'))
+    .filter((e) => e.isFile && e.name.endsWith('.css'))
     .map((e) => join(dir, e.name));
   const nested = await Promise.all(
     entries
@@ -75,7 +100,9 @@ const matchToVarEntry = (
 };
 
 const extractVars = (content: string): readonly (readonly [string, string])[] =>
-  [...content.matchAll(VAR_DECLARATION)].flatMap((m) => matchToVarEntry(m));
+  [...content.replace(BLOCK_COMMENT, '').matchAll(VAR_DECLARATION)].flatMap(
+    (m) => matchToVarEntry(m),
+  );
 
 export async function detectCssVars(
   projectRoot: string,
