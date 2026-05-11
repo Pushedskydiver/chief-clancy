@@ -91,13 +91,15 @@ describe('detectConfidence (project-root scan)', () => {
     expect(result).toBe('high');
   });
 
-  it('returns "low" when components.json sits inside an excluded directory', async () => {
-    // node_modules/some-pkg/components.json is a vendored marker, not the
-    // host project's intent. Exclude same as slice 3 + 4.
+  it('returns "low" when components.json sits inside a subdirectory (shadcn signal is root-only)', async () => {
+    // The shadcn probe scans the project root only — a `components.json`
+    // anywhere below the root (whether in node_modules, src/, packages/, ...)
+    // is not a host-project signal. node_modules is used here as a realistic
+    // subdir; the test would pass identically for any non-root location.
     const { mkdtempSync, mkdirSync, writeFileSync, rmSync } =
       await import('node:fs');
     const { tmpdir } = await import('node:os');
-    const root = mkdtempSync(join(tmpdir(), 'clancy-design-conf-excl-'));
+    const root = mkdtempSync(join(tmpdir(), 'clancy-design-conf-subdir-'));
     mkdirSync(join(root, 'node_modules', 'some-pkg'), { recursive: true });
     writeFileSync(
       join(root, 'node_modules', 'some-pkg', 'components.json'),

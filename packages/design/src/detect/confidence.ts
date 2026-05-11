@@ -7,10 +7,17 @@
  * - **shadcn** — `components.json` at project root. Shadcn's CLI uses this
  *   file as its project-config marker; ecosystem treats its presence as
  *   evidence shadcn is in use. Root-only by convention.
- * - **tailwind** — any of `tailwind.config.{ts,js,mjs,cjs}` at project root.
- *   Same resolution order slice 2's `detectTailwind` uses. Root-only.
- * - **tokens.json** — DTCG token file anywhere in the tree (excluded dirs
- *   skipped). Recursive, mirroring slice 4's `detectTokensJson` scan.
+ * - **tailwind** — any of `tailwind.config.{ts,js,mjs,cjs}` at project root;
+ *   order-insensitive since the signal is binary. Root-only.
+ * - **tokens.json** — any file named `tokens.json` anywhere in the tree
+ *   (excluded dirs skipped). Filename presence alone is the authorship
+ *   signal; content is not validated at this layer — slice 6 schema
+ *   validates DTCG shape. Recursive via slice 4's `detectTokensJson`.
+ *
+ * Root-vs-recursive asymmetry: shadcn + tailwind are root-only because
+ * their CLI conventions read from project root; tokens.json has no such
+ * convention and DTCG's "anywhere in the tree" matches monorepo authoring
+ * (e.g. `packages/ui/design/tokens.json`).
  *
  * `ANY signal present → 'high'` (skip the document-init grill's broad
  * questions). `NONE → 'low'` (ask everything). 3-tier deferred to v0.2 per
@@ -22,10 +29,12 @@
  * - `detectConfidence(projectRoot)` — scans the project root + delegates.
  *   The convenience surface for slice 8 CLI `clancy:design document`.
  *
- * SECURITY: signal probes use `Dirent.isFile()` on `readdir` output (not
- * `fs.access` / `fs.stat`) so symlinks are filtered out, matching the trust
- * posture of slices 2 + 3 + 4. A symlinked `components.json` or
- * `tailwind.config.js` does not count as a host-project signal.
+ * SECURITY: signal probes — `readRootFiles` directly, and slice 4's
+ * `detectTokensJson` transitively — use `Dirent.isFile()` on `readdir`
+ * output (not `fs.access` / `fs.stat`) so symlinks are filtered out,
+ * matching the trust posture of slices 2 + 3 + 4. A symlinked
+ * `components.json` or `tailwind.config.js` does not count as a
+ * host-project signal.
  */
 import { readdir } from 'node:fs/promises';
 
