@@ -226,7 +226,7 @@ If Routines-based automation is eventually warranted, scope is `PostCompact` hoo
 
 ### Archival maintenance
 
-At session start or at handoff time, check `PROGRESS.md`'s detailed-sessions band (everything between `## Next workstreams` and `## Session archive`). If it contains more than 5 entries OR the band exceeds ~10k tokens, compress the oldest entry to a one-line row in [`history/SESSIONS.md`](history/SESSIONS.md).
+**Session-start firing is the primary trigger; handoff-time is the backstop.** Check `PROGRESS.md`'s detailed-sessions band (everything between `## Next workstreams` and `## Session archive`) at session load, **before proposing any primary workstream**. If it contains more than 5 entries OR the band exceeds ~10k tokens, compress the oldest entry — or oldest entries (multi-session catch-up is one §12 trigger, not several) — to one-line rows in [`history/SESSIONS.md`](history/SESSIONS.md) before continuing with workstream selection. Handoff-time check is the backstop for sessions that pre-empted at session-close; it does not substitute for the at-start check, because heavy sessions tend to skip the close-time step silently and only at-start can catch the gap before it compounds.
 
 **Row format:** `| N | YYYY-MM-DD | Headline (one-line summary) | [#X](url), [#Y](url) |` — PR numbers render as GitHub links for click-through; `—` when a session shipped no PRs.
 
