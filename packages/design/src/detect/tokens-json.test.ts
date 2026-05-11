@@ -203,4 +203,79 @@ describe('detectTokensJson', () => {
     );
     expect(result).toEqual({});
   });
+
+  it('warns on token/group conflict across files and resolves last-wins (DTCG spec § Group vs Token)', async () => {
+    // DTCG forbids a node from being both a token (has `$value`) and a group
+    // (has nested children) simultaneously. Two individually-valid files can
+    // merge to such a hybrid; without warn-at-merge, the operator has no
+    // signal until slice 6 schema fails far downstream + file attribution is
+    // lost. Verify the warning surfaces the source file path.
+    const { mkdtempSync, mkdirSync, writeFileSync, rmSync } =
+      await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const root = mkdtempSync(join(tmpdir(), 'clancy-design-tokens-hybrid-'));
+    mkdirSync(join(root, 'a'));
+    mkdirSync(join(root, 'b'));
+    writeFileSync(
+      join(root, 'a', 'tokens.json'),
+      JSON.stringify({
+        color: { primary: { $value: '#ff0080', $type: 'color' } },
+      }),
+    );
+    writeFileSync(
+      join(root, 'b', 'tokens.json'),
+      JSON.stringify({
+        color: { primary: { dark: { $value: '#cc0066', $type: 'color' } } },
+      }),
+    );
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const result = await detectTokensJson(root);
+      // Last-wins → file b's group declaration overrides file a's token.
+      expect(result).toEqual({
+        color: { primary: { dark: { $value: '#cc0066', $type: 'color' } } },
+      });
+      expect(warnSpy).toHaveBeenCalledOnce();
+      const message = String(warnSpy.mock.calls[0]?.[0] ?? '');
+      expect(message).toContain("'primary'");
+      expect(message).toContain('token');
+      expect(message).toContain('group');
+      expect(message).toContain(join(root, 'b', 'tokens.json'));
+    } finally {
+      warnSpy.mockRestore();
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('sorts files alphabetically before merging (deterministic across filesystems)', async () => {
+    // `readdir` order is unspecified. The implementation sorts before reduce
+    // so last-wins is deterministic. Create files in reverse-alphabetical
+    // order in two top-level subdirs; the later-alphabetically file must
+    // win the collision regardless of readdir order.
+    const { mkdtempSync, mkdirSync, writeFileSync, rmSync } =
+      await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const root = mkdtempSync(join(tmpdir(), 'clancy-design-tokens-sort-'));
+    // Create `z/` before `a/` — readdir on some filesystems returns
+    // creation-order; sort must override this.
+    mkdirSync(join(root, 'z'));
+    writeFileSync(
+      join(root, 'z', 'tokens.json'),
+      JSON.stringify({ color: { brand: { $value: '#zzzzzz' } } }),
+    );
+    mkdirSync(join(root, 'a'));
+    writeFileSync(
+      join(root, 'a', 'tokens.json'),
+      JSON.stringify({ color: { brand: { $value: '#aaaaaa' } } }),
+    );
+    try {
+      const result = await detectTokensJson(root);
+      // Alphabetical sort → a/ read first, z/ read second → z's value wins.
+      expect(result).toEqual({
+        color: { brand: { $value: '#zzzzzz' } },
+      });
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 });

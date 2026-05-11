@@ -18,10 +18,16 @@
  *   spec does not standardize a filename; this is the most common convention.
  *   `.tokens.json` / `design-tokens.json` / etc. are not matched at this
  *   slice — extend the matcher if real-world usage surfaces other names.
- * - Files containing top-level JSON arrays or primitives (legal JSON, not
- *   DTCG) are still parsed; slice 6 schema rejects them. At this slice they
- *   merge into the result and produce a malformed tree — operator's
- *   responsibility for now.
+ * - Files whose top-level JSON value is not a plain object (array, primitive,
+ *   `null`) are silently dropped from the merge — `JSON.parse` succeeds but
+ *   the `isPlainObject` filter rejects them, so the result is unaffected and
+ *   no warning is emitted. Slice 6 schema will warn explicitly.
+ * - Multi-file token-vs-group collisions on the same key path (one file
+ *   declares the path as a token via `$value`, another as a group via child
+ *   keys) emit a `console.warn` and resolve last-wins. The merged tree
+ *   itself is XOR-clean (the surviving side fully replaces the other), but
+ *   the warning surfaces the conflicting authorship so the operator can
+ *   reconcile rather than silently lose half the declaration.
  *
  * Directory exclusions (`node_modules`, `dist`, `.git`, `build`, `.next`,
  * `.turbo`) follow common build-output convention — vendored, generated,
@@ -30,8 +36,11 @@
  * SECURITY: same trust posture as slice 3's `detectCssVars`. Entries are
  * filtered through `Dirent.isFile()`, which returns false for symlinks,
  * sockets, FIFOs, and block devices — preventing path-traversal via symlink
- * and `readFile` hangs on FIFOs. Do not point `clancy:design` at untrusted
- * project roots.
+ * and `readFile` hangs on FIFOs. The `isPlainObject` prototype check is
+ * load-bearing against `__proto__`-keyed JSON: `JSON.parse` produces an own
+ * property for `__proto__` (not a prototype mutation), and the merge pipeline
+ * preserves that — but only as long as the prototype identity check stays
+ * in place. Do not point `clancy:design` at untrusted project roots.
  */
 import { readdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -109,26 +118,64 @@ const isPlainObject = (value: unknown): value is Record<string, unknown> =>
   !Array.isArray(value) &&
   Object.getPrototypeOf(value) === Object.prototype;
 
+// DTCG spec: a node is a *token* iff it has a `$value` key, otherwise it's
+// a *group*. `$type` alone is legal on a group (sets default type for
+// descendants) so `$value` is the only discriminator. See
+// https://design-tokens.github.io/community-group/format/#groups-and-tokens.
+const isDtcgToken = (obj: Record<string, unknown>): boolean => '$value' in obj;
+
+type MergeContext = {
+  readonly target: Record<string, unknown>;
+  readonly source: Record<string, unknown>;
+  readonly sourceFile: string;
+};
+
+type ObjectMergePair = {
+  readonly t: Record<string, unknown>;
+  readonly s: Record<string, unknown>;
+  readonly sourceFile: string;
+};
+
+const mergeObjectValues = (
+  key: string,
+  pair: ObjectMergePair,
+): readonly [string, unknown] => {
+  const { t, s, sourceFile } = pair;
+  const tToken = isDtcgToken(t);
+  const sToken = isDtcgToken(s);
+  if (tToken === sToken) {
+    return tToken ? [key, s] : [key, deepMerge(t, s, sourceFile)];
+  }
+  // Hybrid collision: DTCG spec forbids a node from being both token + group.
+  // Warn with source-file path; resolve last-wins so the operator can decide.
+  console.warn(
+    `[clancy:design] DTCG token/group conflict on key '${key}' in ${sourceFile}: ` +
+      `this file declares it as a ${sToken ? 'token' : 'group'} but an earlier file ` +
+      `declared it as a ${tToken ? 'token' : 'group'}. Using ${sourceFile} (last-wins).`,
+  );
+  return [key, s];
+};
+
 const mergeKey = (
   key: string,
-  target: Record<string, unknown>,
-  source: Record<string, unknown>,
+  ctx: MergeContext,
 ): readonly [string, unknown] => {
-  const t = target[key];
-  const s = source[key];
+  const t = ctx.target[key];
+  const s = ctx.source[key];
   if (s === undefined) return [key, t];
   if (t === undefined) return [key, s];
-  if (isPlainObject(t) && isPlainObject(s)) return [key, deepMerge(t, s)];
-  return [key, s];
+  if (!isPlainObject(t) || !isPlainObject(s)) return [key, s];
+  return mergeObjectValues(key, { t, s, sourceFile: ctx.sourceFile });
 };
 
 const deepMerge = (
   target: Record<string, unknown>,
   source: Record<string, unknown>,
+  sourceFile: string,
 ): Record<string, unknown> => {
   const keys = new Set([...Object.keys(target), ...Object.keys(source)]);
   return Object.fromEntries(
-    [...keys].map((key) => mergeKey(key, target, source)),
+    [...keys].map((key) => mergeKey(key, { target, source, sourceFile })),
   );
 };
 
@@ -139,15 +186,15 @@ export async function detectTokensJson(
   if (files.length === 0) return null;
 
   const contents = await Promise.all(files.map((file) => readFileSafe(file)));
-  const parsed = files
-    .map((file, i) => {
-      const content = contents[i];
-      return content === null ? null : parseJsonSafe(file, content);
-    })
-    .filter(isPlainObject);
+  const parsed = files.flatMap((file, i) => {
+    const content = contents[i];
+    if (content === null) return [];
+    const tree = parseJsonSafe(file, content);
+    return isPlainObject(tree) ? [{ file, tree }] : [];
+  });
 
   return parsed.reduce<Record<string, unknown>>(
-    (acc, tree) => deepMerge(acc, tree),
+    (acc, { file, tree }) => deepMerge(acc, tree, file),
     {},
   );
 }
