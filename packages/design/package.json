@@ -38,7 +38,8 @@
     "bin"
   ],
   "dependencies": {
-    "jiti": "^2.7.0"
+    "jiti": "^2.7.0",
+    "zod": "^4.4.3"
   },
   "scripts": {
     "build": "rm -rf dist tsconfig.build.tsbuildinfo && tsc --project tsconfig.build.json && tsc-alias --project tsconfig.build.json",
