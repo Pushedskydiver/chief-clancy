@@ -82,16 +82,16 @@ describe('designSchema', () => {
   });
 
   it('accepts 3-, 4-, 6-, and 8-digit hex color formats', () => {
-    for (const hex of ['#abc', '#abcd', '#aabbcc', '#aabbccdd']) {
+    ['#abc', '#abcd', '#aabbcc', '#aabbccdd'].forEach((hex) => {
       const result = z.safeParse(designSchema, {
         version: '0.1',
         color_palette: [{ name: 'token', hex }],
       });
       expect(result.success).toBe(true);
-    }
+    });
   });
 
-  it('preserves unknown top-level keys for forward-compatibility', () => {
+  it('preserves unknown keys at every looseObject layer for forward-compatibility', () => {
     const fixture = {
       version: '0.1',
       future_field: 'v0.2 will read this',
