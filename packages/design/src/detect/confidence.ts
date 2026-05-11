@@ -31,10 +31,12 @@
  *
  * SECURITY: signal probes — `readRootFiles` directly, and slice 4's
  * `detectTokensJson` transitively — use `Dirent.isFile()` on `readdir`
- * output (not `fs.access` / `fs.stat`) so symlinks are filtered out,
- * matching the trust posture of slices 2 + 3 + 4. A symlinked
- * `components.json` or `tailwind.config.js` does not count as a
- * host-project signal.
+ * output (not `fs.access` / `fs.stat` / `existsSync`) so symlinks are
+ * filtered out, matching the trust posture of slices 3 + 4. (Slice 2's
+ * `detectTailwind` uses `existsSync`, which follows symlinks; the
+ * confidence module's own tailwind probe via `readRootFiles` does not
+ * inherit that gap.) A symlinked `components.json` or `tailwind.config.js`
+ * does not count as a host-project signal at the confidence layer.
  */
 import { readdir } from 'node:fs/promises';
 
