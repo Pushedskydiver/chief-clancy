@@ -10,8 +10,13 @@
  * Currently routed (Phase F slice 8):
  * - `document` — run detection + write design's two docs to `.clancy/docs/`
  *
- * Falls back to a "Not yet implemented" placeholder for unknown subcommands
- * and the bare-invocation case (the full installer lands in a later slice).
+ * Bare invocation (no argv) falls back to a "Not yet implemented" placeholder
+ * + exit 0 (the full installer lands in a later slice). Unknown subcommands
+ * emit a stderr error + exit 1 — distinct from bare invocation per DA M1
+ * fold on the slice-8 PR; spec § "Bin routing model" L982 deferred a
+ * suggestion-fuzzy-match hint to a slice with enough siblings to match
+ * against.
+ *
  * The subcommand dispatcher dynamically imports runtime handlers from
  * `../dist/commands/<name>.js`, so the package must be built before bin
  * invocation works (turbo's `test: { dependsOn: ['^build', 'build'] }`
