@@ -10,11 +10,13 @@
  * **v0.1 composition is mechanical pass-through.** The 9 canonical Stitch
  * sections (visual_theme, color_palette, typography, components, layout, depth,
  * guardrails, responsive, agent_prompts) require semantic enrichment that
- * detection alone cannot supply — they are left absent and populated later by
- * slice 9 (`clancy:design init` grill) or slice 11 (canvas variant
- * generation). Slice 7 only fills `version`, `generated_at`, and the permissive
- * `tokens` field with detect-output snapshots keyed by source layer
- * (`tailwind` / `css_vars` / `dtcg`).
+ * detection alone cannot supply — they are left absent and filled by later
+ * slices once a grill or iterative-refinement pass can supply the semantics
+ * (slice 9 `clancy:design init` writes a starter DESIGN.md from a 5-question
+ * grill; canvas variant generation in slices 10+ refines further). Slice 7
+ * only fills `version`, `generated_at`, and the permissive `tokens` field
+ * with detect-output snapshots keyed by source layer (`tailwind` / `css_vars`
+ * / `dtcg`).
  *
  * **Confidence tier** is computed by calling slice 5's `detectConfidence`
  * directly. This duplicates one `readdir(root)` (for the shadcn probe) and
@@ -24,8 +26,16 @@
  * no symlink follow). The alternative — re-implementing the shadcn probe
  * inline with `existsSync` — would diverge from slice 5's deliberate
  * symlink-rejection. Slice 5 also exports the pure-logic `getConfidenceTier`
- * surface for callers that already hold all three signals; we do not, so we
- * use the convenience surface.
+ * surface; we do not use it here because we deliberately delegate the
+ * shadcn probe rather than holding all three signals in hand.
+ *
+ * **Write atomicity.** The two output files are written sequentially
+ * (DESIGN.json first, DESIGN.md second). On a partial failure (disk full,
+ * EACCES, etc.) DESIGN.json is the canonical source — re-run
+ * `clancy:design document` to recover. Slice 7 does not use temp-file +
+ * rename atomicity in v0.1 because (a) both files are derived deterministically
+ * from the same detection snapshot, so a re-run reproduces the intended state,
+ * and (b) the failure modes are rare and recoverable.
  *
  * SECURITY: invoking `detectTailwind` executes the project's tailwind config
  * via jiti (same trust posture as the slice 2 module). Do not point
@@ -42,6 +52,9 @@ import { detectTailwind } from '../detect/tailwind.js';
 import { detectTokensJson } from '../detect/tokens-json.js';
 import { designSchema } from '../schemas/design.js';
 
+// Pinned writer-side. The schema (`packages/design/src/schemas/design.ts`)
+// currently accepts any non-empty string for `version`; v0.2 may introduce a
+// discriminator-style check, at which point this literal must move in sync.
 const SCHEMA_VERSION = '0.1';
 const DOCS_DIR = join('.clancy', 'docs');
 const DESIGN_JSON = 'DESIGN.json';
@@ -75,23 +88,26 @@ const buildTokens = (
   return Object.keys(tokens).length > 0 ? tokens : undefined;
 };
 
-const buildDesignJson = (detections: Detections): unknown => {
+const buildDesignJson = (
+  detections: Detections,
+  generatedAt: string,
+): unknown => {
   const tokens = buildTokens(detections);
   return {
     version: SCHEMA_VERSION,
-    generated_at: new Date().toISOString(),
+    generated_at: generatedAt,
     ...(tokens !== undefined ? { tokens } : {}),
   };
 };
 
 const renderDesignMd = (
   detections: Detections,
-  designJson: { readonly generated_at: string },
+  generatedAt: string,
 ): string => {
   const header: readonly string[] = [
     '# DESIGN',
     '',
-    `_Generated ${designJson.generated_at} by \`clancy:design document\` (auto-detect baseline)._`,
+    `_Generated ${generatedAt} by \`clancy:design document\` (auto-detect baseline)._`,
     '',
     `**Confidence tier:** ${detections.tier}`,
     '',
@@ -142,7 +158,8 @@ export async function document(projectRoot: string): Promise<DocumentResult> {
   ]);
 
   const detections: Detections = { tailwind, cssVars, dtcg, tier };
-  const designJson = buildDesignJson(detections);
+  const generatedAt = new Date().toISOString();
+  const designJson = buildDesignJson(detections, generatedAt);
   const validated = z.parse(designSchema, designJson);
 
   const docsDir = join(projectRoot, DOCS_DIR);
@@ -151,18 +168,16 @@ export async function document(projectRoot: string): Promise<DocumentResult> {
   const designJsonPath = join(docsDir, DESIGN_JSON);
   const designMdPath = join(docsDir, DESIGN_MD);
 
-  await Promise.all([
-    writeFile(
-      designJsonPath,
-      JSON.stringify(validated, null, 2) + '\n',
-      'utf8',
-    ),
-    writeFile(
-      designMdPath,
-      renderDesignMd(detections, validated as { generated_at: string }),
-      'utf8',
-    ),
-  ]);
+  await writeFile(
+    designJsonPath,
+    JSON.stringify(validated, null, 2) + '\n',
+    'utf8',
+  );
+  await writeFile(
+    designMdPath,
+    renderDesignMd(detections, generatedAt),
+    'utf8',
+  );
 
   return { designMdPath, designJsonPath };
 }

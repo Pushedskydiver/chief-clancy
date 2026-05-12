@@ -24,10 +24,13 @@
  * spec note "pending real-usage data".
  *
  * The module exports two surfaces:
- * - `getConfidenceTier(signals)` — pure logic, decoupled from IO. Used by
- *   slice 7 `write/document.ts` when the caller already has signals in hand.
+ * - `getConfidenceTier(signals)` — pure logic, decoupled from IO. For callers
+ *   that already hold all three signals in hand.
  * - `detectConfidence(projectRoot)` — scans the project root + delegates.
- *   The convenience surface for slice 8 CLI `clancy:design document`.
+ *   The convenience surface used by slice 7 `write/document.ts` and slice 8
+ *   CLI `clancy:design document`. Slice 7 accepts a duplicated `readdir` +
+ *   recursive tokens.json scan rather than re-implementing the shadcn probe
+ *   inline (which would diverge from the symlink-rejection posture below).
  *
  * SECURITY: signal probes — `readRootFiles` directly, and slice 4's
  * `detectTokensJson` transitively — use `Dirent.isFile()` on `readdir`

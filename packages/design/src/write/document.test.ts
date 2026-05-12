@@ -41,6 +41,7 @@ describe('document', () => {
 
     const mdContent = await readFile(result.designMdPath, 'utf8');
     expect(mdContent).toMatch(/^# DESIGN/m);
+    expect(mdContent).toContain('No design-token signals detected');
   });
 
   it('writes Tailwind detect output under tokens.tailwind and lists the section in DESIGN.md', async () => {
@@ -174,6 +175,12 @@ describe('document', () => {
       'dtcg',
       'tailwind',
     ]);
+
+    const mdContent = await readFile(result.designMdPath, 'utf8');
+    expect(mdContent).toContain('**Tailwind config**');
+    expect(mdContent).toContain('**CSS custom properties**');
+    expect(mdContent).toContain('**DTCG tokens**');
+    expect(mdContent).toMatch(/\*\*Confidence tier:\*\* high/);
   });
 
   it('marks confidence tier high when any signal fires and low when none do', async () => {
