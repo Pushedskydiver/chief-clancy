@@ -59,6 +59,22 @@ async function main() {
     process.exit(code);
   }
 
+  if (first && !first.startsWith('--')) {
+    // Unknown subcommand — distinct from bare invocation. Spec § "Bin
+    // routing model" L982 calls for a "did you mean ...?" hint here;
+    // slice 8 ships the error signal only (exit 1 + stderr), with the
+    // suggestion-fuzzy-match deferred to a slice that adds enough
+    // siblings to be worth fuzzy-matching against.
+    console.error(red(`\n  Unknown subcommand: ${first}`));
+    console.error(
+      dim(
+        `  Known subcommands: ${[...KNOWN_SUBCOMMANDS].join(', ')} (more land in subsequent Phase F slices)`,
+      ),
+    );
+    console.error('');
+    process.exit(1);
+  }
+
   printPlaceholder();
   process.exit(0);
 }

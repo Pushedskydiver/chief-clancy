@@ -63,7 +63,10 @@ describe('bin/design.js document (E2E)', () => {
     const result = await spawnBin(['document'], projectRoot);
 
     expect(result.exitCode).toBe(0);
-    expect(result.stderr).toBe('');
+    // Loosen from strict-equality to "no Error: line" — a future Node /
+    // dependency emitting deprecation warnings to stderr shouldn't flake
+    // this test (DA L3 fold).
+    expect(result.stderr).not.toMatch(/Error/i);
     expect(result.stdout).toContain('.clancy/docs/DESIGN.json');
     expect(result.stdout).toContain('.clancy/docs/DESIGN.md');
 
@@ -78,5 +81,12 @@ describe('bin/design.js document (E2E)', () => {
       'utf8',
     );
     expect(mdContent).toMatch(/^# DESIGN/m);
+  });
+
+  it('exits non-zero on an unknown subcommand and names it in stderr (DA M1 fold)', async () => {
+    const result = await spawnBin(['documemt'], projectRoot);
+
+    expect(result.exitCode).not.toBe(0);
+    expect(result.stderr).toContain('Unknown subcommand: documemt');
   });
 });

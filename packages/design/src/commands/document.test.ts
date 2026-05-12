@@ -45,5 +45,10 @@ describe('runDocument', () => {
     const joined = logs.join('\n');
     expect(joined).toContain('.clancy/docs/DESIGN.json');
     expect(joined).toContain('.clancy/docs/DESIGN.md');
+
+    // Pin log shape so a regression that drops the opener or double-logs
+    // one path doesn't silently slip through `toContain` (DA L5 fold).
+    expect(logs).toHaveLength(3);
+    expect(logs[0]).toBe('Running clancy:design document...');
   });
 });

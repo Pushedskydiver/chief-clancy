@@ -18,6 +18,8 @@
  * exactly once — slice 8 is intentionally a thin wrapper, not a place to
  * reimplement composition logic.
  */
+import { relative } from 'node:path';
+
 import { document } from '../write/document.js';
 
 type Logger = (line: string) => void;
@@ -36,12 +38,6 @@ const defaultLogger: Logger = (line) => {
   process.stdout.write(line + '\n');
 };
 
-const relativeFromRoot = (projectRoot: string, absPath: string): string => {
-  return absPath.startsWith(projectRoot)
-    ? absPath.slice(projectRoot.length).replace(/^[/\\]/, '')
-    : absPath;
-};
-
 export async function runDocument(
   projectRoot: string,
   options: RunDocumentOptions = {},
@@ -51,8 +47,12 @@ export async function runDocument(
   log('Running clancy:design document...');
   const { designJsonPath, designMdPath } = await document(projectRoot);
 
-  log(`Wrote ${relativeFromRoot(projectRoot, designJsonPath)}`);
-  log(`Wrote ${relativeFromRoot(projectRoot, designMdPath)}`);
+  // `relative()` handles trailing separators, normalisation, and
+  // prefix-collision (e.g. `/foo/myapp` vs `/foo/myapp2`) correctly —
+  // `startsWith` + slice would produce corrupted output for the collision
+  // case (DA M2 fold).
+  log(`Wrote ${relative(projectRoot, designJsonPath)}`);
+  log(`Wrote ${relative(projectRoot, designMdPath)}`);
 
   return {
     exitCode: 0,
