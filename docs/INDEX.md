@@ -312,7 +312,7 @@ Scenario-organized router. Maps trigger situations to the docs Claude consults +
 
 ### §12 — Session-history archive maintenance
 
-**When**: archiving one or more `PROGRESS.md` session entries to `docs/history/SESSIONS.md` (preemptive at handoff or catch-up later — multi-session batch archival is one §12 trigger, not several).
+**When**: archiving one or more `PROGRESS.md` session entries to `docs/history/SESSIONS.md` (session-start primary trigger; preemptive-at-handoff is the secondary mode — see [`docs/DEVELOPMENT.md §Archival maintenance`](DEVELOPMENT.md#archival-maintenance) for timing semantics; multi-session batch catch-up is one §12 trigger, not several).
 
 **Affected files**:
 
