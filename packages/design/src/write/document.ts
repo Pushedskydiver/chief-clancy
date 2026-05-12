@@ -12,7 +12,7 @@
  * guardrails, responsive, agent_prompts) require semantic enrichment that
  * detection alone cannot supply — they are left absent and filled by later
  * slices once a grill or iterative-refinement pass can supply the semantics
- * (slice 9 `clancy:design init` writes a starter DESIGN.md from a 5-question
+ * (slice 9 `clancy:design init` writes a starter DESIGN.md from a 6-question
  * grill; canvas variant generation in slices 10+ refines further). Slice 7
  * only fills `version`, `generated_at`, and the permissive `tokens` field
  * with detect-output snapshots keyed by source layer (`tailwind` / `css_vars`
@@ -121,7 +121,7 @@ const renderDesignMd = (
   if (noSignals) {
     return [
       ...header,
-      'No design-token signals detected. Run `clancy:design init` to draft a DESIGN.md from a 5-question grill.',
+      'No design-token signals detected. Run `clancy:design init` to draft a DESIGN.md from a 6-question grill.',
       '',
     ].join('\n');
   }

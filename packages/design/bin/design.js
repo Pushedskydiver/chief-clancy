@@ -7,8 +7,15 @@
  * and plan (whose bins are install-only), design routes subcommands because
  * canvas, write, handoff, document, and init all run from the same npm bin.
  *
- * Currently routed (Phase F slice 8):
+ * Currently routed (Phase F slices 8-9):
  * - `document` — run detection + write design's two docs to `.clancy/docs/`
+ * - `init` — greenfield 6-question grill writing starter DESIGN.md + PRODUCT.md
+ *
+ * Routing pattern at N=2 stays Set + explicit if/else branching per
+ * `docs/RATIONALIZATIONS.md` L54 ("Three similar lines of code is better
+ * than a premature abstraction"). Promote to switch / Map<name, handler>
+ * when N >= 3 if branch-count or dispatch-uniformity warrants — defer
+ * for now.
  *
  * Bare invocation (no argv) falls back to a "Not yet implemented" placeholder
  * + exit 0 (the full installer lands in a later slice). Unknown subcommands
@@ -32,7 +39,7 @@ const dim = (s) => `\x1b[2m${s}\x1b[0m`;
 const blue = (s) => `\x1b[1;34m${s}\x1b[0m`;
 const red = (s) => `\x1b[31m${s}\x1b[0m`;
 
-const KNOWN_SUBCOMMANDS = new Set(['document']);
+const KNOWN_SUBCOMMANDS = new Set(['document', 'init']);
 
 function printPlaceholder() {
   console.log('');
@@ -50,6 +57,11 @@ async function runSubcommand(subcommand) {
   if (subcommand === 'document') {
     const { runDocument } = await import('../dist/commands/document.js');
     const result = await runDocument(process.cwd());
+    return result.exitCode;
+  }
+  if (subcommand === 'init') {
+    const { runInit } = await import('../dist/commands/init.js');
+    const result = await runInit(process.cwd());
     return result.exitCode;
   }
   // Defensive: KNOWN_SUBCOMMANDS gate ensures we never reach here.
