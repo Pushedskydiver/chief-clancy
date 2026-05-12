@@ -22,7 +22,11 @@
 
 /**
  * Aesthetic direction taxonomy — verbatim from Anthropic's frontend-design
- * SKILL.md at `~/.claude/plugins/marketplaces/claude-plugins-official/plugins/frontend-design/skills/frontend-design/SKILL.md`.
+ * SKILL.md. Public source: the `frontend-design` plugin in the
+ * `claude-plugins-official` marketplace (https://github.com/anthropics/claude-plugins-official,
+ * `plugins/frontend-design/skills/frontend-design/SKILL.md` under the
+ * "Tone" bullet). User-local install path is
+ * `~/.claude/plugins/marketplaces/claude-plugins-official/plugins/frontend-design/skills/frontend-design/SKILL.md`.
  * The source list ends with "etc." (open-ended); v0.1 surfaces the 11 named
  * directions. User can edit PRODUCT.md to add a custom direction after init.
  */

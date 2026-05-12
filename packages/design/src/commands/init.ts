@@ -51,6 +51,10 @@ type RunInitOptions = {
 };
 
 type RunInitResult = {
+  // Always 0 in v0.1 — the only failure surface (mkdir/writeFile reject,
+  // prompter throws on stdin EOF) bubbles via thrown errors caught by the
+  // bin's main().catch which exits with 1 directly. Field shape preserved
+  // for parity with slice 8's `runDocument` return type (DA L1 fold).
   readonly exitCode: number;
   readonly designMdPath: string;
   readonly productMdPath: string;
@@ -77,6 +81,26 @@ const defaultLogger: Logger = (line) => {
  * buffers all lines internally and yields them in order, decoupling readline's
  * burst delivery from our sequential awaits.
  */
+const renderSelectPrompt = (
+  prompt: string,
+  options: readonly string[],
+): string => {
+  const numbered = options.map((opt, i) => `  ${i + 1}) ${opt}`).join('\n');
+  return `${prompt}\n${numbered}\nChoose 1-${options.length}: `;
+};
+
+// Strict numeric match — `parseInt('1.5')` returns 1, `parseInt('1abc')`
+// returns 1; both would silently advance with the wrong semantic. Require
+// digits-only so re-prompt fires on ambiguous input (DA L3 fold). Returns
+// the 0-based index on valid in-range input, null otherwise.
+const parseSelectIndex = (raw: string, optionCount: number): number | null => {
+  const trimmed = raw.trim();
+  if (!/^\d+$/.test(trimmed)) return null;
+  const idx = Number.parseInt(trimmed, 10) - 1;
+  if (idx < 0 || idx >= optionCount) return null;
+  return idx;
+};
+
 const createReadlinePrompter = (): {
   readonly prompter: Prompter;
   readonly close: () => void;
@@ -87,22 +111,29 @@ const createReadlinePrompter = (): {
   });
   const lines = rl[Symbol.asyncIterator]();
 
-  const nextLine = async (): Promise<string> => {
+  // Returns `null` on EOF (stdin closed / exhausted). Callers MUST treat
+  // null as a fatal abort — silently substituting an empty string causes
+  // `select`'s re-prompt loop to recurse unbounded on piped non-TTY input
+  // (DA M1 fold). The microtask-paced recursion never overflows the stack
+  // but hangs the process with promise-allocation churn.
+  const nextLine = async (): Promise<string | null> => {
     const { value, done } = await lines.next();
-    return done ? '' : value;
+    return done ? null : value;
+  };
+
+  const requireLine = async (): Promise<string> => {
+    const line = await nextLine();
+    if (line === null) {
+      throw new Error(
+        'clancy:design init: stdin closed mid-grill (no answer received). Re-run with all 6 answers piped or interact via a TTY.',
+      );
+    }
+    return line;
   };
 
   const ask = async (prompt: string): Promise<string> => {
     process.stdout.write(`${prompt}\n> `);
-    return (await nextLine()).trim();
-  };
-
-  const renderSelectPrompt = (
-    prompt: string,
-    options: readonly string[],
-  ): string => {
-    const numbered = options.map((opt, i) => `  ${i + 1}) ${opt}`).join('\n');
-    return `${prompt}\n${numbered}\nChoose 1-${options.length}: `;
+    return (await requireLine()).trim();
   };
 
   const select = async (
@@ -110,17 +141,15 @@ const createReadlinePrompter = (): {
     options: readonly string[],
   ): Promise<string> => {
     process.stdout.write(renderSelectPrompt(prompt, options));
-    const raw = await nextLine();
-    const idx = Number.parseInt(raw.trim(), 10) - 1;
-    if (Number.isInteger(idx) && idx >= 0 && idx < options.length) {
-      return options[idx];
-    }
+    const raw = await requireLine();
+    const idx = parseSelectIndex(raw, options.length);
+    if (idx !== null) return options[idx];
     process.stdout.write(
       `  Invalid choice. Enter a number 1-${options.length}.\n`,
     );
-    // Recursion replaces an imperative re-prompt loop. Bounded by user-typed
-    // retries; outer caller can SIGINT to abort. Stack depth grows by one
-    // per invalid response; not a concern in practice.
+    // Recursion replaces an imperative re-prompt loop. EOF cannot trap us
+    // here: `requireLine` throws on stdin close, which propagates through
+    // askGrill / collectAnswers / bin/design.js main().catch -> exit 1.
     return select(prompt, options);
   };
 

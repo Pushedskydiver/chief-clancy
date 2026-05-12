@@ -139,4 +139,9 @@ describe('buildDesignMd', () => {
       `Scaffolded by \`clancy:design init\` on ${fixtureGeneratedAt}`,
     );
   });
+
+  it('ends with a trailing newline (symmetric with PRODUCT.md — DA L5 fold)', () => {
+    const md = buildDesignMd(fixtureAnswers, fixtureGeneratedAt);
+    expect(md.endsWith('\n')).toBe(true);
+  });
 });

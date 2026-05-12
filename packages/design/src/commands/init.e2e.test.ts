@@ -117,4 +117,49 @@ describe('bin/design.js init (E2E)', () => {
     expect(designMd).toMatch(/^# DESIGN/m);
     expect(designMd).toContain('## Visual Theme & Atmosphere');
   });
+
+  it('re-prompts on invalid select input then recovers (DA M2 fold — exercises select recursion)', async () => {
+    // First aesthetic answer is invalid ("99" — out of range), then "abc"
+    // (non-numeric), then valid "1". select() should re-prompt twice
+    // before accepting. All subsequent answers valid.
+    const stdinPayload =
+      [
+        'beginner web developers', // Q1 ask
+        'concise + technical', // Q2 ask
+        '99', // Q3 select — out of range
+        'abc', // Q3 select — non-numeric (DA L3 fold: strict digits-only)
+        '1', // Q3 select — valid → 'brutally minimal'
+        '1', // Q4 select
+        '2', // Q5 select
+        'no skeuomorphism', // Q6 ask
+      ].join('\n') + '\n';
+
+    const result = await spawnBinWithStdin(['init'], projectRoot, stdinPayload);
+
+    expect(result.exitCode).toBe(0);
+    // Re-prompt messages emitted twice (once per invalid response).
+    const invalidChoiceMatches =
+      result.stdout.match(/Invalid choice\./g)?.length ?? 0;
+    expect(invalidChoiceMatches).toBe(2);
+
+    const productMd = await readFile(
+      join(projectRoot, '.clancy', 'docs', 'PRODUCT.md'),
+      'utf8',
+    );
+    expect(productMd).toContain('brutally minimal');
+  });
+
+  it('exits non-zero with a clear error when stdin closes mid-grill (DA M1 fold — EOF guard)', async () => {
+    // Only 2 answers piped before EOF — the 3rd prompt (aesthetic select)
+    // calls nextLine() which returns null; requireLine() throws; the error
+    // bubbles to bin's main().catch and exits non-zero. Without the guard
+    // this would hang the process (unbounded microtask recursion).
+    const stdinPayload =
+      ['beginner web developers', 'concise + technical'].join('\n') + '\n';
+
+    const result = await spawnBinWithStdin(['init'], projectRoot, stdinPayload);
+
+    expect(result.exitCode).not.toBe(0);
+    expect(result.stderr).toContain('stdin closed mid-grill');
+  });
 });
