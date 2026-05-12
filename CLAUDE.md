@@ -40,12 +40,14 @@ pnpm changeset version  # Apply version bumps
 - `♻️ refactor: extract preflight into shared function`
 - `✅ test: add credential guard unit tests`
 
-See `docs/GIT.md` for the full type/gitmoji table (10 types).
+See `docs/GIT.md` for the full type/gitmoji table (11 types).
 
 ## PR workflow
 
 ```bash
-gh pr create --assignee Pushedskydiver --label "feature" --label "core"
+gh pr create --title "✨ feat(scope): description" --assignee Pushedskydiver --label "feature" --label "core"
+# PR title = squash commit subject — must follow the gitmoji + type format above (see docs/GIT.md §Types).
+# A CI check (.github/workflows/pr-title-check.yml) validates the title on PR open/edit.
 # Type labels: feature, fix, chore (chore also covers refactor/ and docs/ branches)
 # Package labels: core, terminal, brief, plan, dev, scan
 ```

@@ -79,18 +79,19 @@ The gitmoji comes first, then the conventional commit type. Scope is optional.
 
 ### Types
 
-| Type       | Gitmoji | Use for                                |
-| ---------- | ------- | -------------------------------------- |
-| `feat`     | ✨      | New feature                            |
-| `fix`      | 🐛      | Bug fix                                |
-| `chore`    | 📦      | Maintenance, deps, config              |
-| `refactor` | ♻️      | Code change that doesn't fix or add    |
-| `test`     | ✅      | Adding or updating tests               |
-| `docs`     | 📝      | Documentation only                     |
-| `style`    | 💄      | Formatting, cosmetic (no logic change) |
-| `perf`     | ⚡️      | Performance improvement                |
-| `security` | 🔒      | Security fix                           |
-| `remove`   | 🔥      | Removing code or files                 |
+| Type       | Gitmoji | Use for                                                                              |
+| ---------- | ------- | ------------------------------------------------------------------------------------ |
+| `feat`     | ✨      | New feature                                                                          |
+| `fix`      | 🐛      | Bug fix                                                                              |
+| `chore`    | 📦      | Maintenance, deps, config                                                            |
+| `refactor` | ♻️      | Code change that doesn't fix or add                                                  |
+| `test`     | ✅      | Adding or updating tests                                                             |
+| `docs`     | 📝      | Documentation only                                                                   |
+| `style`    | 💄      | Formatting, cosmetic (no logic change)                                               |
+| `perf`     | ⚡️      | Performance improvement                                                              |
+| `security` | 🔒      | Security fix                                                                         |
+| `remove`   | 🔥      | Removing code or files                                                               |
+| `build`    | 🔧      | Build system, dependency bumps (Dependabot default; bot PRs exempt from title-check) |
 
 ### Examples
 

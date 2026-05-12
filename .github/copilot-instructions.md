@@ -77,7 +77,7 @@ Gitmoji + conventional commit type:
 <gitmoji> <type>(scope): description
 ```
 
-Examples: `✨ feat:`, `🐛 fix:`, `♻️ refactor:`, `📝 docs:`, `📦 chore:`, `✅ test:`, `💄 style:`
+Examples: `✨ feat:`, `🐛 fix:`, `♻️ refactor:`, `📝 docs:`, `📦 chore:`, `✅ test:`, `💄 style:`, `🔧 build:`
 
 ## Branch strategy
 
