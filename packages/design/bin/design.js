@@ -12,9 +12,10 @@
  * - `init` — greenfield 6-question grill writing starter DESIGN.md + PRODUCT.md
  *
  * Routing pattern at N=2 stays Set + explicit if/else branching per
- * CLAUDE.md "Three similar lines is better than a premature abstraction".
- * Promote to switch / Map<name, handler> when N >= 3 if branch-count or
- * dispatch-uniformity warrants — defer for now.
+ * `docs/RATIONALIZATIONS.md` L54 ("Three similar lines of code is better
+ * than a premature abstraction"). Promote to switch / Map<name, handler>
+ * when N >= 3 if branch-count or dispatch-uniformity warrants — defer
+ * for now.
  *
  * Bare invocation (no argv) falls back to a "Not yet implemented" placeholder
  * + exit 0 (the full installer lands in a later slice). Unknown subcommands

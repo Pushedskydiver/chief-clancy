@@ -68,19 +68,6 @@ const defaultLogger: Logger = (line) => {
   process.stdout.write(line + '\n');
 };
 
-/**
- * Default prompter wrapping `node:readline`. Returns the prompter plus an
- * explicit `close()` for the caller to invoke (typically in a finally) so
- * the readline interface releases stdin and the Node process can exit cleanly.
- *
- * **Why `rl[Symbol.asyncIterator]()` rather than `readline/promises.question`:**
- * when stdin is piped (non-TTY — e.g. tests, scripted invocation), all input
- * lines arrive in a single 'data' chunk and `rl.question()` only listens for
- * the next 'line' event — lines 2+ fire before subsequent `rl.question()`
- * calls register listeners, so they're silently dropped. The async iterator
- * buffers all lines internally and yields them in order, decoupling readline's
- * burst delivery from our sequential awaits.
- */
 const renderSelectPrompt = (
   prompt: string,
   options: readonly string[],
@@ -101,6 +88,19 @@ const parseSelectIndex = (raw: string, optionCount: number): number | null => {
   return idx;
 };
 
+/**
+ * Default prompter wrapping `node:readline`. Returns the prompter plus an
+ * explicit `close()` for the caller to invoke (typically in a finally) so
+ * the readline interface releases stdin and the Node process can exit cleanly.
+ *
+ * **Why `rl[Symbol.asyncIterator]()` rather than `readline/promises.question`:**
+ * when stdin is piped (non-TTY — e.g. tests, scripted invocation), all input
+ * lines arrive in a single 'data' chunk and `rl.question()` only listens for
+ * the next 'line' event — lines 2+ fire before subsequent `rl.question()`
+ * calls register listeners, so they're silently dropped. The async iterator
+ * buffers all lines internally and yields them in order, decoupling readline's
+ * burst delivery from our sequential awaits.
+ */
 const createReadlinePrompter = (): {
   readonly prompter: Prompter;
   readonly close: () => void;
