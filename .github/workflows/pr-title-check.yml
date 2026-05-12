@@ -2,18 +2,22 @@ name: PR title check
 
 # Validates PR titles against the gitmoji + conventional commit format
 # documented in docs/GIT.md §Types. PR titles become the squash commit
-# subject on `main` (per docs/GIT.md:160), so the same convention applies.
+# subject on `main` (per docs/GIT.md §Merge Strategy), so the same
+# convention applies.
 #
-# Bot-author PRs (Dependabot) are exempted: the bot owns its title format
-# (default `build(deps): ...`) and cannot be configured to emit a gitmoji.
-# Auto-renaming bot titles to add the prefix is a separate concern.
+# Bot-author PRs (Dependabot) are exempted: the bot's default title
+# (`build(deps): ...`) lands without a gitmoji prefix and the bot isn't
+# configured to emit one. Auto-renaming bot titles is a separate concern.
 #
 # To make this a hard merge gate, add "Validate PR title format" to the
 # repo's required-status-checks list in branch protection settings.
 
 on:
   pull_request:
-    types: [opened, edited, synchronize, reopened]
+    # `edited` fires on title/body changes; `opened`/`reopened` cover lifecycle.
+    # `synchronize` (push to head) is intentionally omitted — title cannot
+    # change via push, so re-running on every push is wasteful.
+    types: [opened, edited, reopened]
 
 permissions:
   contents: read
