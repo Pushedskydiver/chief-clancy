@@ -68,7 +68,7 @@ describe('generate (slice 10 — single-call variant)', () => {
     expect(createMock).toHaveBeenCalledTimes(1);
     const args = firstCallArgs(createMock);
     expect(args?.model).toBe('claude-sonnet-4-6');
-    expect(args?.max_tokens).toBeGreaterThan(0);
+    expect(args?.max_tokens).toBe(8192);
     expect(args?.system).toEqual([
       {
         type: 'text',
