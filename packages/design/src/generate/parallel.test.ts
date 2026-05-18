@@ -50,13 +50,13 @@ describe('pickThreeDistinct', () => {
     expect(a).toEqual(b);
   });
 
-  it('varies seed-triples across different session ids', () => {
+  it('produces 8 distinct triples across 8 distinct session ids (djb2 spread)', () => {
     const observed = new Set(
       ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8'].map((id) =>
         pickThreeDistinct(ANTHROPIC_AESTHETIC_TAXONOMY, id).join('|'),
       ),
     );
-    expect(observed.size).toBeGreaterThan(1);
+    expect(observed.size).toBe(8);
   });
 
   it('throws when taxonomy has fewer than 3 items', () => {
@@ -146,6 +146,58 @@ describe('generateParallel (slice 11 — 3-parallel variant generation)', () => 
 
     expect(variants.map((v) => v.seed)).toEqual([...expectedSeeds]);
     expect(createMock).toHaveBeenCalledTimes(3);
+  });
+
+  it('throws when the model echoes back a mismatched variant id', async () => {
+    // Claude responds to all three requests with id="v1" — would silently
+    // collide without the assertVariantId guard.
+    const { client } = buildMultiResponseClient([
+      envelope('v1', 's1'),
+      envelope('v1', 's2'),
+      envelope('v1', 's3'),
+    ]);
+
+    await expect(
+      generateParallel(
+        {
+          sessionId: 'sess',
+          designContext: '',
+          seeds: ['s1', 's2', 's3'],
+        },
+        client,
+      ),
+    ).rejects.toThrow(/variant id mismatch/);
+  });
+
+  it('threads priorVariant + comments + model into all three calls', async () => {
+    const { client, createMock } = buildMultiResponseClient([
+      envelope('v1', 's1'),
+      envelope('v2', 's2'),
+      envelope('v3', 's3'),
+    ]);
+
+    await generateParallel(
+      {
+        sessionId: 'sess',
+        designContext: '',
+        priorVariant: '<prev/>',
+        comments: 'make it bolder',
+        model: 'opus',
+        seeds: ['s1', 's2', 's3'],
+      },
+      client,
+    );
+
+    const models = createMock.mock.calls.map((c) => c[0].model);
+    expect(models).toEqual([
+      'claude-opus-4-7',
+      'claude-opus-4-7',
+      'claude-opus-4-7',
+    ]);
+    createMock.mock.calls.forEach((c) => {
+      expect(c[0].messages[0]?.content).toContain('<prev/>');
+      expect(c[0].messages[0]?.content).toContain('make it bolder');
+    });
   });
 
   it('shares the same cached system prompt across all three calls', async () => {

@@ -22,6 +22,19 @@
  * call read the cache instead of re-writing per spec §3 cost model. Worst
  * case all three pay cache-write surcharge (Anthropic doesn't document
  * parallel-write dedup); best case the first writes and the others read.
+ * Cache reuse depends on `input.designContext` being byte-identical across
+ * the three calls; `generateParallel` enforces this by sharing one `input`
+ * object via `Promise.all`. External callers must not mutate
+ * `designContext` mid-slice.
+ *
+ * **Variant-id integrity.** Slice 10's `parseVariant` extracts `id` from
+ * the model's emitted `<variant id="…">` without verifying it equals the
+ * requested `variantId`. In the single-call case, a mismatch is a curiosity;
+ * in the parallel case, two calls echoing the same id would silently
+ * collide when downstream code (canvas slice 13) keys on `variant.id`.
+ * `generateParallel` adds a per-result assertion that the model returned
+ * the requested id; mismatch throws and the call rejects (callers see the
+ * Promise.all failure path).
  *
  * **Rate limits.** Spec §3 open risks L334 calls out the 3-parallel-on-free-tier
  * concern. Slice 11 v0.1 lets `Promise.all` surface any rejection from the
@@ -30,6 +43,7 @@
  */
 import type { GenerateInput, Variant } from './single.js';
 
+import { ANTHROPIC_AESTHETIC_TAXONOMY } from '../write/init.js';
 import { generate } from './single.js';
 
 export type {
@@ -72,34 +86,35 @@ export function pickThreeDistinct<T>(
   ] as const;
 }
 
-async function resolveSeeds(
+const resolveSeeds = (
   input: GenerateParallelInput,
-): Promise<readonly [string, string, string]> {
-  if (input.seeds !== undefined) {
-    return input.seeds;
+): readonly [string, string, string] =>
+  input.seeds ??
+  pickThreeDistinct(ANTHROPIC_AESTHETIC_TAXONOMY, input.sessionId);
+
+const assertVariantId = (variant: Variant, requestedId: string): Variant => {
+  if (variant.id !== requestedId) {
+    throw new Error(
+      `generateParallel: variant id mismatch — requested "${requestedId}", got "${variant.id}"`,
+    );
   }
-  // Lazy import avoids a hard module-init cycle if `write/init.ts` grows a
-  // transitive dep on `generate/*` in a future slice.
-  const { ANTHROPIC_AESTHETIC_TAXONOMY } = await import('../write/init.js');
-  return pickThreeDistinct(ANTHROPIC_AESTHETIC_TAXONOMY, input.sessionId);
-}
+  return variant;
+};
 
 export async function generateParallel(
   input: GenerateParallelInput,
   client: Parameters<typeof generate>[1],
 ): Promise<VariantTriple> {
-  const seeds = await resolveSeeds(input);
+  const seeds = resolveSeeds(input);
   const variants = await Promise.all(
-    seeds.map((seed, idx) =>
-      generate(
-        {
-          ...input,
-          variantId: TRIPLE_VARIANT_IDS[idx],
-          seed,
-        },
+    seeds.map(async (seed, idx) => {
+      const requestedId = TRIPLE_VARIANT_IDS[idx];
+      const variant = await generate(
+        { ...input, variantId: requestedId, seed },
         client,
-      ),
-    ),
+      );
+      return assertVariantId(variant, requestedId);
+    }),
   );
   return [variants[0], variants[1], variants[2]] as const;
 }
