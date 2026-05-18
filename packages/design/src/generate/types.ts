@@ -6,14 +6,15 @@
  * The real SDK object satisfies this interface; tests pass a mock with
  * `vi.fn()` for `create`. Keeping the interface narrow shields callers from
  * SDK version drift on fields we don't touch and avoids leaking the SDK's
- * full type surface through our public API.
+ * full type surface through our public API. snake_case field names
+ * (`max_tokens`, `cache_control`) mirror the SDK wire format and intentionally
+ * override the repo's camelCase convention for this boundary.
  */
 
 export type GenerateInput = {
   readonly variantId: string;
   readonly seed: string;
   readonly sessionId: string;
-  readonly isFirstIteration: boolean;
   readonly designContext: string;
   readonly priorVariant?: string;
   readonly comments?: string;

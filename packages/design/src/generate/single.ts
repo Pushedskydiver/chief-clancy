@@ -19,12 +19,23 @@
  * **Output contract.** Claude is prompted to emit a single
  * `<variant id="…" seed="…">…<html>…</html><rationale>…</rationale></variant>`
  * envelope per spec §3 (output format). The parser extracts the four fields
- * via regex — v0.1 accepts loose interior whitespace but requires the four
- * tags to be present and balanced. Malformed output throws
- * `VariantParseError`; slice 13 (canvas) catches and retries with a
- * `Continue from <variant id="…">` continuation per spec §3 open risks.
+ * (id, seed, html, rationale) via regex — v0.1 accepts loose interior
+ * whitespace AND attribute order swap (`id` before or after `seed`).
+ * Malformed output throws `VariantParseError`; slice 13 (canvas) catches and
+ * retries with a `Continue from <variant id="…">` continuation per spec §3
+ * open risks. The interface does not yet surface `stop_reason` — slice 13
+ * will need it to gate the retry path.
+ *
+ * **max_tokens.** 8192 matches spec §3 example block. Per-variant output
+ * typically lands ~3K tokens (cost model in spec §3); the headroom accepts
+ * the rich-layout tail without forcing a retry.
  */
-import type { GenerateInput, MessagesClient, Variant } from './types.js';
+import type {
+  GenerateInput,
+  MessagesClient,
+  MessagesResponse,
+  Variant,
+} from './types.js';
 
 export type {
   GenerateInput,
@@ -34,14 +45,18 @@ export type {
   Variant,
 } from './types.js';
 
-const MAX_OUTPUT_TOKENS = 4096;
+const MAX_OUTPUT_TOKENS = 8192;
 
 const MODEL_IDS = {
   sonnet: 'claude-sonnet-4-6',
   opus: 'claude-opus-4-7',
 } as const;
 
-const RE_ID = /<variant\s+id="([^"]+)"\s+seed="([^"]+)">/;
+// Two-phase variant header parse — attribute order varies in practice;
+// anchor on `<variant` then scan each attribute independently.
+const RE_VARIANT_HEADER = /<variant\b([^>]*)>/;
+const RE_ATTR_ID = /\bid="([^"]+)"/;
+const RE_ATTR_SEED = /\bseed="([^"]+)"/;
 const RE_HTML = /<html>([\s\S]*?)<\/html>/;
 const RE_RATIONALE = /<rationale>([\s\S]*?)<\/rationale>/;
 
@@ -88,17 +103,11 @@ const buildUserPrompt = (input: GenerateInput): string => {
   return [...head, ...prior, ...comments].join('\n');
 };
 
-const extractText = (
-  response: Awaited<ReturnType<MessagesClient['create']>>,
-): string => {
-  const block = response.content[0];
-  if (
-    block === undefined ||
-    block.type !== 'text' ||
-    block.text === undefined
-  ) {
+const extractText = (response: MessagesResponse): string => {
+  const block = response.content.find((b) => b.type === 'text');
+  if (block === undefined || block.text === undefined) {
     throw new VariantParseError(
-      'response.content[0] is not a text block',
+      'response has no text block',
       JSON.stringify(response),
     );
   }
@@ -106,18 +115,27 @@ const extractText = (
 };
 
 const parseVariant = (raw: string): Variant => {
-  const idMatch = RE_ID.exec(raw);
+  const headerMatch = RE_VARIANT_HEADER.exec(raw);
   const htmlMatch = RE_HTML.exec(raw);
   const rationaleMatch = RE_RATIONALE.exec(raw);
-  if (idMatch === null || htmlMatch === null || rationaleMatch === null) {
+  if (headerMatch === null || htmlMatch === null || rationaleMatch === null) {
     throw new VariantParseError(
       'missing one of <variant>/<html>/<rationale>',
       raw,
     );
   }
+  const attrs = headerMatch[1];
+  const idMatch = RE_ATTR_ID.exec(attrs);
+  const seedMatch = RE_ATTR_SEED.exec(attrs);
+  if (idMatch === null || seedMatch === null) {
+    throw new VariantParseError(
+      'missing id or seed attribute on <variant>',
+      raw,
+    );
+  }
   return {
     id: idMatch[1],
-    seed: idMatch[2],
+    seed: seedMatch[1],
     html: htmlMatch[1].trim(),
     rationale: rationaleMatch[1].trim(),
   };

@@ -39,7 +39,6 @@ describe('generate (slice 10 — single-call variant)', () => {
         variantId: 'v1',
         seed: 'editorial/magazine',
         sessionId: 'abc-123',
-        isFirstIteration: true,
         designContext: '# DESIGN\n\nMinimal design system.',
       },
       client,
@@ -61,7 +60,6 @@ describe('generate (slice 10 — single-call variant)', () => {
         variantId: 'v7',
         seed: 'brutalist/raw',
         sessionId: 'sess-99',
-        isFirstIteration: true,
         designContext: '# DESIGN\n\nFoo.',
       },
       client,
@@ -96,7 +94,6 @@ describe('generate (slice 10 — single-call variant)', () => {
         variantId: 'v1',
         seed: 'luxury/refined',
         sessionId: 's',
-        isFirstIteration: true,
         designContext: '',
         model: 'opus',
       },
@@ -114,7 +111,6 @@ describe('generate (slice 10 — single-call variant)', () => {
         variantId: 'v2',
         seed: 'editorial/magazine',
         sessionId: 's',
-        isFirstIteration: false,
         designContext: '',
         priorVariant: '<previous html>...</previous html>',
         comments: 'Make the heading bolder.',
@@ -139,7 +135,6 @@ describe('generate (slice 10 — single-call variant)', () => {
         variantId: 'v1',
         seed: 's',
         sessionId: 's',
-        isFirstIteration: true,
         designContext: '',
       },
       client,
@@ -161,11 +156,51 @@ describe('generate (slice 10 — single-call variant)', () => {
           variantId: 'v1',
           seed: 's',
           sessionId: 's',
-          isFirstIteration: true,
           designContext: '',
         },
         client,
       ),
-    ).rejects.toThrow(/not a text block/);
+    ).rejects.toThrow(/no text block/);
+  });
+
+  it('parses envelope with swapped attribute order (seed before id)', async () => {
+    const swapped = `<variant seed="brutalist/raw" id="v3">
+<html><h1>Swapped</h1></html>
+<rationale>Attribute order should not matter.</rationale>
+</variant>`;
+    const { client } = buildClient(swapped);
+
+    const result = await generate(
+      {
+        variantId: 'v3',
+        seed: 'brutalist/raw',
+        sessionId: 's',
+        designContext: '',
+      },
+      client,
+    );
+
+    expect(result.id).toBe('v3');
+    expect(result.seed).toBe('brutalist/raw');
+  });
+
+  it('picks the text block when response interleaves non-text blocks', async () => {
+    const createMock: CreateMock = vi.fn().mockResolvedValue({
+      content: [{ type: 'thinking' }, { type: 'text', text: VALID_RESPONSE }],
+    });
+    const client: MessagesClient = { create: createMock };
+
+    const result = await generate(
+      {
+        variantId: 'v1',
+        seed: 'editorial/magazine',
+        sessionId: 's',
+        designContext: '',
+      },
+      client,
+    );
+
+    expect(result.id).toBe('v1');
+    expect(result.html).toBe('<div data-clancy-slot="root">Hello</div>');
   });
 });
