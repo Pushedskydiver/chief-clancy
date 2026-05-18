@@ -7,15 +7,14 @@
  * and plan (whose bins are install-only), design routes subcommands because
  * canvas, write, handoff, document, and init all run from the same npm bin.
  *
- * Currently routed (Phase F slices 8-9):
+ * Currently routed (Phase F slices 8-12):
  * - `document` — run detection + write design's two docs to `.clancy/docs/`
  * - `init` — greenfield 6-question grill writing starter DESIGN.md + PRODUCT.md
+ * - `canvas` — start the foreground Vite design canvas server
  *
- * Routing pattern at N=2 stays Set + explicit if/else branching per
- * `docs/RATIONALIZATIONS.md` L54 ("Three similar lines of code is better
- * than a premature abstraction"). Promote to switch / Map<name, handler>
- * when N >= 3 if branch-count or dispatch-uniformity warrants — defer
- * for now.
+ * Routing pattern promoted at N=3 from explicit if/else branching to a
+ * switch: the handlers now need slightly different argv parsing, and the
+ * switch keeps those command-specific adapters adjacent to dispatch.
  *
  * Bare invocation (no argv) falls back to a "Not yet implemented" placeholder
  * + exit 0 (the full installer lands in a later slice). Unknown subcommands
@@ -39,7 +38,7 @@ const dim = (s) => `\x1b[2m${s}\x1b[0m`;
 const blue = (s) => `\x1b[1;34m${s}\x1b[0m`;
 const red = (s) => `\x1b[31m${s}\x1b[0m`;
 
-const KNOWN_SUBCOMMANDS = new Set(['document', 'init']);
+const KNOWN_SUBCOMMANDS = new Set(['document', 'init', 'canvas']);
 
 function printPlaceholder() {
   console.log('');
@@ -52,20 +51,75 @@ function printPlaceholder() {
   console.log('');
 }
 
+/** @param {string} raw */
+function parsePort(raw) {
+  if (!/^\d+$/.test(raw)) {
+    throw new Error('--port must be an integer between 1 and 65535');
+  }
+  const port = Number.parseInt(raw, 10);
+  if (port < 1 || port > 65535) {
+    throw new Error('--port must be an integer between 1 and 65535');
+  }
+  return port;
+}
+
+/** @param {string[]} args */
+function parseCanvasOptions(args) {
+  const options = {};
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (arg === '--api-key') {
+      const value = args[i + 1];
+      if (!value) throw new Error('--api-key requires a value');
+      options.apiKey = value;
+      i += 1;
+      continue;
+    }
+    if (arg.startsWith('--api-key=')) {
+      options.apiKey = arg.slice('--api-key='.length);
+      continue;
+    }
+    if (arg === '--port') {
+      const value = args[i + 1];
+      if (!value) throw new Error('--port requires a value');
+      options.port = parsePort(value);
+      i += 1;
+      continue;
+    }
+    if (arg.startsWith('--port=')) {
+      options.port = parsePort(arg.slice('--port='.length));
+      continue;
+    }
+    throw new Error(`Unknown canvas option: ${arg}`);
+  }
+  return options;
+}
+
 /** @param {string} subcommand */
 async function runSubcommand(subcommand) {
-  if (subcommand === 'document') {
-    const { runDocument } = await import('../dist/commands/document.js');
-    const result = await runDocument(process.cwd());
-    return result.exitCode;
+  switch (subcommand) {
+    case 'document': {
+      const { runDocument } = await import('../dist/commands/document.js');
+      const result = await runDocument(process.cwd());
+      return result.exitCode;
+    }
+    case 'init': {
+      const { runInit } = await import('../dist/commands/init.js');
+      const result = await runInit(process.cwd());
+      return result.exitCode;
+    }
+    case 'canvas': {
+      const { runCanvas } = await import('../dist/commands/canvas.js');
+      const result = await runCanvas(
+        process.cwd(),
+        parseCanvasOptions(process.argv.slice(3)),
+      );
+      return result.exitCode;
+    }
+    default:
+      // Defensive: KNOWN_SUBCOMMANDS gate ensures we never reach here.
+      throw new Error(`Unhandled subcommand: ${subcommand}`);
   }
-  if (subcommand === 'init') {
-    const { runInit } = await import('../dist/commands/init.js');
-    const result = await runInit(process.cwd());
-    return result.exitCode;
-  }
-  // Defensive: KNOWN_SUBCOMMANDS gate ensures we never reach here.
-  throw new Error(`Unhandled subcommand: ${subcommand}`);
 }
 
 async function main() {

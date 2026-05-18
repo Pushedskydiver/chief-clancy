@@ -37,11 +37,13 @@ type SystemBlock = {
 export type MessagesCreateParams = {
   readonly model: string;
   readonly max_tokens: number;
-  readonly system?: string | readonly SystemBlock[];
-  readonly messages: readonly {
+  /* eslint-disable functional/prefer-readonly-type -- Anthropic SDK `messages.create` expects mutable arrays; this structural boundary must match it. */
+  readonly system?: string | SystemBlock[];
+  readonly messages: {
     readonly role: 'user';
     readonly content: string;
   }[];
+  /* eslint-enable functional/prefer-readonly-type */
 };
 
 export type MessagesResponse = {
