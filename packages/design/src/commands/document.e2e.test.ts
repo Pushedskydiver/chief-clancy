@@ -65,7 +65,7 @@ describe('bin/design.js document (E2E)', () => {
     expect(result.exitCode).toBe(0);
     // Loosen from strict-equality to "no Error: line" — a future Node /
     // dependency emitting deprecation warnings to stderr shouldn't flake
-    // this test (DA L3 fold).
+    // this test.
     expect(result.stderr).not.toMatch(/Error/i);
     expect(result.stdout).toContain('.clancy/docs/DESIGN.json');
     expect(result.stdout).toContain('.clancy/docs/DESIGN.md');
@@ -83,7 +83,7 @@ describe('bin/design.js document (E2E)', () => {
     expect(mdContent).toMatch(/^# DESIGN/m);
   });
 
-  it('exits non-zero on an unknown subcommand and names it in stderr (DA M1 fold)', async () => {
+  it('exits non-zero on an unknown subcommand and names it in stderr', async () => {
     const result = await spawnBin(['documemt'], projectRoot);
 
     expect(result.exitCode).not.toBe(0);

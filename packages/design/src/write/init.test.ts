@@ -140,7 +140,7 @@ describe('buildDesignMd', () => {
     );
   });
 
-  it('ends with a trailing newline (symmetric with PRODUCT.md — DA L5 fold)', () => {
+  it('ends with a trailing newline (symmetric with PRODUCT.md)', () => {
     const md = buildDesignMd(fixtureAnswers, fixtureGeneratedAt);
     expect(md.endsWith('\n')).toBe(true);
   });

@@ -3,10 +3,12 @@
 **AI-design tool for Claude Code.**
 
 > [!WARNING]
-> Phase F — slice 1 (package scaffolding) only. The detection layer, variant
-> generation, canvas server, and slash commands land in subsequent slices per
-> `.claude/research/phase-f-design-system/path-b-local-spec.md`. The package
-> is `private: true` until slice 29 ships v0.1.0.
+> Phase F is still in progress. Detection, documentation, greenfield init,
+> single/parallel variant generation, and the foreground Vite canvas server
+> have landed; browser canvas UI, write/handoff flows, slash-command
+> installation, and bundled-role integration remain in later slices per
+> `.claude/research/phase-f-design-system/path-b-local-spec.md`. The package is
+> `private: true` until the v0.1.0 release work completes.
 
 ## What it will do (v0.1)
 
@@ -21,8 +23,8 @@
 When v0.1 ships, standalone install (`npx @chief-clancy/design --local`) will
 be the fast-path; the full pipeline (`npx chief-clancy`) will bundle the
 Designer role alongside Brief / Plan / Dev. Same package source code, two
-install paths. Slice 27 wires the bundled-mode integration; until then, the
-package is `private: true` and no `npx` entry point is published.
+install paths. Bundled-mode integration is planned in the Phase F roadmap; until
+then, the package is `private: true` and no `npx` entry point is published.
 
 ## Part of the Clancy monorepo
 
