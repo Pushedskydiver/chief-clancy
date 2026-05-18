@@ -5,12 +5,11 @@ import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
-  acquireCanvasLock,
   CanvasApiKeyError,
-  CanvasLockError,
   resolveAnthropicApiKey,
   startCanvasServer,
 } from './createServer.js';
+import { acquireCanvasLock, CanvasLockError } from './lock.js';
 
 describe('resolveAnthropicApiKey', () => {
   it('uses an explicit API key before ANTHROPIC_API_KEY', () => {

@@ -48,4 +48,42 @@ describe('runCanvas', () => {
       url: 'http://127.0.0.1:4173/',
     });
   });
+
+  it('resolves the foreground-loop Promise on injected SIGINT', async () => {
+    const startServer = vi.fn(async () => {
+      return {
+        apiKeySource: 'env',
+        lockPath: '/tmp/p/.clancy/design/.lock',
+        messagesClient: { create: vi.fn() },
+        server: { listen: vi.fn(), close: vi.fn() },
+        url: 'http://127.0.0.1:4173/',
+        close: vi.fn(),
+      } satisfies StartedCanvasServer;
+    });
+
+    const sigintListeners: (() => void)[] = [];
+    const signalRegistrar = {
+      once: (signal: 'SIGINT' | 'SIGTERM', listener: () => void) => {
+        if (signal === 'SIGINT') {
+          sigintListeners.push(listener);
+        }
+      },
+    };
+
+    const pending = runCanvas('/tmp/p', {
+      logger: () => undefined,
+      startServer,
+      signalRegistrar,
+    });
+
+    // Fire SIGINT after the registrar has captured listeners.
+    await Promise.resolve();
+    sigintListeners.forEach((listener) => listener());
+
+    await expect(pending).resolves.toEqual({
+      exitCode: 0,
+      lockPath: '/tmp/p/.clancy/design/.lock',
+      url: 'http://127.0.0.1:4173/',
+    });
+  });
 });

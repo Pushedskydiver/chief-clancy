@@ -9,8 +9,6 @@ import { createServer as createViteServer } from 'vite';
 
 import { acquireCanvasLock } from './lock.js';
 
-export { acquireCanvasLock, CanvasLockError } from './lock.js';
-
 export class CanvasApiKeyError extends Error {
   constructor() {
     super(
@@ -94,10 +92,14 @@ const createAnthropicMessagesClient = (apiKey: string): MessagesClient =>
   new Anthropic({ apiKey }).messages;
 
 const createCanvasClose =
-  (server: CanvasViteServer, lock: CanvasLock): (() => Promise<void>) =>
+  (
+    getServer: () => CanvasViteServer | null,
+    lock: CanvasLock,
+  ): (() => Promise<void>) =>
   async (): Promise<void> => {
+    const server = getServer();
     try {
-      await server.close();
+      if (server !== null) await server.close();
     } finally {
       await lock.release();
     }
@@ -113,9 +115,13 @@ const registerCanvasSignalHandlers = (
     // before waiting on server.close() so a foreground process cannot exit
     // with a stale lock if another handler exits first.
     lock.releaseSync();
-    void close()
-      .catch(() => undefined)
-      .finally(() => process.exit(0));
+    close()
+      .then(() => process.exit(0))
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        process.stderr.write(`canvas shutdown failed: ${message}\n`);
+        process.exit(1);
+      });
   };
   const register =
     signalRegistrar.prependOnceListener?.bind(signalRegistrar) ??
@@ -165,19 +171,30 @@ export const startCanvasServer = async (
     processExists: options.processExists,
   });
 
+  // M1 fold: register signal handlers immediately after lock acquisition so a
+  // Ctrl-C during `vite.createServer()` / `server.listen()` still triggers
+  // synchronous lock cleanup. The handlers close over a mutable ref that is
+  // populated once Vite is listening; until then `close` just releases the
+  // lock without touching the (not-yet-created) server.
+  const serverRef: { current: CanvasViteServer | null } = { current: null };
+  const close = createCanvasClose(() => serverRef.current, lock);
+  const signalRegistrar =
+    options.registerSignals === undefined ? process : options.registerSignals;
+  if (signalRegistrar !== false) {
+    registerCanvasSignalHandlers(signalRegistrar, lock, close);
+  }
+
   try {
     const createServer = options.createViteServer ?? createViteServer;
     const server = await createListeningViteServer(
       createServer,
       buildViteConfig(port),
     );
-    const close = createCanvasClose(server, lock);
-
-    const signalRegistrar =
-      options.registerSignals === undefined ? process : options.registerSignals;
-    if (signalRegistrar !== false) {
-      registerCanvasSignalHandlers(signalRegistrar, lock, close);
-    }
+    // Populated once on listen-success; signal handlers read it via the
+    // `() => serverRef.current` closure to know whether to call `server.close()`
+    // before releasing the lock.
+    // eslint-disable-next-line functional/immutable-data
+    serverRef.current = server;
 
     return {
       server,

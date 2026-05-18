@@ -37,43 +37,60 @@ const STALE_LOCK_MS = 24 * 60 * 60 * 1000;
 const isNodeError = (err: unknown): err is NodeJS.ErrnoException =>
   err instanceof Error && 'code' in err;
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
 const isCanvasLockPayload = (value: unknown): value is CanvasLockPayload => {
-  if (typeof value !== 'object' || value === null) return false;
-  const maybe = value as {
-    readonly pid?: unknown;
-    readonly sessionId?: unknown;
-    readonly startedAt?: unknown;
-  };
-  if (
-    typeof maybe.pid !== 'number' ||
-    !Number.isInteger(maybe.pid) ||
-    maybe.pid <= 0
-  ) {
+  if (!isRecord(value)) return false;
+  const { pid, sessionId, startedAt } = value;
+  if (typeof pid !== 'number' || !Number.isInteger(pid) || pid <= 0) {
     return false;
   }
-  if (typeof maybe.sessionId !== 'string' || maybe.sessionId.length === 0) {
-    return false;
-  }
-  if (typeof maybe.startedAt !== 'string') return false;
-  return Number.isFinite(new Date(maybe.startedAt).getTime());
+  if (typeof sessionId !== 'string' || sessionId.length === 0) return false;
+  if (typeof startedAt !== 'string') return false;
+  return Number.isFinite(new Date(startedAt).getTime());
 };
 
-const isLockActive = async (
+type LockStatus =
+  | { readonly kind: 'absent' }
+  | { readonly kind: 'active' }
+  | { readonly kind: 'stale'; readonly observedText: string };
+
+const probeLockStatus = async (
   lockPath: string,
   processExists: (pid: number) => boolean,
   now: Date,
-): Promise<boolean> => {
+): Promise<LockStatus> => {
   try {
-    const raw = await readFile(lockPath, 'utf8');
-    const parsed = JSON.parse(raw) as unknown;
-    if (!isCanvasLockPayload(parsed)) return true;
+    const observedText = await readFile(lockPath, 'utf8');
+    const parsed = JSON.parse(observedText) as unknown;
+    if (!isCanvasLockPayload(parsed)) return { kind: 'active' };
 
     const ageMs = now.getTime() - new Date(parsed.startedAt).getTime();
-    if (ageMs > STALE_LOCK_MS) return false;
-    return processExists(parsed.pid);
+    if (ageMs > STALE_LOCK_MS) return { kind: 'stale', observedText };
+    return processExists(parsed.pid)
+      ? { kind: 'active' }
+      : { kind: 'stale', observedText };
   } catch (err) {
-    if (isNodeError(err) && err.code === 'ENOENT') return false;
+    if (isNodeError(err) && err.code === 'ENOENT') return { kind: 'absent' };
+    return { kind: 'active' };
+  }
+};
+
+const removeMatchingLock = async (
+  lockPath: string,
+  expectedText: string,
+): Promise<boolean> => {
+  // M5 fold: re-read before rm so we don't nuke a lock that a concurrent
+  // process re-acquired between our staleness probe and this cleanup step.
+  try {
+    const current = await readFile(lockPath, 'utf8');
+    if (current !== expectedText) return false;
+    await rm(lockPath, { force: true });
     return true;
+  } catch (err) {
+    if (isNodeError(err) && err.code === 'ENOENT') return true;
+    throw err;
   }
 };
 
@@ -146,10 +163,13 @@ export const acquireCanvasLock = async (
   const payloadText = serializeLockPayload(payload);
   const firstWrite = await writeLockFile(lockPath, payloadText);
   if (firstWrite === 'exists') {
-    if (await isLockActive(lockPath, processExists, now)) {
-      throw new CanvasLockError();
+    const status = await probeLockStatus(lockPath, processExists, now);
+    if (status.kind === 'active') throw new CanvasLockError();
+    if (status.kind === 'stale') {
+      const removed = await removeMatchingLock(lockPath, status.observedText);
+      if (!removed)
+        throw new CanvasLockError('Canvas server started concurrently.');
     }
-    await rm(lockPath, { force: true });
     const retryWrite = await writeLockFile(lockPath, payloadText);
     if (retryWrite === 'exists') {
       throw new CanvasLockError('Canvas server started concurrently.');

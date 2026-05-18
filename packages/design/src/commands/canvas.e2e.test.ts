@@ -118,7 +118,7 @@ describe('bin/design.js canvas (E2E)', () => {
     await rm(projectRoot, { recursive: true, force: true });
   });
 
-  it('starts Vite, writes a lock, responds on localhost, and clears the lock on SIGTERM', async () => {
+  it('starts Vite, writes a lock, responds on localhost, and clears the lock on SIGINT', async () => {
     const port = await findFreePort();
     const child = spawnCanvas(projectRoot, port);
     const lockPath = join(projectRoot, LOCK_PATH);
@@ -142,7 +142,7 @@ describe('bin/design.js canvas (E2E)', () => {
       expect(response.status).toBeGreaterThanOrEqual(200);
       expect(response.status).toBeLessThan(500);
     } finally {
-      child.kill('SIGTERM');
+      child.kill('SIGINT');
       await child.close;
     }
 
