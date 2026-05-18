@@ -54,7 +54,7 @@ type RunInitResult = {
   // Always 0 in v0.1 — the only failure surface (mkdir/writeFile reject,
   // prompter throws on stdin EOF) bubbles via thrown errors caught by the
   // bin's main().catch which exits with 1 directly. Field shape preserved
-  // for parity with slice 8's `runDocument` return type (DA L1 fold).
+  // for parity with slice 8's `runDocument` return type.
   readonly exitCode: number;
   readonly designMdPath: string;
   readonly productMdPath: string;
@@ -78,8 +78,8 @@ const renderSelectPrompt = (
 
 // Strict numeric match — `parseInt('1.5')` returns 1, `parseInt('1abc')`
 // returns 1; both would silently advance with the wrong semantic. Require
-// digits-only so re-prompt fires on ambiguous input (DA L3 fold). Returns
-// the 0-based index on valid in-range input, null otherwise.
+// digits-only so re-prompt fires on ambiguous input. Returns the 0-based
+// index on valid in-range input, null otherwise.
 const parseSelectIndex = (raw: string, optionCount: number): number | null => {
   const trimmed = raw.trim();
   if (!/^\d+$/.test(trimmed)) return null;
@@ -113,9 +113,9 @@ const createReadlinePrompter = (): {
 
   // Returns `null` on EOF (stdin closed / exhausted). Callers MUST treat
   // null as a fatal abort — silently substituting an empty string causes
-  // `select`'s re-prompt loop to recurse unbounded on piped non-TTY input
-  // (DA M1 fold). The microtask-paced recursion never overflows the stack
-  // but hangs the process with promise-allocation churn.
+  // `select`'s re-prompt loop to recurse unbounded on piped non-TTY input.
+  // The microtask-paced recursion never overflows the stack but hangs the
+  // process with promise-allocation churn.
   const nextLine = async (): Promise<string | null> => {
     const { value, done } = await lines.next();
     return done ? null : value;

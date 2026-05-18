@@ -81,8 +81,8 @@ const removeMatchingLock = async (
   lockPath: string,
   expectedText: string,
 ): Promise<boolean> => {
-  // M5 fold: re-read before rm so we don't nuke a lock that a concurrent
-  // process re-acquired between our staleness probe and this cleanup step.
+  // Re-read before rm so we don't nuke a lock that a concurrent process
+  // re-acquired between our staleness probe and this cleanup step.
   try {
     const current = await readFile(lockPath, 'utf8');
     if (current !== expectedText) return false;

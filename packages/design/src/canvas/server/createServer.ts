@@ -171,8 +171,8 @@ export const startCanvasServer = async (
     processExists: options.processExists,
   });
 
-  // M1 fold: register signal handlers immediately after lock acquisition so a
-  // Ctrl-C during `vite.createServer()` / `server.listen()` still triggers
+  // Register signal handlers immediately after lock acquisition so a Ctrl-C
+  // during `vite.createServer()` / `server.listen()` still triggers
   // synchronous lock cleanup. The handlers close over a mutable ref that is
   // populated once Vite is listening; until then `close` just releases the
   // lock without touching the (not-yet-created) server.

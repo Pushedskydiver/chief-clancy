@@ -50,7 +50,7 @@ export async function runDocument(
   // `relative()` handles trailing separators, normalisation, and
   // prefix-collision (e.g. `/foo/myapp` vs `/foo/myapp2`) correctly —
   // `startsWith` + slice would produce corrupted output for the collision
-  // case (DA M2 fold).
+  // case.
   log(`Wrote ${relative(projectRoot, designJsonPath)}`);
   log(`Wrote ${relative(projectRoot, designMdPath)}`);
 

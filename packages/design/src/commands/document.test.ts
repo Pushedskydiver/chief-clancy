@@ -47,7 +47,7 @@ describe('runDocument', () => {
     expect(joined).toContain('.clancy/docs/DESIGN.md');
 
     // Pin log shape so a regression that drops the opener or double-logs
-    // one path doesn't silently slip through `toContain` (DA L5 fold).
+    // one path doesn't silently slip through `toContain`.
     expect(logs).toHaveLength(3);
     expect(logs[0]).toBe('Running clancy:design document...');
   });
