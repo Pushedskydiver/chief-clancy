@@ -409,6 +409,35 @@ One `focus.md` per active workstream; no PR without one (once the gate lands). T
 
 ---
 
+## AGENTS.md ↔ CLAUDE.md sync
+
+`CLAUDE.md` and `AGENTS.md` carry the same project instructions adapted for two agent tools (Claude Code, Codex). They must stay byte-equal modulo the **adaptation set**:
+
+| `CLAUDE.md` token        | `AGENTS.md` token       |
+| ------------------------ | ----------------------- |
+| `Claude Code`            | `Codex`                 |
+| `Claude` (as agent name) | `Codex`                 |
+| `CLAUDE.md` (file name)  | `AGENTS.md` (file name) |
+| `.claude/`               | `.codex/`               |
+| `.claude/agents/*.md`    | `.codex/agents/*.toml`  |
+
+The table is a **set of equivalences**, not an ordered substitution sequence — longer-specific rows take precedence when tokens overlap (e.g., `.claude/agents/*.md` wins over bare `.claude/`). Row 2 (`Claude` → `Codex`) applies only to agent-name shorthand; product references like `claude.ai`, model versions (`Claude Opus 4.7`), and third-party citations (`Anthropic's Claude`) are content, not adaptation, and pass through unchanged.
+
+Whenever you edit one file, apply the same change to the other with the adaptation transformations. Verify post-edit:
+
+```bash
+diff CLAUDE.md AGENTS.md
+# Should output only the agreed adaptation lines.
+```
+
+**Origin** — Session 161 imported AGENTS.md as Codex-adapted CLAUDE.md copy at `c560d2d`. Session 162 codified the sync rule + fixed L77 case + extension drift (`.Codex/agents/*.md` → `.codex/agents/*.toml`).
+
+**Scope.** The rule covers the top-level instruction files only. The agent-definition pair (`.claude/agents/*.md` ↔ `.codex/agents/*.toml`) carries similar content modulo a Claude→Codex + markdown→TOML transformation; that pair is not currently part of this rule. If sustained drift emerges between agent definitions, extend the rule.
+
+**Enforcement.** Reader discipline only at v0.1 — no CI gate, no pre-commit hook. If drift recurs at n=2 within 5 sessions of this codification, escalate to a CI workflow (similar shape to [`pr-title-check.yml`](../.github/workflows/pr-title-check.yml)) with the adaptation set as the allowlist. Don't pre-empt mechanism for a problem that hasn't recurred.
+
+---
+
 ## State-surface ownership
 
 Clancy has four non-code persistence surfaces to reconcile: repo docs, `focus.md` (introduced by the P2 rule above — lives at repo root until a second concurrent workstream triggers migration to `workstreams/<id>/focus.md`; not yet in use), `PROGRESS.md`, and memory. The table below also lists code + tests as the separate enforcement surface for behaviour and invariants — docs describe, code enforces. The question is not "which wins when they disagree" (precedence) — it's "which is home" (per-field ownership). These surfaces record different kinds of things; ranking them is a category error. When duplicates are found, the home-surface content is authoritative; delete the duplicate elsewhere and replace with a pointer.
@@ -417,7 +446,7 @@ Clancy has four non-code persistence surfaces to reconcile: repo docs, `focus.md
 
 | Fact kind                                                | Home                                                                     | Rationale                                                       |
 | -------------------------------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------- |
-| Stable rules, conventions, architecture                  | Repo docs (`docs/*.md`, `CLAUDE.md`)                                     | PR-reviewed, versioned, authoritative                           |
+| Stable rules, conventions, architecture                  | Repo docs (`docs/*.md`, `CLAUDE.md`, `AGENTS.md`)                        | PR-reviewed, versioned, authoritative                           |
 | Active-workstream decisions + rationale                  | `focus.md` at repo root (or `workstreams/<id>/focus.md` once concurrent) | Where decisions are made; see P2 above for location / migration |
 | Session state (what shipped, what's next, handoff)       | `PROGRESS.md`                                                            | Session handoff artifact; read first on session start           |
 | Cross-project facts (user role, feedback, external refs) | Memory                                                                   | Cross-session; verify-first on recall                           |
@@ -538,10 +567,10 @@ Autonomous PR merge decision. All gates must pass; any exception triggers Alex-h
 - **Blast-radius path touched** — any path in the following list (mirror: [`.github/CODEOWNERS`](../.github/CODEOWNERS)):
   - `/.github/workflows/**`, `/.github/actions/**`, `/.github/instructions/**`, `/.github/copilot-instructions.md`, `/.github/CODEOWNERS`, `/.github/dependabot.yml`
   - Repo-root config: `/package.json`, `/pnpm-workspace.yaml`, `/pnpm-lock.yaml`, `/tsconfig.base.json`, `/.changeset/config.json`
-  - Policy docs: `/CLAUDE.md`, `/docs/DEVELOPMENT.md`, `/docs/DA-REVIEW.md`, `/docs/SELF-REVIEW.md`, `/docs/CONVENTIONS.md`, `/docs/RATIONALIZATIONS.md`, `/docs/GIT.md`, `/docs/TESTING.md`
+  - Policy docs: `/CLAUDE.md`, `/AGENTS.md`, `/docs/DEVELOPMENT.md`, `/docs/DA-REVIEW.md`, `/docs/SELF-REVIEW.md`, `/docs/CONVENTIONS.md`, `/docs/RATIONALIZATIONS.md`, `/docs/GIT.md`, `/docs/TESTING.md`
   - Per-package publish surface: `/packages/*/package.json`, `/packages/*/tsconfig.json`
 
-  **Dependabot package-manifest carve-out**: `/package.json` and `/packages/*/package.json` do NOT trigger this exception when ALL THREE hold: (i) PR author is GitHub-verified `dependabot[bot]` (`user.type == 'Bot'` AND `user.login == 'dependabot[bot]'`), (ii) PR carries the `dependabot-autoskip` label, (iii) PR carries `dependabot-semver-patch` OR `dependabot-semver-minor` (added by [`dep-classify.yml`](../.github/workflows/dep-classify.yml) on PR open via `dependabot/fetch-metadata@v2` `update-type` highest-semver-wins for grouped PRs). The third condition fails closed: if no `dependabot-semver-*` label is present (classification workflow failed or skipped), blast-radius fires as normal. `/tsconfig.base.json`, `/.changeset/config.json`, `/pnpm-workspace.yaml`, `/pnpm-lock.yaml`, `/.github/**`, `/docs/**`, `/CLAUDE.md`, and `/packages/*/tsconfig.json` are NOT covered by this carve-out — Dependabot does not normally touch them, and a bot PR that does still routes to Alex. **CODEOWNERS does not mirror this carve-out** — `.github/CODEOWNERS:18,35` continues to flag every PR touching `/package.json` and `/packages/*/package.json` as Alex-owned. Ownership and auto-merge gating are distinct surfaces; the carve-out only relaxes auto-merge gating, not ownership.
+  **Dependabot package-manifest carve-out**: `/package.json` and `/packages/*/package.json` do NOT trigger this exception when ALL THREE hold: (i) PR author is GitHub-verified `dependabot[bot]` (`user.type == 'Bot'` AND `user.login == 'dependabot[bot]'`), (ii) PR carries the `dependabot-autoskip` label, (iii) PR carries `dependabot-semver-patch` OR `dependabot-semver-minor` (added by [`dep-classify.yml`](../.github/workflows/dep-classify.yml) on PR open via `dependabot/fetch-metadata@v2` `update-type` highest-semver-wins for grouped PRs). The third condition fails closed: if no `dependabot-semver-*` label is present (classification workflow failed or skipped), blast-radius fires as normal. `/tsconfig.base.json`, `/.changeset/config.json`, `/pnpm-workspace.yaml`, `/pnpm-lock.yaml`, `/.github/**`, `/docs/**`, `/CLAUDE.md`, `/AGENTS.md`, and `/packages/*/tsconfig.json` are NOT covered by this carve-out — Dependabot does not normally touch them, and a bot PR that does still routes to Alex. **CODEOWNERS does not mirror this carve-out** — `.github/CODEOWNERS:18,35` continues to flag every PR touching `/package.json` and `/packages/*/package.json` as Alex-owned. Ownership and auto-merge gating are distinct surfaces; the carve-out only relaxes auto-merge gating, not ownership.
 
 - **HITL signal fired** — see [§HITL triggers](#hitl-triggers) below.
 - **Lockfile hand-edit** — `pnpm-lock.yaml` changed without any `package.json` change across the whole PR. Split-commit PRs where `package.json` and lockfile updates live in separate commits are fine; the exception only fires on PRs where the lockfile moved but no `package.json` did. **Dependabot exemption**: PRs authored by GitHub-verified `dependabot[bot]` AND carrying `dependabot-autoskip` are exempt. Defensive narrowing per `.claude/research/dependabot-collab-rule/spec.md` §4.2(a) — empirically unobserved on bot version-update PRs in this repo (PRs #426 + #429 both bumped `package.json` + lockfile together), but defends against future Dependabot behavior change (e.g. lockfile-only indirect-dep refreshes). Other gates+exceptions (CI green, blast-radius, semver-major below) still apply.

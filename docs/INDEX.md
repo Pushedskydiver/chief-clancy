@@ -2,7 +2,7 @@
 
 Scenario-organized router. Maps trigger situations to the docs Claude consults + the protocol Claude follows.
 
-**When to consult**: per `CLAUDE.md` Process directives — before Edit/Write on policy-adjacent paths (`CLAUDE.md`, `docs/**/*.md`, `.claude/agents/*.md`, `.github/copilot-instructions.md`), AND after `gh pr merge` of a PR containing `.changeset/*.md`.
+**When to consult**: per `CLAUDE.md` Process directives — before Edit/Write on policy-adjacent paths (`CLAUDE.md`, `AGENTS.md`, `docs/**/*.md`, `.claude/agents/*.md`, `.codex/agents/*.toml`, `.github/copilot-instructions.md`), AND after `gh pr merge` of a PR containing `.changeset/*.md`.
 
 **What this is**: a router. Authoritative content lives in `docs/DEVELOPMENT.md`, `docs/DA-REVIEW.md`, etc. — this doc points; it does not re-encode.
 
@@ -208,7 +208,7 @@ Scenario-organized router. Maps trigger situations to the docs Claude consults +
 
 **Blast-radius paths** (re-verify on load — primary sources are authoritative):
 
-- **Policy docs**: `/CLAUDE.md`, `/docs/DEVELOPMENT.md`, `/docs/DA-REVIEW.md`, `/docs/SELF-REVIEW.md`, `/docs/CONVENTIONS.md`, `/docs/RATIONALIZATIONS.md`, `/docs/GIT.md`, `/docs/TESTING.md`
+- **Policy docs**: `/CLAUDE.md`, `/AGENTS.md`, `/docs/DEVELOPMENT.md`, `/docs/DA-REVIEW.md`, `/docs/SELF-REVIEW.md`, `/docs/CONVENTIONS.md`, `/docs/RATIONALIZATIONS.md`, `/docs/GIT.md`, `/docs/TESTING.md`
 - **GitHub infra**: `/.github/workflows/**`, `/.github/actions/**`, `/.github/instructions/**`, `/.github/copilot-instructions.md`, `/.github/CODEOWNERS`
 - **Repo-root config**: `/package.json`, `/pnpm-workspace.yaml`, `/pnpm-lock.yaml`, `/tsconfig.base.json`, `/.changeset/config.json`
 - **Per-package publish surface**: `/packages/*/package.json`, `/packages/*/tsconfig.json`
