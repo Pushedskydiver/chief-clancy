@@ -23,6 +23,7 @@
 
 # Policy surfaces (per CLAUDE.md process directives)
 /CLAUDE.md                      @Pushedskydiver
+/AGENTS.md                      @Pushedskydiver
 /docs/DEVELOPMENT.md            @Pushedskydiver
 /docs/DA-REVIEW.md              @Pushedskydiver
 /docs/SELF-REVIEW.md            @Pushedskydiver
