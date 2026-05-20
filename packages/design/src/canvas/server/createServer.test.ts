@@ -229,6 +229,17 @@ describe('startCanvasServer', () => {
           port: 4173,
           strictPort: false,
         });
+        const pluginNames = (config.plugins ?? [])
+          .flat()
+          .filter(
+            (plugin): plugin is { name: string } =>
+              plugin !== null &&
+              typeof plugin === 'object' &&
+              'name' in plugin &&
+              typeof (plugin as { name: unknown }).name === 'string',
+          )
+          .map((plugin) => plugin.name);
+        expect(pluginNames).toContain('clancy:design:inject-overlay');
         return {
           resolvedUrls: { local: ['http://127.0.0.1:4173/'] },
           listen: async () => {
