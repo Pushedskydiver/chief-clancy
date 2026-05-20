@@ -27,13 +27,18 @@ describe('App', () => {
 
   it('renders an iframe inside the variant grid for each variant with src pointing at the variant route', () => {
     const variants: readonly Variant[] = [
-      { id: 'v1', seed: 'minimal', html: '<p>hi</p>', rationale: 'test' },
+      {
+        id: 'v1',
+        seed: 'editorial/magazine',
+        html: '<p>hi</p>',
+        rationale: 'test',
+      },
     ];
 
     render(<App variants={variants} />);
 
     const variantGrid = screen.getByRole('region', { name: /variant grid/i });
-    const iframe = within(variantGrid).getByTitle('minimal');
+    const iframe = within(variantGrid).getByTitle('editorial/magazine');
 
     expect(iframe.tagName).toBe('IFRAME');
     expect(iframe.getAttribute('src')).toBe('/variants/v1');
@@ -41,22 +46,27 @@ describe('App', () => {
 
   it('renders one iframe per variant in input order with title=seed per spec §13(e)', () => {
     const variants: readonly Variant[] = [
-      { id: 'v1', seed: 'minimal', html: '<p>a</p>', rationale: 'r1' },
-      { id: 'v2', seed: 'editorial', html: '<p>b</p>', rationale: 'r2' },
-      { id: 'v3', seed: 'kinetic', html: '<p>c</p>', rationale: 'r3' },
+      { id: 'v1', seed: 'brutally minimal', html: '<p>a</p>', rationale: 'r1' },
+      {
+        id: 'v2',
+        seed: 'editorial/magazine',
+        html: '<p>b</p>',
+        rationale: 'r2',
+      },
+      { id: 'v3', seed: 'brutalist/raw', html: '<p>c</p>', rationale: 'r3' },
     ];
 
     render(<App variants={variants} />);
 
     const variantGrid = screen.getByRole('region', { name: /variant grid/i });
     const iframes = within(variantGrid).getAllByTitle(
-      /^(minimal|editorial|kinetic)$/,
+      /^(brutally minimal|editorial\/magazine|brutalist\/raw)$/,
     );
 
     expect(iframes.map((iframe) => iframe.getAttribute('title'))).toEqual([
-      'minimal',
-      'editorial',
-      'kinetic',
+      'brutally minimal',
+      'editorial/magazine',
+      'brutalist/raw',
     ]);
     expect(iframes.map((iframe) => iframe.getAttribute('src'))).toEqual([
       '/variants/v1',
@@ -67,12 +77,17 @@ describe('App', () => {
 
   it('sandboxes variant iframes with allow-scripts only — LLM-generated HTML must not navigate top, submit forms, or share the parent origin', () => {
     const variants: readonly Variant[] = [
-      { id: 'v1', seed: 'minimal', html: '<p>x</p>', rationale: 'r' },
+      {
+        id: 'v1',
+        seed: 'editorial/magazine',
+        html: '<p>x</p>',
+        rationale: 'r',
+      },
     ];
 
     render(<App variants={variants} />);
 
-    const iframe = screen.getByTitle('minimal');
+    const iframe = screen.getByTitle('editorial/magazine');
 
     expect(iframe.getAttribute('sandbox')).toBe('allow-scripts');
   });

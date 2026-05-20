@@ -18,7 +18,8 @@ type AppProps = {
  * `title` attribute carries the variant's seed name per spec §13(e)
  * "Canvas-itself accessibility" — screen readers announce iframes by title,
  * so the announced label must be a human-meaningful aesthetic direction
- * (`minimal`, `editorial`, `kinetic`) rather than an opaque session-scoped id.
+ * (an entry from `ANTHROPIC_AESTHETIC_TAXONOMY`, e.g. `editorial/magazine`)
+ * rather than an opaque session-scoped id.
  *
  * `sandbox="allow-scripts"` (no `allow-same-origin`) gives LLM-generated
  * variant HTML a unique opaque origin: variant JavaScript runs (needed for
@@ -26,7 +27,7 @@ type AppProps = {
  * but the variant cannot navigate the top, submit forms, open popups,
  * trigger downloads, or read parent cookies / localStorage. The postMessage
  * channel that ships the element-pick payload (spec §Element-pick mechanism)
- * crosses the sandbox boundary, but the spec's L156 pseudocode hard-codes
+ * crosses the sandbox boundary, but the spec's L154-158 pseudocode hard-codes
  * `targetOrigin: window.location.origin` which under this sandbox resolves
  * to the literal string `"null"` — the receiving slice that wires the
  * channel must use `targetOrigin: "*"` and validate at the parent via
