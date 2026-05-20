@@ -69,73 +69,9 @@ Updated 2026-05-20 end-Session-162 — **1 PR SHIPPED via full Review Gate** ([P
 
 **Session 156 (2026-05-11) — four-PR session. Dependabot triage (production minor auto-merge [#437](https://github.com/Pushedskydiver/chief-clancy/pull/437) + dev-deps major Alex-merge after worktree-probe-clean [#439](https://github.com/Pushedskydiver/chief-clancy/pull/439)), Claude-prepares-Alex-merges work-split codified [#440](https://github.com/Pushedskydiver/chief-clancy/pull/440), Phase F slice 3 SHIPPED [#441](https://github.com/Pushedskydiver/chief-clancy/pull/441) (`detectCssVars`, 23 tests). PR #438 closed-superseded by #439 (n=2 bot-PR-superseded). dep-classify + dep-downstream-check + Dependabot-collab-rule end-to-end first-fire ALL CLEAN. **Major novel patterns**: bot-PR-superseded mid-session n=2 (INDEX rule-of-three at n=3); DA-caught-architectural-error-in-codification-draft n=2; worktree-probe-clean-no-precursors novel n=1; convention drift `gh pr merge --subject` overrides auto-append; memory rule self-application; Copilot UNREACHABLE n=48 → n=50; hallucination tracker clean. Archived to [`docs/history/SESSIONS.md`](docs/history/SESSIONS.md) Session 160 close per §12 INDEX rule; full retrospective in `git log -p PROGRESS.md`.**
 
-**Session 157 (2026-05-11) — two-PR session: Phase F slices 4 + 5 SHIPPED end-to-end with full DA + surrogate + drift-fix-re-dispatch cycles. Active workstreams 2 unchanged. Drift-fix-PR mandatory re-dispatch n=3 fires INDEX rule-of-three threshold; incomplete-drift-fix-propagation novel n=1 surfaced.** Loaded per Session 156 LI Branch (C) DEFAULT (Phase F slice 4). Verified sha `8a344d8` matched paste-prompt; today's Monday tick at 15:00 UTC fired as reconcile (no new bot PRs since #437/#439/#441 already merged Session 156).
+---
 
-**Workstream pipeline (Session 157):**
-
-1. **PR #442 SHIPPED** ([#442](https://github.com/Pushedskydiver/chief-clancy/pull/442) `a86f2d2` auto-merge) — Phase F slice 4: `detectTokensJson(projectRoot)` at `packages/design/src/detect/tokens-json.ts`. Recursively scans for files named `tokens.json` (exact, case-sensitive), parses as DTCG per [spec](https://design-tokens.github.io/community-group/format/), deep-merges last-wins after alphabetical sort. 12 → 14 tests after DA fold. DA pre-PR-open returned 0B/2M/2L/3F; folded M1 (docstring contradiction — arrays/primitives are filtered, not "merged into malformed tree" as docstring claimed), M2 (DTCG token/group hybrid merge — two individually-valid files could merge to invalid hybrid; added `isDtcgToken` discriminator `'$value' in obj` per spec § Groups and Tokens, warn-at-merge with source-file provenance, last-wins resolution), L1 (sort-stability test under-locked — new test creates files in reverse-alpha order to lock `.sort()` call), FYI-1 (`isPlainObject` prototype check load-bearing against `__proto__`-keyed JSON — extended SECURITY docstring). L2 deferred (existing multi-fixture covers disjoint via `color.accent`). Surrogate post-PR-open 0B/0M/0L + 37/38 VERIFIED + 1 UNCHECKED (defensible security-defence-in-depth claim).
-
-2. **PR #443 SHIPPED** ([#443](https://github.com/Pushedskydiver/chief-clancy/pull/443) `1cf42c2` auto-merge) — Phase F slice 5: `detectConfidence(projectRoot)` + `getConfidenceTier(signals)` at `packages/design/src/detect/confidence.ts`. Aggregates 3 binary signals (shadcn `components.json` root + tailwind config root + tokens.json recursive) into `'high' | 'low'` tier per spec L656. 11 tests (5 pure-logic truth-table + 6 IO scan). DA pre-PR-open returned 0B/2M/2L/4F — all docstring/comment accuracy catches; impl correct. Folded M1 (docstring "DTCG token file" overclaim — impl is filename-only), M2 (docstring "Same resolution order slice 2's detectTailwind uses" false — slice 2 order `js,cjs,mjs,ts` vs slice 5 `ts,js,mjs,cjs`; `Set.some()` makes order semantically irrelevant for binary signal), L1 (test framing "excluded directory" implied EXCLUDE_DIRS load-bearing when shadcn probe is root-only), L2 (SECURITY clause implied confidence module probes all three signals directly — qualified `readRootFiles` directly, `detectTokensJson` transitively), F1 (root-vs-recursive asymmetry rationale added to docstring; spec L656 silent on scoping). F2/F3/F4 no-action. Surrogate initial dispatch caught L1 docstring drift (claimed "matching trust posture of slices 2 + 3 + 4" but slice 2 uses `existsSync` — verified at `tailwind.ts:64-66` — which follows symlinks per Node semantics; only slices 3 + 4 share `Dirent.isFile()` posture); folded via `fix(docs)` commit `63b0ec0`. Mandatory re-dispatch surrogate caught residual: same `slices 2 + 3 + 4` parity claim survived in `confidence.test.ts:117-118` test-comment — drift-fix didn't propagate. Second `fix(docs)` commit `3148d67` propagated the framing. Second mandatory re-dispatch surrogate clean (0 new, 0 persistent). Copilot UNREACHABLE n=50 → n=52 (advance per PR + per re-dispatch round).
-
-**Major novel patterns Session 157:**
-
-1. **Drift-fix-PR mandatory re-dispatch advanced n=2 → n=3** (Session 153 PR #434 n=1; Session 155 PR #436 n=2; Session 157 PR #443 n=3). **INDEX rule-of-three threshold fires** — codification candidate for `docs/REVIEW-PATTERNS.md` (likely §Surrogate dispatch or new sub-rule). Pattern: any `fix(docs)` / `fix(decisions)` commit on a Clancy PR triggers mandatory surrogate re-dispatch regardless of Copilot reachability per `docs/DEVELOPMENT.md §Post-PR flow` step 1 case (a). The re-dispatch is load-bearing — n=3 occurrence on PR #443 caught real incomplete-propagation residue.
-
-2. **Incomplete-drift-fix-propagation novel n=1** — drift-fix on `confidence.ts` docstring (commit `63b0ec0`) missed identical `slices 2 + 3 + 4` parity claim in `confidence.test.ts:117-118` test-comment. Surrogate's mandatory re-dispatch on `63b0ec0` caught the residual; second fix(docs) commit `3148d67` propagated. Pattern lesson: when folding a factual-claim drift, grep for the claim across the diff (not just the originating file) before committing. If this recurs at n=2 in a future session, codification candidate for "drift-fix-propagation grep discipline" — likely as a sub-rule under the drift-fix-PR rule that's about to be codified at n=3.
-
-3. **DA-caught-architectural-error-in-implementation n=1 novel** — PR #442 DA M2 caught that two individually-valid DTCG files could merge to a node carrying both `$value` and child group keys, violating the DTCG spec's "node is token XOR group" rule. The fold added `isDtcgToken` discriminator + warn-at-merge with file provenance. This is distinct from prior "DA-caught-architectural-error-in-research-spec" (Session 153 PR #434 PreToolUse can't see tool_output; Session 156 PR #440 Dependabot rebase mechanism) — that pattern is at spec/draft stage; this one is at impl stage where the spec was silent on cross-file merge semantics.
-
-4. **TDD discipline slip on slice 5** — wrote all 11 tests in one go before implementing (vs CLAUDE.md "one test → implement → next test"). Impl design was already fixed by spec (mechanical truth-table aggregation), so discipline slip didn't lose discovery value. Worth noting for future slices: rule is most load-bearing when the impl design space is wide; mechanical aggregation slices can fold to "write the truth-table fixture-set in one pass" without harm. Not codifying yet — n=1 observation.
-
-5. **Per-PR subagent dispatch count** — PR #442: DA + surrogate (2). PR #443: DA + surrogate + re-dispatch + re-dispatch (4). The 2× re-dispatch on PR #443 is the drift-fix cascade. Total 6 subagent dispatches Session 157; hallucination tracker clean across all.
-
-6. **Auto Mode held cleanly** through 2 PRs end-to-end + 6 subagent dispatches + 4 fold commits + 2 audit-trail comments + this handoff.
-
-**Session 157 file inventory.**
-
-| Path                                                                                               | Action                               | Notes                                                           |
-| -------------------------------------------------------------------------------------------------- | ------------------------------------ | --------------------------------------------------------------- |
-| `packages/design/src/detect/tokens-json.{ts,test.ts}` + 7 `tokens-json-*/tokens.json` fixtures     | NEW (PR #442)                        | `a86f2d2` auto-merge; slice 4 detection module + 14 tests       |
-| `packages/design/src/detect/confidence.{ts,test.ts}` + `confidence-shadcn/components.json` fixture | NEW (PR #443)                        | `1cf42c2` auto-merge; slice 5 confidence aggregation + 11 tests |
-| `PROGRESS.md`                                                                                      | UPDATE — direct-to-main this handoff | Session 157 entry + §Next workstreams refresh + Session 158 LI  |
-
-**Session 157 handoff metrics.** (Window-6 audit; data point 4 of 6th-10-window.)
-
-- Trigger: phase boundary (2 PRs SHIPPED end-to-end + drift-fix cascade complete) + heavy context utilization.
-- Context at trigger: ~75-85% of pre-compaction budget (manual estimate; 6 subagent dispatches across both PRs).
-- Handoff turn cost: ~12-15k tokens (this entry; LI block; §Next workstreams refresh).
-- Unplanned compaction: no.
-- Time from "handoff now" decision to next-session first productive tool call: TBD (recorded by Session 158).
-- `PROGRESS.md` quality signal: TBD (recorded by Session 158).
-
-### Session 158 loading instructions
-
-On load:
-
-1. Read `PROGRESS.md` top-to-bottom (this Session 157 entry + §Next workstreams + Sessions 154-156 entries — detail band currently N=4).
-2. Verify current sha (`git log --oneline -5`); push hygiene check; standard Dependabot check.
-3. **PRIMARY workstream: Phase F slice 6** — `src/schemas/design.ts` DESIGN.json (Stitch + DTCG hybrid) zod/mini schema, ~2hr. Spec at `.claude/research/phase-f-design-system/path-b-local-spec.md` L657. Test cell says "Round-trip fixture: parse + serialize." This is a schema slice, not a detection slice — different shape from slices 2/3/4/5. Uses `zod/mini` (NOT `zod`) per CLAUDE.md "non-obvious constraints". Slice 7 will consume this schema for `write/document.ts`.
-4. **Decision branches:**
-   - **(A) New Dependabot security PR fired** — prioritise triaging.
-   - **(B) New Dependabot version-update PR fired** — apply the codified work split per `docs/DEVELOPMENT.md §Dependabot major bump exception`.
-   - **(C) PRIMARY: Phase F slice 6** per step 3 — DEFAULT in absence of A/B signal.
-   - **(D) Alex redirects** — follow the redirect.
-5. **READBACK BEFORE ACTION** — 3-5 sentence readback (current state / decision branch / proposed first concrete action) and **wait for Alex confirmation** before edits, PR actions, or subagent dispatches.
-6. **Carry-overs from Session 157:**
-   - **Phase F slices 1+2+3+4+5 / 31 SHIPPED**. Slice 6 is the first non-detection slice — schema layer. Will consume DTCG output from slice 4 + Tailwind output from slice 2.
-   - **v0.5 parent-spec amendment pending** (`path-b-local-spec.md v0.4 → v0.5 SOLID` per `ui-vision-spec.md §7`) — still not blocking slice 6 (schema is data layer, independent of UX-touched slices). Consider amending parent-spec when slice 6 lands since slice 6 may also trigger spec edits.
-   - **Drift-fix-PR mandatory re-dispatch n=3** — **INDEX rule-of-three threshold fires**. Codification candidate to `docs/REVIEW-PATTERNS.md` (likely under §Surrogate dispatch or new sub-rule). Concise rule: "any `fix(docs)` / `fix(decisions)` commit on a Clancy PR triggers mandatory surrogate re-dispatch regardless of Copilot reachability; the re-dispatch is load-bearing — empirical n=3 caught real incomplete-propagation residue on PR #443." Session 158 §7-eligible candidate Branch (D).
-   - **Incomplete-drift-fix-propagation novel n=1** — watch for n=2; pattern lesson: grep the factual claim across the diff before committing a drift-fix, not just the originating file. If recurs, codify as sub-rule under the drift-fix-PR rule.
-   - **DA-caught-architectural-error-in-implementation novel n=1** (PR #442 M2 DTCG hybrid merge) — distinct from prior "in-research-spec" cases. Watch for n=2.
-   - **TDD discipline slip on slice 5** noted; not codifying yet (n=1; mechanical truth-table aggregation slices may not need strict one-test-at-a-time).
-   - **Copilot UNREACHABLE n=52** stable; will advance on next dispatch.
-   - **Hallucination tracker clean** across 6 subagent dispatches Session 157.
-   - **Linter-version-shift cleanup precursor pattern n=2** stable (no new Dependabot major bumps Session 157 to advance).
-   - **Worktree-probe-clean-no-precursors n=1** stable.
-   - **Bot-PR-superseded mid-session n=2** stable.
-   - **DA-caught-architectural-error-in-codification-draft n=2** stable.
-   - Active workstreams **2**: Phase F (PRIMARY, implementing slice 6) + PROGRESS.md cleanup (deferred-pending-evidence).
-7. **If Alex redirects on load**, follow the redirect — Phase F slice 6 default is not a contract.
+**Session 157 (2026-05-11) — two-PR session: Phase F slices 4 + 5 SHIPPED ([#442](https://github.com/Pushedskydiver/chief-clancy/pull/442) `a86f2d2` auto-merge `detectTokensJson` 14 tests; [#443](https://github.com/Pushedskydiver/chief-clancy/pull/443) `1cf42c2` auto-merge `detectConfidence`/`getConfidenceTier` 11 tests). Active workstreams 2 unchanged. **Major novel patterns**: drift-fix-PR mandatory re-dispatch n=2 → n=3 (INDEX rule-of-three threshold fires); incomplete-drift-fix-propagation novel n=1 (drift-fix on `confidence.ts` docstring missed identical sibling-parity claim in `confidence.test.ts` test-comment; mandatory re-dispatch caught residual); DA-caught-architectural-error-in-implementation novel n=1 (PR #442 M2 DTCG token/group hybrid merge); TDD discipline slip on mechanical truth-table slice n=1 watch; Copilot UNREACHABLE n=50 → n=52; hallucination tracker clean across 6 subagent dispatches. Archived to [`docs/history/SESSIONS.md`](docs/history/SESSIONS.md) Session 163 close per §12 INDEX rule; full retrospective in `git log -p PROGRESS.md`.**
 
 ---
 
