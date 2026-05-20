@@ -105,6 +105,7 @@ describe('acquireCanvasLock', () => {
         projectRoot,
         sessionId: 'second-session',
         processExists: () => true,
+        now: new Date('2026-05-18T10:01:00.000Z'),
       }),
     ).rejects.toThrow(CanvasLockError);
   });
