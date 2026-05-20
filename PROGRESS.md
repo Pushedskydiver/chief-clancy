@@ -474,7 +474,7 @@ After the Session 161 handoff commit `04160e8` Alex (a) imported Codex tooling a
 
 ---
 
-**Session 163 (2026-05-20) — two-PR session end-to-end through full Review Gate: 1 precursor `fix(test)` defusing a slice-12 time-bomb + Phase F slice 13 SHIPPED. Active workstreams 3 unchanged. Cursor Hobby trial deferred to end-of-month per Alex.** Loaded per Session 162 LI step 7 → Alex redirect Branch (D) "defer the trial until the end of this month and carry on with Phase F slice 13 :D". Session-start archival fired automatically per codified rule (PR #445) — caught Session 157 over-threshold + remediated before primary workstream selection. Decision A (Pro downgrade) confirmation status flagged inline at readback but not blocking — Alex didn't volunteer status; treated as no-op per LI step 3 ("If not: no-op, baseline stays Y-today").
+**Session 163 (2026-05-20) — two-PR session end-to-end through full Review Gate: 1 precursor `fix(test)` defusing a slice-12 time-bomb + Phase F slice 13 SHIPPED. Active workstreams 3 unchanged. Cursor Hobby trial deferred to AFTER Phase F completion per Alex (revised at session close from initial end-of-month framing).** Loaded per Session 162 LI step 7 → Alex redirect Branch (D) "defer the trial until the end of this month and carry on with Phase F slice 13 :D". Session-start archival fired automatically per codified rule (PR #445) — caught Session 157 over-threshold + remediated before primary workstream selection. Decision A (Pro downgrade) confirmed at session close: Alex downgraded to Pro but plan transition kicks in end-of-month (2026-05-31) — until then technically still on Max 5× £~90/mo; after transition baseline = Y-future-Pro £~32/mo (Pro £16 + ChatGPT Plus £16).
 
 **Workstream pipeline (Session 163):**
 
@@ -536,8 +536,8 @@ After the Session 161 handoff commit `04160e8` Alex (a) imported Codex tooling a
 5. **READBACK BEFORE ACTION** — 3-5 sentence readback + wait for Alex confirmation before edits, PR actions, or subagent dispatches.
 6. **Carry-overs from Session 163:**
    - **Phase F slices 1-13 / 31 SHIPPED**. Slice 14 (variant iframe rendering) is next concrete action.
-   - **Cursor Hobby trial deferred to end of month (2026-05-31)** per Alex Session 163. The trial protocol is empirical (~10-min model-switch test per `.claude/research/cross-tool-workflow/spec.md` L153) but requires Alex to install Cursor + run the experiment. Optional `/schedule` reminder offered Session 163 close.
-   - **Decision A (Pro downgrade) status still unconfirmed** — Alex didn't volunteer in Session 163; baseline stays Y-today £~106/mo until clarified. Tracked at `spec.md` v0.2 §Recommended three-step plan Step 1.
+   - **Cursor Hobby trial deferred to AFTER Phase F completion** per Alex Session 163 close (revised from end-of-month). With 18 slices remaining (14-31) at the current cadence, this puts the trial ≈8-10 weeks out. No `/schedule` reminder set — Phase F shipping cadence is its own forcing function.
+   - **Decision A (Pro downgrade) CONFIRMED** — Alex downgraded to Pro mid-Session-163 but the plan change doesn't kick in until end-of-month (2026-05-31). Until then Alex is technically still on Max 5× £~90/mo. After 2026-05-31 the baseline becomes Y-future-Pro £~16/mo + ChatGPT Plus £16/mo = £32/mo. Tracked at `spec.md` v0.2 §Recommended three-step plan Step 1.
    - **Time-bomb-test-bug pattern novel n=1** — watch for similar patterns: any test that pins `now`/`Date()` on a first call and omits on a follow-up. Grep candidate: `now: new Date\('` then audit adjacent calls.
    - **DA-caught-architectural-error-in-implementation n=2** — watch n=3 for codification candidacy. Pattern: spec-silent cross-cut omission at impl stage (DTCG hybrid merge / `.tsx` glob bypass / ?).
    - **Precursor-PR-pattern novel n=1** — when a pre-existing bug on main blocks next PR open, ship precursor from main + rebase feature. Watch n=2.
