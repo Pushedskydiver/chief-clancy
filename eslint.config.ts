@@ -44,7 +44,7 @@ export default defineConfig(
 
   // ── All TypeScript files ──────────────────────────────────────
   {
-    files: ['packages/*/src/**/*.ts'],
+    files: ['packages/*/src/**/*.{ts,tsx}'],
     plugins: {
       functional,
       sonarjs,
@@ -161,7 +161,7 @@ export default defineConfig(
 
   // ── Test file overrides ───────────────────────────────────────
   {
-    files: ['packages/*/src/**/*.test.ts', '**/test/**/*.ts'],
+    files: ['packages/*/src/**/*.test.{ts,tsx}', '**/test/**/*.{ts,tsx}'],
     rules: {
       'functional/immutable-data': 'off',
       'functional/no-let': 'off',

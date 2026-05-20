@@ -3,6 +3,8 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist",
+    "jsx": "react-jsx",
+    "lib": ["ESNext", "DOM"],
     "paths": {
       "~/des/*": ["./src/*"]
     }
