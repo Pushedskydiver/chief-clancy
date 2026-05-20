@@ -54,7 +54,7 @@ type SetPickModeMessage = {
   readonly active: boolean;
 };
 
-export type OverlayHandle = {
+type OverlayHandle = {
   readonly setPickMode: (active: boolean) => void;
   readonly detach: () => void;
 };
@@ -66,7 +66,7 @@ type AttachOverlayOptions = {
 /**
  * Compute the strongest available stable selector for a clicked element.
  *
- * Preference order per spec L170-177:
+ * Preference order per spec L207-216 (Phase 2 "Stable selector preference"):
  * 1. `data-clancy-slot` attribute (preserved across variant regenerations
  *    when Claude is instructed to keep slot IDs).
  * 2. `id` attribute.
@@ -139,11 +139,20 @@ export const attachOverlay = (
   options: AttachOverlayOptions,
 ): OverlayHandle => {
   // Pick-mode state lives on `document.body.classList` rather than a closure-
-  // captured `let`: the body class is the visual indicator (per spec L198 polish
-  // item) AND needs to be readable from the click listener, so a closure-let
-  // would duplicate the source of truth. classList.toggle is the same DOM
-  // mutation either way — the difference is whether `pickModeActive` is a
-  // separate field that can drift from the visual state.
+  // captured `let`: the body class is the visual indicator (spec L235 polish
+  // item — cursor/outline change when pick mode active) AND needs to be
+  // readable from the click listener, so a closure-let would duplicate the
+  // source of truth. classList.toggle is the same DOM mutation either way —
+  // the difference is whether a `pickModeActive` field can drift from the
+  // visual state.
+  //
+  // Single-realm contract: `win` is expected to be the realm in which this
+  // module loaded. Cross-realm callers (e.g. a parent reaching into an
+  // iframe's `contentWindow`) would not pass `target instanceof HTMLElement`
+  // below because the module-global `HTMLElement` constructor differs across
+  // realms. Slice 16's only caller is the module-bottom bootstrap which
+  // passes its own `window`; later slices that wire across realms must
+  // accept this constraint.
   const onClick = (event: Event): void => {
     if (!isPickModeActive(win)) return;
     const target = event.target;
@@ -184,9 +193,16 @@ export const attachOverlay = (
   };
 };
 
-const extractVariantId = (pathname: string): string | null => {
+export const extractVariantId = (pathname: string): string | null => {
   const match = /^\/variants\/([^/]+)\/?$/.exec(pathname);
-  return match === null ? null : decodeURIComponent(match[1]);
+  if (match === null) return null;
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    // Malformed %-escape sequence — fail-closed (no attach) so a bad URL
+    // can't crash module evaluation and tear down the iframe's script tag.
+    return null;
+  }
 };
 
 // Auto-bootstrap when loaded inside a real iframe. In jsdom (where

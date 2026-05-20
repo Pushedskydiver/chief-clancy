@@ -1,7 +1,11 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { attachOverlay, computeStableSelector } from './overlay.client.js';
+import {
+  attachOverlay,
+  computeStableSelector,
+  extractVariantId,
+} from './overlay.client.js';
 
 const setupIframeWindow = (): {
   readonly win: Window & typeof globalThis;
@@ -29,7 +33,7 @@ afterEach(() => {
 describe('attachOverlay', () => {
   it('posts an element-picked message to the parent when an element is clicked in pick mode', () => {
     const { win, parentPostMessage } = setupIframeWindow();
-    const overlay = attachOverlay(win, { variantId: 'editorial/magazine#abc' });
+    const overlay = attachOverlay(win, { variantId: 'v1' });
     overlay.setPickMode(true);
 
     const button = document.createElement('button');
@@ -38,17 +42,60 @@ describe('attachOverlay', () => {
     button.click();
 
     expect(parentPostMessage).toHaveBeenCalledTimes(1);
-    expect(parentPostMessage).toHaveBeenCalledWith(
-      expect.objectContaining({
-        type: 'clancy:design:element-picked',
-        variantId: 'editorial/magazine#abc',
-        anchor: expect.objectContaining({
-          tag: 'button',
-          textSnippet: 'Submit application now',
-        }),
-      }),
-      '*',
-    );
+    const [payload, targetOrigin] = parentPostMessage.mock.calls[0];
+    expect(targetOrigin).toBe('*');
+    expect(payload).toMatchObject({
+      type: 'clancy:design:element-picked',
+      variantId: 'v1',
+      anchor: {
+        tag: 'button',
+        textSnippet: 'Submit application now',
+        selector: 'body > button',
+      },
+    });
+    expect(
+      (payload as { anchor: { boundingBox: unknown } }).anchor.boundingBox,
+    ).toBeDefined();
+
+    overlay.detach();
+  });
+
+  it('cancels the click via preventDefault + stopPropagation so the variant does not handle it itself', () => {
+    const { win } = setupIframeWindow();
+    const overlay = attachOverlay(win, { variantId: 'v1' });
+    overlay.setPickMode(true);
+
+    const button = document.createElement('button');
+    document.body.appendChild(button);
+    const clickEvent = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+    });
+    const preventDefaultSpy = vi.spyOn(clickEvent, 'preventDefault');
+    button.dispatchEvent(clickEvent);
+
+    expect(preventDefaultSpy).toHaveBeenCalledTimes(1);
+    expect(clickEvent.defaultPrevented).toBe(true);
+
+    overlay.detach();
+  });
+
+  it('truncates the textSnippet at 32 characters so long element text does not flood postMessage payloads', () => {
+    const { win, parentPostMessage } = setupIframeWindow();
+    const overlay = attachOverlay(win, { variantId: 'v1' });
+    overlay.setPickMode(true);
+
+    const long = 'A'.repeat(64);
+    const button = document.createElement('button');
+    button.textContent = long;
+    document.body.appendChild(button);
+    button.click();
+
+    const payload = parentPostMessage.mock.calls[0]?.[0] as {
+      anchor: { textSnippet: string };
+    };
+    expect(payload.anchor.textSnippet).toHaveLength(32);
+    expect(payload.anchor.textSnippet).toBe('A'.repeat(32));
 
     overlay.detach();
   });
@@ -147,5 +194,28 @@ describe('computeStableSelector', () => {
     expect(computeStableSelector(secondButton)).toBe(
       'body > main > section > button:nth-child(2)',
     );
+  });
+});
+
+describe('extractVariantId', () => {
+  it('parses a variant id from /variants/<id> URLs (trailing-slash tolerant)', () => {
+    expect(extractVariantId('/variants/v1')).toBe('v1');
+    expect(extractVariantId('/variants/v1/')).toBe('v1');
+  });
+
+  it('returns null for non-matching pathnames so the bootstrap fails-closed', () => {
+    expect(extractVariantId('/')).toBeNull();
+    expect(extractVariantId('/variants/')).toBeNull();
+    expect(extractVariantId('/variants/a/b')).toBeNull();
+  });
+
+  it('decodes percent-encoded characters in the captured id', () => {
+    expect(extractVariantId('/variants/editorial%2Fmagazine%23abc')).toBe(
+      'editorial/magazine#abc',
+    );
+  });
+
+  it('returns null instead of throwing on malformed percent-escapes (fail-closed for the bootstrap)', () => {
+    expect(extractVariantId('/variants/%E0%A4%A')).toBeNull();
   });
 });
