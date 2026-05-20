@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import Anthropic from '@anthropic-ai/sdk';
 import { createServer as createViteServer } from 'vite';
 
+import { injectOverlay } from './injectOverlay.js';
 import { acquireCanvasLock } from './lock.js';
 
 export class CanvasApiKeyError extends Error {
@@ -134,6 +135,7 @@ const buildViteConfig = (port: number): InlineConfig => ({
   root: canvasRoot(),
   clearScreen: false,
   logLevel: 'error',
+  plugins: [injectOverlay()],
   server: {
     host: '127.0.0.1',
     port,
