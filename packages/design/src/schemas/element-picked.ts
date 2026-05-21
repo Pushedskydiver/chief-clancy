@@ -27,7 +27,7 @@ const boundingBoxSchema = z.looseObject({
   height: z.number(),
 });
 
-const elementAnchorSchema = z.looseObject({
+export const elementAnchorSchema = z.looseObject({
   selector: z.string(),
   tag: z.string(),
   textSnippet: z.string(),
