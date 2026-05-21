@@ -2,9 +2,67 @@
 
 Living state document for the Clancy monorepo. Records the current state, the phase ledger, and the next decision. Session-by-session detail lives in git history (each phase's PRs are tagged + commit messages reference them).
 
-## Next workstreams (after Session 166)
+## Next workstreams (after Session 167)
 
-Updated 2026-05-21 end-Session-166 — **1 PR SHIPPED via full Review Gate** + 1-session archival direct-to-main: Phase F slice 17 SHIPPED ([PR #461](https://github.com/Pushedskydiver/chief-clancy/pull/461) `a2c5687` Claude-merge — comment input modal + parent-side element-pick receiver). Active workstreams 3 unchanged. **Phase F state**: slices **1+2+3+4+5+6+7+8+9+10+11+12+13+14+15+16+17 of 31 SHIPPED**.
+Updated 2026-05-21 end-Session-167 — **1 PR SHIPPED via full Review Gate** (UI conventions codification — pivot from Phase F slice 18 to a research-driven conventions PR per Alex's mid-session call). [PR #464](https://github.com/Pushedskydiver/chief-clancy/pull/464) `84364cd` Claude-merge — first UI-conventions codification in the codebase. 3 commits on branch: impl `52dfce0` + DA fold `ed430a7` + surrogate fold `394dc69`. 142/142 tests at HEAD. Phase F state unchanged at 17/31 slices SHIPPED (slice 18 deferred to Session 168). Active workstreams **3** unchanged.
+
+**Research arc completed Session 167:** spec at `.claude/research/design-ui-conventions/spec.md` v0.1 → v0.2 (R1 spec-grill 2B+4M+4L+3F folded) → v0.2.1 (Alex-challenge fold on CSS-strategy deferral — caught the "verify blocker before deferring" pattern; saved to memory at `feedback_verify_blocker_before_deferring.md` n=1 watch) → v0.2.2 (R2 spec-grill 2M+5L+1F folded + Alex mid-research additions: CSS logical properties + stylelint). R3 verification returned 0B+0M+2L+3F (low-LOW per arc rule — spec ships). Verification rate trend: 13 → 8 → 5 (converging cleanly across 3 rounds).
+
+**Locked conventions** (`docs/CONVENTIONS.md` new §UI components section):
+
+- Folder: flat-by-default `canvas/components/<Component>.tsx`; promote to per-component folder at ≥3 co-located files. Atomic Design rejected for canvas's small scale.
+- CSS modules + CSS custom properties + camelCase class names + `*.module.css` type shim at `src/types/css-modules.d.ts`. Theme via `:root` vars at `canvas/styles/tokens.css`.
+- **CSS logical properties mandated** (Alex addition mid-research) — `inline-size`/`block-size`/`inset-block-start`/`padding-inline` etc. throughout; physical inline only for anchor-structural concerns (`position: 'fixed'` + bbox `top`/`left`). Future RTL + vertical writing-mode support without per-component rework.
+- Native semantic HTML first — `<dialog>.showModal()` over `<div role="dialog">`. React 19 ref-callback cleanup-return form only for child-element-registration ref callbacks; `useRef`+`useEffect` is the natural pattern for single-element lifecycle access.
+- a11y testing via `vitest-axe`'s `axe()` wrapper + plain `expect(results.violations).toEqual([])` (the `toHaveNoViolations` matcher is incompatible with vitest 4.x — `__vitest_poll_takeover__` error). jsdom limitations acknowledged (color-contrast + focus-visibility + top-layer `<dialog>` skip).
+- Integration-cover-first testing; promote to dedicated component test on behaviour-divergence.
+
+**Tooling shipped:**
+
+- `stylelint` + `stylelint-config-standard` + `stylelint-use-logical` at repo root. `.stylelintrc.json` enforces logical properties + camelCase class names. `pnpm lint:css` chained into `pnpm lint`; lint-staged auto-fixes `*.css`.
+- `vitest-axe` devDep.
+- `packages/design/src/types/css-modules.d.ts` type shim.
+- `packages/design/src/canvas/styles/tokens.css` theme-token seed (minimal).
+- `packages/design/tsconfig.build.json` extended exclude to `*.test.tsx` (pre-existing leak fixed).
+
+**Slice 17 retroactive cleanup**: `molecules/CommentModal.tsx` → `CommentModal/CommentModal.tsx` (3-file threshold: component + test + module CSS). Deleted `molecules/` wrapper + the `components/README.md` taxonomy doc (convention now lives in CONVENTIONS.md). Added `CommentModal.module.css` (logical properties throughout) + `CommentModal.test.tsx` (component-level + axe smoke). Bbox-positioning + textarea assertions migrated; receiver-pipeline tests stayed in `App.test.tsx`.
+
+**Separate spec amendment surfaced** at `.claude/research/canvas-spa-build-target/spec.md` (gitignored): the canvas SPA has no runtime serving path today (no `vite.config.ts` in `packages/design/`, no `index.html`, no `createRoot` mount). The current build order is silent on the slice that wires this. Spec proposes a ~9hr 4-slice insertion at ~slice 18.5. Surface to Alex Session 168 for scoping decision.
+
+**Two Dependabot PRs OPEN at Session 167 close** (both auto-merge-eligible per labels `dependabot-autoskip` + `dependabot-semver-minor`; CI all-green; need rebase after PR #464 merge):
+
+- [PR #462](https://github.com/Pushedskydiver/chief-clancy/pull/462) — production-version-deps group with 2 updates.
+- [PR #463](https://github.com/Pushedskydiver/chief-clancy/pull/463) — development-version-deps group with 9 updates.
+
+**Major novel patterns Session 167:**
+
+1. **Verify-blocker-before-deferring novel n=1 (codified to memory)** — v0.1 of the UI conventions spec deferred CSS modules citing "no Vite build target." Alex's "why?" question forced a re-check; the verification is trivial (one-line type shim + vitest handles natively + no production path exists for any strategy yet). The deferral was an instance of three failure layers: flag-as-conclusion (treated spec-grill's "verify" flag as license to defer rather than prompt to check), asymmetric conservatism (defer feels disciplined and doesn't trigger self-review), insufficient steelmanning of the opposite. Saved to memory at `feedback_verify_blocker_before_deferring.md`. Promotion criterion: n=2 within 5 sessions → `docs/RATIONALIZATIONS.md`. Adjacent to existing `feedback_honesty_first.md` (no polite hedging) + `feedback_iterate_spec_grill_until_solid.md` (don't scope down to escape grill cost) — same shape applied to deferral-as-discipline.
+
+2. **Trust-extension framing from Alex novel n=1** — mid-session Alex said: "I want us to reach a point in this project where you can essentially run this project yourself with full confidence from me. Making sure you are doing the right things, asking the right questions etc." Connected to the verify-blocker-before-deferring catch — I surfaced asymmetric conservatism + sycophancy-under-challenge as observed failure modes I need to catch myself, not have Alex catch. Concrete behaviors committed: verify-blocker rule by default + confidence calibration in language + surface structural gaps preemptively + save memories at n=1 not n=2 + ask when stakes are real not when grep would answer. Worth tracking as the framing for cross-session work.
+
+3. **Mid-research directive cascade novel n=2** (Session 166 was n=1) — Alex injected 5 mid-research/mid-implementation directives this session: (a) "use logical properties", (b) "add stylelint", (c) "research properly before committing", (d) "ask yourself the kind of questions I asked you", (e) "lets sort it all now". All applied in-PR without scope-creep grumble. Pattern: when Alex's directives accumulate mid-flight, apply each on top of existing state rather than redesigning. Watch n=3 → INDEX rule-of-three threshold.
+
+4. **Multi-round spec-grill bounded-fold novel** — first 3-round arc on a code-design spec in this codebase. Per `feedback_specgrill_discipline_task_fit.md`, code-design specs should bound cleanly under spec-grill; verified empirically (verification rate 13 → 8 → 5, converging without ramification). The discipline held; the rule is sound.
+
+5. **Variant-spec to be amended at slice 19** (Q8 of the conventions spec) — Phase F slice 19 budget grows 3hr → 4hr to accommodate the variant-side CSS strategy decision. Pre-empts the friction surfaced as Open Risk #3 (variant-comment-mutates-CSS UX needs both strategies to interop).
+
+6. **Canvas SPA build-target gap surfaced novel n=1** — Phase F has no slice that wires the canvas SPA's HTML entry + `createRoot` mount + Vite config. Surfaced separately as a spec amendment for Session 168 scoping. Worth Alex's attention because v0.1 cannot serve a user-runnable canvas SPA without it.
+
+7. **Drift-fix mandatory re-dispatch n=7 → n=8** (PR #464 surrogate fold caught real fold-introduced drift in the prior DA fold — partial scrub in F1 + fresh imprecision in F2). Rule self-applied: this rule existed precisely to catch this.
+
+8. **PR-body-edit-for-non-load-bearing-drift n=10 → n=11** (M3 arithmetic miscount corrected via `gh pr edit`).
+
+9. **PR-title-check workflow trigger gap n=4** (workflow doesn't fire on `synchronize`; body edit re-fires `edited`). The codification candidate is well past INDEX rule-of-three; promote to PRIMARY follow-up when context permits. Workaround: edit PR body to re-trigger.
+
+10. **Detached-HEAD-from-husky-lint-staged novel n=1** — `git commit` post-husky-lint-staged produced "detached HEAD from ed430a7" then `git push` did nothing visible. Recovery: `git branch -f <branch> HEAD && git checkout <branch> && git push`. Not codifying — n=1 with a known root-cause (some interaction with lint-staged + branch reattachment). Watch n=2.
+
+11. **Copilot UNREACHABLE n=74 → n=75** (1 surrogate dispatch on PR #464; the re-dispatch was the same surrogate dispatch returning).
+
+12. **Hallucination tracker clean** across 5 subagent dispatches Session 167 (R1+R2+R3 spec-grill + DA + surrogate).
+
+13. **Auto Mode held cleanly** through 1 PR end-to-end + 5 subagent dispatches + 3 fold commits + 1 PR-body edit + 1 audit-trail comment + spec-arc 3-round cycle + research-spec for build-target gap + memory codification + this handoff.
+
+**Earlier Session 166 status preserved below for context** — **1 PR SHIPPED via full Review Gate** + 1-session archival direct-to-main: Phase F slice 17 SHIPPED ([PR #461](https://github.com/Pushedskydiver/chief-clancy/pull/461) `a2c5687` Claude-merge — comment input modal + parent-side element-pick receiver). Active workstreams 3 unchanged. **Phase F state**: slices **1+2+3+4+5+6+7+8+9+10+11+12+13+14+15+16+17 of 31 SHIPPED**.
 
 [PR #461](https://github.com/Pushedskydiver/chief-clancy/pull/461) `a2c5687` Claude-merge Phase F slice 17 — 3 commits on branch:
 
@@ -546,43 +604,46 @@ After committing the original Session 165 handoff at `43e595c`, Alex challenged:
 - Time from "handoff now" decision to next-session first productive tool call: TBD (Session 167).
 - `PROGRESS.md` quality signal: TBD (Session 167).
 
-### Session 167 loading instructions
+### Session 168 loading instructions
 
-1. Verify state: `git log --oneline -5` for current sha (`a2c5687` PR #461 squash-merge at Session 166 close + Session 166 handoff commit) + push hygiene + standard Dependabot check (`gh pr list --author "dependabot[bot]" --state all --limit 10` + `gh run list --workflow="Dependabot Updates" --limit 5`). **Next Dependabot tick: Monday 2026-05-25 06:00 UTC** — 4 days from current load date (2026-05-21).
-2. **Session-start archival check** (codified PR #445) — detail band at Session 166 close is N=6 (161+162+163+164+165+166) — **OVER THRESHOLD**. Archive Session 161 to `docs/history/SESSIONS.md` BEFORE proposing primary workstream. Single-session archival; one §12 trigger.
-3. **PRIMARY workstream: Phase F slice 18** — Comment persistence (JSONL append) at `packages/design/src/storage/comments.ts`. Test cell: "Unit: write 3 comments, read back, assert order + content." Budget 2 hr. Slice 17 shipped the in-memory `ActiveComment` state on the hook + the rendered modal, but the textarea is uncontrolled + no submit wiring. Slice 18 brings persistence: append-only JSONL records (`{id, variantId, anchor, text, status: 'open' | 'stale' | 'deleted', timestamp}`) to `.clancy/comments.jsonl` (or similar) so comments survive session restarts + can be filtered by status. Likely surface: `appendComment(record)`, `readComments(): Promise<readonly Comment[]>` + minimum integration with the modal's submit handler (currently uncontrolled).
+1. Verify state: `git log --oneline -5` for current sha (`84364cd` PR #464 squash-merge at Session 167 close + Session 167 handoff commit) + push hygiene + standard Dependabot check (`gh pr list --author "dependabot[bot]" --state open --limit 10`). **Two Dependabot PRs OPEN** at session load — see step (A) below. **Next Dependabot tick: Monday 2026-05-25 06:00 UTC** — 4 days from session load date (2026-05-21).
+2. **Session-start archival check** (codified PR #445) — detail band at Session 167 close is N=6 (162+163+164+165+166+167) — **OVER THRESHOLD**. Archive Session 162 to `docs/history/SESSIONS.md` BEFORE proposing primary workstream. Single-session archival; one §12 trigger.
+3. **PRIMARY workstream: Phase F slice 18** — Comment persistence (JSONL append) at `packages/design/src/storage/comments.ts`. Test cell: "Unit: write 3 comments, read back, assert order + content." Budget 2 hr. Slice 17 shipped the in-memory `ActiveComment` state on the hook + rendered modal, but the textarea is uncontrolled + no submit wiring. Slice 18 brings persistence: append-only JSONL records (`{id, variantId, anchor, text, status: 'open' | 'stale' | 'deleted', timestamp}`) to `.clancy/comments.jsonl` (or similar). Likely surface: `appendComment(record)`, `readComments(): Promise<readonly Comment[]>` + minimum integration with the modal's submit handler. **New conventions apply**: flat-by-default folder (storage is not a UI component but the folder-shape rule generalises — start flat `src/storage/comments.ts`); follow `docs/CONVENTIONS.md §Error Handling` for Result-shaped failure channel; `zod/mini` schema for the JSONL record per CONVENTIONS §UI components style ("cross-trust-boundary message envelopes" is the canonical schema-pair target, though JSONL is single-process — still worth a schema for the persistence-format contract).
 4. **Decision branches:**
-   - **(A) New Dependabot security PR fired** — prioritise triaging per `docs/DEVELOPMENT.md §Dependabot major bump exception`.
-   - **(B) New Dependabot version-update PR fired** — apply codified work split.
-   - **(C) PRIMARY: Phase F slice 18** per step 3 — DEFAULT in absence of A/B signal.
-   - **(D) Alex redirects** — follow the redirect. PR-title-check `synchronize`-event addition is the highest-priority §7-eligible follow-up if Alex prefers a small mechanical PR before more Phase F (fires on every Claude-merge PR now, close+reopen workaround is mechanical waste each session; n=3 INDEX rule-of-three threshold MET — codification-ready). Cursor Hobby trial remains deferred to post-Phase-F per Session 163 close; do not propose unless Alex initiates.
-5. **READBACK BEFORE ACTION** — 3-5 sentence readback + wait for Alex confirmation before edits, PR actions, or subagent dispatches.
-6. **Carry-overs from Session 166:**
-   - **Phase F slices 1-17 / 31 SHIPPED**. Slice 18 (JSONL comment persistence) is the next concrete action; 14 slices remaining.
-   - **Cursor Hobby trial deferred to AFTER Phase F completion** per Session 163 close. With 14 slices remaining at current ~1 slice/session cadence, trial is still ~10-14 sessions out.
+   - **(A) Two Dependabot PRs OPEN at load** — [PR #462](https://github.com/Pushedskydiver/chief-clancy/pull/462) (production-version-deps group with 2 updates) + [PR #463](https://github.com/Pushedskydiver/chief-clancy/pull/463) (development-version-deps group with 9 updates). Both labeled `dependabot-autoskip` + `dependabot-semver-minor` (auto-merge-eligible per `docs/DEVELOPMENT.md §Auto-merge criteria` Dependabot package-manifest carve-out). All 7 CI checks SUCCESS at Session 167 close BUT both PRs are now BEHIND main after PR #464 merge — need `@dependabot rebase` comments + CI re-run before merging. Triage at session load before pivoting to slice 18.
+   - **(B) New Dependabot security PR fired** — prioritise triaging per `docs/DEVELOPMENT.md §Dependabot major bump exception`.
+   - **(C) PRIMARY: Phase F slice 18** per step 3 — DEFAULT after Dependabot triage completes.
+   - **(D) Alex redirects** — follow the redirect. **Two §7-eligible follow-ups elevated to PRIMARY-candidates this session**: (i) **canvas SPA build-target slice** — spec amendment ready at `.claude/research/canvas-spa-build-target/spec.md` proposing ~9hr 4-slice insertion at ~slice 18.5; structural gap blocks v0.1 user-runnable canvas SPA; (ii) **PR-title-check `synchronize`-event addition** — n=4 INDEX threshold well past; fires on every Claude-merge PR; workaround is body-edit re-trigger. Cursor Hobby trial remains deferred to post-Phase-F.
+5. **READBACK BEFORE ACTION** — 3-5 sentence readback covering: (a) state verification + Dependabot triage plan; (b) archival check; (c) chosen primary workstream from A/B/C/D; (d) concrete first action. Wait for Alex confirmation before edits, PR actions, or subagent dispatches.
+6. **Carry-overs from Session 167:**
+   - **Phase F slices 1-17 / 31 SHIPPED**. Slice 18 (JSONL comment persistence) is next; 14 slices remaining.
+   - **UI conventions LOCKED** at `docs/CONVENTIONS.md §UI components` (NEW Session 167). Slice 18 + every UI slice after follows: flat-by-default folder, ≥3-file folder-promotion threshold, CSS modules + logical properties + `:root` vars + camelCase classes, native semantic HTML, `vitest-axe`'s `axe()` wrapper (NOT the matcher), integration-cover-first testing.
+   - **Verify-blocker-before-deferring rule** (NEW Session 167, n=1 watch at `feedback_verify_blocker_before_deferring.md`) — before naming Y as a blocker, steelman the smallest version of shipping X today + check whether Y actually blocks that. Promotion criterion: n=2 within 5 sessions → `docs/RATIONALIZATIONS.md`.
+   - **Trust-extension framing from Alex Session 167** — committed behaviors: verify-blocker rule by default + confidence calibration in language + surface structural gaps preemptively + save memories at n=1 not n=2 + ask when stakes are real not when grep would answer.
+   - **Canvas SPA build-target gap** (NEW Session 167 spec amendment at `.claude/research/canvas-spa-build-target/spec.md`) — structural gap: Phase F has no slice that wires HTML entry + `createRoot` mount + Vite config; the canvas SPA exists today as JSX-as-test-fixture only. Spec proposes ~9hr 4-slice insertion at ~slice 18.5. **§7-eligible PRIMARY-elevation candidate** — Alex should weigh slice 18 (persistence) vs slice 18.5 (build-target) ordering at Session 168 load.
+   - **Two Dependabot PRs OPEN** — #462 + #463 carrying from Session 167 close. Both auto-merge-eligible per labels; need rebase + CI re-run.
+   - **Cursor Hobby trial** deferred to AFTER Phase F completion (Session 163 close). With 14 slices remaining + ~1 slice/session cadence, ~10-14 sessions out.
    - **Decision A (Pro downgrade) CONFIRMED — kicks in 2026-05-31.** Current date 2026-05-21 — Pro downgrade is 10 days away. Still on Max 5× until transition.
-   - **PR-title-check workflow trigger gap n=3 (INDEX rule-of-three MET)** — `synchronize` event addition to `.github/workflows/pr-title-check.yml`. **§7-eligible Branch (D) PRIMARY-elevation candidate**. Workaround observed Session 166: `gh pr edit` (any PR-body edit) re-fires the workflow via `edited` event; close+reopen alternative still works. Until codified, prefer the PR-body-edit path since it's typically needed anyway for drift-fix-routing.
-   - **Spec amendments SHIPPED Session 165** still apply — postMessage opaque-origin contract + slice 16 v0.1 scope-narrow. Slice 17 implemented the receiver per the L184-205 amendment; slice 18's persistence layer is downstream of the receiver's `ActiveComment | null` state.
-   - **Mid-implementation directive cascade novel n=1** (Session 166) — Alex injected 6 directives during slice 17 impl (AbortController, native `<dialog>`, Atomic Design folder, message handler extraction, ref-callback factory extraction, hook extraction); all applied without scope grumble. Watch n=2.
-   - **TSDoc `aria-modal` factual claim drift n=1** (Session 166) — factual claims about browser/UA behaviour need primary-source verification; "browser does X" active-voice framing implies a literal observable action that may not be how the spec actually works. Watch n=2.
-   - **Atomic Design folder + first-component convention establishment novel n=1** (Session 166) — when introducing folder taxonomy, the README earns its weight at introduction. Pattern: single-file folders defensible if convention anchored in prose. Watch n=2 when next molecule/organism lands.
-   - **jsdom polyfill via setupFiles novel n=1** (Session 166) — when test-environment limitation conflicts with production-correct API, polyfill in `setupFiles` rather than feature-detect in component code. Watch n=2.
-   - **Schema-pair lifted at first cross-trust-boundary slice novel n=1** (Session 166) — cross-trust-boundary message envelopes are the canonical `docs/DA-REVIEW.md §Schema-pair check` target; zod/mini at the boundary is the codified resolution. Slice 18's JSONL records are NOT cross-trust-boundary (single-process file I/O), so this pattern doesn't apply directly there.
-   - **Drift-fix mandatory re-dispatch n=7** + **PR-body-edit-for-non-load-bearing-drift n=10** — both still §7-eligible Branch (D) for `docs/REVIEW-PATTERNS.md`; pair them in a single PR if codified. Strengthening case every session.
-   - **DA-caught-architectural-error-in-implementation n=5** — Session 166 added 1 more (M2 schema-pair drift); class-specific pattern confirmed (cross-cut surface slices ≥ 1 MATERIAL).
-   - **Self-induced-line-ref-drift-from-own-session-amendment defensive measure HELD** Session 166 (n=2 carry-over unchanged) — grep all spec-line cites in commit messages + PR body + comments against post-amendment HEAD before commit.
-   - **Premature-handoff-detection-via-Alex-challenge n=2 watch** (Session 165 carry-over unchanged) — if recurs at n=3, codify explicit "are you handing off too early?" check.
+   - **PR-title-check workflow trigger gap n=4 (well past INDEX rule-of-three)** — `synchronize` event addition to `.github/workflows/pr-title-check.yml`. **§7-eligible Branch (D) PRIMARY-elevation candidate**. Workaround: `gh pr edit` (any PR-body edit) re-fires via `edited` event.
+   - **Mid-research directive cascade novel n=2** (Session 167 added 5 directives mid-research: logical properties + stylelint + research-properly + ask-yourself-questions + sort-it-all-now). Watch n=3.
+   - **Multi-round spec-grill bounded-fold confirmed novel** (Session 167 ran 3 rounds R1+R2+R3 with rate 13→8→5; converged cleanly per `feedback_specgrill_discipline_task_fit.md`). The rule is empirically sound; no codification needed.
+   - **Variant-side CSS strategy deferral** to slice 19 (the carrier slice for variant-generation-prompt amendment) — slice 19 budget grows 3hr → 4hr per CONVENTIONS Q8.
+   - **Drift-fix mandatory re-dispatch n=8** + **PR-body-edit-for-non-load-bearing-drift n=11** — pair them in a §7-eligible codification PR for `docs/REVIEW-PATTERNS.md` when context permits.
+   - **DA-caught-architectural-error-in-implementation n=5** carry-over unchanged.
+   - **Detached-HEAD-from-husky-lint-staged novel n=1** (Session 167) — `git commit` post-husky-lint-staged produced detached HEAD; recovery: `git branch -f <branch> HEAD && git checkout <branch> && git push`. Watch n=2.
+   - **Self-induced-line-ref-drift-from-own-session-amendment defensive measure HELD** Session 167 (no spec line refs in PR prose).
+   - **Premature-handoff-detection-via-Alex-challenge n=2 watch** (Session 165 carry-over unchanged) — if recurs at n=3, codify.
    - **eslint-disable mid-implementation caught by Alex novel n=1** (Session 165 carry-over) — never disable a lint rule without surfacing to Alex first.
    - **Spec-amendment-as-prerequisite-bundled-with-slice novel n=1** (Session 165 carry-over) — watch n=2.
    - **Sealed-commit-history-drift-accepted-without-amendment novel n=1** (Session 165 carry-over) — watch n=2.
    - **Dependabot-security-PR-fail-closed-routing novel n=1** (Session 164 carry-over) — mitigation §7-eligible.
    - **Auto-merge globally OFF at repo level** (Session 163 carry-over) — manual `gh pr merge --squash`.
-   - **Copilot UNREACHABLE n=74** stable; advance per-dispatch on next surrogate fire.
-   - **Hallucination tracker clean** across 3 subagent dispatches Session 166 (DA + surrogate + re-dispatch all clean).
-   - **Time-bomb-test-bug pattern novel n=1**, **Precursor-PR-pattern novel n=1**, **First-extension-introduces-glob-bypass novel n=1**, **DA-encoded-drift novel n=1** — all watching for n=2 still.
-   - **React 19 compiler not configured** — `App.tsx` carries manual `useMemo` for ref-callback identity stability; React Compiler (`babel-plugin-react-compiler`) would obviate this. §7-eligible follow-up; codebase-wide ergonomics improvement, not slice-blocking.
-   - Active workstreams **3**: cross-tool workflow research (DEFERRED post-Phase-F) + Phase F (PRIMARY, slice 18 next) + PROGRESS.md cleanup (deferred-pending-evidence).
-7. **If Alex redirects on load**, follow the redirect — Phase F slice 18 default is not a contract. The PR-title-check workflow-trigger gap codification is the strongest §7-eligible alternative this session.
+   - **Copilot UNREACHABLE n=75** stable; advance per-dispatch.
+   - **Hallucination tracker clean** across 5 subagent dispatches Session 167 (R1+R2+R3 spec-grill + DA + surrogate).
+   - **Time-bomb-test-bug pattern novel n=1**, **Precursor-PR-pattern novel n=1**, **First-extension-introduces-glob-bypass novel n=1**, **DA-encoded-drift novel n=1**, **TSDoc aria-modal factual-claim drift novel n=1**, **Atomic-Design-folder-first-component-convention novel n=1**, **jsdom-polyfill-via-setupFiles novel n=1**, **Schema-pair-lifted-at-first-cross-trust-boundary-slice novel n=1** — all watching for n=2.
+   - **React 19 compiler not configured** — manual `useMemo` for ref-callback identity stability in App.tsx; React Compiler would obviate. §7-eligible follow-up.
+   - Active workstreams **3**: cross-tool workflow research (DEFERRED post-Phase-F) + Phase F (PRIMARY, slice 18 next OR slice 18.5 build-target gap per Alex) + PROGRESS.md cleanup (deferred-pending-evidence).
+7. **If Alex redirects on load**, follow the redirect. The strongest §7-eligible alternatives this session are: (i) canvas SPA build-target slice (real structural blocker) or (ii) PR-title-check workflow `synchronize`-event addition (mechanical waste every session). Pursue whichever Alex prefers.
 
 ---
 
