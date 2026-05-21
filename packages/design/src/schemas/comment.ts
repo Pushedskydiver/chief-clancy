@@ -6,12 +6,16 @@
  * field reuses `elementAnchorSchema` so the picked-element payload from
  * the iframe overlay can flow straight into the persisted record without
  * a shape conversion.
+ *
+ * `z.looseObject` for parity with `design.ts` — a v0.1 reader round-trips
+ * unknown keys instead of stripping them, so future-version fields added
+ * by a later writer survive parse → re-serialize cycles without loss.
  */
 import { z } from 'zod/mini';
 
 import { elementAnchorSchema } from './element-picked.js';
 
-export const commentSchema = z.object({
+export const commentSchema = z.looseObject({
   id: z.string(),
   variantId: z.string(),
   anchor: elementAnchorSchema,

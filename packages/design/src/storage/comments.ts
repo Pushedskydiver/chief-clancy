@@ -7,9 +7,14 @@
  * (`for line of file.split('\n') → JSON.parse(line)`) and survive a
  * crash mid-write — the partial last line is dropped on read.
  *
- * Missing file is treated as "no comments yet" (empty list), not an
- * error. Unparseable lines are skipped to absorb crash-truncated tails;
- * I/O failures (EACCES, ENOSPC) propagate as broken-invariant throws.
+ * Missing file on read is treated as "no comments yet" (empty list),
+ * not an error. Unparseable lines are skipped to absorb crash-truncated
+ * tails. The caller owns `sessionDir` lifecycle — `appendComment`
+ * assumes the directory already exists; ENOENT on the directory, plus
+ * other I/O failures (EACCES, ENOSPC), propagate as broken-invariant
+ * throws. Caller must validate `sessionDir` is within the canvas-session
+ * root before invoking either function — neither guards against
+ * traversal.
  */
 import type { Comment } from '../schemas/comment.js';
 

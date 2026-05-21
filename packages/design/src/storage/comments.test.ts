@@ -34,18 +34,15 @@ describe('JSONL comment persistence', () => {
   });
 
   it('writes 3 comments and reads them back in order', async () => {
-    const comments: readonly Comment[] = [
-      makeComment('c-1', 'variant-a', 'this button is too small'),
-      makeComment('c-2', 'variant-b', 'wrong contrast on heading'),
-      makeComment('c-3', 'variant-a', 'spacing feels cramped'),
-    ];
+    const first = makeComment('c-1', 'variant-a', 'this button is too small');
+    const second = makeComment('c-2', 'variant-b', 'wrong contrast on heading');
+    const third = makeComment('c-3', 'variant-a', 'spacing feels cramped');
 
-    await comments.reduce<Promise<void>>(
-      (prev, record) => prev.then(() => appendComment(sessionDir, record)),
-      Promise.resolve(),
-    );
+    await appendComment(sessionDir, first);
+    await appendComment(sessionDir, second);
+    await appendComment(sessionDir, third);
 
-    expect(await readComments(sessionDir)).toEqual(comments);
+    expect(await readComments(sessionDir)).toEqual([first, second, third]);
   });
 
   it('returns an empty list when no comments file exists yet', async () => {
