@@ -243,7 +243,7 @@ UI components live in `packages/design/src/canvas/components/`. Conventions belo
 - **CSS logical properties mandated** everywhere except runtime-positioning inline `style` (bounding-box coords from `getBoundingClientRect()` are naturally physical). Use `inline-size` / `block-size` / `inset-block-start` / `padding-inline` / etc. Enables future RTL + vertical writing-mode support without per-component rework. Stylelint plugin `stylelint-use-logical` enforces.
 - **Theme via `:root` CSS custom properties** at `canvas/styles/tokens.css`. Components reference vars via `var(--token-name)` — components stay theme-agnostic; switching themes means setting different values on `:root` (or a descendant).
 - **Inline `style={}` retained for positioning-anchor concerns** — runtime-computed values (e.g. bounding-box `top` / `left` from a postMessage event) AND structural positioning declarations that share the same anchor surface (e.g. `position: 'fixed'` next to runtime bbox coords). Theme-static styling stays in the CSS module; positioning-anchor stays inline so tests can assert against `element.style` (jsdom does not resolve CSS-module classes into computed style).
-- **Type shim**: each package that uses CSS modules ships a one-line shim at `src/types/css-modules.d.ts` declaring `*.module.css` modules. `packages/design/src/types/css-modules.d.ts` is the canonical shape. Lets `tsc` accept `.module.css` imports; vitest natively processes the modules in tests.
+- **Type shim**: each package that uses CSS modules ships a minimal shim at `src/types/css-modules.d.ts` declaring `*.module.css` modules (the load-bearing declaration is one statement; the file itself carries a brief TSDoc explaining the role). `packages/design/src/types/css-modules.d.ts` is the canonical shape. Lets `tsc` accept `.module.css` imports; vitest natively processes the modules in tests.
 
 ### Stylelint
 
@@ -268,7 +268,7 @@ Root config at `.stylelintrc.json` extends `stylelint-config-standard` + plugins
 - **Browser-MCP for visual verification** — deferred indefinitely; visual review is human-side, dispatched Playwright sub-agent when a dev-served URL exists.
 - **Variants-side CSS strategy** — separate from canvas-SPA CSS strategy (variants ship in sandboxed iframes — decoupled surfaces). Decide at the first slice that touches the variant-generation prompt; the choice rides with whichever slice amends `single.ts`'s system prompt to add comment-context threading.
 - **Tailwind re-evaluation** — re-open the CSS-strategy decision if I (Claude) materially struggle with CSS-module file-shuffle, measured as ≥3 fold cycles per UI slice attributable to CSS-strategy issues across ≥2 slices.
-- **Canvas SPA Vite build target** — Phase F build order has no slice that wires the canvas SPA's HTML entry + `createRoot` mount + Vite config. The canvas SPA exists today as JSX-as-test-fixture only. Surfaced separately at `.claude/research/canvas-spa-build-target/spec.md`.
+- **Canvas SPA build target** — there is no slice today that wires the canvas SPA's HTML entry + `createRoot` mount + Vite config. The canvas SPA exists today as JSX-as-test-fixture only. Tracked-artefact pointer: a spec amendment captures the gap + the slices needed to close it.
 
 ---
 
