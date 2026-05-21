@@ -1,0 +1,23 @@
+.dialog {
+  /* `position: fixed` lives inline on the component (not here) because it's
+     anchor-structural — coupled to the runtime-computed top/left coords. */
+  margin: 0;
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-elevated);
+  color: var(--color-fg);
+  box-shadow: var(--shadow-modal);
+  min-inline-size: 240px;
+  max-inline-size: 360px;
+}
+
+.textarea {
+  inline-size: 100%;
+  min-block-size: 80px;
+  padding: var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  resize: vertical;
+}

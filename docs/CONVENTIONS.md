@@ -219,6 +219,59 @@ These patterns apply to all board adapters (`board/{provider}/`):
 
 ---
 
+## UI components
+
+UI components live in `packages/design/src/canvas/components/`. Conventions below codify the patterns established by the first canvas component (`CommentModal`) and apply to every UI component after.
+
+### Folder layout
+
+- **Flat-by-default** — `canvas/components/<Component>.tsx`. Atomic Design (`atoms/` / `molecules/` / `organisms/`) is rejected: canvas is a small-scale app (projected ≤ 10-15 components), not a design-system library. The taxonomy adds navigation overhead without paying it back.
+- **Promote to a per-component folder** `canvas/components/<Component>/{<Component>.tsx, <Component>.test.tsx, <Component>.module.css, ...}` only when ≥3 co-located files genuinely exist. The 3-file threshold is the minimum at which a folder genuinely earns its weight — 2 files (component + test) is the floor for any non-trivial component; folder-promoting on 2 forces a folder for every component and defeats flat-by-default. This specialises the wrapper-folder rule (§Folder Structure) — UI components use a 3-file threshold rather than the general ≥2-source-files threshold because component + test is the implicit floor.
+- **Hooks** live in `canvas/hooks/` (sibling to `components/`). One file per hook, `use*` prefix.
+
+### Component file shape
+
+- One component per file. Props as inline `type ComponentNameProps = { readonly ... }` — no `interface`, no shared props-type catalogue.
+- Native semantic HTML first. ARIA roles only as an escape hatch when no native element fits the contract. `<dialog>.showModal()` for modals (not `<div role="dialog">` — the native element carries the implicit role + the UA applies modal semantics on `showModal()`).
+- When using ref callbacks for child-element registration (e.g. tracking a dynamic set of refs across an array of children), prefer the React 19 cleanup-return form: `ref={(el) => { ...; return () => { ... }; }}`. The null-detach legacy pattern still works but is deprecation-tracked. For single-element lifecycle access (`dialog.showModal()`, focus management), `useRef` + `useEffect` is the natural pattern — the cleanup-return rule does not apply.
+
+### CSS strategy
+
+**CSS modules + CSS custom properties.** One `<Component>.module.css` per component (lives in the per-component folder when the 3-file threshold fires).
+
+- **Class names use camelCase** (`dialog`, `textarea`, `commentModal`). Enables dot-access on the styles object (`styles.dialog`); kebab-case forces `styles['kebab-name']` because JS parses `styles.kebab-name` as subtraction. Stylelint rule `selector-class-pattern` enforces.
+- **CSS logical properties mandated** everywhere except runtime-positioning inline `style` (bounding-box coords from `getBoundingClientRect()` are naturally physical). Use `inline-size` / `block-size` / `inset-block-start` / `padding-inline` / etc. Enables future RTL + vertical writing-mode support without per-component rework. Stylelint plugin `stylelint-use-logical` enforces.
+- **Theme via `:root` CSS custom properties** at `canvas/styles/tokens.css`. Components reference vars via `var(--token-name)` — components stay theme-agnostic; switching themes means setting different values on `:root` (or a descendant).
+- **Inline `style={}` retained for positioning-anchor concerns** — runtime-computed values (e.g. bounding-box `top` / `left` from a postMessage event) AND structural positioning declarations that share the same anchor surface (e.g. `position: 'fixed'` next to runtime bbox coords). Theme-static styling stays in the CSS module; positioning-anchor stays inline so tests can assert against `element.style` (jsdom does not resolve CSS-module classes into computed style).
+- **Type shim**: each package that uses CSS modules ships a minimal shim at `src/types/css-modules.d.ts` declaring `*.module.css` modules (the load-bearing declaration is one statement; the file itself carries a brief TSDoc explaining the role). `packages/design/src/types/css-modules.d.ts` is the canonical shape. Lets `tsc` accept `.module.css` imports; vitest natively processes the modules in tests.
+
+### Stylelint
+
+Root config at `.stylelintrc.json` extends `stylelint-config-standard` + plugins `stylelint-use-logical`. Run via `pnpm lint:css` (chained into `pnpm lint`). lint-staged runs `stylelint --fix` + `prettier --write` on every `*.css` change.
+
+### a11y testing
+
+- **Every component test must include an axe smoke**: `const results = await axe(container); expect(results.violations).toEqual([])`. Catches ARIA-attribute validity, label existence, role hierarchy, accessible-name presence.
+- **Use `vitest-axe`'s `axe()` wrapper, NOT the `toHaveNoViolations` matcher.** `vitest-axe@0.1.0`'s matcher is incompatible with vitest 4.x (`__vitest_poll_takeover__` error). Plain `expect(results.violations).toEqual([])` is the workaround.
+- **jsdom limitations**: color-contrast + focus-visibility + top-layer `<dialog>` semantics under polyfill are not caught. These are inherent to the testbed. Visual a11y verification is human-side until playwright-axe lands (deferred).
+- **jsdom `<dialog>` polyfill** at `packages/design/test/setup-jsdom-dialog.ts` provides minimal `.showModal()` / `.close()` (jsdom v29 omits both). Wired via vitest `setupFiles`.
+
+### Testing posture
+
+- **Integration-cover-first**: default to testing a component or hook through its consumer's render path. RTL + `@testing-library/react` for components; consumer integration for hooks.
+- **Promote to a dedicated `<Component>.test.tsx`** when the component has behaviour not exercised by any consumer's render path: internal state machines, conditional renders the consumer doesn't trigger, error paths.
+- **Hooks promote to `renderHook`-based unit tests** only when they gain exposed setters, config knobs, or compose with other hooks. Integration through a consumer is the default.
+
+### Deferred (with re-evaluation triggers)
+
+- **Storybook** — defer until ≥4 components in `canvas/components/` at flat level. Mechanical trigger: `ls canvas/components/`.
+- **Browser-MCP for visual verification** — deferred indefinitely; visual review is human-side, dispatched Playwright sub-agent when a dev-served URL exists.
+- **Variants-side CSS strategy** — separate from canvas-SPA CSS strategy (variants ship in sandboxed iframes — decoupled surfaces). Decide at the first slice that touches the variant-generation prompt; the choice rides with whichever slice amends `single.ts`'s system prompt to add comment-context threading.
+- **Tailwind re-evaluation** — re-open the CSS-strategy decision if I (Claude) materially struggle with CSS-module file-shuffle, measured as ≥3 fold cycles per UI slice attributable to CSS-strategy issues across ≥2 slices.
+- **Canvas SPA build target** — there is no slice today that wires the canvas SPA's HTML entry + `createRoot` mount + Vite config. The canvas SPA exists today as JSX-as-test-fixture only. Tracked-artefact pointer: a spec amendment captures the gap + the slices needed to close it.
+
+---
+
 ## Error Handling
 
 **Return a `Result`-shaped discriminated union for expected failures; `throw` for broken invariants.** `Result` here names a _shape_, not an exported type — there is no shared `Result<T, E>` alias today; each site declares the union inline (a shared alias can land when two or more consumers want to import it). TypeScript has no checked exceptions — a signature that can throw gives no type-level signal. Return-typed failures make failure visible at call sites.

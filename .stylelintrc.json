@@ -1,0 +1,15 @@
+{
+  "extends": ["stylelint-config-standard"],
+  "plugins": ["stylelint-use-logical"],
+  "rules": {
+    "csstools/use-logical": ["always", { "except": [] }],
+    "selector-class-pattern": [
+      "^[a-z][a-zA-Z0-9]*$",
+      {
+        "message": "Use camelCase class names (CSS-module-friendly: dot-access via styles.commentModal)."
+      }
+    ],
+    "no-descending-specificity": null
+  },
+  "ignoreFiles": ["**/node_modules/**", "**/dist/**", "**/test/fixtures/**"]
+}

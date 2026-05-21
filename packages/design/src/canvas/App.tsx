@@ -4,7 +4,7 @@ import type { ReactElement, RefCallback } from 'react';
 
 import { useMemo, useState } from 'react';
 
-import { CommentModal } from './components/molecules/CommentModal.js';
+import { CommentModal } from './components/CommentModal/CommentModal.js';
 import { useElementPickedReceiver } from './hooks/useElementPickedReceiver.js';
 
 type AppProps = {

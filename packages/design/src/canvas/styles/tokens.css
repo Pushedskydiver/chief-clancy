@@ -1,0 +1,36 @@
+/*
+ * Canvas SPA theme tokens.
+ *
+ * CSS custom properties (variables) for cross-component styling. Imported
+ * once at the canvas SPA entry; components reference vars via
+ * `var(--token-name)` in their `.module.css` files. Switching themes
+ * (light/dark/etc.) means setting different values on `:root` (or a
+ * descendant) — components stay agnostic.
+ *
+ * Token surface is intentionally minimal here — populated only as
+ * components actually consume them. A full token catalogue belongs in
+ * `DESIGN.json` (the user-project-level design system) once the design
+ * package wires `clancy:design document` → canvas SPA token-resolution.
+ * Until then, this file holds the canvas-internal defaults.
+ */
+
+:root {
+  /* Foreground / background — neutral defaults; override per theme. */
+  --color-fg: #111;
+  --color-bg: #fff;
+  --color-fg-muted: #555;
+  --color-bg-elevated: #fff;
+
+  /* Borders + radii — small set; expand as needed. */
+  --color-border: #ddd;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+
+  /* Spacing — 4px scale. */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+
+  /* Shadow — single elevation. */
+  --shadow-modal: 0 4px 16px rgb(0 0 0 / 15%);
+}
