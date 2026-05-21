@@ -6,6 +6,12 @@ import { useEffect, useRef } from 'react';
 import styles from './CommentModal.module.css';
 
 const computeAnchorStyle = (boundingBox: BoundingBox): CSSProperties => ({
+  // `position: 'fixed'` lives inline (not in the module CSS) because it's
+  // anchor-structural: the runtime-computed `top` / `left` below only have
+  // meaning under fixed positioning, and keeping all three coupled on the
+  // same inline surface lets tests assert against `element.style` (jsdom
+  // does not resolve CSS-module classes to computed style).
+  position: 'fixed',
   top: boundingBox.top + boundingBox.height,
   left: boundingBox.left,
 });

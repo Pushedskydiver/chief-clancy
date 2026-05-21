@@ -28,8 +28,12 @@ describe('CommentModal', () => {
 
     const modal = screen.getByRole('dialog', { name: /comment input/i });
 
-    // Inline style carries the runtime-computed bbox coords; static styling
-    // (size, padding, shadow) lives in the module CSS.
+    // Inline style carries the anchor-structural declarations
+    // (`position: fixed` + runtime-computed bbox coords). Theme-static
+    // styling (size, padding, shadow) lives in the module CSS; jsdom does
+    // not resolve module classes to computed style so we assert only on the
+    // inline-visible surface.
+    expect(modal.style.position).toBe('fixed');
     expect(modal.style.top).toBe('130px');
     expect(modal.style.left).toBe('50px');
   });
