@@ -9,12 +9,12 @@
  * parent-side receiver agree on shape; tests import the same type rather
  * than redeclaring.
  *
- * Bounding-box uses `z.looseObject` because the iframe sends a serialized
- * `DOMRect` (8 numeric fields — `x`, `y`, `top`, `left`, `right`,
- * `bottom`, `width`, `height`); the receiver only requires the four
- * positioning fields and tolerates the rest. Field names use camelCase
- * throughout (sender constructs the payload from `getBoundingClientRect()`
- * which is camelCase per the CSSOM-View spec).
+ * Bounding-box uses `z.looseObject` as a forward-compat hedge: the
+ * receiver only requires the four positioning fields used to anchor the
+ * comment modal (`top`, `left`, `width`, `height`), so future channel
+ * versions may add fields on either side without breaking the parse.
+ * Field names use camelCase (sender constructs the payload from
+ * `getBoundingClientRect()` which is camelCase per the CSSOM-View spec).
  */
 import { z } from 'zod/mini';
 

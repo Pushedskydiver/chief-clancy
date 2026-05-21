@@ -19,10 +19,11 @@ type CommentModalProps = {
  *
  * Uses the native `<dialog>` element opened imperatively via
  * `showModal()`: this is the WCAG-correct modal contract. The browser
- * applies `aria-modal="true"`, inerts the rest of the page, traps focus
- * inside the dialog, and binds ESC to close — semantics that `<dialog
- * open>` (the declarative form) does not provide. The TSDoc for `<dialog>`
- * on MDN explicitly recommends `.show()` / `.showModal()` over the `open`
+ * exposes the dialog as modal to assistive technology, renders it in the
+ * top layer, inerts the rest of the page, traps focus inside the dialog,
+ * and binds ESC to close — semantics that `<dialog open>` (the
+ * declarative form) does not provide. MDN's documentation for `<dialog>`
+ * explicitly recommends `.show()` / `.showModal()` over the `open`
  * attribute.
  *
  * Renders fixed-positioned at `(boundingBox.left, boundingBox.top +

@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import type { Variant } from '../generate/types.js';
+import type { BoundingBox } from '../schemas/element-picked.js';
 
 import { act, cleanup, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -10,15 +11,8 @@ afterEach(cleanup);
 
 const ELEMENT_PICKED_TYPE = 'clancy:design:element-picked';
 
-type AnchorBoundingBox = {
-  readonly top: number;
-  readonly left: number;
-  readonly width: number;
-  readonly height: number;
-};
-
 const makeAnchor = (
-  boundingBox: AnchorBoundingBox = { top: 0, left: 0, width: 0, height: 0 },
+  boundingBox: BoundingBox = { top: 0, left: 0, width: 0, height: 0 },
 ) => ({
   selector: '[data-clancy-slot="abc"]',
   tag: 'button',
