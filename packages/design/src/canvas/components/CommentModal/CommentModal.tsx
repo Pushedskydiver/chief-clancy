@@ -3,8 +3,9 @@ import type { CSSProperties, ReactElement } from 'react';
 
 import { useEffect, useRef } from 'react';
 
-const computeModalStyle = (boundingBox: BoundingBox): CSSProperties => ({
-  position: 'fixed',
+import styles from './CommentModal.module.css';
+
+const computeAnchorStyle = (boundingBox: BoundingBox): CSSProperties => ({
   top: boundingBox.top + boundingBox.height,
   left: boundingBox.left,
 });
@@ -30,6 +31,11 @@ type CommentModalProps = {
  * boundingBox.height)` — i.e. directly under the picked element — so the
  * pick context stays visible while the user types. The textarea is
  * uncontrolled; value persistence is owned by a downstream layer.
+ *
+ * Styling: static styling lives in `CommentModal.module.css`; only the
+ * runtime-computed `top` / `left` ride on inline `style` (because they
+ * depend on the picked element's bounding box, which only exists at the
+ * point of render).
  */
 export const CommentModal = ({
   boundingBox,
@@ -49,9 +55,10 @@ export const CommentModal = ({
     <dialog
       ref={dialogRef}
       aria-label="Comment input"
-      style={computeModalStyle(boundingBox)}
+      className={styles.dialog}
+      style={computeAnchorStyle(boundingBox)}
     >
-      <textarea aria-label="Comment text" />
+      <textarea aria-label="Comment text" className={styles.textarea} />
     </dialog>
   );
 };
