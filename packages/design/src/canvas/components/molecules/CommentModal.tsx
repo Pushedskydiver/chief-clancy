@@ -1,44 +1,29 @@
+import type { BoundingBox } from '../../../schemas/element-picked.js';
 import type { CSSProperties, ReactElement } from 'react';
 
-/**
- * Bounding-box subset of the parent-side `ElementAnchor` that
- * `CommentModal` needs for positioning. Narrowing the prop API to the
- * position primitives keeps `CommentModal` a presentational molecule per
- * Atomic Design — the modal owns "where to render" and "what controls to
- * expose," not "which DOM selector the comment is anchored to" (that
- * lives on the parent-side receiver).
- */
-export type CommentAnchorBoundingBox = {
-  readonly top: number;
-  readonly left: number;
-  readonly width: number;
-  readonly height: number;
-};
+import { useEffect, useRef } from 'react';
 
-const computeModalStyle = (
-  boundingBox: CommentAnchorBoundingBox,
-): CSSProperties => ({
+const computeModalStyle = (boundingBox: BoundingBox): CSSProperties => ({
   position: 'fixed',
   top: boundingBox.top + boundingBox.height,
   left: boundingBox.left,
 });
 
 type CommentModalProps = {
-  readonly boundingBox: CommentAnchorBoundingBox;
+  readonly boundingBox: BoundingBox;
 };
 
 /**
  * Comment input modal anchored just below the picked element's bounding
  * box.
  *
- * Uses the native `<dialog>` element rather than `<div role="dialog">`
- * for WCAG / semantic-HTML reasons: `<dialog>` carries the implicit
- * `role="dialog"` mapping, integrates with assistive-technology focus
- * announcement, and leaves room to upgrade to `showModal()` (focus trap +
- * ESC handling + top-layer rendering) without changing the markup
- * contract. Ships the declarative `open` form for now — no focus trap, no
- * top-layer — because the rendered structure is the load-bearing
- * deliverable and focus management is a separate concern.
+ * Uses the native `<dialog>` element opened imperatively via
+ * `showModal()`: this is the WCAG-correct modal contract. The browser
+ * applies `aria-modal="true"`, inerts the rest of the page, traps focus
+ * inside the dialog, and binds ESC to close — semantics that `<dialog
+ * open>` (the declarative form) does not provide. The TSDoc for `<dialog>`
+ * on MDN explicitly recommends `.show()` / `.showModal()` over the `open`
+ * attribute.
  *
  * Renders fixed-positioned at `(boundingBox.left, boundingBox.top +
  * boundingBox.height)` — i.e. directly under the picked element — so the
@@ -47,12 +32,25 @@ type CommentModalProps = {
  */
 export const CommentModal = ({
   boundingBox,
-}: CommentModalProps): ReactElement => (
-  <dialog
-    open
-    aria-label="Comment input"
-    style={computeModalStyle(boundingBox)}
-  >
-    <textarea aria-label="Comment text" />
-  </dialog>
-);
+}: CommentModalProps): ReactElement => {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (dialog === null || dialog.open) return;
+    dialog.showModal();
+    return () => {
+      if (dialog.open) dialog.close();
+    };
+  }, []);
+
+  return (
+    <dialog
+      ref={dialogRef}
+      aria-label="Comment input"
+      style={computeModalStyle(boundingBox)}
+    >
+      <textarea aria-label="Comment text" />
+    </dialog>
+  );
+};

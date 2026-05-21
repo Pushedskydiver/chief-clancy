@@ -1,66 +1,24 @@
+import type {
+  ElementAnchor,
+  ElementPickedMessage,
+} from '../../schemas/element-picked.js';
+
 import { useEffect, useState } from 'react';
 
-export type AnchorBoundingBox = {
-  readonly top: number;
-  readonly left: number;
-  readonly width: number;
-  readonly height: number;
-};
+import { elementPickedMessageSchema } from '../../schemas/element-picked.js';
 
-export type ElementAnchor = {
-  readonly selector: string;
-  readonly tag: string;
-  readonly textSnippet: string;
-  readonly boundingBox: AnchorBoundingBox;
-};
+export type IframeMap = Readonly<Record<string, HTMLIFrameElement>>;
 
 export type ActiveComment = {
   readonly variantId: string;
   readonly anchor: ElementAnchor;
 };
 
-export type IframeMap = Readonly<Record<string, HTMLIFrameElement>>;
-
-type ElementPickedMessage = {
-  readonly type: typeof ELEMENT_PICKED_TYPE;
-  readonly variantId: string;
-  readonly anchor: ElementAnchor;
-};
-
-const ELEMENT_PICKED_TYPE = 'clancy:design:element-picked';
-
-const isAnchorBoundingBox = (value: unknown): value is AnchorBoundingBox => {
-  if (typeof value !== 'object' || value === null) return false;
-  const bbox = value as Record<string, unknown>;
-  return (
-    typeof bbox.top === 'number' &&
-    typeof bbox.left === 'number' &&
-    typeof bbox.width === 'number' &&
-    typeof bbox.height === 'number'
-  );
-};
-
-const isElementAnchor = (value: unknown): value is ElementAnchor => {
-  if (typeof value !== 'object' || value === null) return false;
-  const anchor = value as Record<string, unknown>;
-  return (
-    typeof anchor.selector === 'string' &&
-    typeof anchor.tag === 'string' &&
-    typeof anchor.textSnippet === 'string' &&
-    isAnchorBoundingBox(anchor.boundingBox)
-  );
-};
-
-const isElementPickedMessage = (
+const parseElementPickedMessage = (
   data: unknown,
-): data is ElementPickedMessage => {
-  if (typeof data !== 'object' || data === null) return false;
-  const message = data as Record<string, unknown>;
-  return (
-    message.type === ELEMENT_PICKED_TYPE &&
-    typeof message.variantId === 'string' &&
-    isElementAnchor(message.anchor)
-  );
+): ElementPickedMessage | null => {
+  const result = elementPickedMessageSchema.safeParse(data);
+  return result.success ? result.data : null;
 };
 
 /**
@@ -87,11 +45,11 @@ const resolveSenderVariantId = (
  * Build the parent-side `message` handler for the element-pick channel.
  *
  * The validation pipeline reads as a single sequence: resolve sender →
- * discriminate envelope → cross-check claimed variantId → commit state.
- * Each early-return is one validation step; the message must clear every
- * step to set the active comment.
+ * structurally parse envelope (zod/mini schema) → cross-check claimed
+ * variantId → commit state. Each early-return is one validation step;
+ * the message must clear every step to set the active comment.
  *
- * The cross-check (`event.data.variantId === resolvedVariantId`) defeats
+ * The cross-check (`message.variantId === resolvedVariantId`) defeats
  * self-id-spoofing: a compromised variant cannot forge a `contentWindow`
  * handle across origins, so identity-matching pins the claimed variantId
  * to the verified sender.
@@ -103,11 +61,12 @@ const createPickedMessageHandler = (
   return (event) => {
     const resolvedVariantId = resolveSenderVariantId(iframes, event.source);
     if (resolvedVariantId === null) return;
-    if (!isElementPickedMessage(event.data)) return;
-    if (event.data.variantId !== resolvedVariantId) return;
+    const message = parseElementPickedMessage(event.data);
+    if (message === null) return;
+    if (message.variantId !== resolvedVariantId) return;
     setActiveComment({
       variantId: resolvedVariantId,
-      anchor: event.data.anchor,
+      anchor: message.anchor,
     });
   };
 };

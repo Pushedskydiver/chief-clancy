@@ -24,23 +24,30 @@ const removeFromIframeMap = (
 /**
  * Create a stable ref callback for a single variant's iframe.
  *
- * The callback writes to `setIframes` immutably: null-element (detach)
- * removes the entry via filter; non-null element (attach) spreads a new
- * record with the entry added. No `Map.set` / `Map.delete` mutations — the
- * codebase's `functional/immutable-data` rule disallows them and the
- * immutable shape composes cleanly with the receiver's `useEffect`
- * dependency array.
+ * Uses the React 19 ref-callback cleanup-return form: the callback runs
+ * on attach with the element, and the returned cleanup function runs on
+ * detach. The legacy `(element) => element === null ? detach : attach`
+ * shape still works but is documented as removal-target in a future React
+ * version. State updates are immutable: attach spreads a new record;
+ * detach filters via `Object.fromEntries(Object.entries(...).filter(...))`.
+ * No `Map.set` / `Map.delete` mutations — the codebase's
+ * `functional/immutable-data` rule disallows them and the immutable shape
+ * composes cleanly with the receiver's `useEffect` dependency array.
  */
 const createIframeRefCallback = (
   variantId: string,
   setIframes: SetIframesUpdater,
 ): RefCallback<HTMLIFrameElement> => {
   return (element) => {
-    setIframes((prev) =>
-      element === null
-        ? removeFromIframeMap(prev, variantId)
-        : { ...prev, [variantId]: element },
-    );
+    // React 19 ref-callback cleanup-return: React calls this once with the
+    // element on attach + invokes the returned cleanup on detach; it does
+    // NOT call back with `null` to signal detach. The TypeScript signature
+    // (`RefCallback<T>`) still admits `null` for back-compat — narrow here.
+    if (element === null) return;
+    setIframes((prev) => ({ ...prev, [variantId]: element }));
+    return () => {
+      setIframes((prev) => removeFromIframeMap(prev, variantId));
+    };
   };
 };
 
@@ -84,6 +91,12 @@ const buildIframeRefCallbacks = (
  * changes, so the listener always sees the current handle set;
  * re-registration is cheap (one `addEventListener` swap per variant
  * mount/unmount) and the `AbortController` cleanup is single-source-of-truth.
+ *
+ * **Contract: `variants` must be reference-stable across renders.** The
+ * ref-callback memoisation pins identity by `variants` array reference, so
+ * a parent that re-allocates `variants` every render forces detach+attach
+ * + a brief window where in-flight postMessages can be dropped. Pass a
+ * memoised or state-owned array.
  */
 export const App = ({ variants = [] }: AppProps): ReactElement => {
   const [iframes, setIframes] = useState<IframeMap>({});
