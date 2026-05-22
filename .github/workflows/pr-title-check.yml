@@ -15,9 +15,15 @@ name: PR title check
 on:
   pull_request:
     # `edited` fires on title/body changes; `opened`/`reopened` cover lifecycle.
-    # `synchronize` (push to head) is intentionally omitted — title cannot
-    # change via push, so re-running on every push is wasteful.
-    types: [opened, edited, reopened]
+    # `synchronize` re-runs on every push to the PR head — necessary because
+    # commit status results are SHA-attached: when a push moves the PR tip,
+    # the previous SUCCESS (against the old tip) does not automatically
+    # apply to the new tip, and required-status-check branch protection can
+    # block merge until a fresh run posts a SUCCESS against the current
+    # SHA. The re-run is cheap (single bash check, no setup) and avoids the
+    # close+reopen / gh pr edit workaround burden that fired repeatedly on
+    # Claude-merge PRs pre-fix.
+    types: [opened, edited, reopened, synchronize]
 
 permissions:
   contents: read
