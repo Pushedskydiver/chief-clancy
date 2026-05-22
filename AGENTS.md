@@ -49,7 +49,7 @@ gh pr create --title "✨ feat(scope): description" --assignee Pushedskydiver --
 # PR title = squash commit subject — must follow the gitmoji + type format above (see docs/GIT.md §Types).
 # A CI check (.github/workflows/pr-title-check.yml) validates the title on PR open/edit.
 # Type labels: feature, fix, chore (chore also covers refactor/ and docs/ branches)
-# Package labels: core, terminal, brief, plan, dev, scan
+# Package labels: core, terminal, brief, plan, dev, scan, design
 ```
 
 Merge policy: Codex auto-merges a PR when all gates pass and no exception fires. Alex merges otherwise. See [`docs/DEVELOPMENT.md` §Auto-merge criteria](docs/DEVELOPMENT.md#auto-merge-criteria) for gates + exceptions.

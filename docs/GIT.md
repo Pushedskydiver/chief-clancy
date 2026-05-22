@@ -137,6 +137,7 @@ Add when the PR touches package-specific code:
 | `plan`     | Changes to `packages/plan/`     |
 | `dev`      | Changes to `packages/dev/`      |
 | `scan`     | Changes to `packages/scan/`     |
+| `design`   | Changes to `packages/design/`   |
 
 PRs touching multiple packages get multiple labels. Root-only changes (CI, docs, config) get no scope label.
 
