@@ -184,6 +184,55 @@ describe('generate (slice 10 — single-call variant)', () => {
     expect(result.seed).toBe('brutalist/raw');
   });
 
+  it('system prompt mandates data-clancy-slot on every interactive and structural element + preservation across iterations (slice 19 — spec §Phase 4 — "Anchor stability — data-clancy-slot injection")', async () => {
+    const { client, createMock } = buildClient(VALID_RESPONSE);
+
+    await generate(
+      {
+        variantId: 'v1',
+        seed: 'editorial/magazine',
+        sessionId: 's',
+        designContext: '',
+      },
+      client,
+    );
+
+    const system = firstCallArgs(createMock)?.system;
+    const systemText = Array.isArray(system) ? system[0]?.text : undefined;
+    expect(systemText).toContain(
+      'Every interactive element and major structural element',
+    );
+    expect(systemText).toContain('data-clancy-slot');
+    expect(systemText).toContain(
+      'PRESERVE existing data-clancy-slot values on retained elements',
+    );
+    expect(systemText).toContain(
+      'Generate fresh slot IDs only for newly-introduced elements',
+    );
+  });
+
+  it('system prompt encodes the Q8 variant-CSS strategy: scoped <style> + CSS variables, no Tailwind / external stylesheets (slice 19 Q8 fold)', async () => {
+    const { client, createMock } = buildClient(VALID_RESPONSE);
+
+    await generate(
+      {
+        variantId: 'v1',
+        seed: 'editorial/magazine',
+        sessionId: 's',
+        designContext: '',
+      },
+      client,
+    );
+
+    const system = firstCallArgs(createMock)?.system;
+    const systemText = Array.isArray(system) ? system[0]?.text : undefined;
+    expect(systemText).toContain('scoped <style> block');
+    expect(systemText).toContain('CSS variables');
+    expect(systemText).toContain('Do NOT use Tailwind utility classes');
+    expect(systemText).toContain('Do NOT link external stylesheets');
+    expect(systemText).toContain('sandboxed iframe');
+  });
+
   it('picks the text block when response interleaves non-text blocks', async () => {
     const createMock: CreateMock = vi.fn().mockResolvedValue({
       content: [{ type: 'thinking' }, { type: 'text', text: VALID_RESPONSE }],
