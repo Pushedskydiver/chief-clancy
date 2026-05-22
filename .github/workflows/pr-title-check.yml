@@ -16,13 +16,13 @@ on:
   pull_request:
     # `edited` fires on title/body changes; `opened`/`reopened` cover lifecycle.
     # `synchronize` re-runs on every push to the PR head — necessary because
-    # GitHub's required-status-check gate is SHA-attached: when a push moves
-    # the PR tip, the previous check result (against the old tip) does not
-    # automatically apply to the new tip, and branch protection can block
-    # merge until a fresh run posts a SUCCESS against the current SHA. The
-    # ~30s re-run cost is the right trade vs the close+reopen / gh pr edit
-    # workaround burden that fired on Claude-merge PRs pre-fix (INDEX
-    # rule-of-three threshold well past).
+    # commit status results are SHA-attached: when a push moves the PR tip,
+    # the previous SUCCESS (against the old tip) does not automatically
+    # apply to the new tip, and required-status-check branch protection can
+    # block merge until a fresh run posts a SUCCESS against the current
+    # SHA. The re-run is cheap (single bash check, no setup) and avoids the
+    # close+reopen / gh pr edit workaround burden that fired repeatedly on
+    # Claude-merge PRs pre-fix.
     types: [opened, edited, reopened, synchronize]
 
 permissions:
