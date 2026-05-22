@@ -5,10 +5,10 @@
  * shape: filters the supplied comment list to those that are (a) `status
  * === 'open'` and (b) anchored to the target `variantId`, serialises
  * each as a JSONL line, and threads the resulting block into
- * `generate()`'s `comments` field per spec §Comment-file format
- * iteration-loop step 6 (path-b-local-spec.md L458-459 — "Comments:
- * [JSONL contents filtered to status='open']" — and L482
- * single-variantId default).
+ * `generate()`'s `comments` field per spec §Phase 4 — Iteration loop
+ * step 6 ("Comments: [JSONL contents filtered to status='open']") and
+ * §Phase 4 — Open risks → Multi-variant comment lifecycle (the
+ * single-variantId default that v0.2 may revisit).
  *
  * `priorVariant` is required here (vs optional on `GenerateInput`) —
  * regeneration by definition iterates on a prior render, so a caller
@@ -26,27 +26,33 @@
  * "User comments to address:" header rather than emitting an empty
  * one — an empty block would mislead Claude into looking for
  * directives that aren't there.
+ *
+ * **Forwarding shape.** The call site spreads the residual input fields
+ * into `generate()` rather than naming each one, so any future
+ * `GenerateInput` growth (e.g. a `temperature` knob) flows through
+ * without an explicit per-field update here. The only fields this
+ * module deliberately rebinds are `comments` (transformed from
+ * `readonly Comment[]` to the JSONL string) and the structurally
+ * unchanged `priorVariant` (re-narrowed from optional to required at
+ * the `RegenerateInput` type level, not at the call site).
  */
 import type { Comment } from '../schemas/comment.js';
 import type { GenerateInput, MessagesClient, Variant } from './single.js';
 
 import { generate } from './single.js';
 
-export type RegenerateInput = Omit<
-  GenerateInput,
-  'priorVariant' | 'comments'
-> & {
+type RegenerateInput = Omit<GenerateInput, 'priorVariant' | 'comments'> & {
   readonly priorVariant: string;
   readonly comments: readonly Comment[];
 };
 
-const selectComments = (
+const findOpenMatchingComments = (
   comments: readonly Comment[],
   variantId: string,
 ): readonly Comment[] =>
   comments.filter((c) => c.status === 'open' && c.variantId === variantId);
 
-const formatCommentsBlock = (
+const buildCommentsBlock = (
   selected: readonly Comment[],
 ): string | undefined =>
   selected.length === 0
@@ -57,17 +63,6 @@ export async function regenerate(
   input: RegenerateInput,
   client: MessagesClient,
 ): Promise<Variant> {
-  const selected = selectComments(input.comments, input.variantId);
-  return generate(
-    {
-      variantId: input.variantId,
-      seed: input.seed,
-      sessionId: input.sessionId,
-      designContext: input.designContext,
-      priorVariant: input.priorVariant,
-      comments: formatCommentsBlock(selected),
-      model: input.model,
-    },
-    client,
-  );
+  const selected = findOpenMatchingComments(input.comments, input.variantId);
+  return generate({ ...input, comments: buildCommentsBlock(selected) }, client);
 }

@@ -133,4 +133,33 @@ describe('regenerate (slice 19 — variant regeneration with comments context)',
     expect(content).not.toContain('User comments to address:');
     expect(content).toContain('Prior variant:');
   });
+
+  it('serialises surviving comments as newline-delimited JSON (JSONL per spec §Phase 4 — Iteration loop step 6)', async () => {
+    const { client, createMock } = buildClient(VALID_RESPONSE);
+
+    const comments: readonly Comment[] = [
+      buildComment({ id: 'c-A', text: 'AAA text' }),
+      buildComment({ id: 'c-B', text: 'BBB text' }),
+    ];
+
+    await regenerate(
+      {
+        variantId: 'v2',
+        seed: 'editorial/magazine',
+        sessionId: 's',
+        designContext: '',
+        priorVariant: '<div data-clancy-slot="root">Welcome</div>',
+        comments,
+      },
+      client,
+    );
+
+    const content = userContent(createMock);
+    const jsonLines = content
+      .split('\n')
+      .filter((line) => line.startsWith('{') && line.endsWith('}'));
+    expect(jsonLines).toHaveLength(2);
+    expect(JSON.parse(jsonLines[0]).id).toBe('c-A');
+    expect(JSON.parse(jsonLines[1]).id).toBe('c-B');
+  });
 });
