@@ -20,10 +20,10 @@ Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash comman
 
 ## Architecture rules
 
-- **Core imports nothing from terminal, brief, plan, dev, or scan** — enforced by eslint-plugin-boundaries
-- **Brief, plan, and scan are fully standalone** — no core/terminal deps
+- **Core imports nothing from terminal, brief, plan, dev, scan, or design** — enforced by eslint-plugin-boundaries
+- **Brief, plan, scan, and design are fully standalone** — no core/terminal deps
 - **Terminal imports from core and dev** — enforced by eslint-plugin-boundaries
-- **Dependency direction:** core ← dev ← terminal ← chief-clancy wrapper. Brief, plan, and scan are standalone (no core/terminal deps)
+- **Dependency direction:** core ← dev ← terminal ← chief-clancy wrapper. Brief, plan, scan, and design are standalone (no core/terminal deps)
 - **Brief and plan have three installation modes:** standalone (no board), standalone+board (credentials via `/clancy:board-setup`), terminal (full pipeline via `npx chief-clancy`). Detection uses `.clancy/.env` + `.clancy/clancy-implement.js` presence
 
 ## Code conventions

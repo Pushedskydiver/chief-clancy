@@ -1,6 +1,6 @@
 # Testing
 
-Clancy uses a 3-layer QA architecture: unit tests (co-located across five packages — core, terminal, brief, plan, dev), integration tests (in `packages/terminal/test/integration/`), and E2E tests (also under terminal, in `test/e2e/`). All three layers use Vitest.
+Clancy uses a 3-layer QA architecture: unit tests (co-located across six packages — core, terminal, brief, plan, dev, design), integration tests (in `packages/terminal/test/integration/`), and E2E tests (also under terminal, in `test/e2e/`). All three layers use Vitest.
 
 ## Quick reference
 
@@ -9,7 +9,7 @@ pnpm test                        # All tests (unit + integration; via Turbo, for
 pnpm typecheck                   # tsc --noEmit (all packages)
 pnpm lint                        # ESLint (all packages)
 
-# Per-package (any of core, terminal, brief, plan, dev)
+# Per-package (any of core, terminal, brief, plan, dev, design)
 cd packages/<name> && pnpm test                  # One package's unit tests
 cd packages/terminal && pnpm test:e2e            # E2E tests (real APIs — terminal only)
 cd packages/terminal && pnpm test:e2e "github"   # E2E for a single board
