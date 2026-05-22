@@ -445,7 +445,7 @@ For drift detection. Bump these when intentional growth lands.
 | `@chief-clancy/plan`     | 326   | Refreshed 2026-04-21      |
 | `@chief-clancy/dev`      | 1210  | First baseline 2026-04-21 |
 
-`@chief-clancy/scan` ships no unit tests (prompts-only — `src/{agents,commands,workflows}` only) and is excluded from this baseline. `@chief-clancy/design` is excluded pending Phase F completion — baseline lands when the test count stabilises (slice 19 just bumped 145 → 150; ~13 slices still remaining).
+`@chief-clancy/scan` ships no unit tests (prompts-only — `src/{agents,commands,workflows}` only) and is excluded from this baseline. `@chief-clancy/design` is excluded pending Phase F completion — baseline lands when the test count stabilises (slice 19 just bumped 145 → 150; 12 slices still remaining of the 31 in the spec).
 
 Drift outside these baselines without an intentional change is a Red Flag — see [DA-REVIEW.md](DA-REVIEW.md#red-flags--stop-and-reassess).
 
