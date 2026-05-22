@@ -184,7 +184,7 @@ describe('generate (slice 10 — single-call variant)', () => {
     expect(result.seed).toBe('brutalist/raw');
   });
 
-  it('system prompt mandates data-clancy-slot on every interactive and structural element + preservation across iterations (slice 19 — spec §Phase 4 — Anchor stability injection block)', async () => {
+  it('system prompt mandates data-clancy-slot on every interactive and structural element + preservation across iterations (slice 19 — spec §Phase 4 — "Anchor stability — data-clancy-slot injection")', async () => {
     const { client, createMock } = buildClient(VALID_RESPONSE);
 
     await generate(
