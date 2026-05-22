@@ -56,7 +56,7 @@ Merge policy: Codex auto-merges a PR when all gates pass and no exception fires.
 
 ## Architecture
 
-Dependency direction: core ← dev ← terminal ← chief-clancy. Brief, plan, and scan are standalone (no core/terminal deps). No reverse imports. Enforced by eslint-plugin-boundaries.
+Dependency direction: core ← dev ← terminal ← chief-clancy. Brief, plan, scan, and design are standalone (no core/terminal deps). No reverse imports. Enforced by eslint-plugin-boundaries.
 
 ## Non-obvious constraints
 

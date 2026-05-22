@@ -286,19 +286,20 @@ Clancy also merges a section into your `CLAUDE.md` (or creates one) that tells C
 
 ## Packages
 
-This is a monorepo with seven packages:
+This is a monorepo with eight packages:
 
-| Package                                         | Purpose                                                                    |
-| ----------------------------------------------- | -------------------------------------------------------------------------- |
-| [`chief-clancy`](./packages/chief-clancy)       | CLI wrapper — `npx chief-clancy` delegates to terminal                     |
-| [`@chief-clancy/terminal`](./packages/terminal) | Installer, slash commands, hooks, runners, agents                          |
-| [`@chief-clancy/core`](./packages/core)         | Board integrations, pipeline phases, lifecycle modules, schemas            |
-| [`@chief-clancy/scan`](./packages/scan)         | Shared codebase scanning agents and workflows (map-codebase, update-docs)  |
-| [`@chief-clancy/brief`](./packages/brief)       | Standalone brief generator — `npx @chief-clancy/brief` (no board required) |
-| [`@chief-clancy/plan`](./packages/plan)         | Standalone implementation planner — `npx @chief-clancy/plan`               |
-| [`@chief-clancy/dev`](./packages/dev)           | Standalone ticket executor — `npx @chief-clancy/dev`                       |
+| Package                                         | Purpose                                                                                  |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| [`chief-clancy`](./packages/chief-clancy)       | CLI wrapper — `npx chief-clancy` delegates to terminal                                   |
+| [`@chief-clancy/terminal`](./packages/terminal) | Installer, slash commands, hooks, runners, agents                                        |
+| [`@chief-clancy/core`](./packages/core)         | Board integrations, pipeline phases, lifecycle modules, schemas                          |
+| [`@chief-clancy/scan`](./packages/scan)         | Shared codebase scanning agents and workflows (map-codebase, update-docs)                |
+| [`@chief-clancy/brief`](./packages/brief)       | Standalone brief generator — `npx @chief-clancy/brief` (no board required)               |
+| [`@chief-clancy/plan`](./packages/plan)         | Standalone implementation planner — `npx @chief-clancy/plan`                             |
+| [`@chief-clancy/dev`](./packages/dev)           | Standalone ticket executor — `npx @chief-clancy/dev`                                     |
+| [`@chief-clancy/design`](./packages/design)     | Standalone AI-design tool — `clancy-design` bin (Phase F in-progress; not yet published) |
 
-Dependency direction: `core` ← `dev` ← `terminal` ← `chief-clancy`. Brief, plan, and scan are standalone (no core/terminal deps). See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full module map.
+Dependency direction: `core` ← `dev` ← `terminal` ← `chief-clancy`. Brief, plan, scan, and design are standalone (no core/terminal deps). See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full module map.
 
 ---
 

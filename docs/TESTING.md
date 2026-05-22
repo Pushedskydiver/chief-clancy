@@ -22,7 +22,7 @@ pnpm vitest run --coverage       # Unit tests with coverage report (80% threshol
 
 ## Layer 1: Unit tests
 
-Module-level tests with `vi.mock()`. Co-located with source files across all five packages.
+Module-level tests with `vi.mock()`. Co-located with source files across all six packages.
 
 ### How to run
 
@@ -227,7 +227,7 @@ E2E tests do not retry because they create real external resources (tickets, PRs
 
 ### Root config (`vitest.config.ts`)
 
-Manages all five packages with coverage thresholds:
+Manages all six packages with coverage thresholds:
 
 ```
 80% minimum for statements, branches, functions, and lines
