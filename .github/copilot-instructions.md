@@ -4,7 +4,7 @@ Autonomous, board-driven development for Claude Code. Monorepo for `@chief-clanc
 
 ## Project overview
 
-Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash commands, hooks, and board integrations (Jira, GitHub Issues, Linear, Shortcut, Notion, Azure DevOps) into Claude Code projects. This monorepo splits the codebase into `@chief-clancy/core` (board intelligence, types, lifecycle, pipeline), `@chief-clancy/terminal` (installer, hooks, CLI bridge), `@chief-clancy/brief` (standalone strategic brief generator), `@chief-clancy/plan` (standalone implementation planner), `@chief-clancy/dev` (standalone autonomous ticket executor), and `@chief-clancy/scan` (codebase scanning agents). The `chief-clancy` wrapper delegates to terminal and sources brief + plan content from their respective packages.
+Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash commands, hooks, and board integrations (Jira, GitHub Issues, Linear, Shortcut, Notion, Azure DevOps) into Claude Code projects. This monorepo splits the codebase into `@chief-clancy/core` (board intelligence, types, lifecycle, pipeline), `@chief-clancy/terminal` (installer, hooks, CLI bridge), `@chief-clancy/brief` (standalone strategic brief generator), `@chief-clancy/plan` (standalone implementation planner), `@chief-clancy/dev` (standalone autonomous ticket executor), `@chief-clancy/scan` (codebase scanning agents), and `@chief-clancy/design` (standalone AI-design tool — variant generation, canvas, design-system documentation). The `chief-clancy` wrapper delegates to terminal and sources brief + plan content from their respective packages.
 
 ## Tech stack
 
@@ -20,10 +20,10 @@ Clancy is a CLI tool installed via `npx chief-clancy`. It scaffolds slash comman
 
 ## Architecture rules
 
-- **Core imports nothing from terminal, brief, plan, dev, or scan** — enforced by eslint-plugin-boundaries
-- **Brief, plan, and scan are fully standalone** — no core/terminal deps
+- **Core imports nothing from terminal, brief, plan, dev, scan, or design** — enforced by eslint-plugin-boundaries
+- **Brief, plan, scan, and design are fully standalone** — no core/terminal deps
 - **Terminal imports from core and dev** — enforced by eslint-plugin-boundaries
-- **Dependency direction:** core ← dev ← terminal ← chief-clancy wrapper. Brief, plan, and scan are standalone (no core/terminal deps)
+- **Dependency direction:** core ← dev ← terminal ← chief-clancy wrapper. Brief, plan, scan, and design are standalone (no core/terminal deps)
 - **Brief and plan have three installation modes:** standalone (no board), standalone+board (credentials via `/clancy:board-setup`), terminal (full pipeline via `npx chief-clancy`). Detection uses `.clancy/.env` + `.clancy/clancy-implement.js` presence
 
 ## Code conventions

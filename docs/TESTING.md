@@ -1,6 +1,6 @@
 # Testing
 
-Clancy uses a 3-layer QA architecture: unit tests (co-located across five packages — core, terminal, brief, plan, dev), integration tests (in `packages/terminal/test/integration/`), and E2E tests (also under terminal, in `test/e2e/`). All three layers use Vitest.
+Clancy uses a 3-layer QA architecture: unit tests (co-located across six packages — core, terminal, brief, plan, dev, design), integration tests (in `packages/terminal/test/integration/`), and E2E tests (also under terminal, in `test/e2e/`). All three layers use Vitest.
 
 ## Quick reference
 
@@ -9,7 +9,7 @@ pnpm test                        # All tests (unit + integration; via Turbo, for
 pnpm typecheck                   # tsc --noEmit (all packages)
 pnpm lint                        # ESLint (all packages)
 
-# Per-package (any of core, terminal, brief, plan, dev)
+# Per-package (any of core, terminal, brief, plan, dev, design)
 cd packages/<name> && pnpm test                  # One package's unit tests
 cd packages/terminal && pnpm test:e2e            # E2E tests (real APIs — terminal only)
 cd packages/terminal && pnpm test:e2e "github"   # E2E for a single board
@@ -22,7 +22,7 @@ pnpm vitest run --coverage       # Unit tests with coverage report (80% threshol
 
 ## Layer 1: Unit tests
 
-Module-level tests with `vi.mock()`. Co-located with source files across all five packages.
+Module-level tests with `vi.mock()`. Co-located with source files across all six packages.
 
 ### How to run
 
@@ -227,7 +227,7 @@ E2E tests do not retry because they create real external resources (tickets, PRs
 
 ### Root config (`vitest.config.ts`)
 
-Manages all five packages with coverage thresholds:
+Manages all six packages with coverage thresholds:
 
 ```
 80% minimum for statements, branches, functions, and lines
@@ -445,7 +445,7 @@ For drift detection. Bump these when intentional growth lands.
 | `@chief-clancy/plan`     | 326   | Refreshed 2026-04-21      |
 | `@chief-clancy/dev`      | 1210  | First baseline 2026-04-21 |
 
-`@chief-clancy/scan` ships no unit tests (prompts-only — `src/{agents,commands,workflows}` only) and is excluded from this baseline.
+`@chief-clancy/scan` ships no unit tests (prompts-only — `src/{agents,commands,workflows}` only) and is excluded from this baseline. `@chief-clancy/design` is excluded pending Phase F completion — baseline lands when the test count stabilises (slice 19 just bumped 145 → 150; 12 slices still remaining of the 31 in the spec).
 
 Drift outside these baselines without an intentional change is a Red Flag — see [DA-REVIEW.md](DA-REVIEW.md#red-flags--stop-and-reassess).
 

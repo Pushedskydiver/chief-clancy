@@ -2,7 +2,7 @@
 
 ## Overview
 
-Clancy is a monorepo of seven npm packages that install Claude Code slash commands, workflows, hooks, and runtime scripts into a user's project. Board logic is implemented in TypeScript ESM modules. Hooks are pre-built CommonJS bundles. Commands and workflows are markdown.
+Clancy is a monorepo of eight npm packages that install Claude Code slash commands, workflows, hooks, and runtime scripts into a user's project. Board logic is implemented in TypeScript ESM modules. Hooks are pre-built CommonJS bundles. Commands and workflows are markdown.
 
 > For visual diagrams of packages, flows, and board interactions, see [VISUAL-ARCHITECTURE.md](VISUAL-ARCHITECTURE.md).
 
@@ -18,13 +18,14 @@ Own npx entry (install independently of terminal):
 @chief-clancy/brief           — strategic brief generator (bundles scan assets at install)
 @chief-clancy/plan            — implementation planner (bundles scan assets at install)
 @chief-clancy/dev             — ticket executor runtime; imports core (bundles scan assets at install)
+@chief-clancy/design          — AI-design tool (`clancy-design` bin); not yet published (Phase F in-progress)
 
 Library/asset-only (bundled into consumer installers — no npx, no installer):
 @chief-clancy/scan            — agents/commands/workflows distribution
 @chief-clancy/core            — board abstractions, schemas, shared utilities
 ```
 
-**Dependency direction: core ← dev ← terminal ← chief-clancy.** `brief`, `plan`, and `dev` each ship their own `npx @chief-clancy/{pkg}` entry and installer surface. `scan` and `core` are library/asset-only and flow into consumer installers. Import layer (ESLint-enforced): `scan`, `brief`, and `plan` import nothing cross-package; `dev` imports `core`; `terminal` imports `core` and `dev`; `chief-clancy` imports `terminal` (brief/plan/scan are resolved at installer-time for path wiring, not JS imports). Workspace layer: `brief`, `plan`, `dev`, and `chief-clancy` declare `scan` as a workspace dep for installer-time asset bundling (no TypeScript imports from scan; `chief-clancy` resolves scan and passes its asset paths into `terminal`'s `runInstall`). No reverse imports. Enforced by `eslint-plugin-boundaries`.
+**Dependency direction: core ← dev ← terminal ← chief-clancy.** `brief`, `plan`, `dev`, and `design` each ship their own `npx @chief-clancy/{pkg}` entry and installer surface (design's is currently a `clancy-design` bin pre-publish). `scan` and `core` are library/asset-only and flow into consumer installers. Import layer (ESLint-enforced): `scan`, `brief`, `plan`, and `design` import nothing cross-package; `dev` imports `core`; `terminal` imports `core` and `dev`; `chief-clancy` imports `terminal` (brief/plan/scan/design are resolved at installer-time for path wiring, not JS imports). Workspace layer: `brief`, `plan`, `dev`, and `chief-clancy` declare `scan` as a workspace dep for installer-time asset bundling (no TypeScript imports from scan; `chief-clancy` resolves scan and passes its asset paths into `terminal`'s `runInstall`). No reverse imports. Enforced by `eslint-plugin-boundaries`.
 
 | Package                  | Purpose                                                                                                                                                                       | Published      |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
@@ -35,6 +36,7 @@ Library/asset-only (bundled into consumer installers — no npx, no installer):
 | `@chief-clancy/brief`    | Standalone brief generator — `/clancy:brief`, `/clancy:approve-brief`, `/clancy:board-setup`, `/clancy:update-brief`, `/clancy:uninstall-brief`                               | Yes            |
 | `@chief-clancy/plan`     | Standalone planner — `/clancy:plan`, `/clancy:approve-plan`, `/clancy:board-setup`, `/clancy:update-plan`, `/clancy:uninstall-plan` (writes `.approved` marker in local mode) | Yes            |
 | `@chief-clancy/dev`      | Standalone executor — pipeline phases, lifecycle modules, esbuild runtime bundles for `.clancy/`                                                                              | Yes            |
+| `@chief-clancy/design`   | Standalone AI-design tool — variant generation, canvas, design-system documentation (`clancy-design` bin)                                                                     | No (Phase F)   |
 
 ## Directory Structure
 
