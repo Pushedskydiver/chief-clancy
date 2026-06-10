@@ -154,6 +154,18 @@ This is the [§Post-restructure consistency sweep](DA-REVIEW.md#post-restructure
 
 _Caught (n=6 across 5 sessions): Layer 3 spec arc — Session 131 R3 caught a sub-issue-bundling fold (R2-M1 closed deferral-classification sub-issue, missed score-pinning sub-issue under the same finding name); Session 132 R4 caught an Option-C ripple-miss fold (post-R3 v3→v4 fold landed in §3 + §4 + §6 sub-table + §10, didn't ripple into §6 prose lines 153/159 + §8 VALID row); Session 137 R6 caught axis-1 inherited C3-drop direct-token ripple; Session 137 R7 caught axis-2 inherited C3-drop derived-cardinality ripple (n=12→9, "4 conditions"→"3 conditions"); Session 138 R8 caught axis-3 fold-introduced qualifier-word collision ("active" qualifier addition); Session 140 Step D R1 caught axis-2 inherited count-transfer (n=5/5 sibling-enumeration claim transferred without re-counting against full corpus). The 3-axis sweep at fold time would have closed each gap one round earlier. Empirical confirmation that the discipline works once applied: axis-1 originally codified at v5-nit-clean R5 (Session 132); axes 2 + 3 confirmed working at v6.2 + v6.2.1 LOCKED (Sessions 137-138)._
 
+### Fold-introduced drift in fold-citing artifacts
+
+The 3-axis sweep above guards the _spec's_ internal consistency after a fold. The same post-fold discipline applies to artifacts that _cite_ the folded content but live outside the spec body — test names, commit messages, PR bodies, next-session loading-instructions. After folding, re-verify these against the **post-fold** state, not the pre-fold snapshot you started from:
+
+1. **Cited arithmetic** — counts and "N of M" figures copied from a pre-fold snapshot (e.g. a prior loading-instruction block) carry the stale value; re-derive from the post-fold source. ([PR #469](https://github.com/Pushedskydiver/chief-clancy/pull/469) `a8d0bf1` — "~13 slices remaining" copied from a pre-slice-19 LI; post-fold reality was 12.)
+2. **Quoted spec text** — verbatim quotes pasted before the fold landed may no longer match; re-copy from the post-fold file.
+3. **Paraphrased anchors** — paraphrasing a spec anchor while folding can _reintroduce_ the very drift the fold was eliminating; quote the anchor verbatim. ([PR #468](https://github.com/Pushedskydiver/chief-clancy/pull/468) Session 169 — a fold paraphrased a spec-anchor reference embedded in a test name, reintroducing the drift it targeted; caught on re-dispatch, corrected verbatim in `c418791`.)
+
+This is the [3-axis sweep](#fold-incompleteness-in-multi-section-folds) turned on artifacts outside the spec. The spec-internal qualifier-word axis (R8 Session 138) was the first fold-introduced-drift instance; this subsection extends the class to fold-citing artifacts.
+
+_Caught (n=2 fold-citing artifacts, both Session 169): [PR #468](https://github.com/Pushedskydiver/chief-clancy/pull/468) `c418791` (paraphrased spec-anchor reference in a test name); [PR #469](https://github.com/Pushedskydiver/chief-clancy/pull/469) `a8d0bf1` (arithmetic copied from a pre-fold LI). R8 Session 138 (axis 3 above) is the spec-internal precedent. Meets this file's 2+-catch bar; codified Session 170._
+
 ---
 
 ## How this file is used

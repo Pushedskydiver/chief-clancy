@@ -34,7 +34,7 @@ core        (domain model, types, schemas, board APIs, shared utilities)
 
 brief    ← scan                 (prompt + markdown installer; scan is workspace-asset-only, zero code imports)
 plan     ← scan                 (prompt + markdown installer; scan is workspace-asset-only, zero code imports)
-design                          (future — scope TBD)
+design                          (Phase F — in progress)
 dev      ← core, scan           (pipeline, lifecycle, executor — imports core; scan is workspace-asset-only, zero code imports)
 
 terminal ← core, dev            (installer + hooks + runners)
@@ -44,6 +44,8 @@ cli                             (future — interactive install wizard)
 ```
 
 Terminal and chat are **siblings**, not a chain — both consume core + dev directly. The "light-dep-on-core" shape originally planned for brief/plan/design did not materialise: brief and plan shipped as prompt+markdown installers (scan is what they needed for codebase-reading agents, not core types), and design's shape is deferred until Phase F.
+
+> **Status update (Session 170, 2026-06):** `design` is no longer "future — scope TBD" / "deferred until Phase F" as written above — it landed Session 155 ([PR #435](https://github.com/Pushedskydiver/chief-clancy/pull/435)) and is in active Phase F implementation (standalone `clancy-design` bin; not yet published). The decision-time framing above is preserved as historical record; see `PROGRESS.md` §Phase ledger for the current Phase F slice count.
 
 ## Extraction criteria
 

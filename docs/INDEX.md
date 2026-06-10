@@ -25,11 +25,16 @@ Scenario-organized router. Maps trigger situations to the docs Claude consults +
 
 **Affected files**:
 
-- **Observed** (union of PRs #388/#393/#395 diffs):
+- **Observed** (union of PRs #388/#393/#395 package-graph diffs + the [PR #469](https://github.com/Pushedskydiver/chief-clancy/pull/469) package-enumeration sweep):
   - `.github/copilot-instructions.md`
   - `CLAUDE.md`
+  - `AGENTS.md` (CLAUDE.md byte-equal sync mirror — PR-workflow package-label list)
   - `docs/ARCHITECTURE.md`
   - `docs/VISUAL-ARCHITECTURE.md`
+  - `docs/GIT.md` (PR-workflow package-label list)
+  - `docs/TESTING.md` (test-baseline + package enumerations)
+  - `docs/SELF-REVIEW.md` (package-label enumeration)
+  - `docs/DA-REVIEW.md` (package-label enumeration)
   - `docs/decisions/PACKAGE-EVOLUTION.md`
   - `packages/scan/README.md`
   - `packages/scan/package.json`
@@ -47,6 +52,7 @@ Scenario-organized router. Maps trigger situations to the docs Claude consults +
 1. Synonym-variant grep before assuming files complete: arrow form (`A ← B`), phrase form (`A depends on B`), alias names (`chief-clancy` vs `wrapper`). See PR #388 (`← wrapper` miss) and PR #393 (`← core, scan` arrow-form miss) for evidence of this gap.
 2. New packages start with `"private": true` per [`docs/DEVELOPMENT.md §Release Flow`](DEVELOPMENT.md#release-flow). Flip to `"private": false` + add a changeset only when the package is ready (README written, API stable).
 3. Update sibling docs in the same PR — partial updates strand the unedited siblings (sub-class d drift class).
+4. **Package-enumeration sweep** — a package is enumerated in more than the dependency-direction files: PR-workflow package-label lists (`CLAUDE.md`/`AGENTS.md`/`docs/GIT.md`) plus dependency-chain, test-baseline, and glossary prose across the Observed/Derived files above. Grep the label list (`core, terminal, brief, plan, dev, scan`) **and** the package-name set repo-wide before assuming complete. [PR #435](https://github.com/Pushedskydiver/chief-clancy/pull/435) (the `design` add) stranded **11** such sites; [PR #469](https://github.com/Pushedskydiver/chief-clancy/pull/469) swept them — the 3 canonical PR-workflow label-lists plus 8 sub-class-d enumeration-prose siblings (`docs/TESTING.md`, `docs/SELF-REVIEW.md`, `docs/GLOSSARY.md`, `docs/ARCHITECTURE.md`, `.github/copilot-instructions.md`, `docs/DA-REVIEW.md`, `README.md`, `CONTRIBUTING.md`). A package add that updates only `CLAUDE.md`'s list strands the rest.
 
 **Cross-refs**: [`docs/DA-REVIEW.md §Cross-doc consistency sweep`](DA-REVIEW.md#cross-doc-consistency-sweep) (synonym-variant + sibling-sweep), [`docs/ARCHITECTURE.md`](ARCHITECTURE.md), [`docs/decisions/PACKAGE-EVOLUTION.md`](decisions/PACKAGE-EVOLUTION.md).
 
