@@ -34,7 +34,7 @@ This was not a migration — it was a rebuild with the old codebase as reference
 | `packages/scan`         | `@chief-clancy/scan`     | Shipped — static-analysis tooling for codebase mapping                                            |
 | `packages/chief-clancy` | `chief-clancy`           | Shipped — thin bin wrapper (`npx chief-clancy` delegates to `@chief-clancy/terminal`)             |
 | `packages/cli`          | `@chief-clancy/cli`      | Future — interactive install wizard                                                               |
-| `packages/design`       | `@chief-clancy/design`   | Future (Phase F) — design specs, a11y, Stitch integration                                         |
+| `packages/design`       | `@chief-clancy/design`   | Phase F (in progress) — design specs, a11y, Stitch integration; not yet published                 |
 | `packages/chat`         | `@chief-clancy/chat`     | Future — MCP server / Slack / Teams conversational interface                                      |
 
 ## What Clancy gains
