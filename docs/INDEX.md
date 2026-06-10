@@ -35,13 +35,13 @@ Scenario-organized router. Maps trigger situations to the docs Claude consults +
   - `docs/TESTING.md` (test-baseline + package enumerations)
   - `docs/SELF-REVIEW.md` (package-label enumeration)
   - `docs/DA-REVIEW.md` (package-label enumeration)
+  - `docs/GLOSSARY.md` (chain references)
+  - `CONTRIBUTING.md` (package-count block)
+  - `README.md` (package list)
   - `docs/decisions/PACKAGE-EVOLUTION.md`
   - `packages/scan/README.md`
   - `packages/scan/package.json`
 - **Derived** (principled, unverified):
-  - `CONTRIBUTING.md` (package-count block)
-  - `README.md` (package list)
-  - `docs/GLOSSARY.md` (chain references)
   - `eslint.config.ts` (boundaries — dep-direction edits only)
   - `tsconfig.json` (path aliases — add/remove only)
   - root `package.json` `pnpm.overrides` (if peer-dep anchor needed — see PR #386 novel pattern)
