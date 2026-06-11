@@ -38,7 +38,7 @@
     "bin"
   ],
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.100.1",
+    "@anthropic-ai/sdk": "^0.104.1",
     "jiti": "^2.7.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
