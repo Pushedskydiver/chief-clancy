@@ -5,7 +5,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { approveVariant } from './approve.js';
 
@@ -44,5 +44,37 @@ describe('approval marker persistence', () => {
       sha256: createHash('sha256').update(variant.html).digest('hex'),
       approverPid: 12345,
     });
+  });
+
+  it('defaults approvedAt and approverPid to the real clock and process when omitted', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-07-21T09:00:00.000Z'));
+
+    try {
+      await approveVariant(sessionDir, variant, { sessionId: 'sess_abc123' });
+    } finally {
+      vi.useRealTimers();
+    }
+
+    const raw = await readFile(join(sessionDir, 'v2-iter5.approved'), 'utf8');
+    const marker: unknown = JSON.parse(raw);
+
+    expect(marker).toMatchObject({
+      approvedAt: '2026-07-21T09:00:00.000Z',
+      approverPid: process.pid,
+    });
+  });
+
+  it('rejects a variant id shaped to escape sessionDir via path traversal', async () => {
+    const traversalVariant: Variant = {
+      ...variant,
+      id: '../../../../tmp/evil',
+    };
+
+    await expect(
+      approveVariant(sessionDir, traversalVariant, {
+        sessionId: 'sess_abc123',
+      }),
+    ).rejects.toThrow(/resolves outside sessionDir/);
   });
 });
