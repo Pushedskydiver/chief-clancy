@@ -46,6 +46,7 @@ describe('JSONL variant persistence', () => {
     const first = makeVariant('v1-iter1', 'brutally minimal');
     await appendVariant(sessionDir, first);
 
+    // Simulate a process crash mid-write: a partial JSON line with no trailing newline.
     await appendFile(
       join(sessionDir, 'variants.jsonl'),
       '{"id":"v2-iter1","seed":"editorial/magazine","html"',
