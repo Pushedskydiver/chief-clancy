@@ -14,8 +14,8 @@
  * EISDIR, ENOSPC) propagate. Mirrors `storage/approve.ts`'s
  * caller-owns-`sessionDir` contract with a slot-path-traversal guard,
  * since `slot` derives from a stable-selector key that isn't
- * charset-restricted, and `storage/comments.ts`'s read-side fs-error
- * narrowing.
+ * charset-restricted — unlike an opaque minted id such as
+ * `storage/threads.ts`'s `threadId`, which is held to a charset instead.
  */
 import type { ElementState } from '../schemas/element-state.js';
 
@@ -25,11 +25,9 @@ import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { z } from 'zod/mini';
 
 import { elementStateSchema } from '../schemas/element-state.js';
+import { isNodeFsError } from './fs-errors.js';
 
 const ELEMENTS_DIR = 'elements';
-
-const isNodeFsError = (err: unknown): err is NodeJS.ErrnoException =>
-  typeof err === 'object' && err !== null && 'code' in err;
 
 /**
  * Resolve `<sessionDir>/elements/<slot>.json`, rejecting a `slot` shaped to

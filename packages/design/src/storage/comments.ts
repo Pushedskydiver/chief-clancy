@@ -24,11 +24,9 @@ import { join } from 'node:path';
 import { z } from 'zod/mini';
 
 import { commentSchema } from '../schemas/comment.js';
+import { isNodeFsError } from './fs-errors.js';
 
 const COMMENTS_FILENAME = 'comments.jsonl';
-
-const isNodeFsError = (err: unknown): err is NodeJS.ErrnoException =>
-  typeof err === 'object' && err !== null && 'code' in err;
 
 export async function appendComment(
   sessionDir: string,
