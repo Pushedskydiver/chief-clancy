@@ -12,8 +12,11 @@ describe('isNodeFsError', () => {
   });
 
   it('accepts a code-bearing plain object, not just an Error instance', () => {
-    // The `canvas/server/lock.ts` variant uses `instanceof Error` and would
-    // reject this; the two guards are not interchangeable.
+    // This is the looser of the two shapes in the repo, and the minority one:
+    // `instanceof Error && 'code' in err` is used at six sites, including
+    // `canvas/server/lock.ts`, and would reject this input. Pinning the
+    // difference so a future consolidation is a deliberate choice, not a
+    // silent semantic change to the storage read paths.
     expect(isNodeFsError({ code: 'EISDIR' })).toBe(true);
   });
 
