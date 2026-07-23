@@ -1,6 +1,6 @@
 import type { ElementState } from '../schemas/element-state.js';
 
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -75,5 +75,39 @@ describe('element-state persistence', () => {
     await expect(readElementState(sessionDir, '../../evil')).rejects.toThrow(
       /resolves outside the elements dir/,
     );
+  });
+
+  it('throws (not returns null) when the stored file is malformed JSON', async () => {
+    await mkdir(join(sessionDir, 'elements'), { recursive: true });
+    await writeFile(
+      join(sessionDir, 'elements', 'h1.header.json'),
+      '{ not json',
+      'utf8',
+    );
+
+    await expect(readElementState(sessionDir, 'h1.header')).rejects.toThrow(
+      SyntaxError,
+    );
+  });
+
+  it('throws when the stored file is valid JSON but fails schema validation', async () => {
+    await mkdir(join(sessionDir, 'elements'), { recursive: true });
+    await writeFile(
+      join(sessionDir, 'elements', 'h1.header.json'),
+      JSON.stringify({ slot: 'h1.header' }),
+      'utf8',
+    );
+
+    await expect(readElementState(sessionDir, 'h1.header')).rejects.toThrow();
+  });
+
+  it('rethrows a non-ENOENT read error instead of returning null', async () => {
+    // Make the target path a directory so readFile rejects with EISDIR — a
+    // non-ENOENT error that must propagate, not be swallowed as "no state".
+    await mkdir(join(sessionDir, 'elements', 'h1.header.json'), {
+      recursive: true,
+    });
+
+    await expect(readElementState(sessionDir, 'h1.header')).rejects.toThrow();
   });
 });

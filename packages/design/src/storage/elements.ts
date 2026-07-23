@@ -7,20 +7,29 @@
  * this file is OVERWRITTEN wholesale on every state change —
  * `writeElementState` replaces it, it never appends.
  *
- * Reads validate against `elementStateSchema` (untrusted disk data);
- * `readElementState` returns `null` when no state has been written for the
- * slot yet. Mirrors `storage/approve.ts`'s caller-owns-`sessionDir`
- * contract with a slot-path-traversal guard, since `slot` derives from a
- * stable-selector key that isn't charset-restricted.
+ * Reads validate against `elementStateSchema` (untrusted disk data), so a
+ * corrupt or schema-invalid state file throws rather than yielding a
+ * malformed object; `readElementState` returns `null` only when no state
+ * has been written for the slot yet (ENOENT). Other I/O failures (EACCES,
+ * EISDIR, ENOSPC) propagate. Mirrors `storage/approve.ts`'s
+ * caller-owns-`sessionDir` contract with a slot-path-traversal guard,
+ * since `slot` derives from a stable-selector key that isn't
+ * charset-restricted, and `storage/comments.ts`'s read-side fs-error
+ * narrowing.
  */
 import type { ElementState } from '../schemas/element-state.js';
 
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { isAbsolute, join, relative, resolve } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+
+import { z } from 'zod/mini';
 
 import { elementStateSchema } from '../schemas/element-state.js';
 
 const ELEMENTS_DIR = 'elements';
+
+const isNodeFsError = (err: unknown): err is NodeJS.ErrnoException =>
+  typeof err === 'object' && err !== null && 'code' in err;
 
 /**
  * Resolve `<sessionDir>/elements/<slot>.json`, rejecting a `slot` shaped to
@@ -44,7 +53,7 @@ export async function writeElementState(
   state: ElementState,
 ): Promise<void> {
   const path = elementPath(sessionDir, slot);
-  await mkdir(join(sessionDir, ELEMENTS_DIR), { recursive: true });
+  await mkdir(dirname(path), { recursive: true });
   await writeFile(path, JSON.stringify(state, null, 2) + '\n', 'utf8');
 }
 
@@ -55,12 +64,12 @@ export async function readElementState(
   const path = elementPath(sessionDir, slot);
 
   const raw = await readFile(path, 'utf8').catch(
-    (error: NodeJS.ErrnoException): string | null => {
-      if (error.code === 'ENOENT') return null;
-      throw error;
+    (err: unknown): string | null => {
+      if (isNodeFsError(err) && err.code === 'ENOENT') return null;
+      throw err;
     },
   );
   if (raw === null) return null;
 
-  return elementStateSchema.parse(JSON.parse(raw));
+  return z.parse(elementStateSchema, JSON.parse(raw));
 }

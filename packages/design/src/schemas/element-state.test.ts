@@ -1,6 +1,7 @@
 import type { ElementState } from './element-state.js';
 
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod/mini';
 
 import { elementStateSchema } from './element-state.js';
 
@@ -28,11 +29,11 @@ describe('elementStateSchema', () => {
       },
     };
 
-    expect(elementStateSchema.parse(accepted)).toEqual(accepted);
+    expect(z.parse(elementStateSchema, accepted)).toEqual(accepted);
   });
 
   it('rejects a variant status outside generating | ready | failed', () => {
-    const bad = {
+    const withBadStatus = {
       ...base,
       rounds: [
         {
@@ -43,15 +44,45 @@ describe('elementStateSchema', () => {
         },
       ],
     };
+    expect(z.safeParse(elementStateSchema, withBadStatus).success).toBe(false);
 
-    expect(() => elementStateSchema.parse(bad)).toThrow();
+    // Control: the identical shape with a valid status parses — proving the
+    // rejection is driven by `status`, not an unrelated field.
+    const withValidStatus = {
+      ...withBadStatus,
+      rounds: [
+        {
+          roundId: 'r1',
+          variants: [
+            { id: 'A1', sha: 'sha-a1', isLocked: false, status: 'failed' },
+          ],
+        },
+      ],
+    };
+    expect(z.safeParse(elementStateSchema, withValidStatus).success).toBe(true);
   });
 
-  it('preserves unknown keys on parse so a later slice can extend the shape', () => {
-    const withExtra = { ...base, futureField: 'kept' };
-
-    expect(elementStateSchema.parse(withExtra)).toMatchObject({
+  it('preserves unknown keys at every level so a later slice can extend the shape', () => {
+    const withExtras = {
+      ...base,
       futureField: 'kept',
-    });
+      rounds: [
+        {
+          roundId: 'r1',
+          roundExtra: 'kept',
+          variants: [
+            {
+              id: 'A1',
+              sha: 'sha-a1',
+              isLocked: false,
+              status: 'ready',
+              variantExtra: 'kept',
+            },
+          ],
+        },
+      ],
+    };
+
+    expect(z.parse(elementStateSchema, withExtras)).toEqual(withExtras);
   });
 });
