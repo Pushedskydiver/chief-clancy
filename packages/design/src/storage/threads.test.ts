@@ -83,15 +83,67 @@ describe('JSONL thread persistence', () => {
     expect(await readThreadMessages(sessionDir, 'a7dH24')).toEqual([first]);
   });
 
-  it('rejects a threadId shaped to escape the threads dir via path traversal', async () => {
-    const message = makeMessage('user', 'evil', '2026-07-23T12:00:00.000Z');
+  it('throws on a malformed line that is not the torn tail', async () => {
+    const first = makeMessage('user', 'first', '2026-07-23T12:00:00.000Z');
+    const third = makeMessage('user', 'third', '2026-07-23T12:00:02.000Z');
+
+    // A line framed by a newline was written whole — a bad one there is
+    // corruption, not a torn write, and must not vanish from the thread.
+    await appendThreadMessage(sessionDir, 'a7dH24', first);
+    await appendFile(
+      join(sessionDir, 'threads', 'a7dH24.jsonl'),
+      JSON.stringify({ ...first, status: 'resolved' }) + '\n',
+      'utf8',
+    );
+    await appendThreadMessage(sessionDir, 'a7dH24', third);
+
+    await expect(readThreadMessages(sessionDir, 'a7dH24')).rejects.toThrow();
+  });
+
+  it('throws on a complete final line that fails schema validation', async () => {
+    // Newline-terminated, so the torn-tail exemption must not cover it.
+    await mkdir(join(sessionDir, 'threads'), { recursive: true });
+    await appendFile(
+      join(sessionDir, 'threads', 'a7dH24.jsonl'),
+      JSON.stringify({
+        ...makeMessage('user', 'bad kind', '2026-07-23T12:00:00.000Z'),
+        kind: 'system',
+      }) + '\n',
+      'utf8',
+    );
+
+    await expect(readThreadMessages(sessionDir, 'a7dH24')).rejects.toThrow();
+  });
+
+  it('rejects a message that does not satisfy the schema before writing it', async () => {
+    const invalid = {
+      ...makeMessage('user', 'bad status', '2026-07-23T12:00:00.000Z'),
+      status: 'resolved',
+    } as unknown as ThreadMessage;
 
     await expect(
-      appendThreadMessage(sessionDir, '../../evil', message),
-    ).rejects.toThrow(/resolves outside the threads dir/);
+      appendThreadMessage(sessionDir, 'a7dH24', invalid),
+    ).rejects.toThrow();
 
-    await expect(readThreadMessages(sessionDir, '../../evil')).rejects.toThrow(
-      /resolves outside the threads dir/,
+    // Nothing was written, so the thread is still empty rather than unreadable.
+    expect(await readThreadMessages(sessionDir, 'a7dH24')).toEqual([]);
+  });
+
+  it('rejects a threadId that is not a single id-shaped path segment', async () => {
+    const message = makeMessage('user', 'evil', '2026-07-23T12:00:00.000Z');
+    // `x/../y` would otherwise normalise onto thread `y`; `''` would open a
+    // real file named `.jsonl`; `sub/thread` would nest a directory.
+    const rejected = ['../../evil', 'x/../y', '', 'sub/thread', '.'];
+
+    await Promise.all(
+      rejected.flatMap((threadId) => [
+        expect(
+          appendThreadMessage(sessionDir, threadId, message),
+        ).rejects.toThrow(/is not a valid thread id/),
+        expect(readThreadMessages(sessionDir, threadId)).rejects.toThrow(
+          /is not a valid thread id/,
+        ),
+      ]),
     );
   });
 
@@ -102,7 +154,9 @@ describe('JSONL thread persistence', () => {
       recursive: true,
     });
 
-    await expect(readThreadMessages(sessionDir, 'a7dH24')).rejects.toThrow();
+    await expect(
+      readThreadMessages(sessionDir, 'a7dH24'),
+    ).rejects.toMatchObject({ code: 'EISDIR' });
   });
 
   it('keeps threads in separate files so one thread never reads another', async () => {

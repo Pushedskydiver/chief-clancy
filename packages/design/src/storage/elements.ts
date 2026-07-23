@@ -25,11 +25,9 @@ import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { z } from 'zod/mini';
 
 import { elementStateSchema } from '../schemas/element-state.js';
+import { isNodeFsError } from './fs-errors.js';
 
 const ELEMENTS_DIR = 'elements';
-
-const isNodeFsError = (err: unknown): err is NodeJS.ErrnoException =>
-  typeof err === 'object' && err !== null && 'code' in err;
 
 /**
  * Resolve `<sessionDir>/elements/<slot>.json`, rejecting a `slot` shaped to

@@ -17,57 +17,67 @@
  * user action writes one thread line and one `chat.jsonl` line, and the
  * pair must share a timestamp, which only a caller-side clock can
  * guarantee. Same contract as `storage/elements.ts`'s `accepted.ts`.
+ * (`storage/approve.ts` mints its own timestamp because it *constructs*
+ * its record; the modules that receive a finished record cannot.)
  *
  * The caller owns `sessionDir`, but the `threads/` subdirectory is this
- * module's, so `appendThreadMessage` creates it (unlike
+ * module's, so `appendThreadMessage` creates it — unlike
  * `storage/comments.ts`, whose file sits directly in the caller-owned
- * directory). `threadId` interpolates into the path, so both entry points
- * guard against a traversal-shaped id, as `storage/elements.ts` does for
- * `slot`.
+ * directory.
  *
- * Read semantics follow the append-only JSONL sibling `comments.ts`: a
- * missing file means "no messages yet" (empty list, not an error), and an
- * unparseable line is skipped so a crash-truncated tail doesn't poison the
- * whole thread. That skip is deliberately lenient — it also swallows a
- * mid-file line that fails schema validation, trading strict corruption
- * detection for read availability on an append-only log. The mutable
- * `elements/<slot>.json` surface makes the opposite trade (throws on
- * schema-invalid), because there a bad parse means total loss of the
- * element's state rather than one lost message. Other I/O failures
- * (EACCES, EISDIR, ENOSPC) propagate.
+ * Both entry points constrain `threadId` to an id-shaped charset rather
+ * than merely containing it, because it interpolates into a filename.
+ * Containment alone would silently normalise separators, so `x/../y`
+ * would alias onto thread `y` and `''` would open a real file named
+ * `.jsonl`. (`storage/elements.ts` guards `slot` by containment instead —
+ * correctly, since a stable-selector key like `h1.header` can't be held
+ * to a charset.)
  *
- * This supersedes the flat variant-keyed `storage/comments.ts` log; that
- * module stays until `generate/regenerate.ts` migrates off the `Comment`
- * type it still imports.
+ * Reads are strict, with one deliberate exception: a crash can truncate
+ * the final line mid-write, so an unparseable *last* line is dropped when
+ * the file doesn't end in a newline. Every earlier line was framed by a
+ * newline and therefore must parse — a bad line there is corruption or
+ * version skew, not a torn write, and dropping it silently would mean a
+ * user's comment vanishing from the regeneration context with no error
+ * anywhere. Missing file means "no messages yet" (empty list, not an
+ * error); other I/O failures (EACCES, EISDIR, ENOSPC) propagate.
+ *
+ * Because reads are strict, `appendThreadMessage` validates before
+ * writing: one bad line would otherwise make the whole thread unreadable,
+ * and the type alone doesn't cover a caller assembling a record from
+ * untyped input.
+ *
+ * This supersedes the flat variant-keyed `storage/comments.ts` log. Both
+ * comment modules are removed together once `generate/regenerate.ts`
+ * migrates off `schemas/comment.ts` — that import, not anything in
+ * `storage/comments.ts`, is what pins them in place.
  */
 import type { ThreadMessage } from '../schemas/thread-message.js';
 
 import { appendFile, mkdir, readFile } from 'node:fs/promises';
-import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import { z } from 'zod/mini';
 
 import { threadMessageSchema } from '../schemas/thread-message.js';
+import { isNodeFsError } from './fs-errors.js';
 
 const THREADS_DIR = 'threads';
 
-const isNodeFsError = (err: unknown): err is NodeJS.ErrnoException =>
-  typeof err === 'object' && err !== null && 'code' in err;
+/** Ids that are safe as a single filename segment — no separators, no dot segments, non-empty. */
+const THREAD_ID_PATTERN = /^[A-Za-z0-9_-]+$/;
 
 /**
- * Resolve `<sessionDir>/threads/<threadId>.jsonl`, rejecting a `threadId`
- * shaped to escape the threads dir via path traversal.
+ * Resolve `<sessionDir>/threads/<threadId>.jsonl`, rejecting any `threadId`
+ * that isn't a single id-shaped path segment.
  */
 function threadPath(sessionDir: string, threadId: string): string {
-  const dir = join(sessionDir, THREADS_DIR);
-  const path = join(dir, `${threadId}.jsonl`);
-  const rel = relative(resolve(dir), resolve(path));
-  if (rel.startsWith('..') || isAbsolute(rel)) {
+  if (!THREAD_ID_PATTERN.test(threadId)) {
     throw new Error(
-      `thread storage: thread id "${threadId}" resolves outside the threads dir`,
+      `thread storage: thread id "${threadId}" is not a valid thread id`,
     );
   }
-  return path;
+  return join(sessionDir, THREADS_DIR, `${threadId}.jsonl`);
 }
 
 export async function appendThreadMessage(
@@ -76,8 +86,9 @@ export async function appendThreadMessage(
   message: ThreadMessage,
 ): Promise<void> {
   const path = threadPath(sessionDir, threadId);
+  const validated = z.parse(threadMessageSchema, message);
   await mkdir(dirname(path), { recursive: true });
-  await appendFile(path, JSON.stringify(message) + '\n', 'utf8');
+  await appendFile(path, JSON.stringify(validated) + '\n', 'utf8');
 }
 
 export async function readThreadMessages(
@@ -92,14 +103,17 @@ export async function readThreadMessages(
   );
   if (raw === null) return [];
 
-  return raw
-    .split('\n')
-    .filter((line) => line.length > 0)
-    .flatMap((line): readonly ThreadMessage[] => {
+  const rows = raw.split('\n').filter((line) => line.length > 0);
+  const tailMayBeTorn = !raw.endsWith('\n');
+
+  return rows.flatMap((line, index): readonly ThreadMessage[] => {
+    if (tailMayBeTorn && index === rows.length - 1) {
       try {
         return [z.parse(threadMessageSchema, JSON.parse(line))];
       } catch {
         return [];
       }
-    });
+    }
+    return [z.parse(threadMessageSchema, JSON.parse(line))];
+  });
 }
