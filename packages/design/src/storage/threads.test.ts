@@ -4,6 +4,7 @@ import { appendFile, mkdir, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import fc from 'fast-check';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { appendThreadMessage, readThreadMessages } from './threads.js';
@@ -144,6 +145,23 @@ describe('JSONL thread persistence', () => {
     ).rejects.toMatchObject({ name: '$ZodError' });
   });
 
+  it('throws on a schema-invalid final line even with no trailing newline', async () => {
+    // A torn write leaves *unparseable* bytes. Valid JSON that fails the
+    // schema is version skew, so the missing newline doesn't excuse it —
+    // otherwise the last message in every thread is silently droppable.
+    const first = makeMessage('user', 'first', '2026-07-23T12:00:00.000Z');
+    await appendThreadMessage(sessionDir, 'a7dH24', first);
+    await appendFile(
+      join(sessionDir, 'threads', 'a7dH24.jsonl'),
+      JSON.stringify({ ...first, status: 'resolved' }),
+      'utf8',
+    );
+
+    await expect(
+      readThreadMessages(sessionDir, 'a7dH24'),
+    ).rejects.toMatchObject({ name: '$ZodError' });
+  });
+
   it('rejects a message that does not satisfy the schema before writing it', async () => {
     // The cast is the point: this asserts the runtime guard for a caller that
     // assembled the record from untyped input, which the type can't cover.
@@ -188,6 +206,59 @@ describe('JSONL thread persistence', () => {
     await expect(
       readThreadMessages(sessionDir, 'a7dH24'),
     ).rejects.toMatchObject({ code: 'EISDIR' });
+  });
+
+  it('round-trips arbitrary message text through the JSONL framing', async () => {
+    // The framing risk is a body containing the record delimiter. `fc.string()`
+    // is printable-ASCII by default and emits no newline at all (measured: 0 in
+    // 2000 samples), so the alphabet is spelled out to guarantee the delimiter,
+    // the JSON escapes, and a multi-byte char actually show up.
+    const messyText = fc
+      .array(
+        fc.constantFrom('a', '\n', '\r\n', '"', '\\', '\t', '😀', '{}', ''),
+        { maxLength: 12 },
+      )
+      .map((parts) => parts.join(''));
+
+    await fc.assert(
+      fc.asyncProperty(
+        fc.array(
+          fc.record({
+            kind: fc.constantFrom<ThreadMessage['kind']>('user', 'assistant'),
+            body: messyText,
+            textSnippet: messyText,
+          }),
+          { minLength: 1, maxLength: 8 },
+        ),
+        async (drafts) => {
+          const dir = await mkdtemp(
+            join(tmpdir(), 'clancy-design-threads-fc-'),
+          );
+          try {
+            const messages = drafts.map(
+              (draft, index): ThreadMessage => ({
+                ...makeMessage(
+                  draft.kind,
+                  draft.body,
+                  `2026-07-23T12:00:0${index}.000Z`,
+                ),
+                textSnippet: draft.textSnippet,
+              }),
+            );
+
+            await messages.reduce(async (previous, message) => {
+              await previous;
+              await appendThreadMessage(dir, 'a7dH24', message);
+            }, Promise.resolve());
+
+            expect(await readThreadMessages(dir, 'a7dH24')).toEqual(messages);
+          } finally {
+            await rm(dir, { recursive: true, force: true });
+          }
+        },
+      ),
+      { numRuns: 25 },
+    );
   });
 
   it('keeps threads in separate files so one thread never reads another', async () => {

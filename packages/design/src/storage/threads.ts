@@ -16,14 +16,16 @@
  * `ts` arrives on the record rather than being minted here — a single
  * user action writes one thread line and one `chat.jsonl` line, and the
  * pair must share a timestamp, which only a caller-side clock can
- * guarantee. Same contract as `storage/elements.ts`'s `accepted.ts`.
- * (`storage/approve.ts` mints its own timestamp because it *constructs*
- * its record; the modules that receive a finished record cannot.)
+ * guarantee. Same contract `storage/elements.ts` uses for the `accepted`
+ * pointer's own `ts`. (`storage/approve.ts` mints its timestamp because
+ * it *constructs* its record; modules handed a finished record cannot.)
  *
- * The caller owns `sessionDir`, but the `threads/` subdirectory is this
- * module's, so `appendThreadMessage` creates it — unlike
- * `storage/comments.ts`, whose file sits directly in the caller-owned
- * directory.
+ * `appendThreadMessage` creates the `threads/` subdirectory, which
+ * `storage/comments.ts` has no equivalent of — its file sits directly in
+ * `sessionDir`. The `recursive` mkdir will also materialise a missing
+ * `sessionDir`, so this module does not enforce the caller-owns-the-
+ * session-directory expectation that `storage/approve.ts` does by
+ * omission.
  *
  * Both entry points constrain `threadId` to an id-shaped charset rather
  * than merely containing it, because it interpolates into a filename.
@@ -33,24 +35,29 @@
  * correctly, since a stable-selector key like `h1.header` can't be held
  * to a charset.)
  *
- * Reads are strict, with one deliberate exception: a crash can truncate
- * the final line mid-write, so an unparseable *last* line is dropped when
- * the file doesn't end in a newline. Every earlier line was framed by a
- * newline and therefore must parse — a bad line there is corruption or
- * version skew, not a torn write, and dropping it silently would mean a
- * user's comment vanishing from the regeneration context with no error
- * anywhere. Missing file means "no messages yet" (empty list, not an
- * error); other I/O failures (EACCES, EISDIR, ENOSPC) propagate.
+ * Reads are strict, with one narrow exception: a crash can truncate the
+ * final line mid-write, so a *last* line that fails `JSON.parse` is
+ * dropped when the file doesn't end in a newline. Nothing else is
+ * forgiven. A line that parses as JSON but fails the schema is version
+ * skew or corruption rather than a torn write, so it throws even in the
+ * tail position — otherwise the newest message in every thread would be
+ * silently droppable, which is a user's comment vanishing from the
+ * regeneration context with no error anywhere. Non-final lines were
+ * framed by a newline and so must parse outright. (Blank lines are
+ * skipped before any of this, since a complete file ends in a newline.)
+ * A missing file means "no messages yet" (empty list, not an error);
+ * other I/O failures (EACCES, EISDIR, ENOSPC) propagate.
  *
  * Because reads are strict, `appendThreadMessage` validates before
  * writing: one bad line would otherwise make the whole thread unreadable,
  * and the type alone doesn't cover a caller assembling a record from
  * untyped input.
  *
- * This supersedes the flat variant-keyed `storage/comments.ts` log. Both
- * comment modules are removed together once `generate/regenerate.ts`
- * migrates off `schemas/comment.ts` — that import, not anything in
- * `storage/comments.ts`, is what pins them in place.
+ * This supersedes the flat variant-keyed `storage/comments.ts` log. The
+ * two comment modules come out together once `generate/regenerate.ts`
+ * migrates off `schemas/comment.ts` — that import is what pins the pair's
+ * deletion. `storage/comments.ts` on its own has no importer but its own
+ * test.
  */
 import type { ThreadMessage } from '../schemas/thread-message.js';
 
@@ -64,7 +71,12 @@ import { isNodeFsError } from './fs-errors.js';
 
 const THREADS_DIR = 'threads';
 
-/** Ids that are safe as a single filename segment — no separators, no dot segments, non-empty. */
+/**
+ * A single portable path segment: non-empty, no separators, no dot segments.
+ * Narrower than "filename-safe" — it still admits the Win32 device names
+ * (`CON`, `NUL`, `COM1`…), which is tolerable only because `threadId` is
+ * minted rather than user-supplied.
+ */
 const THREAD_ID_PATTERN = /^[A-Za-z0-9_-]+$/;
 
 /**
@@ -107,13 +119,16 @@ export async function readThreadMessages(
   const tailMayBeTorn = !raw.endsWith('\n');
 
   return rows.flatMap((line, index): readonly ThreadMessage[] => {
-    if (tailMayBeTorn && index === rows.length - 1) {
-      try {
-        return [z.parse(threadMessageSchema, JSON.parse(line))];
-      } catch {
-        return [];
-      }
+    const isTornTail = tailMayBeTorn && index === rows.length - 1;
+    try {
+      return [z.parse(threadMessageSchema, JSON.parse(line))];
+    } catch (err) {
+      // A torn write leaves *unparseable bytes*, and only on the last line.
+      // Valid JSON that fails the schema is version skew or corruption — it
+      // must surface even in the tail position, or the newest message in
+      // every thread becomes silently droppable.
+      if (isTornTail && err instanceof SyntaxError) return [];
+      throw err;
     }
-    return [z.parse(threadMessageSchema, JSON.parse(line))];
   });
 }
