@@ -83,25 +83,52 @@ describe('JSONL thread persistence', () => {
     expect(await readThreadMessages(sessionDir, 'a7dH24')).toEqual([first]);
   });
 
-  it('throws on a malformed line that is not the torn tail', async () => {
+  it('throws on unparseable JSON that is not the torn tail', async () => {
+    // Same corruption as the test above, one position earlier: this line was
+    // framed by a newline, so it was written whole and the crash story
+    // doesn't explain it.
     const first = makeMessage('user', 'first', '2026-07-23T12:00:00.000Z');
-    const third = makeMessage('user', 'third', '2026-07-23T12:00:02.000Z');
+    await appendThreadMessage(sessionDir, 'a7dH24', first);
+    await appendFile(
+      join(sessionDir, 'threads', 'a7dH24.jsonl'),
+      '{ not json\n',
+      'utf8',
+    );
+    await appendThreadMessage(
+      sessionDir,
+      'a7dH24',
+      makeMessage('user', 'third', '2026-07-23T12:00:02.000Z'),
+    );
 
-    // A line framed by a newline was written whole — a bad one there is
-    // corruption, not a torn write, and must not vanish from the thread.
+    await expect(readThreadMessages(sessionDir, 'a7dH24')).rejects.toThrow(
+      SyntaxError,
+    );
+  });
+
+  it('throws on a schema-invalid line instead of dropping that message', async () => {
+    // The failure mode this guards: a dropped line is a user comment that
+    // silently never reaches the regeneration prompt.
+    const first = makeMessage('user', 'first', '2026-07-23T12:00:00.000Z');
     await appendThreadMessage(sessionDir, 'a7dH24', first);
     await appendFile(
       join(sessionDir, 'threads', 'a7dH24.jsonl'),
       JSON.stringify({ ...first, status: 'resolved' }) + '\n',
       'utf8',
     );
-    await appendThreadMessage(sessionDir, 'a7dH24', third);
+    await appendThreadMessage(
+      sessionDir,
+      'a7dH24',
+      makeMessage('user', 'third', '2026-07-23T12:00:02.000Z'),
+    );
 
-    await expect(readThreadMessages(sessionDir, 'a7dH24')).rejects.toThrow();
+    await expect(
+      readThreadMessages(sessionDir, 'a7dH24'),
+    ).rejects.toMatchObject({ name: '$ZodError' });
   });
 
-  it('throws on a complete final line that fails schema validation', async () => {
-    // Newline-terminated, so the torn-tail exemption must not cover it.
+  it('throws on a schema-invalid final line when the file ends in a newline', async () => {
+    // Newline-terminated, so the write completed — the torn-tail exemption
+    // is positional AND conditional, and must not cover this.
     await mkdir(join(sessionDir, 'threads'), { recursive: true });
     await appendFile(
       join(sessionDir, 'threads', 'a7dH24.jsonl'),
@@ -112,10 +139,14 @@ describe('JSONL thread persistence', () => {
       'utf8',
     );
 
-    await expect(readThreadMessages(sessionDir, 'a7dH24')).rejects.toThrow();
+    await expect(
+      readThreadMessages(sessionDir, 'a7dH24'),
+    ).rejects.toMatchObject({ name: '$ZodError' });
   });
 
   it('rejects a message that does not satisfy the schema before writing it', async () => {
+    // The cast is the point: this asserts the runtime guard for a caller that
+    // assembled the record from untyped input, which the type can't cover.
     const invalid = {
       ...makeMessage('user', 'bad status', '2026-07-23T12:00:00.000Z'),
       status: 'resolved',
@@ -123,7 +154,7 @@ describe('JSONL thread persistence', () => {
 
     await expect(
       appendThreadMessage(sessionDir, 'a7dH24', invalid),
-    ).rejects.toThrow();
+    ).rejects.toMatchObject({ name: '$ZodError' });
 
     // Nothing was written, so the thread is still empty rather than unreadable.
     expect(await readThreadMessages(sessionDir, 'a7dH24')).toEqual([]);

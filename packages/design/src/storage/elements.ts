@@ -14,8 +14,8 @@
  * EISDIR, ENOSPC) propagate. Mirrors `storage/approve.ts`'s
  * caller-owns-`sessionDir` contract with a slot-path-traversal guard,
  * since `slot` derives from a stable-selector key that isn't
- * charset-restricted, and `storage/comments.ts`'s read-side fs-error
- * narrowing.
+ * charset-restricted — unlike an opaque minted id such as
+ * `storage/threads.ts`'s `threadId`, which is held to a charset instead.
  */
 import type { ElementState } from '../schemas/element-state.js';
 
