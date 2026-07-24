@@ -117,17 +117,17 @@ describe('approval marker persistence', () => {
   it('returns null for a slot that has not been accepted', async () => {
     // Absence is the normal state, not an error: every slot is unaccepted
     // until a variant is committed for it. §2.6 un-accept would also return a
-    // slot to this state, but nothing unlinks the marker yet — no slice owns
-    // that (see the module header), so this covers the never-accepted case
-    // only.
+    // slot to this state, but the unlink that does so is deferred — it belongs
+    // to this module and waits on Phase C (see the module header) — so this
+    // covers the never-accepted case only.
     expect(await readApprovalMarker(sessionDir, 'h1.header')).toBeNull();
   });
 
   it('throws on a marker left in the superseded per-variant shape', async () => {
-    // A marker in this shape cannot arrive here by migration — the pre-rework
-    // module wrote to a flat `<sessionDir>/<variantId>.approved`, which no
-    // path under `approved/` can collide with, so the old files are simply
-    // never read. What this pins is the strictness itself, against a
+    // A marker in this shape does not arrive here by migration — the
+    // pre-rework module wrote to a flat `<sessionDir>/<variantId>.approved`,
+    // which no realistic variant id places under `approved/`, so the old files
+    // are simply never read. What this pins is the strictness itself, against a
     // hand-edited marker or a future writer that regresses the shape: it
     // surfaces rather than reading back as a marker with no round, which
     // slice 21 would then write to source against.

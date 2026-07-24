@@ -19,11 +19,13 @@
  * consumer wants it — slices 21 and 22 do not exist yet, and the read
  * contracts §3.1 rows 21/22 specify for them name no pid — not because the
  * information survives elsewhere. `canvas/server/lock.ts` does persist a pid,
- * but it is the canvas server's rather than the approver's, it is per project
- * root rather than per approval, it is gone once the lock is released, and
- * another process can reclaim the lock after 24h even while the holder is
- * alive, because its staleness check returns before the liveness probe runs.
- * Nothing connects it to an approval.
+ * but it is per project root rather than per approval, it is gone once the
+ * lock is released, and another process can reclaim the lock after 24h even
+ * while the holder is alive, because its staleness check returns before the
+ * liveness probe runs. Nothing connects it to an approval. (It records the
+ * canvas server's pid, which may or may not turn out to be the approver's —
+ * that depends on where Phase C runs the accept action, which does not exist
+ * yet, so it is not a reason either way.)
  *
  * Keying by slot rather than by variant is what makes the marker *mutable*:
  * one variant is accepted per slot at a time (§2.8), so accepting again after
@@ -51,8 +53,9 @@
  * explicitly, with the same instant it writes into `elements.accepted`;
  * letting this default fire there stamps one event twice. Both surfaces feed
  * state-at-acceptance reconstruction — `elements.accepted`'s structure per
- * §2.8, this marker's `roundId` per §3.1 row 20 — though §2.6 itself is
- * UX-level and names neither file.
+ * §2.8, this marker's `roundId` per §3.1 row 20. §2.6 names this file on its
+ * accept path but not `elements/<slot>.json`, so the pairing is assembled from
+ * §2.8 and §3.1 rather than stated in one place.
  *
  * The record is built from typed inputs by total construction, so there is
  * nothing for a validate-before-write to catch:
@@ -89,9 +92,9 @@
  * That makes this guard *different* from `elements.ts`'s, not a superset of
  * it, and the two disagree in both directions — measured, not assumed. This
  * one rejects `sub/slot`, `''`, and `a[href="/docs"]`, which `elements.ts`
- * admits: the last two nest under a created subdirectory, while `''` lands
- * flat as the hidden file `elements/.json`, since the `.json` is appended
- * before its containment test runs. `elements.ts` in turn rejects `..foo` and
+ * admits: `sub/slot` and `a[href="/docs"]` nest under a created subdirectory,
+ * while `''` lands flat as the hidden file `elements/.json`, since the `.json`
+ * is appended before its containment test runs. `elements.ts` in turn rejects `..foo` and
  * `...`, which are contained here and admitted, because its `startsWith('..')`
  * prefix test also catches names that merely begin with two dots. Reconciling
  * them is not this slice's call: `a[href="/docs"]` is a plausible
@@ -132,22 +135,37 @@
  * accepted — the normal state for every slot until one is — and reads as
  * `null`. Other I/O failures (EACCES, EISDIR, ENOSPC) propagate.
  *
- * Two operations the spec calls for are absent, and both are deferrals rather
- * than gaps, because §3.0 makes the physical writer the owner of *all* on-disk
- * I/O for a file and names slice 20 for this one — so both belong here and
- * nowhere else. Slice 22 iterates `approved/*` unconditionally, which wants a
- * listing primitive rather than a `readdir` open-coded in a UI slice; its
- * shape (slot names or parsed markers, and how it treats non-file and
- * symlinked entries) is decided by slice 21's `--slot`-vs-walk-all CLI, which
- * does not exist. And returning a slot to the unaccepted state means unlinking
- * this file, which §2.6 requires through two trigger paths; deferred because
- * un-accept also has to clear `elements.accepted`, making its shape the same
- * Phase C dual-write question as accept itself.
+ * The overwrite has a torn-write window of its own, since `writeFile`
+ * truncates before it writes: a crash mid-overwrite leaves a partial marker,
+ * which the strict read then throws on rather than reporting as unaccepted.
+ * That is the safe direction — a slot whose acceptance is in doubt refuses to
+ * be read rather than silently reverting — but it does mean a previously
+ * accepted slot can become unreadable until the marker is rewritten or
+ * removed. Untreated, where `storage/variants.ts` cleans up after a failed
+ * write and `storage/chat.ts` forgives a torn tail, because both of those
+ * protect an append-only history; this file holds one record that the next
+ * accept replaces wholesale.
  *
- * What *is* a gap in the spec is narrower: the §3.0 row for this file lists no
- * caller-writer for either operation, though §3.1 rows 23/24 bind un-accept to
- * a shortcut and a palette entry, and §3.0 claims to pair every file with
- * every slice performing I/O on it. Recorded in the rework plan.
+ * Two operations the spec calls for are absent, and §3.0 places them
+ * differently. Unlinking this file — how §2.6 returns a slot to the unaccepted
+ * state, through either of its two trigger paths — is a write, and §3.0 makes
+ * the physical writer the sole owner of a file's write implementation, naming
+ * slice 20 here. So the unlink belongs to this module and nowhere else; it
+ * waits because un-accept's other leg clears `elements.accepted`, making its
+ * shape the same Phase C dual-write question as accept itself. Listing is a
+ * read, and §3.0's reader definition explicitly allows a reader to read
+ * directly, so slice 22 — which iterates `approved/*` unconditionally — may
+ * legitimately open-code a `readdir`. A listing primitive here would be
+ * drift-prevention rather than ownership, and it waits on the same question:
+ * its shape (slot names or parsed markers, and how it treats non-file and
+ * symlinked entries) follows slice 21's `--slot`-vs-walk-all CLI, which does
+ * not exist.
+ *
+ * The one real gap in the spec is narrower than either of those: §3.1 rows
+ * 23/24 bind un-accept to a shortcut and a palette entry, but no cell of the
+ * §3.0 row names them — its caller-writer column reads `20`, the accept side
+ * only — while §3.0 claims to pair every file with every slice performing I/O
+ * on it. Recorded in the rework plan.
  */
 import type { Variant } from '../generate/types.js';
 import type { ApprovalMarker } from '../schemas/approval-marker.js';
