@@ -16,10 +16,12 @@
  * isn't charset-restricted — unlike an opaque minted id such as
  * `storage/threads.ts`'s `threadId`, which is held to a charset instead.
  * `storage/approve.ts` guards its own `slot` by containment too, but the two
- * are not ordered: it rejects separator-bearing and empty slots that this
- * guard admits by nesting, while this one's `startsWith('..')` prefix test
- * rejects contained names like `..foo` that it admits. See that module's
- * header — reconciling them waits on the selector→slot mapping.
+ * are not ordered: it rejects slots that don't normalise to a single entry,
+ * which this guard admits — `sub/slot` by nesting, `''` as the flat hidden
+ * file `elements/.json`, since the `.json` is appended before the containment
+ * test — while this one's `startsWith('..')` prefix test rejects contained
+ * names like `..foo` that it admits. See that module's header — reconciling
+ * them waits on the selector→slot mapping.
  */
 import type { ElementState } from '../schemas/element-state.js';
 

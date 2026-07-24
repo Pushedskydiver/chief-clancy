@@ -15,14 +15,15 @@
  * The two dropped fields are not equivalent losses: `sessionId` is recoverable
  * from the session directory path, so it was redundant on the marker, but no
  * §2.8 surface carries a pid, so dropping `approverPid` is a real loss of
- * provenance for post-hoc audit. It goes because no consumer wants it —
- * slices 21 and 22 do not exist yet, and the read contracts §3.1 rows 21/22
- * specify for them name no pid. The narrower half of the old rationale does
- * not survive inspection, though: `canvas/server/lock.ts` persists
- * `{pid, sessionId, startedAt}` under an exclusive create for as long as the
- * server runs, so a concurrent approver is structurally prevented rather than
- * merely detectable, and the pid *is* recoverable while a session is live.
- * What is lost is the record after the lock is released.
+ * provenance for audit or concurrent-approver detection. It goes because no
+ * consumer wants it — slices 21 and 22 do not exist yet, and the read
+ * contracts §3.1 rows 21/22 specify for them name no pid — not because the
+ * information survives elsewhere. `canvas/server/lock.ts` does persist a pid,
+ * but it is the canvas server's rather than the approver's, it is per project
+ * root rather than per approval, it is gone once the lock is released, and
+ * another process can reclaim the lock after 24h even while the holder is
+ * alive, because its staleness check returns before the liveness probe runs.
+ * Nothing connects it to an approval.
  *
  * Keying by slot rather than by variant is what makes the marker *mutable*:
  * one variant is accepted per slot at a time (§2.8), so accepting again after
@@ -35,9 +36,10 @@
  * `roundId` arrives from the caller because `Variant` has no notion of one:
  * it lives in `elements/<slot>.json`, which the accept action reads anyway for
  * pre-accept state (§3.0 matrix). `ts` is minted here, unlike every other
- * module in this rework — those are handed a finished record and take its `ts`
- * as given, whereas this one *constructs* its record, so it owns the clock
- * (`now` for tests).
+ * `ts`-writing module in this rework — `elements.ts`, `threads.ts` and
+ * `chat.ts` are handed a finished record and take its `ts` as given (and
+ * `variants.ts` has no timestamp at all), whereas this one *constructs* its
+ * record, so it owns the clock (`now` for tests).
  *
  * The default is for a marker written on its own, and Phase C's accept action
  * is not that case: it writes two records for one user event — this marker and
@@ -47,8 +49,10 @@
  * out from the caller), and the plan's fan-out list names chat + thread +
  * elements without naming this file. So the accept action must pass `now`
  * explicitly, with the same instant it writes into `elements.accepted`;
- * letting this default fire there stamps one event twice, and §2.6 un-accept
- * reconstructs from both surfaces.
+ * letting this default fire there stamps one event twice. Both surfaces feed
+ * state-at-acceptance reconstruction — `elements.accepted`'s structure per
+ * §2.8, this marker's `roundId` per §3.1 row 20 — though §2.6 itself is
+ * UX-level and names neither file.
  *
  * The record is built from typed inputs by total construction, so there is
  * nothing for a validate-before-write to catch:
@@ -70,31 +74,44 @@
  * `..` resolves to the session directory itself, where `elements.ts`'s appended
  * `.json` would have made it the ordinary filename `...json`, and `''` / `'.'`
  * resolve to `approved/` itself (reaching a write as EISDIR rather than a
- * stated rejection). And slice 21 walks `approved/` (§3.1 row 21), so a slot
- * containing a separator would nest a marker one level down where a flat walk
- * cannot see it. Hence: exactly one entry, directly inside `approved/`.
+ * stated rejection). And slice 22 iterates `approved/*` unconditionally (§3.1
+ * row 22; row 21 offers a walk only as the alternative to `--slot`), so a slot
+ * that nests a marker one level down puts it where a flat walk cannot see it.
+ * Hence: exactly one entry, directly inside `approved/`.
+ *
+ * The test is on the *normalised* path, not on the raw slot, so this rejects
+ * separators only where they survive normalisation: `sub/slot` is refused, but
+ * `a/../b` normalises onto slot `b` and is accepted, which means two distinct
+ * slot keys can alias onto one marker. `storage/variants.ts` names that same
+ * aliasing as its reason for holding `variantId` to a charset instead — an
+ * option not open here, since a stable-selector key can't be charset-bound.
  *
  * That makes this guard *different* from `elements.ts`'s, not a superset of
  * it, and the two disagree in both directions — measured, not assumed. This
  * one rejects `sub/slot`, `''`, and `a[href="/docs"]`, which `elements.ts`
- * admits (nesting them under a created subdirectory); `elements.ts` rejects
- * `..foo` and `...`, which are contained here and admitted, because its
- * `startsWith('..')` prefix test also catches names that merely begin with
- * two dots. Reconciling them is not this slice's call: `a[href="/docs"]` is a
- * plausible selector-derived key that *neither* guard handles well — one
- * hard-fails it, the other silently creates a directory from it — so the fix
- * belongs with the unresolved selector→slot mapping (rework plan, slice-16
- * sub-issue), which has to decide whether such a key is encoded rather than
- * passed through. Until then the divergence is load-bearing for Phase C: the
- * accept action dual-writes this marker and `elements/<slot>.json`, so a slot
- * either guard rejects must be validated once *before* either write, or one
- * leg lands and the other throws.
+ * admits: the last two nest under a created subdirectory, while `''` lands
+ * flat as the hidden file `elements/.json`, since the `.json` is appended
+ * before its containment test runs. `elements.ts` in turn rejects `..foo` and
+ * `...`, which are contained here and admitted, because its `startsWith('..')`
+ * prefix test also catches names that merely begin with two dots. Reconciling
+ * them is not this slice's call: `a[href="/docs"]` is a plausible
+ * selector-derived key that *neither* guard handles well — one hard-fails it,
+ * the other silently creates a directory from it — so the fix belongs with the
+ * unresolved selector→slot mapping (rework plan, slice-16 sub-issue), which
+ * has to decide whether such a key is encoded rather than passed through.
+ * Until then the divergence is load-bearing for Phase C: the accept action
+ * dual-writes this marker and `elements/<slot>.json`, so a slot either guard
+ * rejects must be validated once *before* either write, or one leg lands and
+ * the other throws.
  *
  * Containment here is lexical, not filesystem-level — a symlink planted at
  * `approved/<slot>` is followed, and the write lands wherever it points. The
- * whole session directory is local and user-owned, and every sibling storage
- * module has the same exposure, so this is a statement about what the guard
- * covers rather than a gap peculiar to this file.
+ * whole session directory is local and user-owned, and `chat.ts`, `threads.ts`
+ * and `elements.ts` all write the same way, so this is a statement about what
+ * the guard covers rather than a gap peculiar to this file. `variants.ts` is
+ * the exception: its exclusive `wx` create fails EEXIST on a symlink instead
+ * of following it, which is a side effect of write-once rather than a
+ * hardening step available to a file that is meant to be overwritten.
  *
  * `variantId` needs no guard of its own here — it goes into the record, not
  * the path — and is charset-checked by `storage/variants.ts` at the point
@@ -115,15 +132,22 @@
  * accepted — the normal state for every slot until one is — and reads as
  * `null`. Other I/O failures (EACCES, EISDIR, ENOSPC) propagate.
  *
- * Two operations the spec calls for are absent, for different reasons. Slices
- * 21 and 22 iterate
- * `approved/*`, which wants a listing primitive here rather than a `readdir`
- * open-coded in a UI slice — deferred because its shape (slot names or parsed
- * markers, and how it treats non-file and symlinked entries) is decided by
- * slice 21's `--slot`-vs-walk-all CLI, which does not exist. And returning a
- * slot to the unaccepted state means unlinking this file, which §2.6 requires
- * and the §3.0 matrix assigns to no slice at all — a gap in the spec, not a
- * deferral within it. Both are recorded in the rework plan.
+ * Two operations the spec calls for are absent, and both are deferrals rather
+ * than gaps, because §3.0 makes the physical writer the owner of *all* on-disk
+ * I/O for a file and names slice 20 for this one — so both belong here and
+ * nowhere else. Slice 22 iterates `approved/*` unconditionally, which wants a
+ * listing primitive rather than a `readdir` open-coded in a UI slice; its
+ * shape (slot names or parsed markers, and how it treats non-file and
+ * symlinked entries) is decided by slice 21's `--slot`-vs-walk-all CLI, which
+ * does not exist. And returning a slot to the unaccepted state means unlinking
+ * this file, which §2.6 requires through two trigger paths; deferred because
+ * un-accept also has to clear `elements.accepted`, making its shape the same
+ * Phase C dual-write question as accept itself.
+ *
+ * What *is* a gap in the spec is narrower: the §3.0 row for this file lists no
+ * caller-writer for either operation, though §3.1 rows 23/24 bind un-accept to
+ * a shortcut and a palette entry, and §3.0 claims to pair every file with
+ * every slice performing I/O on it. Recorded in the rework plan.
  */
 import type { Variant } from '../generate/types.js';
 import type { ApprovalMarker } from '../schemas/approval-marker.js';

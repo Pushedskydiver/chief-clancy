@@ -82,9 +82,9 @@ describe('approval marker persistence', () => {
     // (In `storage/elements.ts` the appended `.json` makes the same input the
     // contained filename `...json` — which that module then rejects anyway,
     // on a prefix test this one deliberately does not share; see the module
-    // header.) Nested slots are rejected too: slice 21 walks `approved/`
-    // (spec §3.1 row 21), and a marker one level down is invisible to that
-    // walk rather than merely unusual.
+    // header.) Nested slots are rejected too: slice 22 iterates `approved/*`
+    // unconditionally (spec §3.1 row 22), and a marker one level down is
+    // invisible to that walk rather than merely unusual.
     const rejected = ['..', '../../evil', '', '.', 'sub/slot', '/etc/passwd'];
 
     await Promise.all(
@@ -124,11 +124,13 @@ describe('approval marker persistence', () => {
   });
 
   it('throws on a marker left in the superseded per-variant shape', async () => {
-    // Not hypothetical: the pre-rework module wrote this shape, and a session
-    // directory created before A5 can still hold one — under the old filename,
-    // but nothing stops a slot key from colliding with a variant id. Reads are
-    // strict, so it surfaces rather than reading back as a marker with no
-    // round, which slice 21 would then write to source against.
+    // A marker in this shape cannot arrive here by migration — the pre-rework
+    // module wrote to a flat `<sessionDir>/<variantId>.approved`, which no
+    // path under `approved/` can collide with, so the old files are simply
+    // never read. What this pins is the strictness itself, against a
+    // hand-edited marker or a future writer that regresses the shape: it
+    // surfaces rather than reading back as a marker with no round, which
+    // slice 21 would then write to source against.
     await mkdir(join(sessionDir, 'approved'), { recursive: true });
     await writeFile(
       join(sessionDir, 'approved', 'h1.header'),
