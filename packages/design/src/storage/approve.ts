@@ -94,8 +94,8 @@
  * one rejects `sub/slot`, `''`, and `a[href="/docs"]`, which `elements.ts`
  * admits: `sub/slot` and `a[href="/docs"]` nest under a created subdirectory,
  * while `''` lands flat as the hidden file `elements/.json`, since the `.json`
- * is appended before its containment test runs. `elements.ts` in turn rejects `..foo` and
- * `...`, which are contained here and admitted, because its `startsWith('..')`
+ * is appended before its containment test runs. `elements.ts` in turn rejects
+ * `..foo` and `...`, contained here and admitted, because its `startsWith('..')`
  * prefix test also catches names that merely begin with two dots. Reconciling
  * them is not this slice's call: `a[href="/docs"]` is a plausible
  * selector-derived key that *neither* guard handles well — one hard-fails it,
@@ -141,10 +141,10 @@
  * That is the safe direction — a slot whose acceptance is in doubt refuses to
  * be read rather than silently reverting — but it does mean a previously
  * accepted slot can become unreadable until the marker is rewritten or
- * removed. Untreated, where `storage/variants.ts` cleans up after a failed
- * write and `storage/chat.ts` forgives a torn tail, because both of those
- * protect an append-only history; this file holds one record that the next
- * accept replaces wholesale.
+ * removed. Untreated, as it is in `storage/elements.ts`, which overwrites its
+ * file the same way — the two whole-file mutable surfaces share this window.
+ * The other storage modules have differently shaped ones because they append
+ * or write once rather than replace.
  *
  * Two operations the spec calls for are absent, and §3.0 places them
  * differently. Unlinking this file — how §2.6 returns a slot to the unaccepted
@@ -156,8 +156,8 @@
  * read, and §3.0's reader definition explicitly allows a reader to read
  * directly, so slice 22 — which iterates `approved/*` unconditionally — may
  * legitimately open-code a `readdir`. A listing primitive here would be
- * drift-prevention rather than ownership, and it waits on the same question:
- * its shape (slot names or parsed markers, and how it treats non-file and
+ * drift-prevention rather than ownership, and it waits on a question of its
+ * own: its shape (slot names or parsed markers, and how it treats non-file and
  * symlinked entries) follows slice 21's `--slot`-vs-walk-all CLI, which does
  * not exist.
  *
