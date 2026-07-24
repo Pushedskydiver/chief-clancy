@@ -36,6 +36,23 @@ describe('chat ↔ thread body normalisation (§2.8)', () => {
     ).toThrow(/not tagged/);
   });
 
+  it('round-trips a body that itself begins with a copy of the prefix', () => {
+    // The slice-exact-length design (not bracket-parsing) means a bare body
+    // that already looks tagged still round-trips: toThreadBody strips
+    // exactly one prefix, never the nested second one. Pinned deterministically
+    // here because the fuzz alphabet below can't reproduce a real slot inside a
+    // body.
+    const body = '[a7dH24] h1.header nested but bare';
+
+    expect(
+      toThreadBody(
+        'a7dH24',
+        'h1.header',
+        toChatBody('a7dH24', 'h1.header', body),
+      ),
+    ).toBe(body);
+  });
+
   it('round-trips any body through toChatBody → toThreadBody unchanged', () => {
     const threadId = fc
       .array(fc.constantFrom(...'abcXYZ019_-'.split('')), {
@@ -44,10 +61,12 @@ describe('chat ↔ thread body normalisation (§2.8)', () => {
       })
       .map((chars) => chars.join(''));
 
-    // A body that itself contains the delimiter characters — brackets,
-    // spaces, even a leading copy of a prefix — must still round-trip,
-    // because toThreadBody slices an exact prefix length rather than parsing
-    // brackets out. The spaced/combinator slots prove the same for slots.
+    // A body that itself contains the delimiter characters — brackets and
+    // spaces — must still round-trip, because toThreadBody slices an exact
+    // prefix length rather than parsing brackets out. The spaced/combinator
+    // slots prove the same for slots. (The leading-copy-of-a-prefix edge is
+    // pinned in the deterministic test above, which the fuzz alphabet can't
+    // reach.)
     const messyBody = fc
       .array(
         fc.constantFrom('a', '\n', '"', '\\', '\t', '😀', '[', ']', ' ', ''),

@@ -19,7 +19,12 @@
  * characters and no more. Both take `threadId` and `slot` explicitly and
  * reconstruct the exact prefix rather than parsing brackets out of the
  * body, so a `slot` containing spaces (a CSS descendant selector like
- * `nav ul li`) is unambiguous.
+ * `nav ul li`) is unambiguous — provided the *exact* slot is passed. The
+ * disambiguation is by slot-equality, not slot-containment: a shorter
+ * space-prefixed slot (`nav` against a body tagged for `nav ul li`) would
+ * mis-strip rather than throw. That never arises because the `slotRef`
+ * handed to `toThreadBody` comes from the same record that produced the
+ * tag, so it is exact by construction.
  *
  * `toThreadBody` throws when the prefix is absent rather than returning the
  * input unchanged. It is only ever called on a chat line the record marks

@@ -11,9 +11,15 @@
  * carries `threadRef` + `slotRef`, and its `body` is tagged with the
  * `[threadId] slot ` prefix (§2.8 body-normalisation rule) — the bare text
  * lives on the `threads/{threadId}.jsonl` side. `threadRef` / `slotRef` are
- * typed as independent optionals to match the §2.8 wire signature; that an
- * element-scoped line always carries both is enforced by the write side
- * (via `toChatBody`), not re-encoded as a cross-field schema refinement.
+ * typed as independent optionals to match the §2.8 wire signature. The
+ * schema deliberately does not require them to co-occur: a both-or-neither
+ * invariant is a property of how the action layer assembles the record
+ * (one user action, one bare body → one tagged chat line + one thread
+ * line), and that caller lands in Phase C. No such caller exists yet, so
+ * nothing enforces the pairing at this slice — a cross-field refine, if
+ * wanted, belongs with that caller (and would be a plan amendment, since
+ * the rework plan's signature is these two independent optionals), not
+ * pre-empted here.
  *
  * `kind` is closed to `user | assistant`, identical to `thread-message.ts`
  * — §2.8 shows no other author on either surface, and because reads are
