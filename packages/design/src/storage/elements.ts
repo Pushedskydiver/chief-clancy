@@ -15,9 +15,11 @@
  * than against a charset, since it derives from a stable-selector key that
  * isn't charset-restricted — unlike an opaque minted id such as
  * `storage/threads.ts`'s `threadId`, which is held to a charset instead.
- * `storage/approve.ts` guards its own `slot` the same way and more strictly:
- * its marker filename has no extension, so it lacks the `.json` appended
- * here, which incidentally turns a bare `..` into an ordinary filename.
+ * `storage/approve.ts` guards its own `slot` by containment too, but the two
+ * are not ordered: it rejects separator-bearing and empty slots that this
+ * guard admits by nesting, while this one's `startsWith('..')` prefix test
+ * rejects contained names like `..foo` that it admits. See that module's
+ * header — reconciling them waits on the selector→slot mapping.
  */
 import type { ElementState } from '../schemas/element-state.js';
 

@@ -56,6 +56,9 @@ describe('approval marker persistence', () => {
   it('mints ts from the real clock when now is omitted', async () => {
     // This module constructs its own record, so unlike every other storage
     // module in the rework it owns the clock (rework plan §Cross-cutting).
+    // The default covers a marker written on its own; Phase C's accept action
+    // pairs this file with `elements.accepted` and must pass `now` so both
+    // carry one instant — see the module header.
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-07-24T09:00:00.000Z'));
 
@@ -74,13 +77,14 @@ describe('approval marker persistence', () => {
   });
 
   it('rejects a slot that is not a single entry directly inside approved/', async () => {
-    // The marker filename carries no extension, so — unlike
-    // `storage/elements.ts`, where the appended `.json` turns `..` into the
-    // ordinary filename `...json` — a bare `..` here resolves to the session
-    // directory itself, and `''` / `'.'` resolve to `approved/`. Nested slots
-    // are rejected too: slice 21 walks `approved/` (spec §3.1 row 21), and a
-    // marker one level down is invisible to that walk rather than merely
-    // unusual.
+    // The marker filename carries no extension, so a bare `..` resolves to
+    // the session directory itself, and `''` / `'.'` resolve to `approved/`.
+    // (In `storage/elements.ts` the appended `.json` makes the same input the
+    // contained filename `...json` — which that module then rejects anyway,
+    // on a prefix test this one deliberately does not share; see the module
+    // header.) Nested slots are rejected too: slice 21 walks `approved/`
+    // (spec §3.1 row 21), and a marker one level down is invisible to that
+    // walk rather than merely unusual.
     const rejected = ['..', '../../evil', '', '.', 'sub/slot', '/etc/passwd'];
 
     await Promise.all(
@@ -112,7 +116,10 @@ describe('approval marker persistence', () => {
 
   it('returns null for a slot that has not been accepted', async () => {
     // Absence is the normal state, not an error: every slot is unaccepted
-    // until a variant is committed for it, and §2.6 un-accept returns it here.
+    // until a variant is committed for it. §2.6 un-accept would also return a
+    // slot to this state, but nothing unlinks the marker yet — no slice owns
+    // that (see the module header), so this covers the never-accepted case
+    // only.
     expect(await readApprovalMarker(sessionDir, 'h1.header')).toBeNull();
   });
 
@@ -135,7 +142,24 @@ describe('approval marker persistence', () => {
       'utf8',
     );
 
-    await expect(readApprovalMarker(sessionDir, 'h1.header')).rejects.toThrow();
+    // Asserting on the schema's own complaint, not merely on *a* rejection:
+    // a bare `.rejects.toThrow()` here would also pass on a JSON syntax error
+    // or a guard throw, i.e. on the parse never running at all.
+    await expect(readApprovalMarker(sessionDir, 'h1.header')).rejects.toThrow(
+      /roundId/,
+    );
+  });
+
+  it('normalises a trailing separator rather than passing it to the write', async () => {
+    // The guard tests the *resolved* path, which drops a trailing separator,
+    // so returning the raw join would let `h1.header/` past a check it only
+    // satisfies once normalised — and then fail at `writeFile` with an ENOENT
+    // that names neither the slot nor the reason.
+    await approveVariant(sessionDir, 'h1.header/', { variant, roundId: 'r1' });
+
+    expect(await readApprovalMarker(sessionDir, 'h1.header')).toMatchObject({
+      variantId: 'B1',
+    });
   });
 
   it('rethrows a non-ENOENT read failure instead of reporting an unaccepted slot', async () => {

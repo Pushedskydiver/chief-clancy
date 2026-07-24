@@ -91,8 +91,8 @@
  *
  * `writeVariantHtml` takes three positional parameters rather than an
  * options object — at the `max-params` limit in `docs/CONVENTIONS.md`, not
- * over it — so that it, `elements.ts`, and `threads.ts`, the three writers
- * taking `(sessionDir, id, payload)`, keep one shape. Both mis-orderings
+ * over it — so that it, `elements.ts`, `threads.ts` and `approve.ts`, the
+ * four writers taking `(sessionDir, key, payload)`, keep one shape. Both mis-orderings
  * that shape invites are caught by the charset guard, which sits on the
  * second parameter: swapping the id and the payload puts markup there, and
  * swapping `sessionDir` and the id puts a path there. The second is caught
