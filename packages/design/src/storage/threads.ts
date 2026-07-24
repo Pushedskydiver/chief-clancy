@@ -24,7 +24,7 @@
  * `storage/comments.ts` has no equivalent of — its file sits directly in
  * `sessionDir`. The `recursive` mkdir will also materialise a missing
  * `sessionDir`, so this module does not enforce the caller-owns-the-
- * session-directory expectation that `storage/approve.ts` does by
+ * session-directory expectation that `storage/chat.ts` does by
  * omission.
  *
  * Both entry points constrain `threadId` to an id-shaped charset rather

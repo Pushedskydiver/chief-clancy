@@ -26,11 +26,11 @@
  * byte-identical to the bytes hashed at accept time.
  *
  * `variants/` is a subdirectory, so writes mkdir it, as in
- * `storage/threads.ts` and `storage/elements.ts` (and unlike
- * `storage/chat.ts`, whose file sits directly in `sessionDir`). The
+ * `storage/threads.ts`, `storage/elements.ts` and `storage/approve.ts`. The
  * `recursive` mkdir will also materialise a missing `sessionDir`, so this
  * module does not enforce the caller-owns-the-session-directory expectation
- * that `storage/approve.ts` does by omission.
+ * that `storage/chat.ts`, whose file sits directly in `sessionDir`, does by
+ * omission.
  *
  * Writes are once-only. Variant ids are unique across the session rather
  * than within a round (§2.2 future cherry-pick mode, §3.1 row 11), and a

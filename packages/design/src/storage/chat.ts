@@ -17,8 +17,8 @@
  *
  * Unlike `storage/threads.ts`, this module does **not** mkdir: `chat.jsonl`
  * sits directly in `sessionDir` (no subdirectory to create), so — like the
- * superseded `storage/comments.ts` and like `storage/approve.ts` — the
- * caller owns the session-directory lifecycle. Appending into a session
+ * superseded `storage/comments.ts` — the caller owns the session-directory
+ * lifecycle. Appending into a session
  * that does not exist is a broken invariant, so ENOENT on the directory
  * propagates rather than being papered over by a recursive mkdir.
  *

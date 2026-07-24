@@ -3,9 +3,10 @@
  *
  * Every read-side storage module distinguishes "the file isn't there yet"
  * (a normal empty state) from a real I/O failure, which means narrowing
- * `unknown` to an errno-bearing error before reading `.code`. (Write-only
- * modules like `storage/approve.ts` have no such branch.) Extracted once
- * the third copy appeared.
+ * `unknown` to an errno-bearing error before reading `.code`. Extracted once
+ * the third copy appeared; since `storage/approve.ts` gained a read side at
+ * A5 there are no write-only storage modules left, so every one of them
+ * imports this.
  *
  * No longer read-side only: `storage/variants.ts` narrows on the write path
  * too, to tell an id collision (EEXIST, under an exclusive create) from any
