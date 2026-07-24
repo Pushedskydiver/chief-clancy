@@ -56,11 +56,12 @@
  * A write that fails *after* the exclusive create — ENOSPC, EIO — would
  * otherwise leave a 0-byte or truncated file that write-once then makes
  * permanent, and a short body reads back as valid markup rather than as an
- * error, so the failed write removes it. That leaves one uncovered window:
- * a process killed between create and write leaves residue no cleanup path
- * runs for, and recovery is deleting the file by hand. Closing that needs an
- * atomic temp-then-link publish, which is not worth the machinery until a
- * caller exists to want it.
+ * error, so the failed write removes it. That removal is best-effort, which
+ * leaves two windows where residue survives and recovery is deleting the
+ * file by hand: a process killed between the create and the write, and a
+ * cleanup that itself fails (its error is swallowed in favour of the
+ * original). Closing the first needs an atomic temp-then-link publish, which
+ * is not worth the machinery until a caller exists to want it.
  *
  * `variantId` is held to an id-shaped charset rather than merely checked for
  * containment, because it interpolates into a filename and reaches this
@@ -89,9 +90,11 @@
  * ENOSPC) propagate.
  *
  * `writeVariantHtml`'s three positional parameters sit one over the
- * options-object bar in `docs/DA-REVIEW.md`, kept so all four session-state
- * writers share one shape — and the mis-ordering that rule guards against,
- * swapping the two same-typed strings, fails loudly on the charset guard.
+ * options-object bar in `docs/DA-REVIEW.md`, kept so that it, `elements.ts`,
+ * and `threads.ts` — the three writers taking `(sessionDir, id, payload)` —
+ * keep one shape. Swapping the id and the payload, the mis-ordering that
+ * shape invites, fails loudly on the charset guard; swapping `sessionDir`
+ * and the id does not, unless `sessionDir` is itself id-shaped.
  */
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';

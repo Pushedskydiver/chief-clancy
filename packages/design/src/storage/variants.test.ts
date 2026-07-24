@@ -41,9 +41,12 @@ describe('variant-body persistence', () => {
   it('rejects a variantId that is not a single id-shaped path segment', async () => {
     // `variant.id` is scraped from raw model output by `generate/single.ts`,
     // whose header + attribute regexes between them admit every byte but `"`
-    // and `>` — so these are reachable inputs, not just defensive ones.
-    // `x/../y` would otherwise normalise onto variant `y`; `''` would open a
-    // real file named `.html`.
+    // and `>` — so the first four are inputs the model can actually emit,
+    // not just defensive ones, and `x/../y` would otherwise normalise onto
+    // variant `y`. `''` is the exception: `/\bid="([^"]+)"/` needs at least
+    // one character, so an empty id fails the parse upstream and never
+    // reaches here. It is guarded anyway, for a caller assembling the id
+    // itself — it would otherwise open a real file named `.html`.
     const rejected = ['../../evil', 'x/../y', '', 'sub/variant', '.'];
 
     await Promise.all(
