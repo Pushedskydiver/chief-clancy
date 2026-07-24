@@ -89,12 +89,15 @@
  * of "valid variant" in the wrong layer. Other I/O failures (EACCES, EISDIR,
  * ENOSPC) propagate.
  *
- * `writeVariantHtml`'s three positional parameters sit one over the
- * options-object bar in `docs/DA-REVIEW.md`, kept so that it, `elements.ts`,
- * and `threads.ts` — the three writers taking `(sessionDir, id, payload)` —
- * keep one shape. Swapping the id and the payload, the mis-ordering that
- * shape invites, fails loudly on the charset guard; swapping `sessionDir`
- * and the id does not, unless `sessionDir` is itself id-shaped.
+ * `writeVariantHtml` takes three positional parameters rather than an
+ * options object — at the `max-params` limit in `docs/CONVENTIONS.md`, not
+ * over it — so that it, `elements.ts`, and `threads.ts`, the three writers
+ * taking `(sessionDir, id, payload)`, keep one shape. Both mis-orderings
+ * that shape invites are caught by the charset guard, which sits on the
+ * second parameter: swapping the id and the payload puts markup there, and
+ * swapping `sessionDir` and the id puts a path there. The second is caught
+ * only because a session directory isn't id-shaped — a caller passing a
+ * bare id-shaped `sessionDir` would slip through.
  */
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
@@ -144,9 +147,17 @@ export async function writeVariantHtml(
 
       // The exclusive create may already have succeeded when the write
       // failed, leaving residue that write-once would make permanent. Drop
-      // it so the id stays writable; `force` no-ops when the create is what
-      // failed. Cleanup failure is swallowed because the original error is
-      // the one worth reporting.
+      // it so the id stays writable; `force` no-ops in the usual case where
+      // the create is what failed and no file exists. Cleanup failure is
+      // swallowed because the original error is the one worth reporting.
+      //
+      // This is not free: a failure that precedes the `O_EXCL` check rather
+      // than following it — fd exhaustion (EMFILE/ENFILE) is the measured
+      // case — reports something other than EEXIST while a body does exist
+      // at the path, and the cleanup then deletes it. Exotic on a
+      // single-process local CLI, and the alternative (stat before write)
+      // trades an atomic create for a race, so it is accepted rather than
+      // guarded.
       await rm(path, { force: true }).catch(() => undefined);
       throw err;
     },

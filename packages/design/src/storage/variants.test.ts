@@ -1,11 +1,28 @@
-import { chmod, mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
+import type * as FsPromises from 'node:fs/promises';
+
+import {
+  chmod,
+  mkdir,
+  mkdtemp,
+  readFile,
+  rm,
+  writeFile,
+} from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import fc from 'fast-check';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { readVariantHtml, writeVariantHtml } from './variants.js';
+
+// Passthrough by default — every test below runs against the real filesystem.
+// One test replaces `writeFile` for a single call to reach the
+// failed-after-create branch, which no real-fs setup can trigger portably.
+vi.mock('node:fs/promises', async (importActual) => {
+  const actual = await importActual<typeof FsPromises>();
+  return { ...actual, writeFile: vi.fn(actual.writeFile) };
+});
 
 const HTML = '<section class="hero"><h1>Welcome to Pricing</h1></section>';
 
@@ -41,7 +58,7 @@ describe('variant-body persistence', () => {
   it('rejects a variantId that is not a single id-shaped path segment', async () => {
     // `variant.id` is scraped from raw model output by `generate/single.ts`,
     // whose header + attribute regexes between them admit every byte but `"`
-    // and `>` — so the first four are inputs the model can actually emit,
+    // and `>` — so the other four are inputs the model can actually emit,
     // not just defensive ones, and `x/../y` would otherwise normalise onto
     // variant `y`. `''` is the exception: `/\bid="([^"]+)"/` needs at least
     // one character, so an empty id fails the parse upstream and never
@@ -76,10 +93,12 @@ describe('variant-body persistence', () => {
     expect(await readVariantHtml(sessionDir, 'A1')).toBe(HTML);
   });
 
-  it('rethrows a write failure without leaving the id unwritable', async () => {
-    // An unwritable variants/ dir fails the exclusive create itself, so the
-    // cleanup has nothing to remove — which is the case that proves it does
-    // not mask the real error or trip over the absent file.
+  it('rethrows a failure to create at all, surfacing the real errno', async () => {
+    // An unwritable variants/ dir fails the exclusive create itself, so this
+    // covers only that the original errno reaches the caller rather than
+    // being converted into the collision error. It does NOT exercise the
+    // post-create cleanup — nothing was created — which is why the ENOSPC
+    // test below exists.
     await mkdir(join(sessionDir, 'variants'), { recursive: true });
     await chmod(join(sessionDir, 'variants'), 0o500);
 
@@ -92,6 +111,36 @@ describe('variant-body persistence', () => {
     }
 
     // The failure left nothing behind, so the id is still free to write.
+    await writeVariantHtml(sessionDir, 'A1', HTML);
+    expect(await readVariantHtml(sessionDir, 'A1')).toBe(HTML);
+  });
+
+  it('removes the partial file when the write fails after the exclusive create', async () => {
+    // The failure this guards is the one write-once makes permanent: the
+    // create succeeds, the write dies partway, and the truncated body reads
+    // back as valid markup forever after. Only reachable by making the write
+    // itself fail, so `writeFile` is substituted for one call — the rest of
+    // the module (mkdir, rm, readFile) stays on the real filesystem.
+    const { writeFile: actualWriteFile } =
+      await vi.importActual<typeof FsPromises>('node:fs/promises');
+
+    vi.mocked(writeFile).mockImplementationOnce(async (path) => {
+      // Exactly what an ENOSPC mid-write leaves behind: the file exists and
+      // holds a prefix of the intended body.
+      await actualWriteFile(path, '<section class="he', 'utf8');
+      throw Object.assign(new Error('ENOSPC: no space left on device'), {
+        code: 'ENOSPC',
+      });
+    });
+
+    await expect(
+      writeVariantHtml(sessionDir, 'A1', HTML),
+    ).rejects.toMatchObject({ code: 'ENOSPC' });
+
+    // Without the cleanup this reads back as a short-but-valid body, and the
+    // id can never be written again.
+    expect(await readVariantHtml(sessionDir, 'A1')).toBeNull();
+
     await writeVariantHtml(sessionDir, 'A1', HTML);
     expect(await readVariantHtml(sessionDir, 'A1')).toBe(HTML);
   });
