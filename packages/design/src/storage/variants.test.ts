@@ -95,10 +95,10 @@ describe('variant-body persistence', () => {
 
   it('rethrows a failure to create at all, surfacing the real errno', async () => {
     // An unwritable variants/ dir fails the exclusive create itself, so this
-    // covers only that the original errno reaches the caller rather than
-    // being converted into the collision error. It does NOT exercise the
-    // post-create cleanup — nothing was created — which is why the ENOSPC
-    // test below exists.
+    // covers the original errno reaching the caller rather than being
+    // converted into the collision error, and the id being left writable. It
+    // does NOT exercise the post-create cleanup — nothing was created —
+    // which is why the ENOSPC test below exists.
     await mkdir(join(sessionDir, 'variants'), { recursive: true });
     await chmod(join(sessionDir, 'variants'), 0o500);
 

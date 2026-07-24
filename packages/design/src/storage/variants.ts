@@ -152,12 +152,15 @@ export async function writeVariantHtml(
       // swallowed because the original error is the one worth reporting.
       //
       // This is not free: a failure that precedes the `O_EXCL` check rather
-      // than following it — fd exhaustion (EMFILE/ENFILE) is the measured
-      // case — reports something other than EEXIST while a body does exist
-      // at the path, and the cleanup then deletes it. Exotic on a
-      // single-process local CLI, and the alternative (stat before write)
-      // trades an atomic create for a race, so it is accepted rather than
-      // guarded.
+      // than following it — fd exhaustion, measured with EMFILE, and ENFILE
+      // by the same argument — reports something other than EEXIST while a
+      // body does exist at the path, and the cleanup then deletes it.
+      // `open(path, 'wx')` would close this properly: it is the same atomic
+      // create, but it yields a handle only when this call made the file, so
+      // the cleanup becomes provably scoped to it. Deferred rather than
+      // dismissed — it also moves the failure seam the ENOSPC test injects
+      // at, and the trigger needs ~92k open fds in a single-process local
+      // CLI. Worth revisiting if a second write-side module wants the shape.
       await rm(path, { force: true }).catch(() => undefined);
       throw err;
     },
