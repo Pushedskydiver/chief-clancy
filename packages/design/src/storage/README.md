@@ -1,29 +1,31 @@
 # `storage`
 
-Per-session persistence for the design canvas. One module per file in the session directory, each a thin pair of read/write functions over `node:fs/promises` with no shared runtime state.
+Per-session persistence for the design canvas. One module per file in the session directory — each a thin pair of read/write functions over `node:fs/promises`, with no shared runtime state — plus two pure helpers that touch no disk.
 
 The session layout these modules implement is §2.8 of `.claude/research/phase-f-design-system/ui-vision-spec.md`, and the file↔slice ownership is its §3.0 matrix. That spec is **gitignored** — it is the authority for every `§` reference below, but it is not in the repository, so those citations resolve only where a working copy exists. This README is the implementation-side map of how the modules relate to **each other**.
 
 ## Why this file exists
 
-The modules make the same handful of choices differently, and the differences are deliberate: one appends where another overwrites, one guards a filename by charset where another can only guard by containment. Explaining a choice usually means contrasting it with a sibling — so those contrasts kept getting written into module headers, five vantage points each describing the other four.
+The modules make the same handful of choices differently, and the differences are deliberate: one appends where another overwrites, one guards a filename by charset where another can only guard by containment. Explaining a choice usually means contrasting it with a sibling — so those contrasts kept getting written into module headers, each describing several of the others.
 
-That does not hold up. A sentence in `approve.ts` about how `variants.ts` writes is falsified by editing `variants.ts`, and nothing in the toolchain notices: `tsc`, vitest, knip and publint do not read comments, and `max-lines` is configured `skipComments: true` — `approve.ts` counted 54 lines against a limit of 300 while carrying a 168-line header. Comment share across this directory climbed at every A-phase slice, and the A5 review found defects only in prose, never in the executable lines.
+That does not hold up. A sentence in `approve.ts` about how `variants.ts` writes is falsified by editing `variants.ts`, and nothing in the toolchain notices: no tool here verifies comment _content_, and the one rule that could bound their volume, `max-lines`, is configured `skipComments: true` — `approve.ts` counted 54 lines against a limit of 300 while carrying a 169-line header. Comment share across this directory climbed at every A-phase slice, and the A5 review found defects only in prose, never in the executable lines.
 
 So: **a module header describes that module's own contract. Facts spanning modules live here.** The test is whether a sentence can be falsified by editing a different file. If it can, it belongs in this file, where there is one copy to keep true instead of four.
 
 ## The modules
 
-| file                    | session path                | spec                                                                                                                              |
-| ----------------------- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `chat.ts`               | `chat.jsonl`                | global conversation, append-only                                                                                                  |
-| `threads.ts`            | `threads/{threadId}.jsonl`  | per-element thread, append-only                                                                                                   |
-| `elements.ts`           | `elements/{slot}.json`      | per-element mutable state                                                                                                         |
-| `variants.ts`           | `variants/{variantId}.html` | rendered variant body                                                                                                             |
-| `approve.ts`            | `approved/{slot}`           | accept marker                                                                                                                     |
-| `body-normalisation.ts` | —                           | pure; the `[threadId] slot ` prefix rule between chat and thread bodies                                                           |
-| `fs-errors.ts`          | —                           | pure; narrows `unknown` to an errno-bearing error                                                                                 |
-| `comments.ts`           | `comments.jsonl`            | **superseded** by `chat.ts` + `threads.ts`; deleted at B2 with `schemas/comment.ts`, which `generate/regenerate.ts` still imports |
+| file                    | session path                | spec                                                                    |
+| ----------------------- | --------------------------- | ----------------------------------------------------------------------- |
+| `chat.ts`               | `chat.jsonl`                | global conversation, append-only                                        |
+| `threads.ts`            | `threads/{threadId}.jsonl`  | per-element thread, append-only                                         |
+| `elements.ts`           | `elements/{slot}.json`      | per-element mutable state                                               |
+| `variants.ts`           | `variants/{variantId}.html` | rendered variant body                                                   |
+| `approve.ts`            | `approved/{slot}`           | accept marker                                                           |
+| `body-normalisation.ts` | —                           | pure; the `[threadId] slot ` prefix rule between chat and thread bodies |
+| `fs-errors.ts`          | —                           | pure; narrows `unknown` to an errno-bearing error                       |
+| `comments.ts`           | `comments.jsonl`            | **superseded** by `chat.ts` + `threads.ts`; see below                   |
+
+`comments.ts` has no importer but its own test, so it is deletable on its own. What pins the pair's removal to B2 is `schemas/comment.ts`, which `generate/regenerate.ts` still imports — the two come out together when that migrates. The distinction matters: the schema's importer is the constraint, the module's bundling is a decision.
 
 ## Write discipline
 
@@ -37,9 +39,9 @@ Three shapes, picked by what the file _is_ rather than by preference.
 
 ## Guard shape
 
-Every module that interpolates a caller-supplied **key** into a path guards it, in one of two ways, and the choice is forced by where the value comes from. `sessionDir` is the exception and is guarded nowhere — see below.
+Every module that interpolates a caller-supplied **key** into a path guards it, in one of two ways, and the choice is forced by the key's shape. `sessionDir` is the exception and is guarded nowhere — see below.
 
-- **Charset** — `threads.ts` (`threadId`), `variants.ts` (`variantId`), both `/^[A-Za-z0-9_-]+$/`. Available because both values are opaque single path segments, so a charset can be imposed without losing anything meaningful. Note the two are not equally trusted: `threadId` is minted, which is why its module tolerates the charset still admitting the Win32 device names; `variantId` is scraped from raw model output and is the case the guard most needs to catch.
+- **Charset** — `threads.ts` (`threadId`), `variants.ts` (`variantId`), both `/^[A-Za-z0-9_-]+$/`. Chosen because containment alone is _insufficient_ here, not merely because a charset is available: containment silently normalises separators, so `x/../y` would alias onto thread or variant `y`, and `''` would open a real file named `.jsonl` / `.html`. A charset is imposable because both values are opaque single path segments. Note the two are not equally trusted: `threadId` is minted, which is why its module tolerates the charset still admitting the Win32 device names; `variantId` is scraped from raw model output and is the case the guard most needs to catch.
 - **Containment** — `elements.ts` and `approve.ts`, both on `slot`. A stable-selector key like `h1.header` cannot be held to an id charset, so the resolved path is tested instead.
 
 **The two containment guards are not ordered, and this is load-bearing.** Measured both directions:
@@ -52,13 +54,15 @@ Every module that interpolates a caller-supplied **key** into a path guards it, 
 
 `approve.ts` is stricter about nesting because its filename has no extension (so a bare `..` escapes where `elements.ts`'s appended `.json` neutralises it) and because slice 22 iterates `approved/*`, where a nested marker would be invisible. `elements.ts` is stricter about leading dots because its prefix test over-matches contained names.
 
-Neither is simply better. `a[href="/docs"]` is a plausible selector-derived key that one hard-fails and the other silently turns into a directory — the real fix belongs with the unresolved selector→slot mapping (rework plan, slice-16 sub-issue). Until then: **Phase C's accept action writes both files for one event, so a slot either guard rejects half-commits.** Validate once, before either write.
+Neither is simply better. `a[href="/docs"]` is a plausible selector-derived key that one hard-fails and the other silently turns into a directory — the real fix belongs with the unresolved selector→slot mapping (`ui-vision-rework-plan.md`, also gitignored, slice-16 sub-issue). Until then: **Phase C's accept action writes both files for one event, so a slot either guard rejects half-commits.** Validate once, before either write.
 
 Note also that containment tests the _normalised_ path, so separators are rejected only where they survive normalisation — `a/../b` resolves onto slot `b` in both modules, and two distinct slot keys can alias onto one file.
 
 ## Read discipline
 
-- **Strict, with a torn-tail exemption** — `chat.ts`, `threads.ts`. A crash can truncate the final line mid-write, so a _last_ line failing `JSON.parse` is dropped when the file does not end in a newline. Nothing else is forgiven: a line that parses as JSON but fails its schema is version skew or corruption, and throws even in the tail position. Forgiving it would make the newest message in every thread silently droppable — a user's comment vanishing from the regeneration context with no error anywhere.
+`threads/{threadId}.jsonl` is durable, not a derived view. `chat.jsonl` carries the same message text behind the `[threadId] slot ` tag, but not the `tag` / `textSnippet` / `status` anchor fields, so a thread rebuilt from chat alone loses its stale-anchor lifecycle state (§2.8 reconstruction note).
+
+- **Strict, with a torn-tail exemption** — `chat.ts`, `threads.ts`. A crash can truncate the final line mid-write, so a _last_ line failing `JSON.parse` is dropped when the file does not end in a newline. Nothing else is forgiven: a line that parses as JSON but fails its schema is version skew or corruption, and throws even in the tail position. Blank lines are filtered before any of this — a complete file ends in a newline — which is also why the filter runs before the tail index is computed. Forgiving it would make the newest message in every thread silently droppable — a user's comment vanishing from the regeneration context with no error anywhere.
 - **Strict, whole-file** — `elements.ts`, `approve.ts`. No line framing, so no torn-tail case; a schema-invalid file throws.
 - **Opaque** — `variants.ts`. An HTML body is markup, not a record, so there is nothing to validate against and no `schemas/` pair. A truncated write reads back as shorter markup and cannot be detected here.
 - **Lenient** — `comments.ts`, superseded. It swallows every unparseable _and_ schema-invalid line. This is the behaviour the strict readers were written not to inherit.
@@ -69,7 +73,7 @@ A missing file is never an error: it means "nothing written yet" and reads as `[
 
 `ts` is caller-minted almost everywhere, and the exception is principled:
 
-- A module **handed a finished record** takes `ts` on the record and stays clock-free — `elements.ts`, `threads.ts`, `chat.ts`.
+- A module **handed a finished record** takes `ts` on the record and stays clock-free — `threads.ts` and `chat.ts` on every line, `elements.ts` on the nested `accepted` pointer, which is the only `ts` its schema carries and is `null` until a variant is accepted.
 - A module that **constructs its own record** owns the clock and takes `now?: Date` — `approve.ts` alone.
 
 The reason is pairing. One user action writes a `chat.jsonl` line _and_ a `threads/*.jsonl` line, and the pair must carry the same `ts`; two modules each defaulting `now ?? new Date()` cannot guarantee that, whereas one caller-minted timestamp fanned out to both does by construction.
@@ -82,7 +86,7 @@ The other four modules are out of scope here: `variants.ts` stores a body with n
 
 ## Directories and failure windows
 
-**No module guards `sessionDir`.** The guards above cover the per-file key only — the slot, the thread id, the variant id. The session directory itself is interpolated raw by all six fs-touching modules, so **the caller must validate that `sessionDir` is within the canvas-session root before calling any of them.** Today that contract is stated only in `comments.ts`, which B2 deletes; it is recorded here so it outlives that module.
+**No module guards `sessionDir`.** The guards above cover the per-file key only — the slot, the thread id, the variant id. The session directory itself is interpolated raw by all six fs-touching modules, so **the caller must validate that `sessionDir` is within the canvas-session root before calling any of them.** Before this file existed the contract was stated only in `comments.ts`, which B2 deletes; it is recorded here so it outlives that module.
 
 Modules whose file sits in a subdirectory create it (`threads.ts`, `elements.ts`, `variants.ts`, `approve.ts`); because the mkdir is recursive it will also materialise a missing `sessionDir`. Modules whose file sits directly in the session directory do not (`chat.ts`, `comments.ts`), so the caller owns that lifecycle and an ENOENT on the directory propagates rather than being papered over.
 
@@ -96,5 +100,5 @@ Known windows, none of them treated:
 
 Two operations the spec calls for have no code yet, and they sit differently.
 
-- **Un-accept** deletes `approved/{slot}` and clears `elements.accepted` to `null` (§2.6, and §3.0 as amended in Session 176). One action, both files — the same dual-write pairing accept has. It is a _write_, and §3.0 gives a file's write implementation to exactly one slice, so it belongs to `approve.ts` and nowhere else. It waits on Phase C, where the dual-write action lands.
+- **Un-accept** returns a slot to the unaccepted state (§2.6, and §3.0 as amended in Session 176). It is one action over two files, and they have different owners: deleting `approved/{slot}` is a write to this module's file, so §3.0's exactly-one-writer-per-file rule puts it in `approve.ts`; clearing `elements.accepted` to `null` is a write to `elements/{slot}.json`, whose physical writer is slice 18, so that leg rides `elements.ts`. Neither module owns both. It is the same split accept has, and it waits on the same Phase C action.
 - **Listing** `approved/*` for slices 21 and 22 (22 iterates unconditionally; 21 offers a walk as the alternative to `--slot`). This is a _read_, and §3.0 permits a reader to read directly, so a primitive here would be drift-prevention rather than ownership. Neither slice is built — they are not part of the A/B/C rework phases at all — and the open questions are its return shape (slot names or parsed markers) and how it treats non-file and symlinked entries.

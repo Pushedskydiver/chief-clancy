@@ -2,8 +2,11 @@
  * Variant-body persistence — Phase F (UI-vision rework, slice A4).
  *
  * One file per generated variant at `<sessionDir>/variants/<variantId>.html`
- * (spec §2.8). The physical writer is the generation pipeline (slice 11);
- * slices 13, 14 and 22 read bodies back. See `./README.md` for how this
+ * (spec §2.8). The physical writer is the generation pipeline (slice 11).
+ * Slices 13 and 14 read bodies back by the `variantId` they find in
+ * `elements/<slot>.json`; slice 22 resolves its `variantId` from
+ * `approved/<slot>` instead, since §3.0 does not list 22 as an `elements/`
+ * reader. See `./README.md` for how this
  * module's write, guard, read and failure-window choices sit against its
  * siblings'.
  *
@@ -43,7 +46,8 @@
  *
  * `writeVariantHtml` takes three positional parameters rather than an options
  * object — at the `max-params` limit in `docs/CONVENTIONS.md`, not over it — to
- * keep the `(sessionDir, key, payload)` shape the writers share. Both
+ * keep one shape across the four writers that take a per-file key:
+ * `elements.ts`, `threads.ts`, `approve.ts` and this one. Both
  * mis-orderings that shape invites are caught by the charset guard, which sits
  * on the second parameter: swapping the id and the payload puts markup there,
  * and swapping `sessionDir` and the id puts a path there. The second is caught

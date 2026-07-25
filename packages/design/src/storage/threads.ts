@@ -7,11 +7,9 @@
  * instead of a scan-and-filter over the whole session's chat log. See
  * `./README.md` for how this module's choices sit against its siblings'.
  *
- * The file is durable, not a derived view: `chat.jsonl` carries the same
- * message text — behind a `[threadId] slot ` tag that the chat side prepends
- * and thread lines omit (§2.8 body-normalisation rule) — but not the `tag` /
- * `textSnippet` / `status` anchor fields, so a thread rebuilt from chat alone
- * loses its stale-anchor lifecycle state (spec §2.8 reconstruction note).
+ * The file is durable, not a derived view — a thread rebuilt from `chat.jsonl`
+ * alone loses the `tag` / `textSnippet` / `status` anchor fields this one
+ * carries. See `./README.md` §Read discipline.
  *
  * This supersedes the flat variant-keyed `storage/comments.ts` log; see
  * `./README.md` for when that pair comes out.

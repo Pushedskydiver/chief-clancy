@@ -20,7 +20,12 @@
  * so dropping `approverPid` is a real loss of provenance for audit or
  * concurrent-approver detection. It goes because no consumer wants it — slices
  * 21 and 22 do not exist yet, and the read contracts §3.1 rows 21/22 specify
- * for them name no pid — not because the information survives elsewhere.
+ * for them name no pid — not because the information survives elsewhere. The
+ * one pid the package does persist, `canvas/server/lock.ts`, is not a
+ * substitute: it is per project root rather than per approval, gone once the
+ * lock is released, and reclaimable by another process after 24h even while the
+ * holder is alive, because that module's staleness check returns before its
+ * liveness probe runs.
  *
  * `roundId` arrives from the caller because `Variant` has no notion of one: it
  * lives in `elements/<slot>.json`, which the accept action reads anyway for
@@ -32,8 +37,7 @@
  * independently rather than restating what element state already claims.
  *
  * The record is built from typed inputs by total construction, so there is
- * nothing for a validate-before-write to catch — unlike the appenders, which
- * validate because one bad line poisons a whole strict-read log.
+ * nothing for a validate-before-write to catch.
  *
  * The path guard moved with the filename at A5: `variant.id` no longer appears
  * in it, so `slot` is what gets checked. Two things specific to this file push
