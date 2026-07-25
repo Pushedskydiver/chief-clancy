@@ -3,101 +3,54 @@
  *
  * One file per generated variant at `<sessionDir>/variants/<variantId>.html`
  * (spec §2.8). The physical writer is the generation pipeline (slice 11).
- * Slices 13 (composition) and 14 (iframe render) read bodies back by the
- * `variantId` they find in `elements/<slot>.json`; slice 22 (handoff bundle)
- * resolves its `variantId` from `approved/<slot>` instead (spec §3.1 row 22
- * — the §3.0 matrix does not list 22 as an `elements/` reader).
+ * Slices 13 and 14 read bodies back by the `variantId` they find in
+ * `elements/<slot>.json`; slice 22 resolves its `variantId` from
+ * `approved/<slot>` instead, since §3.0 does not list 22 as an `elements/`
+ * reader. See `./README.md` for how this module's write, guard, read and
+ * failure-window choices sit against its siblings'.
  *
- * Alone among the modules that read session state back, this one has no
- * `schemas/` pair: a variant body is opaque markup, not a record, so there
- * is nothing to validate it against. Nothing here parses the HTML. That also
- * puts the strict-read contract `storage/chat.ts` and `storage/threads.ts`
- * share out of scope — those are line-framed logs where a torn final line is
- * recognisable and every other line must parse; a whole-file body has no
- * framing, so a truncated write is simply shorter markup and cannot be
- * detected at this layer. Nor is it caught downstream today: `approve.ts`
- * records a sha over the body it was handed, but nothing reads that sha back
- * — whether `clancy:design write` (slice 21) re-checks it for drift is that
- * slice's open decision (`approve.ts` header). So the sha is what a drift
- * check *would* compare against, not a check that exists.
+ * The body is written verbatim, with no trailing newline, because the accept
+ * marker records a SHA-256 over the same bytes — anything added or dropped here
+ * makes the marker disagree with the file on disk.
  *
- * The body is therefore written verbatim — no trailing newline, unlike
- * `storage/elements.ts`'s pretty-printed JSON — so the bytes on disk stay
- * byte-identical to the bytes hashed at accept time.
+ * **The contract this puts on callers:** writes are once-only, so mint a fresh
+ * session-unique id for every generated body. Neither shipped generation path
+ * does that yet — `generate/parallel.ts` requests the fixed `['v1','v2','v3']`
+ * on every call, and `generate/regenerate.ts` forwards the id of the variant
+ * being iterated — so both collide from round 2 onward. Both have to change
+ * under §3.1 row 11 regardless of this module; B1 (slice 11 rework) owns that.
+ * A caller that genuinely needs to replace a body must remove the file first,
+ * which keeps the destructive step explicit. The collision `throw`s rather than
+ * returning a `Result` (`docs/CONVENTIONS.md` §Error Handling) because a
+ * duplicate id is a minting bug in the caller, not a domain outcome it can
+ * branch on.
  *
- * `variants/` is a subdirectory, so writes mkdir it, as in
- * `storage/threads.ts`, `storage/elements.ts` and `storage/approve.ts`. The
- * `recursive` mkdir will also materialise a missing `sessionDir`, so this
- * module does not enforce the caller-owns-the-session-directory expectation
- * that `storage/chat.ts`, whose file sits directly in `sessionDir`, does by
- * omission.
+ * `variantId` reaches this module from the model's own output, which is why it
+ * is held to a charset rather than merely checked for containment:
+ * `generate/single.ts` scrapes the `<variant>` header with `/<variant\b([^>]*)>/`
+ * and the id out of it with `/\bid="([^"]+)"/`, so between them every byte but
+ * `"` and `>` survives, and only the `generateParallel` path re-checks the id
+ * against the one requested. The charset still admits the Win32 device names
+ * (`CON`, `NUL`, `COM1`…) — measured, they pass — and the usual excuse, that
+ * such an id is minted rather than user-supplied, does not apply here. What one
+ * does under an exclusive create on Win32 is untested, so treat it as an open
+ * gap rather than a known-benign one.
  *
- * Writes are once-only. Variant ids are unique across the session rather
- * than within a round (§2.2 future cherry-pick mode, §3.1 row 11), and a
- * locked variant carries into the next round keeping both its id and its
- * body (§2.6) — so a body is generated once and never mutated, and a second
- * write under a live id is an id-space collision rather than an update.
- * Overwriting would silently swap that body underneath every
- * `elements/{slot}.json` pointer still naming it, so the write fails
- * instead.
+ * A missing file reads as `null` — "not generated yet", legitimate state, since
+ * §2.8 records a variant as `status: "generating"` before its body lands — and
+ * is distinct from `''` for a body that exists and is empty. Whether an empty
+ * body is *worth* persisting is generation's question, not storage's:
+ * `generate/single.ts` already trims the captured markup, so rejecting `''`
+ * here would put a second definition of "valid variant" in the wrong layer.
  *
- * **The contract this puts on callers:** mint a fresh session-unique id for
- * every generated body. Neither shipped generation path does that yet —
- * `generate/parallel.ts` requests the fixed `['v1','v2','v3']` on every
- * call, and `generate/regenerate.ts` forwards the id of the variant being
- * iterated — so both collide from round 2 onward. Both have to change under
- * §3.1 row 11 regardless of this module; B1 (slice 11 rework) owns that.
- * A caller that genuinely needs to replace a body must remove the file
- * first, which keeps the destructive step explicit. The collision `throw`s
- * rather than returning a `Result` (`docs/CONVENTIONS.md` §Error Handling)
- * because a duplicate id is a minting bug in the caller, not a domain
- * outcome it can meaningfully branch on.
- *
- * A write that fails *after* the exclusive create — ENOSPC, EIO — would
- * otherwise leave a 0-byte or truncated file that write-once then makes
- * permanent, and a short body reads back as valid markup rather than as an
- * error, so the failed write removes it. That removal is best-effort, which
- * leaves two windows where residue survives and recovery is deleting the
- * file by hand: a process killed between the create and the write, and a
- * cleanup that itself fails (its error is swallowed in favour of the
- * original). Closing the first needs an atomic temp-then-link publish, which
- * is not worth the machinery until a caller exists to want it.
- *
- * `variantId` is held to an id-shaped charset rather than merely checked for
- * containment, because it interpolates into a filename and reaches this
- * module from the model's own output: `generate/single.ts` scrapes the
- * `<variant>` header with `/<variant\b([^>]*)>/` and the id out of it with
- * `/\bid="([^"]+)"/`, so between them every byte but `"` and `>` survives,
- * and only the `generateParallel` path re-checks the id against the one
- * requested. Containment alone would silently normalise separators, so
- * `x/../y` would alias onto variant `y` and `''` would open a real file
- * named `.html`. (`storage/elements.ts` guards `slot` by containment instead
- * — correctly, since a stable-selector key like `h1.header` can't be held to
- * a charset.) As in `storage/threads.ts`, the charset still admits the Win32
- * device names (`CON`, `NUL`, `COM1`…) — measured, they pass — and the
- * excuse made there, that the id is minted rather than user-supplied, does
- * *not* transfer to an id lifted from model output. What such an id does
- * under an exclusive create on Win32 is untested here, so treat it as an
- * open gap rather than a known-benign one.
- *
- * A missing file means "not generated yet" — legitimate state, since §2.8
- * records a variant as `status: "generating"` in `elements/{slot}.json`
- * before its body lands — and reads as `null`, distinct from `''` for a body
- * that exists and is empty. Whether an empty body is *worth* persisting is
- * generation's question, not storage's: `generate/single.ts` already trims
- * the captured markup, so rejecting `''` here would put a second definition
- * of "valid variant" in the wrong layer. Other I/O failures (EACCES, EISDIR,
- * ENOSPC) propagate.
- *
- * `writeVariantHtml` takes three positional parameters rather than an
- * options object — at the `max-params` limit in `docs/CONVENTIONS.md`, not
- * over it — so that it, `elements.ts`, `threads.ts` and `approve.ts`, the
- * four writers taking `(sessionDir, key, payload)`, keep one shape. Both mis-orderings
- * that shape invites are caught by the charset guard, which sits on the
- * second parameter: swapping the id and the payload puts markup there, and
- * swapping `sessionDir` and the id puts a path there. The second is caught
- * only because a session directory isn't id-shaped — a caller passing a
- * bare id-shaped `sessionDir` would slip through.
+ * `writeVariantHtml` takes three positional parameters rather than an options
+ * object — at the `max-params` limit in `docs/CONVENTIONS.md`, not over it — to
+ * keep the shared key-taking writer signature (`./README.md` §The modules). Both
+ * mis-orderings that shape invites are caught by the charset guard, which sits
+ * on the second parameter: swapping the id and the payload puts markup there,
+ * and swapping `sessionDir` and the id puts a path there. The second is caught
+ * only because a session directory isn't id-shaped — a caller passing a bare
+ * id-shaped `sessionDir` would slip through.
  */
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
@@ -108,7 +61,6 @@ const VARIANTS_DIR = 'variants';
 
 /**
  * A single portable path segment: non-empty, no separators, no dot segments.
- * The same shape `storage/threads.ts` holds `threadId` to.
  */
 const VARIANT_ID_PATTERN = /^[A-Za-z0-9_-]+$/;
 

@@ -3,25 +3,17 @@
  *
  * Mutable per-element session state at `<sessionDir>/elements/<slot>.json`
  * (spec §2.8): rounds, per-variant lock + status, soft-selection, and the
- * accept pointer. Unlike the append-only JSONL surfaces (chat/threads),
- * this file is OVERWRITTEN wholesale on every state change —
- * `writeElementState` replaces it, it never appends.
+ * accept pointer. `writeElementState` replaces the file, it never appends. See
+ * `./README.md` for how this module's choices sit against its siblings'.
  *
- * Reads validate against `elementStateSchema` (untrusted disk data), so a
- * corrupt or schema-invalid state file throws rather than yielding a
- * malformed object; `readElementState` returns `null` only when no state
- * has been written for the slot yet (ENOENT). Other I/O failures (EACCES,
- * EISDIR, ENOSPC) propagate. `slot` is guarded by path containment rather
- * than against a charset, since it derives from a stable-selector key that
- * isn't charset-restricted — unlike an opaque minted id such as
- * `storage/threads.ts`'s `threadId`, which is held to a charset instead.
- * `storage/approve.ts` guards its own `slot` by containment too, but the two
- * are not ordered: it rejects slots that don't normalise to a single entry,
- * which this guard admits — `sub/slot` by nesting, `''` as the flat hidden
- * file `elements/.json`, since the `.json` is appended before the containment
- * test — while this one's `startsWith('..')` prefix test rejects contained
- * names like `..foo` that it admits. See that module's header — reconciling
- * them waits on the selector→slot mapping.
+ * `readElementState` returns `null` only when no state has been written for the
+ * slot yet (ENOENT). The `accepted` pointer's `ts` arrives on the record from
+ * the caller, since one accept event stamps this file and the marker together.
+ *
+ * `slot` derives from a stable-selector key and so cannot be held to an id
+ * charset — it is guarded by containment instead. Note the guard's prefix test
+ * rejects contained names beginning with two dots (`..foo`), which the appended
+ * `.json` would otherwise make ordinary filenames.
  */
 import type { ElementState } from '../schemas/element-state.js';
 

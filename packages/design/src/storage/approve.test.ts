@@ -58,7 +58,7 @@ describe('approval marker persistence', () => {
     // module in the rework it owns the clock (rework plan §Cross-cutting).
     // The default covers a marker written on its own; Phase C's accept action
     // pairs this file with `elements.accepted` and must pass `now` so both
-    // carry one instant — see the module header.
+    // carry one instant — see `./README.md` §The clock.
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-07-24T09:00:00.000Z'));
 
@@ -81,8 +81,8 @@ describe('approval marker persistence', () => {
     // the session directory itself, and `''` / `'.'` resolve to `approved/`.
     // (In `storage/elements.ts` the appended `.json` makes the same input the
     // contained filename `...json` — which that module then rejects anyway,
-    // on a prefix test this one deliberately does not share; see the module
-    // header.) Nested slots are rejected too: slice 22 iterates `approved/*`
+    // on a prefix test this one deliberately does not share; see
+    // `./README.md` §Guard shape.) Nested slots are rejected too: slice 22 iterates `approved/*`
     // unconditionally (spec §3.1 row 22), and a marker one level down is
     // invisible to that walk rather than merely unusual.
     const rejected = ['..', '../../evil', '', '.', 'sub/slot', '/etc/passwd'];
@@ -118,7 +118,7 @@ describe('approval marker persistence', () => {
     // Absence is the normal state, not an error: every slot is unaccepted
     // until a variant is committed for it. §2.6 un-accept would also return a
     // slot to this state, but the unlink that does so is deferred — it belongs
-    // to this module and waits on Phase C (see the module header) — so this
+    // to this module and waits on Phase C (see `./README.md`) — so this
     // covers the never-accepted case only.
     expect(await readApprovalMarker(sessionDir, 'h1.header')).toBeNull();
   });
