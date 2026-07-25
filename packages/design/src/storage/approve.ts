@@ -143,7 +143,7 @@
  * accepted slot can become unreadable until the marker is rewritten or
  * removed. Untreated, as it is in `storage/elements.ts`, which overwrites its
  * file the same way — the two whole-file mutable surfaces share this window.
- * The other storage modules have differently shaped ones because they append
+ * The other storage writers have differently shaped ones because they append
  * or write once rather than replace.
  *
  * Two operations the spec calls for are absent, and §3.0 places them
