@@ -26,11 +26,11 @@
  * byte-identical to the bytes hashed at accept time.
  *
  * `variants/` is a subdirectory, so writes mkdir it, as in
- * `storage/threads.ts` and `storage/elements.ts` (and unlike
- * `storage/chat.ts`, whose file sits directly in `sessionDir`). The
+ * `storage/threads.ts`, `storage/elements.ts` and `storage/approve.ts`. The
  * `recursive` mkdir will also materialise a missing `sessionDir`, so this
  * module does not enforce the caller-owns-the-session-directory expectation
- * that `storage/approve.ts` does by omission.
+ * that `storage/chat.ts`, whose file sits directly in `sessionDir`, does by
+ * omission.
  *
  * Writes are once-only. Variant ids are unique across the session rather
  * than within a round (§2.2 future cherry-pick mode, §3.1 row 11), and a
@@ -91,8 +91,8 @@
  *
  * `writeVariantHtml` takes three positional parameters rather than an
  * options object — at the `max-params` limit in `docs/CONVENTIONS.md`, not
- * over it — so that it, `elements.ts`, and `threads.ts`, the three writers
- * taking `(sessionDir, id, payload)`, keep one shape. Both mis-orderings
+ * over it — so that it, `elements.ts`, `threads.ts` and `approve.ts`, the
+ * four writers taking `(sessionDir, key, payload)`, keep one shape. Both mis-orderings
  * that shape invites are caught by the charset guard, which sits on the
  * second parameter: swapping the id and the payload puts markup there, and
  * swapping `sessionDir` and the id puts a path there. The second is caught

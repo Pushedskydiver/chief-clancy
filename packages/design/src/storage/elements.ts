@@ -11,11 +11,17 @@
  * corrupt or schema-invalid state file throws rather than yielding a
  * malformed object; `readElementState` returns `null` only when no state
  * has been written for the slot yet (ENOENT). Other I/O failures (EACCES,
- * EISDIR, ENOSPC) propagate. Mirrors `storage/approve.ts`'s
- * caller-owns-`sessionDir` contract with a slot-path-traversal guard,
- * since `slot` derives from a stable-selector key that isn't
- * charset-restricted — unlike an opaque minted id such as
+ * EISDIR, ENOSPC) propagate. `slot` is guarded by path containment rather
+ * than against a charset, since it derives from a stable-selector key that
+ * isn't charset-restricted — unlike an opaque minted id such as
  * `storage/threads.ts`'s `threadId`, which is held to a charset instead.
+ * `storage/approve.ts` guards its own `slot` by containment too, but the two
+ * are not ordered: it rejects slots that don't normalise to a single entry,
+ * which this guard admits — `sub/slot` by nesting, `''` as the flat hidden
+ * file `elements/.json`, since the `.json` is appended before the containment
+ * test — while this one's `startsWith('..')` prefix test rejects contained
+ * names like `..foo` that it admits. See that module's header — reconciling
+ * them waits on the selector→slot mapping.
  */
 import type { ElementState } from '../schemas/element-state.js';
 
