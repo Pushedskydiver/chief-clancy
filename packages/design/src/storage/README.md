@@ -2,13 +2,13 @@
 
 Per-session persistence for the design canvas. One module per file in the session directory, each a thin pair of read/write functions over `node:fs/promises` with no shared runtime state.
 
-The session layout these modules implement is `ui-vision-spec.md` §2.8, and the file↔slice ownership is its §3.0 matrix. Those are the authority; this README is the implementation-side map of how the modules relate to **each other**.
+The session layout these modules implement is §2.8 of `.claude/research/phase-f-design-system/ui-vision-spec.md`, and the file↔slice ownership is its §3.0 matrix. That spec is **gitignored** — it is the authority for every `§` reference below, but it is not in the repository, so those citations resolve only where a working copy exists. This README is the implementation-side map of how the modules relate to **each other**.
 
 ## Why this file exists
 
 The modules make the same handful of choices differently, and the differences are deliberate: one appends where another overwrites, one guards a filename by charset where another can only guard by containment. Explaining a choice usually means contrasting it with a sibling — so those contrasts kept getting written into module headers, five vantage points each describing the other four.
 
-That does not hold up. A sentence in `approve.ts` about how `variants.ts` writes is falsified by editing `variants.ts`, and nothing in the toolchain notices: `tsc`, vitest, knip and publint do not read comments, and `max-lines` is configured `skipComments: true`. Across five slices the comment share of these modules climbed monotonically, and every finding in the A5 review — 39 across five rounds — was in prose rather than code.
+That does not hold up. A sentence in `approve.ts` about how `variants.ts` writes is falsified by editing `variants.ts`, and nothing in the toolchain notices: `tsc`, vitest, knip and publint do not read comments, and `max-lines` is configured `skipComments: true` — `approve.ts` counted 54 lines against a limit of 300 while carrying a 168-line header. Comment share across this directory climbed at every A-phase slice, and the A5 review found defects only in prose, never in the executable lines.
 
 So: **a module header describes that module's own contract. Facts spanning modules live here.** The test is whether a sentence can be falsified by editing a different file. If it can, it belongs in this file, where there is one copy to keep true instead of four.
 
@@ -37,9 +37,9 @@ Three shapes, picked by what the file _is_ rather than by preference.
 
 ## Guard shape
 
-Every module that interpolates a caller-supplied value into a path guards it, in one of two ways, and the choice is forced by where the value comes from.
+Every module that interpolates a caller-supplied **key** into a path guards it, in one of two ways, and the choice is forced by where the value comes from. `sessionDir` is the exception and is guarded nowhere — see below.
 
-- **Charset** — `threads.ts` (`threadId`), `variants.ts` (`variantId`), both `/^[A-Za-z0-9_-]+$/`. Available because these are _minted_ ids. `variantId` needs it most: `generate/single.ts` scrapes it from raw model output with regexes admitting every byte but `"` and `>`.
+- **Charset** — `threads.ts` (`threadId`), `variants.ts` (`variantId`), both `/^[A-Za-z0-9_-]+$/`. Available because both values are opaque single path segments, so a charset can be imposed without losing anything meaningful. Note the two are not equally trusted: `threadId` is minted, which is why its module tolerates the charset still admitting the Win32 device names; `variantId` is scraped from raw model output and is the case the guard most needs to catch.
 - **Containment** — `elements.ts` and `approve.ts`, both on `slot`. A stable-selector key like `h1.header` cannot be held to an id charset, so the resolved path is tested instead.
 
 **The two containment guards are not ordered, and this is load-bearing.** Measured both directions:
@@ -63,7 +63,7 @@ Note also that containment tests the _normalised_ path, so separators are reject
 - **Opaque** — `variants.ts`. An HTML body is markup, not a record, so there is nothing to validate against and no `schemas/` pair. A truncated write reads back as shorter markup and cannot be detected here.
 - **Lenient** — `comments.ts`, superseded. It swallows every unparseable _and_ schema-invalid line. This is the behaviour the strict readers were written not to inherit.
 
-A missing file is never an error: it means "nothing written yet" and reads as `[]`, `null`, or `null` depending on the module's shape. Other I/O failures (EACCES, EISDIR, ENOSPC) propagate. Because reads are strict, the appenders validate before writing — one bad line would otherwise poison a whole file.
+A missing file is never an error: it means "nothing written yet" and reads as `[]` from the line-oriented readers, `null` from the single-record ones. Other I/O failures (EACCES, EISDIR, ENOSPC) propagate. Because their reads are strict, the strict-read appenders (`chat.ts`, `threads.ts`) validate before writing — one bad line would otherwise poison a whole file, and the static type does not cover a caller assembling a record from untyped input. `comments.ts` does not validate, which is of a piece with its lenient read.
 
 ## The clock
 
@@ -78,7 +78,11 @@ The reason is pairing. One user action writes a `chat.jsonl` line _and_ a `threa
 
 The action-layer caller that mints `ts` and fans it out does not exist yet; Phase C is where it lands. `threadId` is a mint point too, and must stay inside `/^[A-Za-z0-9_-]+$/`.
 
+The other four modules are out of scope here: `variants.ts` stores a body with no timestamp at all, `comments.ts` is handed a record carrying its own `createdAt`, and the two pure modules touch neither clock nor disk.
+
 ## Directories and failure windows
+
+**No module guards `sessionDir`.** The guards above cover the per-file key only — the slot, the thread id, the variant id. The session directory itself is interpolated raw by all six fs-touching modules, so **the caller must validate that `sessionDir` is within the canvas-session root before calling any of them.** Today that contract is stated only in `comments.ts`, which B2 deletes; it is recorded here so it outlives that module.
 
 Modules whose file sits in a subdirectory create it (`threads.ts`, `elements.ts`, `variants.ts`, `approve.ts`); because the mkdir is recursive it will also materialise a missing `sessionDir`. Modules whose file sits directly in the session directory do not (`chat.ts`, `comments.ts`), so the caller owns that lifecycle and an ENOENT on the directory propagates rather than being papered over.
 
@@ -86,11 +90,11 @@ Known windows, none of them treated:
 
 - **Overwrite** truncates before writing, so a crash mid-overwrite leaves a partial file that the strict read throws on rather than reporting as absent. Safe direction — state in doubt refuses to be read rather than silently reverting — but a previously written slot can become unreadable until rewritten. `elements.ts` and `approve.ts` share this.
 - **Write-once** cleans up after a failure that follows its exclusive create, since write-once would otherwise make a truncated body permanent. Best-effort: a process killed between create and write, or a cleanup that itself fails, leaves residue that must be deleted by hand. A failure _preceding_ the `O_EXCL` check (fd exhaustion, measured with EMFILE) reports a non-EEXIST errno while a body exists, and the cleanup then deletes it — `open(path, 'wx')` would scope this provably.
-- **Containment is lexical, not filesystem-level.** A symlink planted at a guarded path is followed by every plain write here. `variants.ts` is the exception, and only incidentally: `O_CREAT|O_EXCL` fails `EEXIST` on a symlink rather than following it.
+- **Guards are lexical, not filesystem-level** — containment and charset alike. A symlink planted at a guarded path is followed by every plain write here. `variants.ts` is the exception, and only incidentally: `O_CREAT|O_EXCL` fails `EEXIST` on a symlink rather than following it.
 
 ## Not implemented
 
-Two operations the spec calls for have no code yet. Both belong to `approve.ts` and wait on Phase C.
+Two operations the spec calls for have no code yet, and they sit differently.
 
-- **Un-accept** deletes `approved/{slot}` and clears `elements.accepted` to `null` (§2.6, and §3.0 as amended in Session 176). One action, both files — the same dual-write pairing accept has.
-- **Listing** `approved/*` for slices 21/22. §3.0 permits a reader to read directly, so this is drift-prevention rather than ownership; its shape follows slice 21's undecided `--slot`-vs-walk-all CLI.
+- **Un-accept** deletes `approved/{slot}` and clears `elements.accepted` to `null` (§2.6, and §3.0 as amended in Session 176). One action, both files — the same dual-write pairing accept has. It is a _write_, and §3.0 gives a file's write implementation to exactly one slice, so it belongs to `approve.ts` and nowhere else. It waits on Phase C, where the dual-write action lands.
+- **Listing** `approved/*` for slices 21 and 22 (22 iterates unconditionally; 21 offers a walk as the alternative to `--slot`). This is a _read_, and §3.0 permits a reader to read directly, so a primitive here would be drift-prevention rather than ownership. Neither slice is built — they are not part of the A/B/C rework phases at all — and the open questions are its return shape (slot names or parsed markers) and how it treats non-file and symlinked entries.

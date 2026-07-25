@@ -2,67 +2,44 @@
  * Variant-body persistence — Phase F (UI-vision rework, slice A4).
  *
  * One file per generated variant at `<sessionDir>/variants/<variantId>.html`
- * (spec §2.8). The physical writer is the generation pipeline (slice 11).
- * Slices 13 (composition) and 14 (iframe render) read bodies back by the
- * `variantId` they find in `elements/<slot>.json`; slice 22 (handoff bundle)
- * resolves its `variantId` from `approved/<slot>` instead (spec §3.1 row 22 —
- * the §3.0 matrix does not list 22 as an `elements/` reader). See `./README.md`
- * for how this module's choices sit against its siblings'.
+ * (spec §2.8). The physical writer is the generation pipeline (slice 11);
+ * slices 13, 14 and 22 read bodies back. See `./README.md` for how this
+ * module's write, guard, read and failure-window choices sit against its
+ * siblings'.
  *
- * This is the one module with no `schemas/` pair: a variant body is opaque
- * markup, not a record, so there is nothing to validate it against and nothing
- * here parses the HTML.
+ * The body is written verbatim, with no trailing newline, because the accept
+ * marker records a SHA-256 over the same bytes — anything added or dropped here
+ * makes the marker disagree with the file on disk.
  *
- * The body is written verbatim — no trailing newline — so the bytes on disk
- * stay byte-identical to the bytes `approve.ts` hashes at accept time. Nothing
- * reads that sha back today; whether `clancy:design write` (slice 21) re-checks
- * it for drift is that slice's open decision, so the sha is what a drift check
- * *would* compare against, not a check that exists.
+ * **The contract this puts on callers:** writes are once-only, so mint a fresh
+ * session-unique id for every generated body. Neither shipped generation path
+ * does that yet — `generate/parallel.ts` requests the fixed `['v1','v2','v3']`
+ * on every call, and `generate/regenerate.ts` forwards the id of the variant
+ * being iterated — so both collide from round 2 onward. Both have to change
+ * under §3.1 row 11 regardless of this module; B1 (slice 11 rework) owns that.
+ * A caller that genuinely needs to replace a body must remove the file first,
+ * which keeps the destructive step explicit. The collision `throw`s rather than
+ * returning a `Result` (`docs/CONVENTIONS.md` §Error Handling) because a
+ * duplicate id is a minting bug in the caller, not a domain outcome it can
+ * branch on.
  *
- * Writes are once-only. Variant ids are unique across the session rather than
- * within a round (§2.2 future cherry-pick mode, §3.1 row 11), and a locked
- * variant carries into the next round keeping both its id and its body (§2.6),
- * so a body is generated once and never mutated, and a second write under a
- * live id is an id-space collision rather than an update. Overwriting would
- * silently swap that body underneath every `elements/{slot}.json` pointer still
- * naming it, so the write fails instead.
+ * `variantId` reaches this module from the model's own output, which is why it
+ * is held to a charset rather than merely checked for containment:
+ * `generate/single.ts` scrapes the `<variant>` header with `/<variant\b([^>]*)>/`
+ * and the id out of it with `/\bid="([^"]+)"/`, so between them every byte but
+ * `"` and `>` survives, and only the `generateParallel` path re-checks the id
+ * against the one requested. The charset still admits the Win32 device names
+ * (`CON`, `NUL`, `COM1`…) — measured, they pass — and the usual excuse, that
+ * such an id is minted rather than user-supplied, does not apply here. What one
+ * does under an exclusive create on Win32 is untested, so treat it as an open
+ * gap rather than a known-benign one.
  *
- * **The contract this puts on callers:** mint a fresh session-unique id for
- * every generated body. Neither shipped generation path does that yet —
- * `generate/parallel.ts` requests the fixed `['v1','v2','v3']` on every call,
- * and `generate/regenerate.ts` forwards the id of the variant being iterated —
- * so both collide from round 2 onward. Both have to change under §3.1 row 11
- * regardless of this module; B1 (slice 11 rework) owns that. A caller that
- * genuinely needs to replace a body must remove the file first, which keeps the
- * destructive step explicit. The collision `throw`s rather than returning a
- * `Result` (`docs/CONVENTIONS.md` §Error Handling) because a duplicate id is a
- * minting bug in the caller, not a domain outcome it can branch on.
- *
- * A write that fails *after* the exclusive create — ENOSPC, EIO — would leave a
- * 0-byte or truncated file that write-once then makes permanent, and a short
- * body reads back as valid markup rather than as an error, so the failed write
- * removes it. That removal is best-effort; see `./README.md` for the windows it
- * leaves open.
- *
- * `variantId` is held to an id-shaped charset rather than merely checked for
- * containment, because it interpolates into a filename and reaches this module
- * from the model's own output: `generate/single.ts` scrapes the `<variant>`
- * header with `/<variant\b([^>]*)>/` and the id out of it with
- * `/\bid="([^"]+)"/`, so between them every byte but `"` and `>` survives, and
- * only the `generateParallel` path re-checks the id against the one requested.
- * The charset still admits the Win32 device names (`CON`, `NUL`, `COM1`…) —
- * measured, they pass — and the usual excuse, that the id is minted rather than
- * user-supplied, does *not* transfer to an id lifted from model output. What
- * such an id does under an exclusive create on Win32 is untested here, so treat
- * it as an open gap rather than a known-benign one.
- *
- * A missing file means "not generated yet" — legitimate state, since §2.8
- * records a variant as `status: "generating"` in `elements/{slot}.json` before
- * its body lands — and reads as `null`, distinct from `''` for a body that
- * exists and is empty. Whether an empty body is *worth* persisting is
- * generation's question, not storage's: `generate/single.ts` already trims the
- * captured markup, so rejecting `''` here would put a second definition of
- * "valid variant" in the wrong layer.
+ * A missing file reads as `null` — "not generated yet", legitimate state, since
+ * §2.8 records a variant as `status: "generating"` before its body lands — and
+ * is distinct from `''` for a body that exists and is empty. Whether an empty
+ * body is *worth* persisting is generation's question, not storage's:
+ * `generate/single.ts` already trims the captured markup, so rejecting `''`
+ * here would put a second definition of "valid variant" in the wrong layer.
  *
  * `writeVariantHtml` takes three positional parameters rather than an options
  * object — at the `max-params` limit in `docs/CONVENTIONS.md`, not over it — to
