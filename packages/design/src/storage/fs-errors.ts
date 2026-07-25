@@ -1,17 +1,11 @@
 /**
  * Shared fs-error narrowing for the storage modules.
  *
- * Every read-side storage module distinguishes "the file isn't there yet"
- * (a normal empty state) from a real I/O failure, which means narrowing
- * `unknown` to an errno-bearing error before reading `.code`. Extracted once
- * the third copy appeared; since `storage/approve.ts` gained a read side at
- * A5, all six storage modules that touch the filesystem import this. The only
- * other module in that directory is `storage/body-normalisation.ts`, which is
- * pure.
- *
- * No longer read-side only: `storage/variants.ts` narrows on the write path
- * too, to tell an id collision (EEXIST, under an exclusive create) from any
- * other write failure.
+ * Distinguishing "the file isn't there yet" (a normal empty state) from a real
+ * I/O failure means narrowing `unknown` to an errno-bearing error before
+ * reading `.code`. Extracted once the third copy appeared; every storage module
+ * that touches the filesystem now imports it, on the read path and — for an
+ * exclusive create's EEXIST — the write path too.
  */
 export const isNodeFsError = (err: unknown): err is NodeJS.ErrnoException =>
   typeof err === 'object' && err !== null && 'code' in err;
