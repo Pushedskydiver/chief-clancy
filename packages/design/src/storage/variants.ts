@@ -6,9 +6,8 @@
  * Slices 13 and 14 read bodies back by the `variantId` they find in
  * `elements/<slot>.json`; slice 22 resolves its `variantId` from
  * `approved/<slot>` instead, since §3.0 does not list 22 as an `elements/`
- * reader. See `./README.md` for how this
- * module's write, guard, read and failure-window choices sit against its
- * siblings'.
+ * reader. See `./README.md` for how this module's write, guard, read and
+ * failure-window choices sit against its siblings'.
  *
  * The body is written verbatim, with no trailing newline, because the accept
  * marker records a SHA-256 over the same bytes — anything added or dropped here
@@ -46,8 +45,7 @@
  *
  * `writeVariantHtml` takes three positional parameters rather than an options
  * object — at the `max-params` limit in `docs/CONVENTIONS.md`, not over it — to
- * keep one shape across the four writers that take a per-file key:
- * `elements.ts`, `threads.ts`, `approve.ts` and this one. Both
+ * keep the shared key-taking writer signature (`./README.md` §The modules). Both
  * mis-orderings that shape invites are caught by the charset guard, which sits
  * on the second parameter: swapping the id and the payload puts markup there,
  * and swapping `sessionDir` and the id puts a path there. The second is caught

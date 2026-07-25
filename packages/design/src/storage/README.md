@@ -6,7 +6,7 @@ The session layout these modules implement is §2.8 of `.claude/research/phase-f
 
 ## Why this file exists
 
-The modules make the same handful of choices differently, and the differences are deliberate: one appends where another overwrites, one guards a filename by charset where another can only guard by containment. Explaining a choice usually means contrasting it with a sibling — so those contrasts kept getting written into module headers, each describing several of the others.
+The modules make the same handful of choices differently, and the differences are deliberate: one appends where another overwrites, one guards a filename by charset where another can only guard by containment. Explaining a choice usually means contrasting it with a sibling — so those contrasts kept getting written into module headers, most of them describing several of the others.
 
 That does not hold up. A sentence in `approve.ts` about how `variants.ts` writes is falsified by editing `variants.ts`, and nothing in the toolchain notices: no tool here verifies comment _content_, and the one rule that could bound their volume, `max-lines`, is configured `skipComments: true` — `approve.ts` counted 54 lines against a limit of 300 while carrying a 169-line header. Comment share across this directory climbed at every A-phase slice, and the A5 review found defects only in prose, never in the executable lines.
 
@@ -37,6 +37,8 @@ Three shapes, picked by what the file _is_ rather than by preference.
 
 **Do not carry one shape's reflex into another.** Write-once is right for a body and wrong for an accept pointer; overwrite is right for a marker and would silently swap a locked variant's body underneath every `elements/{slot}.json` pointer still naming it.
 
+The four writers that take a per-file key share one signature — `(sessionDir, key, payload)`: `elements.ts`, `threads.ts`, `variants.ts`, `approve.ts`. The two that write a single per-session file take `(sessionDir, payload)` instead: `chat.ts`, `comments.ts`.
+
 ## Guard shape
 
 Every module that interpolates a caller-supplied **key** into a path guards it, in one of two ways, and the choice is forced by the key's shape. `sessionDir` is the exception and is guarded nowhere — see below.
@@ -62,7 +64,7 @@ Note also that containment tests the _normalised_ path, so separators are reject
 
 `threads/{threadId}.jsonl` is durable, not a derived view. `chat.jsonl` carries the same message text behind the `[threadId] slot ` tag, but not the `tag` / `textSnippet` / `status` anchor fields, so a thread rebuilt from chat alone loses its stale-anchor lifecycle state (§2.8 reconstruction note).
 
-- **Strict, with a torn-tail exemption** — `chat.ts`, `threads.ts`. A crash can truncate the final line mid-write, so a _last_ line failing `JSON.parse` is dropped when the file does not end in a newline. Nothing else is forgiven: a line that parses as JSON but fails its schema is version skew or corruption, and throws even in the tail position. Blank lines are filtered before any of this — a complete file ends in a newline — which is also why the filter runs before the tail index is computed. Forgiving it would make the newest message in every thread silently droppable — a user's comment vanishing from the regeneration context with no error anywhere.
+- **Strict, with a torn-tail exemption** — `chat.ts`, `threads.ts`. A crash can truncate the final line mid-write, so a _last_ line failing `JSON.parse` is dropped when the file does not end in a newline. Nothing else is forgiven: a line that parses as JSON but fails its schema is version skew or corruption, and throws even in the tail position. Empty lines are filtered first, since a complete file ends in a newline and would otherwise present an empty final row. (Empty, not blank: a whitespace-only line survives the filter and throws.) Forgiving it would make the newest message in every thread silently droppable — a user's comment vanishing from the regeneration context with no error anywhere.
 - **Strict, whole-file** — `elements.ts`, `approve.ts`. No line framing, so no torn-tail case; a schema-invalid file throws.
 - **Opaque** — `variants.ts`. An HTML body is markup, not a record, so there is nothing to validate against and no `schemas/` pair. A truncated write reads back as shorter markup and cannot be detected here.
 - **Lenient** — `comments.ts`, superseded. It swallows every unparseable _and_ schema-invalid line. This is the behaviour the strict readers were written not to inherit.
@@ -100,5 +102,5 @@ Known windows, none of them treated:
 
 Two operations the spec calls for have no code yet, and they sit differently.
 
-- **Un-accept** returns a slot to the unaccepted state (§2.6, and §3.0 as amended in Session 176). It is one action over two files, and they have different owners: deleting `approved/{slot}` is a write to this module's file, so §3.0's exactly-one-writer-per-file rule puts it in `approve.ts`; clearing `elements.accepted` to `null` is a write to `elements/{slot}.json`, whose physical writer is slice 18, so that leg rides `elements.ts`. Neither module owns both. It is the same split accept has, and it waits on the same Phase C action.
+- **Un-accept** returns a slot to the unaccepted state (§2.6, and §3.0 as amended in Session 176). It is one action over two files, and they have different owners: deleting `approved/{slot}` is a write to `approve.ts`'s own file, so §3.0's exactly-one-writer-per-file rule puts that leg there; clearing `elements.accepted` to `null` is a write to `elements/{slot}.json`, whose physical writer is slice 18, so that leg rides `elements.ts`. Neither module owns both. It is the same split accept has, and it waits on the same Phase C action.
 - **Listing** `approved/*` for slices 21 and 22 (22 iterates unconditionally; 21 offers a walk as the alternative to `--slot`). This is a _read_, and §3.0 permits a reader to read directly, so a primitive here would be drift-prevention rather than ownership. Neither slice is built — they are not part of the A/B/C rework phases at all — and the open questions are its return shape (slot names or parsed markers) and how it treats non-file and symlinked entries.
